@@ -2,176 +2,181 @@
 #include <npapi.h>
 #include <npupp.h>
 #include <npruntime.h>
+#include <string>
 
 
-static NPObject* so = NULL;
-static NPNetscapeFuncs* npnfuncs = NULL;
-static std::ofstream log("npIM.log");
+static NPObject* _pluginObj = NULL;
+static NPNetscapeFuncs* _browser = NULL;
+static std::ofstream _log("npIM.log");
 
 
-//
-// NPN (browser related)
-//
-
-static bool hasMethod(NPObject* obj, NPIdentifier methodName) {
-    log << "hasMethod\n";
+static bool hasMethod(NPObject* obj, NPIdentifier name) {
+    _log << "hasMethod\n";
     return true;
 }
 
 
-static bool invokeDefault(NPObject* obj, const NPVariant* args, uint32_t argCount, NPVariant* result) {
-    log << "invokeDefault\n";
+static bool invokeDefault(NPObject* obj, const NPVariant* argv, uint32_t argc, NPVariant* result) {
+    _log << "invokeDefault\n";
+
     result->type = NPVariantType_Int32;
     result->value.intValue = 1024;
     return true;
 }
 
 
-static bool invoke(NPObject* obj, NPIdentifier methodName, const NPVariant* args, uint32_t argCount, NPVariant* result) {
-    log << "invoke\n";
-    char* name = npnfuncs->utf8fromidentifier(methodName);
+static bool invoke(NPObject* obj, NPIdentifier name, const NPVariant* argv, uint32_t argc, NPVariant* result) {
+    _log << "invoke\n";
+    std::string cname = _browser->utf8fromidentifier(name);
     
-    if(name && !strcmp((const char *)name, "foo")) {
-        return invokeDefault(obj, args, argCount, result);
+    if (cname == "foo") {
+        return invokeDefault(obj, argv, argc, result);
     }
     else {
-        // aim exception handling
-        npnfuncs->setexception(obj, "exception during invocation");
+        _browser->setexception(obj, "exception during invocation");
         return false;
     }
 }
 
 
-static bool hasProperty(NPObject* obj, NPIdentifier propertyName) {
-    log << "hasProperty\n";
+static bool hasProperty(NPObject* obj, NPIdentifier name) {
+    _log << "hasProperty\n";
     return false;
 }
 
 
-static bool getProperty(NPObject* obj, NPIdentifier propertyName, NPVariant* result) {
-    log << "getProperty\n";
+static bool getProperty(NPObject* obj, NPIdentifier name, NPVariant* result) {
+    _log << "getProperty\n";
     return false;
 }
 
 
-static NPClass npcRefObject = {
+static bool setProperty(NPObject* obj, NPIdentifier name, const NPVariant* value) {
+    _log << "setProperty\n";
+    return false;
+}
+
+
+static bool removeProperty(NPObject* obj, NPIdentifier name) {
+    _log << "removeProperty\n";
+    return false;
+}
+
+
+static NPClass _pluginClass = {
     NP_CLASS_STRUCT_VERSION,
-    NULL,
-    NULL,
-    NULL,
+    NULL, // Allocate.
+    NULL, // Deallocate.
+    NULL, // Invalidate.
     hasMethod,
     invoke,
     invokeDefault,
     hasProperty,
     getProperty,
-    NULL,
-    NULL,
+    setProperty,
+    removeProperty,
 };
 
 
-//
-// NPP (plug-in related)
-//
-
-static NPError create(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, char* argn[], char* argv[], NPSavedData* saved) {
-    log << "new\n";
+static NPError create(NPMIMEType type, NPP instance, uint16 mode, int16 argc, char* argn[], char* argv[], NPSavedData* data) {
+    _log << "create\n";
     return NPERR_NO_ERROR;
 }
 
 
-static NPError destroy(NPP instance, NPSavedData** save) {
-    if(so)
-        npnfuncs->releaseobject(so);
-    so = NULL;
-    log << "destroy\n";
+static NPError destroy(NPP instance, NPSavedData** data) {
+    _log << "destroy\n";
+    
+    if (_pluginObj != NULL) {
+        _browser->releaseobject(_pluginObj);
+        _pluginObj = NULL;
+    }
+    
     return NPERR_NO_ERROR;
 }
 
 
-static NPError getValue(NPP instance, NPPVariable variable, void* value) {
-    switch(variable) {
-    default:
-        log << "getvalue - default\n";
-        return NPERR_GENERIC_ERROR;
+static NPError getValue(NPP instance, NPPVariable what, void* value) {
+    _log << "getValue\n";
+    
+    switch (what) {
     case NPPVpluginNameString:
-        log << "getvalue - name string\n";
-        *((char **)value) = "IM";
+        *(char**) value = "IM";
         break;
     case NPPVpluginDescriptionString:
-        log << "getvalue - description string\n";
-        *((char **)value) = "Instant messenger plug-in";
+        *(char**) value = "Instant messenger plug-in";
         break;
     case NPPVpluginScriptableNPObject:
-        log << "getvalue - scriptable object\n";
-        if(!so)
-            so = npnfuncs->createobject(instance, &npcRefObject);
-        npnfuncs->retainobject(so);
-        *(NPObject **)value = so;
+        if (_pluginObj == NULL) {
+            _pluginObj = _browser->createobject(instance, &_pluginClass);
+        }
+        _browser->retainobject(_pluginObj);
+        *(NPObject**) value = _pluginObj;
         break;
     case NPPVpluginNeedsXEmbed:
-        log << "getvalue - xembed\n";
-        *((PRBool *)value) = PR_FALSE;
+        *(PRBool*) value = PR_FALSE;
         break;
+    default:
+        return NPERR_GENERIC_ERROR;
     }
+    
     return NPERR_NO_ERROR;
 }
 
 
-static NPError handleEvent(NPP instance, void* ev) {
-    log << "handleEvent\n";
+static NPError handleEvent(NPP instance, void* event) {
+    _log << "handleEvent\n";
     return NPERR_NO_ERROR;
 }
 
 
-static NPError setWindow(NPP instance, NPWindow* pNPWindow) {
-    log << "setWindow\n";
-    return NPERR_NO_ERROR;
-}
-
-
-//
-// Interface
-//
-
-extern "C"
-NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
-    log << "NP_GetEntryPoints\n";
-
-    nppfuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
-    nppfuncs->newp = create;
-    nppfuncs->destroy = destroy;
-    nppfuncs->getvalue = getValue;
-    nppfuncs->event = handleEvent;
-    nppfuncs->setwindow = setWindow;
-
+static NPError setWindow(NPP instance, NPWindow* window) {
+    _log << "setWindow\n";
     return NPERR_NO_ERROR;
 }
 
 
 extern "C"
-NPError OSCALL NP_Initialize(NPNetscapeFuncs* npnf) {
-    log << "NP_Initialize\n";
+NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+    _log << "NP_GetEntryPoints\n";
+    
+    plugin->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
+    plugin->newp = create;
+    plugin->destroy = destroy;
+    plugin->getvalue = getValue;
+    plugin->event = handleEvent;
+    plugin->setwindow = setWindow;
+    
+    return NPERR_NO_ERROR;
+}
 
-    if(npnf == NULL)
+
+extern "C"
+NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser) {
+    _log << "NP_Initialize\n";
+
+    if (browser == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
-
-    if (((npnf->version >> 8) & 0xFF) > NP_VERSION_MAJOR)
+    }
+    if (((browser->version >> 8) & 0xFF) > NP_VERSION_MAJOR) {
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
-
-    npnfuncs = npnf;
+    }
+    
+    _browser = browser;
     return NPERR_NO_ERROR;
 }
 
 
 extern "C"
 NPError OSCALL NP_Shutdown() {
-    log << "NP_Shutdown\n";
+    _log << "NP_Shutdown\n";
+    _browser = NULL;
     return NPERR_NO_ERROR;
 }
 
 
 extern "C"
 char* NP_GetMIMEDescription() {
-    log << "NP_GetMIMEDescription\n";
+    _log << "NP_GetMIMEDescription\n";
     return "application/x-im::";
 }
