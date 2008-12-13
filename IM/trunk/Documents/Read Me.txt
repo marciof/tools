@@ -1,0 +1,34 @@
+Setup:
+1. Install the required software. Tested only with:
+   - Windows XP SP3
+   - Visual Studio 2005
+   - Opera 9.62, <http://www.opera.com/browser/>
+   - XULRunner SDK 1.9.0.4 win32, <http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/>
+
+2. Set the NPAPI_SDK environment variable to the NPAPI SDK directory.
+   E.g. "C:\Program Files\xulrunner-sdk\sdk"
+
+
+Install:
+1. Close Opera.
+
+2. Copy the files (*.dll, *.html, *.css, *.png) to 
+
+opera:config#Plugin%20Path
+xulrunner-1.9.0.4.en-US.win32.sdk.zip
+
+3. Open Opera and search for the plug-in in <opera:plugins>.
+
+
+
+NP_GetEntryPoints
+NP_Initialize
+new
+setWindow
+setWindow
+getvalue - scriptable object
+hasMethod
+invoke
+invokeDefault
+destroy
+NP_Shutdown
