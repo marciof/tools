@@ -1,17 +1,13 @@
-<html>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-  <title>Buddy List</title>
-  
-  <style type="text/css">
-.Hidden {
-    visibility: hidden;
-    width: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    border-width: 0;
-}
-  </style>
+    <title>Buddy List</title>
+    <meta name="Author" content="Márcio Moniz Bandim Faustino"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="Style.css"/>
   </head>
   
   <body>
@@ -26,9 +22,14 @@ function call() {
 }
     </script>
     
-    <p>
-      <button onclick="call()">Call</button>
-      <object id="Server" type="application/x-im" class="Hidden">Failed!</object>
-    </p>
+    <object id="Server" type="application/x-im" class="Hidden">Failed!</object>
+    
+    <ul class="BuddyList">
+      <li class="Buddy">Daniel Faustino</li>
+      <li class="Buddy">Márcio Faustino</li>
+      <li class="Buddy">Pedro Faustino</li>
+    </ul>
+    
+    <button onclick="call()">Call</button>
   </body>
 </html>
