@@ -16,12 +16,13 @@ body {
     cursor: pointer;
 }
 
-/* TODO: Remove hard coded color for buddy hover style. */
+/* TODO: Remove hard coded color for the buddy hover style. */
 .BuddyList .Buddy:hover {
     text-decoration: underline;
     color: #285078;
 }
 
+/* TODO: Try to remove floating elements. */
 .BuddyList .Buddy .Icon {
     float: left;
     content: -o-skin("Contact0");
