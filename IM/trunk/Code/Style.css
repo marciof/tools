@@ -1,43 +1,48 @@
 body {
     margin: 0;
     padding: 0;
-    font: menu;
+    font: Menu;
 }
 
-.BuddyList {
+object#Server {
+    position: fixed;
+    width: 0;
+    height: 0;
+    
+    margin: 0;
+    padding: 0;
+}
+
+object#Server > div.Body {
+    position: fixed;
+    background-color: Window;
+    
+    width: 100%;
+    height: 100%;
+}
+
+ul.Buddy {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 
-.BuddyList .Buddy {
+ul.Buddy li.Buddy {
     padding-top: 2px;
     padding-bottom: 2px;
     cursor: pointer;
 }
 
 /* TODO: Remove hard coded color for the buddy hover style. */
-.BuddyList .Buddy:hover {
+ul.Buddy li.Buddy:hover {
     text-decoration: underline;
     color: #285078;
 }
 
 /* TODO: Try to remove floating elements. */
-.BuddyList .Buddy .Icon {
+ul.Buddy li.Buddy img.Buddy {
     float: left;
     content: -o-skin("Contact0");
     margin-top: -2px;
     margin-right: 3px;
-}
-
-.Hidden {
-    visibility: hidden;
-    border-width: 0;
-    position: absolute;
-    
-    width: 0;
-    height: 0;
-    
-    margin: 0;
-    padding: 0;
 }

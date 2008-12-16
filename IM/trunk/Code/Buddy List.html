@@ -24,21 +24,27 @@ function call() {
 }
     </script>
     
-    <object id="Server" type="application/x-im" class="Hidden">Failed!</object>
+    <object id="Server" type="application/x-im">
+      <!-- TODO: Use Opera's default style sheet for errors. -->
+      <div class="Body">
+        <h1>Could not load IM plug-in</h1>
+        <div>Check the <a href="opera:plugins">available plug-ins</a>.</div>
+      </div>
+    </object>
     
-    <ul class="BuddyList">
+    <ul class="Buddy">
       <li class="Buddy">
-        <img class="Icon"/>
+        <img class="Buddy"/>
         <span class="Name">Márcio Faustino</span>
       </li>
       
       <li class="Buddy">
-        <img class="Icon"/>
+        <img class="Buddy"/>
         <span class="Name">Daniel Faustino</span>
       </li>
       
       <li class="Buddy">
-        <img class="Icon"/>
+        <img class="Buddy"/>
         <span class="Name">Pedro Faustino</span>
       </li>
     </ul>
