@@ -10,14 +10,12 @@ Setup:
 
 
 Install:
-1. Close Opera.
-
-2. Copy the files (*.dll, *.html, *.css, *.png) to 
+1. Copy the files (*.dll, *.html, *.css, *.png) to 
 
 opera:config#Plugin%20Path
 xulrunner-1.9.0.4.en-US.win32.sdk.zip
 
-3. Open Opera and search for the plug-in in <opera:plugins>.
+2. Restart Opera and search for the plug-in in <opera:plugins>.
 
 
 
