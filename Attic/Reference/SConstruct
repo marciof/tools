@@ -1,0 +1,2 @@
+env = Environment(CCFLAGS = ['-ansi', '-pedantic', '-Wall'])
+env.Program('example', Glob('*.cpp'))
