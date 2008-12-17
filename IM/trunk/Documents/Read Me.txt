@@ -1,9 +1,10 @@
 Setup:
-1. Install the required software. Tested only with:
+1. Install the required software. Tested with:
    - Windows XP SP3
    - Visual Studio 2005
    - Opera 9.62, <http://www.opera.com/browser/>
    - XULRunner SDK 1.9.0.4 win32, <http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/>
+   - Pidgin 2.5.2, <http://www.pidgin.im/>
 
 2. Set the NPAPI_SDK environment variable to the NPAPI SDK directory.
    E.g. "C:\Program Files\xulrunner-sdk\sdk"
