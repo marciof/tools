@@ -1,7 +1,7 @@
 (load "Lispy.lisp")
 
 
-(defclass Edge ()
+(define-class Edge ()
   (source destiny capacity))
 
 
