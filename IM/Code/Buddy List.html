@@ -7,30 +7,13 @@
     <title>Buddy List</title>
     <meta name="Author" content="Márcio Moniz Bandim Faustino"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <!--link rel="icon" type="image/ico" href="favicon.ico"/>
-    <link rel="shortcut icon" type="image/ico" href="favicon.ico"/-->
+    <script type="text/javascript" src="Behavior.js"></script>
     <link rel="stylesheet" type="text/css" href="Style.css"/>
+    <!-- TODO: Add favicon. -->
   </head>
   
   <body>
-    <script type="text/javascript">
-function call() {
-    try {
-        alert(document.getElementById('Server').foo());
-    }
-    catch (e) {
-        alert(e);
-    }
-}
-    </script>
-    
-    <object id="Server" type="application/x-im">
-      <!-- TODO: Use Opera's default style sheet for errors. -->
-      <div class="Body">
-        <h1>Could not load IM plug-in</h1>
-        <div>Check the <a href="opera:plugins">available plug-ins</a>.</div>
-      </div>
-    </object>
+    <object id="Server" type="application/x-im"></object>
     
     <ul class="Buddy">
       <li class="Buddy">
@@ -49,6 +32,13 @@ function call() {
       </li>
     </ul>
     
-    <button onclick="call()">Call</button>
+    <table id="InformationBar">
+      <tbody>
+        <tr>
+          <td>Server:</td>
+          <td id="ServerStatus"></td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>

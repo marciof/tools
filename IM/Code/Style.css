@@ -1,11 +1,22 @@
-body {
-    margin: 0;
-    padding: 0;
-    font: Menu;
+#InformationBar {
+    position: fixed;
+    bottom: 0;
+    left: -1px;
+    width: 101%;
+    
+    border-top: 1px solid ThreeDShadow;
+    background-image: -o-skin("Chatbar Skin");
+    padding: 3px;
 }
 
-object#Server {
-    position: fixed;
+#InformationBar > td {
+    width: 50%;
+}
+
+#Server {
+    /* Don't set display to none, or else the plug-in won't load. */
+    position: absolute;
+    
     width: 0;
     height: 0;
     
@@ -13,34 +24,41 @@ object#Server {
     padding: 0;
 }
 
-object#Server > div.Body {
-    position: fixed;
-    background-color: Window;
+body {
+    margin: 0;
+    padding: 0;
     
-    width: 100%;
-    height: 100%;
+    background-image: -o-skin("Hotlist Skin");
+    font: Menu;
 }
 
 ul.Buddy {
+    position: fixed;
+    
+    height: 100%;
+    width: 100%;
+    
     list-style-type: none;
+    border-left: 1px solid ThreeDLightShadow;
+    border-top: 1px solid ThreeDLightShadow;
+    
     margin: 0;
     padding: 0;
 }
 
-ul.Buddy li.Buddy {
+ul.Buddy > li.Buddy {
     padding-top: 2px;
     padding-bottom: 2px;
     cursor: pointer;
 }
 
 /* TODO: Remove hard coded color for the buddy hover style. */
-ul.Buddy li.Buddy:hover {
+ul.Buddy > li.Buddy:hover {
     text-decoration: underline;
     color: #285078;
 }
 
-/* TODO: Try to remove floating elements. */
-ul.Buddy li.Buddy img.Buddy {
+ul.Buddy > li.Buddy > img.Buddy {
     float: left;
     content: -o-skin("Contact0");
     margin-top: -2px;

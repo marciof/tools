@@ -11,13 +11,13 @@ static std::ofstream _log("npIM.log");
 
 
 static bool hasMethod(NPObject* obj, NPIdentifier name) {
-    _log << "hasMethod\n";
+    _log << "hasMethod" << std::endl;
     return true;
 }
 
 
 static bool invokeDefault(NPObject* obj, const NPVariant* argv, uint32_t argc, NPVariant* result) {
-    _log << "invokeDefault\n";
+    _log << "invokeDefault" << std::endl;
 
     result->type = NPVariantType_Int32;
     result->value.intValue = 1024;
@@ -26,7 +26,7 @@ static bool invokeDefault(NPObject* obj, const NPVariant* argv, uint32_t argc, N
 
 
 static bool invoke(NPObject* obj, NPIdentifier name, const NPVariant* argv, uint32_t argc, NPVariant* result) {
-    _log << "invoke\n";
+    _log << "invoke" << std::endl;
     std::string cname = _browser->utf8fromidentifier(name);
     
     if (cname == "foo") {
@@ -40,25 +40,25 @@ static bool invoke(NPObject* obj, NPIdentifier name, const NPVariant* argv, uint
 
 
 static bool hasProperty(NPObject* obj, NPIdentifier name) {
-    _log << "hasProperty\n";
+    _log << "hasProperty" << std::endl;
     return false;
 }
 
 
 static bool getProperty(NPObject* obj, NPIdentifier name, NPVariant* result) {
-    _log << "getProperty\n";
+    _log << "getProperty" << std::endl;
     return false;
 }
 
 
 static bool setProperty(NPObject* obj, NPIdentifier name, const NPVariant* value) {
-    _log << "setProperty\n";
+    _log << "setProperty" << std::endl;
     return false;
 }
 
 
 static bool removeProperty(NPObject* obj, NPIdentifier name) {
-    _log << "removeProperty\n";
+    _log << "removeProperty" << std::endl;
     return false;
 }
 
@@ -79,13 +79,13 @@ static NPClass _pluginClass = {
 
 
 static NPError create(NPMIMEType type, NPP instance, uint16 mode, int16 argc, char* argn[], char* argv[], NPSavedData* data) {
-    _log << "create\n";
+    _log << "create" << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
 static NPError destroy(NPP instance, NPSavedData** data) {
-    _log << "destroy\n";
+    _log << "destroy" << std::endl;
     
     if (_pluginObj != NULL) {
         _browser->releaseobject(_pluginObj);
@@ -97,7 +97,7 @@ static NPError destroy(NPP instance, NPSavedData** data) {
 
 
 static NPError getValue(NPP instance, NPPVariable what, void* value) {
-    _log << "getValue\n";
+    _log << "getValue" << std::endl;
     
     switch (what) {
     case NPPVpluginNameString:
@@ -125,20 +125,20 @@ static NPError getValue(NPP instance, NPPVariable what, void* value) {
 
 
 static NPError handleEvent(NPP instance, void* event) {
-    _log << "handleEvent\n";
+    _log << "handleEvent" << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
 static NPError setWindow(NPP instance, NPWindow* window) {
-    _log << "setWindow\n";
+    _log << "setWindow" << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
 extern "C"
 NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
-    _log << "NP_GetEntryPoints\n";
+    _log << "NP_GetEntryPoints" << std::endl;
     
     plugin->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
     plugin->newp = create;
@@ -153,7 +153,7 @@ NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
 
 extern "C"
 NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser) {
-    _log << "NP_Initialize\n";
+    _log << "NP_Initialize" << std::endl;
 
     if (browser == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
@@ -169,7 +169,7 @@ NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser) {
 
 extern "C"
 NPError OSCALL NP_Shutdown() {
-    _log << "NP_Shutdown\n";
+    _log << "NP_Shutdown" << std::endl;
     _browser = NULL;
     return NPERR_NO_ERROR;
 }
@@ -177,6 +177,6 @@ NPError OSCALL NP_Shutdown() {
 
 extern "C"
 char* NP_GetMIMEDescription() {
-    _log << "NP_GetMIMEDescription\n";
+    _log << "NP_GetMIMEDescription" << std::endl;
     return "application/x-im::";
 }
