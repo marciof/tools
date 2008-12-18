@@ -52,7 +52,6 @@ ul.Buddy > li.Buddy {
     cursor: pointer;
 }
 
-/* TODO: Remove hard coded color for the buddy hover style. */
 ul.Buddy > li.Buddy:hover {
     text-decoration: underline;
     color: #285078;

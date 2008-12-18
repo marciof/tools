@@ -1,24 +1,45 @@
-function call() {
-    try {
-        alert(!!document.getElementById('Server').version);
+var _messages = {
+    en: {
+        PLUGIN_ERROR: 'Plug-in load error.',
+        PLUGIN_INIT: 'Initializing plug-in...',
+        SERVER_LABEL: 'Server:'
     }
-    catch (e) {
-        alert(e);
+};
+
+
+var _plugin;
+var _serverLabel, _serverStatus;
+
+
+function getMessage(code) {
+    return _messages[navigator.language][code];
+}
+
+
+function initializePlugin() {
+    _plugin = document.getElementById('Server');
+    _serverLabel = document.getElementById('ServerLabel');
+    _serverStatus = document.getElementById('ServerStatus');
+    
+    _serverLabel.appendChild(document.createTextNode(getMessage('SERVER_LABEL')));
+    
+    if ('version' in _plugin) {
+        setServerStatus('PLUGIN_INIT');
+    }
+    else {
+        setServerStatus('PLUGIN_ERROR');
+        return;
     }
 }
 
-/*
-      <div class="Panel">
-        <h1>Could not load IM plug-in</h1>
-        <div>Check the <a href="opera:plugins">available plug-ins</a>.</div>
-      </div>
-*/
+
+function setServerStatus(code) {
+    for (var i = 0; i < _serverStatus.childNodes; ++i) {
+        _serverStatus.removeChild(_serverStatus.childNodes.item(i));
+    }
+    
+    _serverStatus.appendChild(document.createTextNode(getMessage(code)));
+}
 
 
-/*var plugin;
-
-document.addEventListener('load', function() {
-    plugin = document.getElementById("Plugin");
-}, false);*/
-
-//setTimeout(call, 1000);
+document.addEventListener('load', initializePlugin, false);
