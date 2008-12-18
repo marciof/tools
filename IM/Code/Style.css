@@ -14,7 +14,7 @@
 }
 
 #Server {
-    /* Don't set display to none, or else the plug-in won't load. */
+    /* Don't set display to none, or the plug-in won't load. */
     position: absolute;
     
     width: 0;
