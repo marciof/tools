@@ -5,8 +5,10 @@
     width: 101%;
     
     border-top: 1px solid ThreeDShadow;
-    background-image: -o-skin("Hotlist Skin");
     padding: 3px;
+    
+    /*background-image: -o-skin("Transfer Panel Details Skin");*/
+    background-image: -o-skin("Hotlist Skin");
 }
 
 #InformationBar > td {
@@ -28,7 +30,9 @@ body {
     margin: 0;
     padding: 0;
     
+    /*background-image: -o-skin("Treeview Skin");*/
     background-color: Window;
+    
     font: Menu;
 }
 
