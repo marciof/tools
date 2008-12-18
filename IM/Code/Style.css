@@ -5,7 +5,7 @@
     width: 101%;
     
     border-top: 1px solid ThreeDShadow;
-    background-image: -o-skin("Chatbar Skin");
+    background-image: -o-skin("Hotlist Skin");
     padding: 3px;
 }
 
@@ -28,7 +28,7 @@ body {
     margin: 0;
     padding: 0;
     
-    background-image: -o-skin("Hotlist Skin");
+    background-color: Window;
     font: Menu;
 }
 
