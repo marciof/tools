@@ -6,40 +6,42 @@ var _messages = {
     }
 };
 
-
-var _plugin;
+var _locale, _plugin;
 var _serverLabel, _serverStatus;
 
 
-function getMessage(code) {
-    return _messages[navigator.language][code];
-}
-
-
-function initializePlugin() {
+function initialize() {
+    var language = navigator.language;
+    
+    if (!(navigator.language in _messages)) {
+        language = 'en';
+    }
+    
+    _locale = _messages[language];
     _plugin = document.getElementById('Server');
     _serverLabel = document.getElementById('ServerLabel');
     _serverStatus = document.getElementById('ServerStatus');
     
-    _serverLabel.appendChild(document.createTextNode(getMessage('SERVER_LABEL')));
+    setText(_serverLabel, _locale.SERVER_LABEL);
     
     if ('version' in _plugin) {
-        setServerStatus('PLUGIN_INIT');
+        setText(_serverStatus, _locale.PLUGIN_INIT);
     }
     else {
-        setServerStatus('PLUGIN_ERROR');
+        setText(_serverStatus, _locale.PLUGIN_ERROR);
         return;
     }
 }
 
 
-function setServerStatus(code) {
-    for (var i = 0; i < _serverStatus.childNodes; ++i) {
-        _serverStatus.removeChild(_serverStatus.childNodes.item(i));
+function setText(node, text) {
+    while (_serverStatus.childNodes.length > 0) {
+        node.removeChild(node.childNodes.item(0));
     }
     
-    _serverStatus.appendChild(document.createTextNode(getMessage(code)));
+    node.appendChild(document.createTextNode(text));
 }
 
 
-document.addEventListener('load', initializePlugin, false);
+// Don't use the DOMContentLoaded event, or the plug-in won't be detected.
+window.addEventListener('load', initialize, false);
