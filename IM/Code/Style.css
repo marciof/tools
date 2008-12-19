@@ -36,7 +36,8 @@ body {
     font: Menu;
 }
 
-ul.Buddy {
+ul.Buddy,
+ul.Group {
     position: fixed;
     
     height: 100%;
@@ -47,23 +48,33 @@ ul.Buddy {
     border-top: 1px solid ThreeDLightShadow;
     
     margin: 0;
-    padding: 0;
+    padding: 0 0 0 2px;
 }
 
-ul.Buddy > li.Buddy {
+ul.Buddy > li,
+ul.Group > li {
     padding-top: 2px;
     padding-bottom: 2px;
     cursor: pointer;
 }
 
-ul.Buddy > li.Buddy:hover {
+ul.Buddy > li:hover,
+ul.Group > li:hover {
     text-decoration: underline;
     color: #285078;
 }
 
-ul.Buddy > li.Buddy > img.Buddy {
+ul.Buddy > li > img,
+ul.Group > li > img {
     float: left;
-    content: -o-skin("Contact0");
     margin-top: -2px;
     margin-right: 3px;
+}
+
+ul.Buddy > li > img {
+    content: -o-skin("Contact0");
+}
+
+ul.Group > li > img {
+    content: -o-skin("Group");
 }
