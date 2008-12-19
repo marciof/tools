@@ -59,9 +59,13 @@ ul.Group > li {
 }
 
 ul.Buddy > li:hover,
+ul.Group > li {
+    color: #285078;
+}
+
+ul.Buddy > li:hover,
 ul.Group > li:hover {
     text-decoration: underline;
-    color: #285078;
 }
 
 ul.Buddy > li > img,
