@@ -1,20 +1,3 @@
-#InformationBar {
-    position: fixed;
-    bottom: 0;
-    left: -1px;
-    width: 101%;
-    
-    border-top: 1px solid ThreeDShadow;
-    padding: 3px;
-    
-    /*background-image: -o-skin("Transfer Panel Details Skin");*/
-    background-image: -o-skin("Hotlist Skin");
-}
-
-#InformationBar > td {
-    width: 50%;
-}
-
 #Server {
     /* Don't set display to none, or the plug-in won't load. */
     position: absolute;
@@ -30,55 +13,60 @@ body {
     margin: 0;
     padding: 0;
     
-    /*background-image: -o-skin("Treeview Skin");*/
-    background-color: Window;
-    
     font: Menu;
 }
 
-ul.Buddy,
-ul.Group {
-    position: fixed;
-    
-    height: 100%;
-    width: 100%;
-    
+ul.Panel {
     list-style-type: none;
-    border-left: 1px solid ThreeDLightShadow;
-    border-top: 1px solid ThreeDLightShadow;
     
     margin: 0;
     padding: 0 0 0 2px;
+    
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    
+    /*background-image: -o-skin("Treeview Skin");*/
+    background-color: Window;
+    
+    border-left: 1px solid ThreeDLightShadow;
+    border-top: 1px solid ThreeDLightShadow;
 }
 
-ul.Buddy > li,
-ul.Group > li {
+ul.Panel > li {
     padding-top: 2px;
     padding-bottom: 2px;
     cursor: pointer;
 }
 
-ul.Buddy > li:hover,
-ul.Group > li {
+ul.Panel > li:hover,
+ul.Panel > li.Group {
     color: #285078;
 }
 
-ul.Buddy > li:hover,
-ul.Group > li:hover {
+ul.Panel > li:hover {
     text-decoration: underline;
 }
 
-ul.Buddy > li > img,
-ul.Group > li > img {
+ul.Panel > li > img {
     float: left;
     margin-top: -2px;
     margin-right: 3px;
 }
 
-ul.Buddy > li > img {
+ul.Panel > li.Buddy > img {
     content: -o-skin("Contact0");
 }
 
-ul.Group > li > img {
+ul.Panel > li.Group > img {
     content: -o-skin("Group");
+}
+
+ul.Panel > li.Information > img {
+    content: -o-skin("Account Irc");
+}
+
+ul.Panel > li > a {
+    color: inherit;
+    text-decoration: inherit;
 }

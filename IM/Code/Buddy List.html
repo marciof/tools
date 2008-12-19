@@ -12,29 +12,42 @@
   </head>
   
   <body>
-    <div>
-      <object id="Server" type="application/x-im"></object>
-    </div>
-    
-    <table id="InformationBar">
-      <tbody>
-        <tr>
-          <td id="ServerLabel"></td>
-          <td id="ServerStatus"></td>
-        </tr>
-      </tbody>
-    </table>
-    
-    <ul class="Group">
-      <li>
+    <ul class="Panel">
+      <li class="Group">
         <img/>
-        <span class="Name">Family</span>
+        <span>Family</span>
       </li>
       
-      <li>
+      <li class="Group">
         <img/>
-        <span class="Name">Work</span>
+        <span>Work</span>
+      </li>
+      
+      <li class="Buddy">
+        <img/>
+        <span>Márcio Faustino</span>
+      </li>
+      
+      <li class="Buddy">
+        <img/>
+        <span>Daniel João</span>
+      </li>
+      
+      <li class="Buddy">
+        <img/>
+        <span>Pedro Emanuel</span>
       </li>
     </ul>
+    
+    <div>
+      <object id="Server" type="application/x-im">
+        <ul class="Panel">
+          <li class="Information">
+            <img/>
+            <a href="opera:plugins" target="_new" title="Check the plug-ins list for details">Plug-in load error!</a>
+          </li>
+        </ul>
+      </object>
+    </div>
   </body>
 </html>
