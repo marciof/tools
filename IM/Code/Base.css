@@ -16,3 +16,11 @@ input,
 select {
     font: Menu;
 }
+
+input[onclick] {
+    cursor: inherit;
+}
+
+input[onclick]:hover {
+    text-decoration: inherit;
+}
