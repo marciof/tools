@@ -4,9 +4,18 @@ Setup:
    - Visual Studio 2005
    - Opera 9.62, <http://www.opera.com/browser/>
    - XULRunner SDK 1.9.0.4 win32, <http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/>
-   - Pidgin 2.5.2, <http://www.pidgin.im/>
+   - Pidgin 2.5.2 (Windows and Source versions), <http://www.pidgin.im/>
+   - GLib 2.18.3 (Dev version), <http://www.gtk.org/download-windows.html>
 
-2. Set the NPAPI_SDK environment variable to the NPAPI SDK directory.
+(Which DLL's do we need?)
+
+2. GLIB_SDK
+   E.g. "C:\Program Files\glib-dev_2.18.3-1_win32"
+
+3. Set the LIBPURPLE_SDK environment variable to the libPurple source code directory.
+   E.g. "C:\Program Files\pidgin-2.5.2\libpurple"
+
+4. Set the NPAPI_SDK environment variable to the NPAPI SDK directory.
    E.g. "C:\Program Files\xulrunner-sdk\sdk"
 
 
