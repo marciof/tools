@@ -15,8 +15,8 @@ ul.Panel {
     top: 0;
     
     height: 100%;
-    overflow: auto;
     width: 100%;
+    overflow: auto;
     
     /*background-image: -o-skin("Treeview Skin");*/
     background-color: Window;
@@ -25,39 +25,36 @@ ul.Panel {
     border-top: 1px solid ThreeDLightShadow;
 }
 
-ul.Panel > li > a {
-    color: inherit;
-    text-decoration: none;
-    
-    display: block;
+ul.Panel > li {
     padding: 0 0 2px 2px;
     margin-top: -3px;
+    cursor: pointer;
 }
 
-ul.Panel > li > a:hover,
-ul.Panel > li.Group > a {
+ul.Panel > li:hover,
+ul.Panel > li.Group {
     color: #285078;
 }
 
-ul.Panel > li > a:hover {
+ul.Panel > li:hover {
     text-decoration: underline;
 }
 
-ul.Panel > li > a:before {
+ul.Panel > li:before {
     position: relative;
     margin-right: 3px;
     top: 3px;
 }
 
-ul.Panel > li.Buddy > a:before {
+ul.Panel > li.Buddy:before {
     content: -o-skin("Contact0");
 }
 
-ul.Panel > li.Group > a:before {
+ul.Panel > li.Group:before {
     content: -o-skin("Group");
 }
 
-ul.Panel > li.Information > a:before {
+ul.Panel > li.Information:before {
     content: -o-skin("Account Irc");
 }
 
