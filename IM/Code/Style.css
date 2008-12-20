@@ -1,14 +1,3 @@
-#Server {
-    /* Don't set display to none, or the plug-in won't load. */
-    position: absolute;
-    
-    width: 0;
-    height: 0;
-    
-    margin: 0;
-    padding: 0;
-}
-
 body {
     margin: 0;
     padding: 0;
@@ -26,6 +15,7 @@ ul.Panel {
     top: 0;
     
     height: 100%;
+    overflow: auto;
     width: 100%;
     
     /*background-image: -o-skin("Treeview Skin");*/
@@ -69,4 +59,34 @@ ul.Panel > li.Group > a:before {
 
 ul.Panel > li.Information > a:before {
     content: -o-skin("Account Irc");
+}
+
+.Status {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    
+    width: 100%;
+    border-top: 1px solid ThreeDShadow;
+    
+    /*background-image: -o-skin("Transfer Panel Details Skin");*/
+    background-image: -o-skin("Hotlist Skin");
+    
+    padding: 0 0 12px 8px;
+}
+
+.Status:before {
+    content: -o-skin("Panel Info");
+    margin-right: 6px;
+    
+    position: relative;
+    top: 6px;
+}
+
+#Server {
+    /* Don't set display to none, or the plug-in won't load. */
+    position: absolute;
+    
+    width: 0;
+    height: 0;
 }
