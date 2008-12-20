@@ -7,8 +7,8 @@
     <title>Buddy List</title>
     <meta name="Author" content="Márcio Moniz Bandim Faustino"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <script type="text/javascript" src="Behavior.js"></script>
-    <link rel="stylesheet" type="text/css" href="Style.css"/>
+    <script type="text/javascript" src="Buddy List.js"></script>
+    <link rel="stylesheet" type="text/css" href="Buddy List.css"/>
   </head>
   
   <body>
@@ -20,10 +20,14 @@
       <li class="Buddy">Pedro Emanuel</li>
     </ul>
     
-    <div class="Status">Add an account to start.</div>
+    <div class="Status" onclick="addAccount(this)">Add an account to start.</div>
+    
+    <noscript>
+      <div class="Status">JavaScript must be enabled.</div>
+    </noscript>
     
     <object id="Server" type="application/x-im">
-      <div class="Status">Plug-in load error!</div>
+      <div class="Status">Plug-in not detected.</div>
     </object>
   </body>
 </html>

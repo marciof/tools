@@ -1,9 +1,4 @@
-body {
-    margin: 0;
-    padding: 0;
-    
-    font: Menu;
-}
+@import url("Base.css");
 
 ul.Panel {
     list-style-type: none;

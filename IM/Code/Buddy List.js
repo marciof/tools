@@ -1,6 +1,11 @@
 var _plugin;
 
 
+function addAccount(popup) {
+    window.open('Add Account.html', 'addAccount');
+}
+
+
 function initialize() {
     _plugin = document.getElementById('Server');
     
