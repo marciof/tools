@@ -38,6 +38,8 @@ public:
 
 int main() {
     ref<Cat> cat = new Cat("Kitty");
+    
+    // Create another reference to the same object.
     ref<Animal> animal = cat;
     
     std::cout << "- Method => " << animal->getName() << "\n";
