@@ -2,16 +2,17 @@
 
 use strict;
 use utf8;
+use warnings;
+
 use CGI ':standard';
 use Encode;
 use File::Basename;
 use LWP;
-use Pearl;
 use Storable qw(nstore retrieve);
 
 
 eval { exit main(@ARGV) };
-print "Content-type: text/plain; charset=UTF-8\n\n", "Error: $EVAL_ERROR\n";
+print "Content-type: text/plain; charset=UTF-8\n\n", "Error: $@\n";
 exit 1;
 
 
@@ -31,7 +32,7 @@ sub date {
 
 
 sub download_guide {
-    my ($date) = @ARG;
+    my ($date) = @_;
     my $browser = LWP::UserAgent->new;
     my $response = $browser->get(url_for($date), 'User-Agent' => 'Mozilla');
     
@@ -45,7 +46,7 @@ sub download_guide {
 
 
 sub generate_rss {
-    my ($guide) = @ARG;
+    my ($guide) = @_;
     
     print <<'EOT';
 Content-type: text/xml; charset=UTF-8
@@ -89,7 +90,7 @@ EOT
 
 
 sub load_guide {
-    my ($file) = @ARG;
+    my ($file) = @_;
     my $content = -e $file ? retrieve($file) : {};
     my $today = date();
     
@@ -105,14 +106,14 @@ sub main {
     binmode STDOUT, ':utf8';
     
     if ((url_param('view') || '') eq 'source') {
-        open my $self, '<:utf8', $PROGRAM_NAME or die $ERRNO;
+        open my $self, '<:utf8', $0 or die $!;
         print "Content-type: text/plain; charset=UTF-8\n\n";
         print while <$self>;
-        close $self or die $ERRNO;
+        close $self or die $!;
     }
     else {
-        my ($extension) = ($PROGRAM_NAME =~ m/([.][^.]+)$/);
-        my $cache_file = fileparse($PROGRAM_NAME, $extension).'.rss';
+        my ($extension) = ($0 =~ m/([.][^.]+)$/);
+        my $cache_file = fileparse($0, $extension).'.rss';
         my $guide = load_guide($cache_file);
         
         generate_rss($guide);
@@ -124,7 +125,7 @@ sub main {
 
 
 sub parse_html {
-    my ($content) = @ARG;
+    my ($content) = @_;
     
     $content =~ m/<!-- INICIO GRELHA -->(.+)<!-- FIM GRELHA -->/s
       or die 'Could not find TV guide';
@@ -151,7 +152,7 @@ sub parse_html {
 
 
 sub save_guide {
-    my ($guide) = @ARG;
+    my ($guide) = @_;
     my $content = $guide->{content};
     my $guides = 0;
     
@@ -164,7 +165,7 @@ sub save_guide {
 
 
 sub url_for {
-    my ($date) = @ARG;
+    my ($date) = @_;
     $date = join '-', reverse split m/-/, $date;
     
     #return "http://rtp2.rtp.pt/epg_output.php?dia=$date";
