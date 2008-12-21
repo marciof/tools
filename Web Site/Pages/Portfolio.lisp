@@ -1,4 +1,12 @@
 (XML
+  (:p "Most of this stuff, including this web site's source code, can be found at "
+      (:a (@ (:href "http://subversion.assembla.com/svn/marciof"))
+          "my public SVN repository")
+      ", which also has a "
+      (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes"))
+          "web interface")
+      " available.")
+  
   (:h3 "Main Projects")
   
   (:dl
@@ -26,42 +34,50 @@
   (:dl
     (:dt "Algorithms")
     (:dd "Some "
-         (:a (@ (:href "Portfolio/Algorithms.7z")) "algorithms")
+         (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/Algorithms"))
+             "algorithms")
          " made in Common Lisp, mainly used to verify my solutions for some of the exercises for the ASA course.")
     
     (:dt "CRC")
     (:dd "Implementation in D of some "
-         (:a (@ (:href "Portfolio/CRC.d")) "CRC algorithms")
+         (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/CRC.d"))
+             "CRC algorithms")
          " (CRC-32-IEEE 802.3, CRC-16-IBM, CRC-16-CCITT).")
     
     (:dt "Lispy")
     (:dd "Useful "
-         (:a (@ (:href "Portfolio/Lispy.lisp")) "functions and macros")
+         (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/Lispy.lisp"))
+             "functions and macros")
          " for Common Lisp.")
     
     (:dt "Pearl")
-    (:dd (:a (@ (:href "Portfolio/Pearl.pm")) "Perl module")
-         " with some useful (at least for me) defaults and functions.")
+    (:dd (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/Pearl.pm"))
+             "Perl module")
+         " with some useful (for me they are) defaults and functions.")
     
     (:dt "RTP2 TV Guide")
     (:dd "RSS feed, "
-         (:a (@ (:href "Portfolio/RTP2.cgi?view=source")) "written in Perl")
+         (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/RTP2.cgi"))
+             "written in Perl")
          ", with the daily "
          (:a (@ (:href "Portfolio/RTP2.cgi")) "TV guide for RTP2")
          ".")
     
     (:dt "Set Theory Shell")
-    (:dd (:a (@ (:href "Portfolio/Set%20Theory%20Shell.7z")) "Interpreter")
+    (:dd (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/Set%20Theory%20Shell"))
+             "Interpreter")
          " of Set Theory operations written in Perl. Used to verify my solutions for some of the exercises for the QS course.")
     
     (:dt "macro")
-    (:dd (:a (@ (:href "Portfolio/macro.lisp")) "First class macros")
+    (:dd (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/macro.lisp"))
+             "First class macros")
          ", in Common Lisp, for interpreted code in "
          (:a (@ (:href "http://clisp.sourceforge.net/")) "CLISP")
          ".")
     
     (:dt "Reference")
-    (:dd (:a (@ (:href "Portfolio/Reference.7z")) "Smart pointer")
+    (:dd (:a (@ (:href "http://code.assembla.com/marciof/subversion/nodes/Attic/Reference"))
+             "Smart pointer")
          " implementation in C++ (similar to "
          (:a (@ (:href "http://www.boost.org/doc/libs/release/libs/smart_ptr"))
              "shared_ptr")
