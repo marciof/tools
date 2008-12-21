@@ -1,4 +1,3 @@
-; 2008-11-04
 #-CLISP (error "Only CLISP is supported.")
 
 

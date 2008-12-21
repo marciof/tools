@@ -1,6 +1,3 @@
-; 2008-12-11
-
-
 (defconstant false nil)
 (defconstant true t)
 (defconstant *white-space* '(#\Newline #\Space #\Tab))

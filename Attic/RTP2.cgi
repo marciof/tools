@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# 2008-12-11
 
 use strict;
 use utf8;
