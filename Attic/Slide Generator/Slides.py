@@ -131,7 +131,7 @@ def makeSlides(config):
 
 def main(args):
     if len(args) != 2:
-        print(u'Usage: <configuration>')
+        print(u'Usage: <configuration file>')
     else:
         makeSlides(yaml.load(file(args.pop())))
     
