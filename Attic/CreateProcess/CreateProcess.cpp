@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <windows.h>
+#include <Windows.h>
 
 
 #define CONFIGURATION_FILE "CreateProcess.lst"
