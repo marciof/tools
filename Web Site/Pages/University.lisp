@@ -6,7 +6,7 @@
 
 
 (defmethod URL-of ((course Course))
-  (concatenate 'string "http://www.l2f.inesc-id.pt/~marciof/ist/" (path-of course)))
+  (concatenate 'string "http://marcio.comoj.com/ist/" (path-of course)))
 
 
 (defparameter *y1-t1* (list (Course :name "AL - Álgebra Linear"
