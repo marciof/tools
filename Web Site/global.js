@@ -33,12 +33,4 @@ function setUp() {
             }
         }
     }
-    
-    var isLocal = (window.location.hostname == 'localhost');
-    
-    // Google Analytics statistics.
-    if (!isLocal && (typeof urchinTracker == 'function')) {
-        _uacct = 'UA-1151940-1';
-        urchinTracker();
-    }
 }
