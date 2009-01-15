@@ -2,6 +2,12 @@
 #define __REFERENCE__
 
 
+/**
+ * Smart pointer implementation (similar to Boost's shared_ptr) that can be used
+ * as a simple Garbage Collector based on reference counting.
+ */
+
+
 #include <cstddef>
 #include <exception>
 #include <map>

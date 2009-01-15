@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# RTP2 TV Guide RSS feed generator.
 
 use strict;
 use utf8;

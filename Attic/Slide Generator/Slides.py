@@ -1,6 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
+# Dependencies:
+# - PyYAML, <http://pyyaml.org/>
+# - flickrpy, <http://code.google.com/p/flickrpy/>
+# - Python Imaging Library, <http://www.pythonware.com/products/pil/>
+
+
 from __future__ import division, with_statement
 import Image, ImageChops, ImageDraw, ImageFont
 import flickr, yaml

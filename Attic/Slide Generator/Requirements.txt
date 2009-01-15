@@ -1,4 +1,0 @@
-- Python, <http://www.python.org/>
-- PyYAML, <http://pyyaml.org/>
-- flickrpy, <http://code.google.com/p/flickrpy/>
-- Python Imaging Library, <http://www.pythonware.com/products/pil/>

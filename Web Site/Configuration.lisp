@@ -6,5 +6,5 @@
   :scripts '("global.js" "http://www.google-analytics.com/urchin.js")
   :style "screen"
   :title "Márcio Faustino"
-  :footer '(("Date" . "Last updated: 2008-12-20")
+  :footer '(("Date" . "Last updated: 2009-01-15")
             ("Generator" . "Powered by Lisp")))
