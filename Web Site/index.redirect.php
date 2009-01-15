@@ -1,4 +1,4 @@
 <?php
-$url = 'http://web.ist.utl.pt/marcio.faustino/';
+$url = 'http://marcio.comoj.com/';
 header("Location: $url");
 ?>
