@@ -137,7 +137,6 @@ sub test {
   <head>
     <title>Test</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="Author" content="Márcio Faustino"/>
   </head>
   
   <body>
