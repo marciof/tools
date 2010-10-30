@@ -1,4 +1,4 @@
-Use the UTF-8 encoding, although the official specification mandates UTF-16.
+Use UTF-8 encoding, although the official specification mandates UTF-16.
 
 Do not use final commas in object and array literals:
 {a: 123,};                 // Avoid.
