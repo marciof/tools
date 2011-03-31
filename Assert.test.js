@@ -15,65 +15,65 @@ test({
     },
     
     testAssertEquals: function() {
-        assertEquals('', '');
-        assertEquals(-0, +0);
-        assertEquals(1, 1.0);
+        assert.equals('', '');
+        assert.equals(-0, +0);
+        assert.equals(1, 1.0);
     },
     
     testAssertException: function() {
-        assertException(Error, function() {
+        assert.exception(Error, function() {
             throw Error();
         });
     },
     
     testAssertFalse: function() {
-        assertFalse(false);
+        assert.False(false);
     },
     
     testAssertNull: function() {
-        assertNull(null);
+        assert.Null(null);
     },
     
     testAssertTrue: function() {
-        assertTrue(true);
+        assert.True(true);
     },
     
     testAssertUndefined: function() {
-        assertUndefined(undefined);
+        assert.Undefined(undefined);
     },
     
     testCorrectNumberOfArguments: function() {
-        assertException(SyntaxError, function() {assert()});
-        assertException(SyntaxError, function() {assert(1, 2)});
-        assertException(SyntaxError, function() {assertEquals(1)});
-        assertException(SyntaxError, function() {assertEquals(1, 2, 3)});
-        assertException(SyntaxError, function() {assertException(Error)});
-        assertException(SyntaxError, function() {assertException(Error, 2, 3)});
-        assertException(SyntaxError, function() {assertFalse()});
-        assertException(SyntaxError, function() {assertFalse(1, 2)});
-        assertException(SyntaxError, function() {assertNull()});
-        assertException(SyntaxError, function() {assertNull(1, 2)});
-        assertException(SyntaxError, function() {assertTrue()});
-        assertException(SyntaxError, function() {assertTrue(1, 2)});
-        assertException(SyntaxError, function() {assertUndefined()});
-        assertException(SyntaxError, function() {assertUndefined(1, 2)});
+        assert.exception(SyntaxError, function() {assert()});
+        assert.exception(SyntaxError, function() {assert(1, 2)});
+        assert.exception(SyntaxError, function() {assert.equals(1)});
+        assert.exception(SyntaxError, function() {assert.equals(1, 2, 3)});
+        assert.exception(SyntaxError, function() {assert.exception(Error)});
+        assert.exception(SyntaxError, function() {assert.exception(Error, 2, 3)});
+        assert.exception(SyntaxError, function() {assert.False()});
+        assert.exception(SyntaxError, function() {assert.False(1, 2)});
+        assert.exception(SyntaxError, function() {assert.Null()});
+        assert.exception(SyntaxError, function() {assert.Null(1, 2)});
+        assert.exception(SyntaxError, function() {assert.True()});
+        assert.exception(SyntaxError, function() {assert.True(1, 2)});
+        assert.exception(SyntaxError, function() {assert.Undefined()});
+        assert.exception(SyntaxError, function() {assert.Undefined(1, 2)});
     },
     
     testAssertionFailures: function() {
-        assertException(Error, function() {assert('')});
-        assertException(Error, function() {assertEquals(true, false)});
-        assertException(Error, function() {assertEquals(null, undefined)});
-        assertException(Error, function() {assertFalse(0)});
-        assertException(Error, function() {assertNull(undefined)});
-        assertException(Error, function() {assertTrue(1)});
-        assertException(Error, function() {assertUndefined(null)});
+        assert.exception(Error, function() {assert('')});
+        assert.exception(Error, function() {assert.equals(true, false)});
+        assert.exception(Error, function() {assert.equals(null, undefined)});
+        assert.exception(Error, function() {assert.False(0)});
+        assert.exception(Error, function() {assert.Null(undefined)});
+        assert.exception(Error, function() {assert.True(1)});
+        assert.exception(Error, function() {assert.Undefined(null)});
         
-        assertException(Error, function() {
-            assertException(SyntaxError, function() {throw RangeError()});
+        assert.exception(Error, function() {
+            assert.exception(SyntaxError, function() {throw RangeError()});
         });
         
-        assertException(Error, function() {
-            assertException(Error, function() {});
+        assert.exception(Error, function() {
+            assert.exception(Error, function() {});
         });
     }
 });

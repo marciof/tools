@@ -1,7 +1,7 @@
 /**
  * @fileoverview Implements assertions.
  * @author Márcio Faustino
- * @version 2009-07-05
+ * @version 2011-03-31
  */
 
 
@@ -29,14 +29,14 @@ function assert(value) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertEquals(x, y) {
+assert.equals = function(x, y) {
     if (arguments.length != 2) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (x !== y) {
         throw new Error('Assertion failed: Not equal: ' + x + ' !== ' + y);
     }
-}
+};
 
 
 /**
@@ -47,7 +47,7 @@ function assertEquals(x, y) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertException(type, code) {
+assert.exception = function(type, code) {
     if (arguments.length != 2) {
         throw new SyntaxError('Wrong number of arguments');
     }
@@ -67,7 +67,7 @@ function assertException(type, code) {
     
     throw new Error('Assertion failed: Expected exception not thrown: '
         + type);
-}
+};
 
 
 /**
@@ -77,7 +77,7 @@ function assertException(type, code) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertFalse(value) {
+assert.False = function(value) {
     if (arguments.length != 1) {
         throw new SyntaxError('Wrong number of arguments');
     }
@@ -94,14 +94,14 @@ function assertFalse(value) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertNaN(value) {
+assert.NaN = function(value) {
     if (arguments.length != 1) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (!isNaN(value)) {
         throw new Error('Assertion failed: Not NaN: ' + value);
     }
-}
+};
 
 
 /**
@@ -112,14 +112,14 @@ function assertNaN(value) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertNotEquals(x, y) {
+assert.notEquals = function(x, y) {
     if (arguments.length != 2) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (x === y) {
         throw new Error('Assertion failed: Equal: ' + x + ' === ' + y);
     }
-}
+};
 
 
 /**
@@ -129,14 +129,14 @@ function assertNotEquals(x, y) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertNull(value) {
+assert.Null = function(value) {
     if (arguments.length != 1) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (value !== null) {
         throw new Error('Assertion failed: Not null: ' + value);
     }
-}
+};
 
 
 /**
@@ -146,14 +146,14 @@ function assertNull(value) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertTrue(value) {
+assert.True = function(value) {
     if (arguments.length != 1) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (value !== true) {
         throw new Error('Assertion failed: Not true: ' + value);
     }
-}
+};
 
 
 /**
@@ -163,11 +163,11 @@ function assertTrue(value) {
  * @throws Error Assertion failed.
  * @throws SyntaxError Wrong number of arguments.
  */
-function assertUndefined(value) {
+assert.Undefined = function(value) {
     if (arguments.length != 1) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (value !== undefined) {
         throw new Error('Assertion failed: Not undefined: ' + value);
     }
-}
+};
