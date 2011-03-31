@@ -1,7 +1,6 @@
 /**
  * @fileoverview Tests assertions.
  * @author Márcio Faustino
- * @version 2009-07-05
  */
 
 
