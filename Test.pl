@@ -1,147 +1,280 @@
 #!/usr/bin/env perl
+# TODO: Refactor into separate files.
+
+package Script;
 
 use defaults;
 use File::Basename ();
-use File::Slurp ();
-use File::Spec ();
-use HTTP::Daemon ();
-use HTTP::Response ();
-use HTTP::Status ();
+use Moose;
+use MooseX::Types::Path::Class;
+use Regexp::Common qw(comment);
 
 
-sub main {
-    my $running = $true;
-    my $server;
-    
-    foreach my $port (80, 8008, 8080, 8090) {
-        $server = HTTP::Daemon->new(LocalPort => $port, Timeout => 1) and last;
-    }
-    
-    defined $server or die "Busy.\n";
-    printf "[%s] On-line: %s\n", now(), $server->url();
-    
-    $SIG{INT} = sub {
-        printf "[%s] Stopping...\n", now();
-        $running = $false;
-    };
-    
-    while ($running) {
-        if (my $client = $server->accept()) {
-            reply($client, $ARG) while $ARG = $client->get_request();
-            close $client;
-        }
-    }
-    
-    close $server if defined $server;
-    printf "[%s] Off-line.\n", now();
+has path => (
+    is => 'ro',
+    isa => 'Path::Class::File',
+    required => $true,
+    coerce => $true,
+);
+
+
+# --- Class methods ---
+
+sub suffix {
+    return '.js';
 }
 
 
-sub module {
-    my ($path) = @ARG;
-    my $response = HTTP::Response->new(HTTP::Status::HTTP_OK);
-    my $contents = File::Slurp::read_file($path,
-        binmode => ':raw', scalar_ref => $true);
+sub test_suffix {
+    return '.test';
+}
+
+
+# --- Instance methods ---
+
+sub content {
+    my ($self) = @ARG;
+    return scalar $self->path->slurp(iomode => '<:encoding(UTF-8)');
+}
+
+
+sub full_name {
+    my ($self) = @ARG;
+    return scalar File::Basename::fileparse($self->path, $self->suffix);
+}
+
+
+sub is_test {
+    my ($self) = @ARG;
+    my $suffix = $self->test_suffix;
     
-    $response->header('Content-Type' => 'text/javascript; charset=UTF-8');
-    $response->content_ref($contents);
+    return $self->full_name =~ m/\Q$suffix\E$/;
+}
+
+
+sub name {
+    my ($self) = @ARG;
+    my $name = $self->full_name;
+    my $test_suffix = $self->test_suffix;
     
-    return $response;
+    $name =~ s/\Q$test_suffix\E$//;
+    return $name;
+}
+
+
+sub requires {
+    my ($self) = @ARG;
+    my $comment_re = $Regexp::Common::RE{comment}{ECMAScript};
+    my ($overview) = ($self->content =~ m/^($comment_re)/);
+    my ($requires) = ($overview =~ m/\@requires \s+ (.+)/x);
+    
+    return split m/\s+/, ($requires // '');
+}
+
+
+package Module;
+
+use defaults;
+use Moose;
+
+
+has dependencies => (
+    is => 'ro',
+    isa => 'ArrayRef[Module]',
+    default => sub {[]},
+    auto_deref => $true,
+);
+
+has implementation => (
+    is => 'ro',
+    isa => 'Script',
+    required => $true,
+);
+
+has test => (
+    is => 'ro',
+    isa => 'Maybe[Module]',
+);
+
+
+# --- Instance methods ---
+
+sub name {
+    my ($self) = @ARG;
+    return $self->implementation->name;
+}
+
+
+package Package;
+
+use defaults;
+use File::Spec ();
+use Graph::Directed ();
+use Moose;
+use MooseX::Types::Path::Class;
+
+
+has path => (
+    is => 'ro',
+    isa => 'Path::Class::Dir',
+    default => File::Spec->curdir,
+    coerce => $true,
+);
+
+
+# --- Instance methods ---
+
+sub dependencies {
+    my ($self) = @ARG;
+    my $suffix = Script->suffix;
+    my @scripts = map {Script->new(path => $ARG)}
+        grep {!$ARG->is_dir() && ($ARG->basename =~ m/\Q$suffix\E$/)}
+        $self->path->children(no_hidden => $true);
+    
+    my %scripts = map {($ARG->full_name => $ARG)} @scripts;
+    my $dependencies = Graph::Directed->new;
+    
+    foreach my $script (values %scripts) {
+        foreach my $requirement ($script->requires) {
+            $dependencies->add_edge($scripts{$requirement}, $script);
+        }
+        if ($script->is_test) {
+            $dependencies->add_edge($script, $scripts{$script->name});
+        }
+    }
+    
+    return $dependencies;
 }
 
 
 sub modules {
-    my ($module_suffix, $test_suffix) = @ARG;
-    my %depends;
+    my ($self) = @ARG;
+    my $dependencies = $self->dependencies;
+    my @implementation_modules;
+    my %test_modules;
+    my %modules;
     
-    foreach my $path (glob '*' . $module_suffix) {
-        my $contents = File::Slurp::read_file($path,
-            binmode => ':raw', scalar_ref => $true);
+    foreach my $script ($dependencies->topological_sort) {
+        my @dependencies = map {$modules{$ARG->full_name}}
+            $dependencies->all_predecessors($script);
         
-        my @requires = ($contents =~ m'@requires\s+([^\s]+)'g);
-        my $name = File::Basename::basename($path, $test_suffix, $module_suffix);
+        my $module = Module->new(
+            dependencies => \@dependencies,
+            implementation => $script,
+            test => $test_modules{$script->name});
         
-        push @{$depends{$name}}, @requires;
-    }
-    
-    my @unordered = keys %depends;
-    my @ordered;
-    
-    while (@unordered > 0) {
-        my $name = shift @unordered;
-        next unless exists $depends{$name};
+        $modules{$script->full_name} = $module;
         
-        if (@{$depends{$name}} == 0) {
-            delete $depends{$name};
-            push @ordered, $name;
+        if ($script->is_test) {
+            $test_modules{$script->name} = $module;
+            $dependencies->delete_vertex($script);
         }
         else {
-            push @unordered, $name;
-            unshift @unordered, shift @{$depends{$name}};
+            push @implementation_modules, $module;
         }
     }
     
-    return @ordered;
+    return @implementation_modules;
 }
 
 
-sub now {
-    my ($seconds, $minutes, $hours, $day, $month, $year) = localtime;
-    
-    return sprintf '%d-%02d-%02d %02d:%02d:%02d',
-        ($year + 1900), ($month + 1), $day, $hours, $minutes, $seconds;
+package main;
+
+use defaults;
+use Mojolicious::Lite;
+
+
+my @modules = Package->new->modules;
+my %modules = map {($ARG->name => $ARG)} @modules;
+
+
+# TODO: Handle not found modules.
+app->helper(module => sub {
+    my ($self) = @ARG;
+    return $modules{$self->param('module')};
+});
+
+
+get '/' => sub {
+    my ($self) = @ARG;
+    $self->render('index', modules => \@modules);
+};
+
+
+get '/:module.html' => sub {
+    my ($self) = @ARG;
+    $self->render('module', module => $self->module());
+};
+
+
+# TODO: Refactor suffixes.
+get '/:module.js' => sub {
+    my ($self) = @ARG;
+    $self->render(text => $self->module()->implementation->content);
+};
+
+
+# TODO: Use REST style URL's?
+get '/:module.test.js' => sub {
+    my ($self) = @ARG;
+    $self->render(text => $self->module()->test->implementation->content);
+};
+
+
+# TODO: Simplify content types.
+foreach my $suffix (Script->suffix, Script->test_suffix . Script->suffix) {
+    $suffix =~ s/^\.//;
+    app->types->type($suffix => 'application/javascript; charset=UTF-8');
 }
 
-
-sub reply {
-    my ($client, $request) = @ARG;
-    my $module_suffix = '.js';
-    my $test_suffix = '.test' . $module_suffix;
-    
-    printf "[%s] Request: %s\n", now(), $request->uri();
-    
-    unless ($request->method() eq 'GET') {
-        $client->send_error(HTTP::Status::HTTP_FORBIDDEN);
-        return;
-    }
-    
-    my ($volume, $directory, $file) = File::Spec->splitpath($request->uri());
-    
-    if (($volume eq '') && ($directory eq '/')) {
-        if ($file eq '') {
-            $client->send_response(test($module_suffix, $test_suffix));
-            return;
-        }
-        elsif (($file =~ m/\Q$module_suffix\E$/) && stat($file)) {
-            $client->send_response(module($file));
-            return;
-        }
-    }
-    
-    $client->send_error(HTTP::Status::HTTP_NOT_FOUND);
-    return;
-}
+app->start;
 
 
-sub test {
-    my ($module_suffix, $test_suffix) = @ARG;
-    my $response = HTTP::Response->new(HTTP::Status::HTTP_OK);
-    
-    $response->header('Content-Type' => 'text/html; charset=UTF-8');
-    $response->add_content_utf8(<< 'HTML');
+__DATA__
+
+@@ index.html.ep
+% title 'Test';
+% layout 'page';
+% foreach my $module (@$modules) {
+    <h2><a href="<%= $module->name %>.html"><%= $module->name %></a></h2>
+    <iframe src="<%= $module->name %>.html"></iframe>
+% }
+
+@@ module.html.ep
+% title $module->name;
+% layout 'page';
+<script src="test.js" type="text/javascript"></script>
+% foreach my $dependency ($module->dependencies) {
+<script src="<%= $dependency->implementation->path %>" type="text/javascript"></script>
+% }
+<script src="<%= $module->implementation->path %>" type="text/javascript"></script>
+% foreach my $dependency ($module->test->dependencies) {
+<script src="<%= $dependency->implementation->path %>" type="text/javascript"></script>
+% }
+<script src="<%= $module->test->implementation->path %>" type="text/javascript"></script>
+
+@@ layouts/page.html.ep
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <title>Test</title>
+    <title><%= title %></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+iframe {
+    height: 20em;
+    width: 100%;
+}
+    </style>
   </head>
-  
   <body>
-    <script type="text/javascript">
-// <![CDATA[
+    <%= content %>
+  </body>
+</html>
+
+@@ test.js
 function test(label, tests) {
     var numberTests = 0;
     var failures = [];
@@ -185,26 +318,3 @@ function test(label, tests) {
         document.write('</ul>');
     }
 }
-// ]]>
-    </script>
-HTML
-    
-    foreach my $name (modules($module_suffix, $test_suffix)) {
-        $response->add_content_utf8(<< "HTML");
-    
-    <h2>$name</h2>
-    <script src="$name$module_suffix" type="text/javascript"></script>
-    <script src="$name$test_suffix" type="text/javascript"></script>
-HTML
-    }
-    
-    $response->add_content_utf8(<< 'HTML');
-  </body>
-</html>
-HTML
-    
-    return $response;
-}
-
-
-main(@ARGV);
