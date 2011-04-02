@@ -5,7 +5,7 @@
 
 
 test({
-    testAssert: function() {
+    assert: function() {
         assert(true);
         assert(1);
         assert('...');
@@ -13,35 +13,35 @@ test({
         assert([]);
     },
     
-    testAssertEquals: function() {
+    assertEquals: function() {
         assert.equals('', '');
         assert.equals(-0, +0);
         assert.equals(1, 1.0);
     },
     
-    testAssertException: function() {
+    assertException: function() {
         assert.exception(Error, function() {
             throw Error();
         });
     },
     
-    testAssertFalse: function() {
+    assertFalse: function() {
         assert.False(false);
     },
     
-    testAssertNull: function() {
+    assertNull: function() {
         assert.Null(null);
     },
     
-    testAssertTrue: function() {
+    assertTrue: function() {
         assert.True(true);
     },
     
-    testAssertUndefined: function() {
+    assertUndefined: function() {
         assert.Undefined(undefined);
     },
     
-    testCorrectNumberOfArguments: function() {
+    correctNumberOfArguments: function() {
         assert.exception(SyntaxError, function() {assert()});
         assert.exception(SyntaxError, function() {assert(1, 2)});
         assert.exception(SyntaxError, function() {assert.equals(1)});
@@ -58,7 +58,7 @@ test({
         assert.exception(SyntaxError, function() {assert.Undefined(1, 2)});
     },
     
-    testAssertionFailures: function() {
+    assertionFailures: function() {
         assert.exception(Error, function() {assert('')});
         assert.exception(Error, function() {assert.equals(true, false)});
         assert.exception(Error, function() {assert.equals(null, undefined)});
