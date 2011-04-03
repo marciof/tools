@@ -91,19 +91,6 @@ has implementation => (
     required => $true,
 );
 
-has test => (
-    is => 'ro',
-    isa => 'Maybe[Module]',
-);
-
-
-# --- Instance methods ---
-
-sub name {
-    my ($self) = @ARG;
-    return $self->implementation->name;
-}
-
 
 package Package;
 
@@ -139,7 +126,7 @@ sub dependencies {
             $dependencies->add_edge($scripts{$requirement}, $script);
         }
         if ($script->is_test) {
-            $dependencies->add_edge($script, $scripts{$script->name});
+            $dependencies->add_edge($scripts{$script->name}, $script);
         }
     }
     
@@ -150,31 +137,35 @@ sub dependencies {
 sub modules {
     my ($self) = @ARG;
     my $dependencies = $self->dependencies;
-    my @implementation_modules;
-    my %test_modules;
     my %modules;
     
     foreach my $script ($dependencies->topological_sort) {
         my @dependencies = map {$modules{$ARG->full_name}}
             $dependencies->all_predecessors($script);
         
-        my $module = Module->new(
+        $modules{$script->full_name} = Module->new(
             dependencies => \@dependencies,
-            implementation => $script,
-            test => $test_modules{$script->name});
-        
-        $modules{$script->full_name} = $module;
-        
-        if ($script->is_test) {
-            $test_modules{$script->name} = $module;
-            $dependencies->delete_vertex($script);
+            implementation => $script);
+    }
+    
+    return sort {@{$a->dependencies} <=> @{$b->dependencies}} values %modules;
+}
+
+
+sub test_suite {
+    my ($self) = @ARG;
+    my (@test_modules, @modules);
+    
+    foreach my $module ($self->modules) {
+        if ($module->implementation->is_test) {
+            push @test_modules, $module;
         }
         else {
-            push @implementation_modules, $module;
+            push @modules, $module;
         }
     }
     
-    return @implementation_modules;
+    return (\@test_modules, \@modules);
 }
 
 
@@ -184,44 +175,43 @@ use defaults;
 use Mojolicious::Lite;
 
 
-my @modules = Package->new->modules;
-my %modules = map {($ARG->name => $ARG)} @modules;
-
-
 # TODO: Handle not found modules.
-app->helper(module => sub {
-    my ($self) = @ARG;
-    return $modules{$self->param('module')};
-});
+# TODO: Refactor suffixes and module handling.
+# TODO: Simplify content types.
+
+my ($test_modules, $modules) = Package->new->test_suite;
+my %modules = map {($ARG->implementation->name => $ARG)} @$modules;
+my %test_modules = map {($ARG->implementation->name => $ARG)} @$test_modules;
 
 
 get '/' => sub {
     my ($self) = @ARG;
-    $self->render('index', modules => \@modules);
+    $self->render('index', modules => $test_modules);
 };
 
 
 get '/:module.html' => sub {
     my ($self) = @ARG;
-    $self->render('module', module => $self->module());
+    $self->render('module', module => $test_modules{$self->param('module')});
 };
 
 
-# TODO: Refactor suffixes.
 get '/:module.js' => sub {
     my ($self) = @ARG;
-    $self->render(text => $self->module()->implementation->content);
+    my $module = $modules{$self->param('module')};
+    
+    $self->render(text => $module->implementation->content);
 };
 
 
-# TODO: Use REST style URL's?
 get '/:module.test.js' => sub {
     my ($self) = @ARG;
-    $self->render(text => $self->module()->test->implementation->content);
+    my $module = $test_modules{$self->param('module')};
+    
+    $self->render(text => $module->implementation->content);
 };
 
 
-# TODO: Simplify content types.
 foreach my $suffix (Script->suffix, Script->test_suffix . Script->suffix) {
     $suffix =~ s/^\.//;
     app->types->type($suffix => 'application/javascript; charset=UTF-8');
@@ -236,22 +226,18 @@ __DATA__
 % title 'Test';
 % layout 'page';
 % foreach my $module (@$modules) {
-    <h2><a href="<%= $module->name %>.html"><%= $module->name %></a></h2>
-    <iframe src="<%= $module->name %>.html"></iframe>
+    <h2><a href="<%= $module->implementation->name %>.html"><%= $module->implementation->name %></a></h2>
+    <iframe src="<%= $module->implementation->name %>.html"></iframe>
 % }
 
 @@ module.html.ep
-% title $module->name;
+% title $module->implementation->name;
 % layout 'page';
 <script src="test.js" type="text/javascript"></script>
 % foreach my $dependency ($module->dependencies) {
 <script src="<%= $dependency->implementation->path %>" type="text/javascript"></script>
 % }
 <script src="<%= $module->implementation->path %>" type="text/javascript"></script>
-% foreach my $dependency ($module->test->dependencies) {
-<script src="<%= $dependency->implementation->path %>" type="text/javascript"></script>
-% }
-<script src="<%= $module->test->implementation->path %>" type="text/javascript"></script>
 
 @@ layouts/page.html.ep
 <?xml version="1.0" encoding="UTF-8"?>
