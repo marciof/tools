@@ -14,15 +14,13 @@ my ($test_modules, $modules) = JavaScript::Package->new->test_suite;
 
 foreach my $module (@$modules, @$test_modules) {
     get '/' . $module->file->path => sub {
-        my ($self) = @ARG;
-        $self->render(text => $module->file->content);
+        shift->render(text => $module->file->content);
     };
 }
 
 foreach my $module (@$test_modules) {
     get '/' . $module->file->name . '.html' => sub {
-        my ($self) = @ARG;
-        $self->render('module', module => $module);
+        shift->render('module', module => $module);
     };
 }
 
@@ -32,8 +30,7 @@ foreach my $suffix (JavaScript::File->suffix, JavaScript::File->test_suffix) {
 }
 
 get '/' => sub {
-    my ($self) = @ARG;
-    $self->render('index', modules => $test_modules);
+    shift->render('index', modules => $test_modules);
 };
 
 app->start;
