@@ -173,47 +173,31 @@ use defaults;
 use Mojolicious::Lite;
 
 
-# TODO: Handle not found modules.
-# TODO: Refactor module handling.
-# TODO: Simplify content types.
-
 my ($test_modules, $modules) = Package->new->test_suite;
-my %modules = map {($ARG->implementation->name => $ARG)} @$modules;
-my %test_modules = map {($ARG->implementation->name => $ARG)} @$test_modules;
 
+foreach my $module (@$modules, @$test_modules) {
+    get '/' . $module->implementation->path => sub {
+        my ($self) = @ARG;
+        $self->render(text => $module->implementation->content);
+    };
+}
 
-get '/' => sub {
-    my ($self) = @ARG;
-    $self->render('index', modules => $test_modules);
-};
-
-
-get '/:module.html' => sub {
-    my ($self) = @ARG;
-    $self->render('module', module => $test_modules{$self->param('module')});
-};
-
-
-get '/:module' . Script->suffix => sub {
-    my ($self) = @ARG;
-    my $module = $modules{$self->param('module')};
-    
-    $self->render(text => $module->implementation->content);
-};
-
-
-get '/:module' . Script->test_suffix => sub {
-    my ($self) = @ARG;
-    my $module = $test_modules{$self->param('module')};
-    
-    $self->render(text => $module->implementation->content);
-};
-
+foreach my $module (@$test_modules) {
+    get '/' . $module->implementation->name . '.html' => sub {
+        my ($self) = @ARG;
+        $self->render('module', module => $module);
+    };
+}
 
 foreach my $suffix (Script->suffix, Script->test_suffix) {
     $suffix =~ s/^\.//;
     app->types->type($suffix => 'application/javascript; charset=UTF-8');
 }
+
+get '/' => sub {
+    my ($self) = @ARG;
+    $self->render('index', modules => $test_modules);
+};
 
 app->start;
 
