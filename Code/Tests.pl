@@ -10,27 +10,27 @@ use JavaScript::File ();
 use JavaScript::Package ();
 
 
-my ($test_modules, $modules) = JavaScript::Package->new->test_suite;
+my $test_suite = JavaScript::Package->new->test_suite;
 
-foreach my $module (@$modules, @$test_modules) {
+foreach my $suffix (JavaScript::File->suffixes) {
+    $suffix =~ s/^\.//;
+    app->types->type($suffix => 'application/javascript; charset=UTF-8');
+}
+
+foreach my $module ($test_suite->modules) {
     get '/' . $module->file->path => sub {
         shift->render(text => $module->file->content);
     };
 }
 
-foreach my $module (@$test_modules) {
+foreach my $module ($test_suite->tests) {
     get '/' . $module->file->name . '.html' => sub {
         shift->render('module', module => $module);
     };
 }
 
-foreach my $suffix (JavaScript::File->suffix, JavaScript::File->test_suffix) {
-    $suffix =~ s/^\.//;
-    app->types->type($suffix => 'application/javascript; charset=UTF-8');
-}
-
 get '/' => sub {
-    shift->render('index', modules => $test_modules);
+    shift->render('index', modules => scalar $test_suite->tests);
 };
 
 app->start;

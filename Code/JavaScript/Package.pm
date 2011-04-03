@@ -11,6 +11,7 @@ use MooseX::Types::Path::Class;
 # Internal modules:
 use JavaScript::File ();
 use JavaScript::Module ();
+use JavaScript::TestSuite ();
 
 
 has path => (
@@ -66,18 +67,20 @@ sub modules {
 
 sub test_suite {
     my ($self) = @ARG;
-    my (@test_modules, @modules);
+    my (@tests, @implementations);
     
     foreach my $module ($self->modules) {
         if ($module->file->is_test) {
-            push @test_modules, $module;
+            push @tests, $module;
         }
         else {
-            push @modules, $module;
+            push @implementations, $module;
         }
     }
     
-    return (\@test_modules, \@modules);
+    return JavaScript::TestSuite->new(
+        implementations => \@implementations,
+        tests => \@tests);
 }
 
 

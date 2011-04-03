@@ -22,6 +22,12 @@ sub suffix {
 }
 
 
+sub suffixes {
+    my ($class) = @ARG;
+    return $class->test_suffix, $class->suffix;
+}
+
+
 sub test_suffix {
     my ($class) = @ARG;
     return '.test' . $class->suffix;
@@ -52,8 +58,7 @@ sub is_test {
 
 sub name {
     my ($self) = @ARG;
-    return scalar File::Basename::fileparse($self->path,
-        $self->test_suffix, $self->suffix);
+    return scalar File::Basename::fileparse($self->path, $self->suffixes);
 }
 
 
