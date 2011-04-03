@@ -26,19 +26,19 @@ has path => (
 sub dependencies {
     my ($self) = @ARG;
     my $suffix = JavaScript::File->suffix;
-    my @scripts = map {JavaScript::File->new(path => $ARG)}
+    my @files = map {JavaScript::File->new(path => $ARG)}
         grep {!$ARG->is_dir() && ($ARG->basename =~ m/\Q$suffix\E$/)}
         $self->path->children(no_hidden => $true);
     
-    my %scripts = map {($ARG->full_name => $ARG)} @scripts;
+    my %files = map {($ARG->full_name => $ARG)} @files;
     my $dependencies = Graph::Directed->new;
     
-    foreach my $script (values %scripts) {
-        foreach my $requirement ($script->requires) {
-            $dependencies->add_edge($scripts{$requirement}, $script);
+    foreach my $file (values %files) {
+        foreach my $requirement ($file->requires) {
+            $dependencies->add_edge($files{$requirement}, $file);
         }
-        if ($script->is_test) {
-            $dependencies->add_edge($scripts{$script->name}, $script);
+        if ($file->is_test) {
+            $dependencies->add_edge($files{$file->name}, $file);
         }
     }
     
@@ -51,13 +51,13 @@ sub modules {
     my $dependencies = $self->dependencies;
     my %modules;
     
-    foreach my $script ($dependencies->topological_sort) {
+    foreach my $file ($dependencies->topological_sort) {
         my @dependencies = map {$modules{$ARG->full_name}}
-            $dependencies->all_predecessors($script);
+            $dependencies->all_predecessors($file);
         
-        $modules{$script->full_name} = JavaScript::Module->new(
+        $modules{$file->full_name} = JavaScript::Module->new(
             dependencies => \@dependencies,
-            implementation => $script);
+            implementation => $file);
     }
     
     return sort {@{$a->dependencies} <=> @{$b->dependencies}} values %modules;
