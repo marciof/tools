@@ -174,7 +174,7 @@ use Mojolicious::Lite;
 
 
 # TODO: Handle not found modules.
-# TODO: Refactor suffixes and module handling.
+# TODO: Refactor module handling.
 # TODO: Simplify content types.
 
 my ($test_modules, $modules) = Package->new->test_suite;
@@ -194,7 +194,7 @@ get '/:module.html' => sub {
 };
 
 
-get '/:module.js' => sub {
+get '/:module' . Script->suffix => sub {
     my ($self) = @ARG;
     my $module = $modules{$self->param('module')};
     
@@ -202,7 +202,7 @@ get '/:module.js' => sub {
 };
 
 
-get '/:module.test.js' => sub {
+get '/:module' . Script->test_suffix => sub {
     my ($self) = @ARG;
     my $module = $test_modules{$self->param('module')};
     
