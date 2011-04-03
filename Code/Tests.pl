@@ -49,11 +49,11 @@ __DATA__
 @@ module.html.ep
 % title $module->file->name;
 % layout 'page';
-<script src="test.js" type="text/javascript"></script>
+    <script src="test.js" type="text/javascript"></script>
 % foreach my $dependency ($module->dependencies) {
-<script src="<%= $dependency->file->path %>" type="text/javascript"></script>
+    <script src="<%= $dependency->file->path %>" type="text/javascript"></script>
 % }
-<script src="<%= $module->file->path %>" type="text/javascript"></script>
+    <script src="<%= $module->file->path %>" type="text/javascript"></script>
 
 @@ layouts/page.html.ep
 <?xml version="1.0" encoding="UTF-8"?>
