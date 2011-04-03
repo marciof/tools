@@ -26,7 +26,8 @@ sub suffix {
 
 
 sub test_suffix {
-    return '.test';
+    my ($class) = @ARG;
+    return '.test' . $class->suffix;
 }
 
 
@@ -48,17 +49,14 @@ sub is_test {
     my ($self) = @ARG;
     my $suffix = $self->test_suffix;
     
-    return $self->full_name =~ m/\Q$suffix\E$/;
+    return $self->path->basename =~ m/\Q$suffix\E$/;
 }
 
 
 sub name {
     my ($self) = @ARG;
-    my $name = $self->full_name;
-    my $test_suffix = $self->test_suffix;
-    
-    $name =~ s/\Q$test_suffix\E$//;
-    return $name;
+    return scalar File::Basename::fileparse($self->path,
+        $self->test_suffix, $self->suffix);
 }
 
 
@@ -212,7 +210,7 @@ get '/:module.test.js' => sub {
 };
 
 
-foreach my $suffix (Script->suffix, Script->test_suffix . Script->suffix) {
+foreach my $suffix (Script->suffix, Script->test_suffix) {
     $suffix =~ s/^\.//;
     app->types->type($suffix => 'application/javascript; charset=UTF-8');
 }
