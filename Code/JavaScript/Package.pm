@@ -57,7 +57,7 @@ sub modules {
         
         $modules{$file->full_name} = JavaScript::Module->new(
             dependencies => \@dependencies,
-            implementation => $file);
+            file => $file);
     }
     
     return sort {@{$a->dependencies} <=> @{$b->dependencies}} values %modules;
@@ -69,7 +69,7 @@ sub test_suite {
     my (@test_modules, @modules);
     
     foreach my $module ($self->modules) {
-        if ($module->implementation->is_test) {
+        if ($module->file->is_test) {
             push @test_modules, $module;
         }
         else {

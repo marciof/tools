@@ -11,7 +11,7 @@ has dependencies => (
     auto_deref => $true,
 );
 
-has implementation => (
+has file => (
     is => 'ro',
     isa => 'JavaScript::File',
     required => $true,

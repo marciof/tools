@@ -13,14 +13,14 @@ use JavaScript::Package ();
 my ($test_modules, $modules) = JavaScript::Package->new->test_suite;
 
 foreach my $module (@$modules, @$test_modules) {
-    get '/' . $module->implementation->path => sub {
+    get '/' . $module->file->path => sub {
         my ($self) = @ARG;
-        $self->render(text => $module->implementation->content);
+        $self->render(text => $module->file->content);
     };
 }
 
 foreach my $module (@$test_modules) {
-    get '/' . $module->implementation->name . '.html' => sub {
+    get '/' . $module->file->name . '.html' => sub {
         my ($self) = @ARG;
         $self->render('module', module => $module);
     };
@@ -45,18 +45,18 @@ __DATA__
 % title 'Test';
 % layout 'page';
 % foreach my $module (@$modules) {
-    <h2><a href="<%= $module->implementation->name %>.html"><%= $module->implementation->name %></a></h2>
-    <iframe src="<%= $module->implementation->name %>.html"></iframe>
+    <h2><a href="<%= $module->file->name %>.html"><%= $module->file->name %></a></h2>
+    <iframe src="<%= $module->file->name %>.html"></iframe>
 % }
 
 @@ module.html.ep
-% title $module->implementation->name;
+% title $module->file->name;
 % layout 'page';
 <script src="test.js" type="text/javascript"></script>
 % foreach my $dependency ($module->dependencies) {
-<script src="<%= $dependency->implementation->path %>" type="text/javascript"></script>
+<script src="<%= $dependency->file->path %>" type="text/javascript"></script>
 % }
-<script src="<%= $module->implementation->path %>" type="text/javascript"></script>
+<script src="<%= $module->file->path %>" type="text/javascript"></script>
 
 @@ layouts/page.html.ep
 <?xml version="1.0" encoding="UTF-8"?>
