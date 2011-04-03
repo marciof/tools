@@ -33,7 +33,7 @@ sub dependencies {
     my %files = map {($ARG->full_name => $ARG)} @files;
     my $dependencies = Graph::Directed->new;
     
-    foreach my $file (values %files) {
+    foreach my $file (@files) {
         foreach my $requirement ($file->requires) {
             $dependencies->add_edge($files{$requirement}, $file);
         }
