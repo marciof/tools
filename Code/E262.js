@@ -319,13 +319,13 @@ var E262 = new function() {
     
     this._parseFloat = function(string) {
         var s = self.toString(string).replace(self._leftWhiteSpace, '');
-        return (s === '') ? NaN : _parseFloat(s);
+        return (s === '') ? NaN : self.__parseFloat(s);
     };
     
     
     this._parseInt = function(string, radix) {
         var s = self.toString(string).replace(self._leftWhiteSpace, '');
-        return (s === '') ? NaN : _parseInt(s, self.toInt32(radix));
+        return (s === '') ? NaN : self.__parseInt(s, self.toInt32(radix));
     };
     
     
@@ -368,7 +368,7 @@ var E262 = new function() {
     
     for (var i = 0; i < self.whiteSpace.length; ++i) {
         if (parseFloat(self.whiteSpace[i] + '0') !== 0) {
-            _parseFloat = parseFloat;
+            this.__parseFloat = parseFloat;
             parseFloat = self._parseFloat;
             break;
         }
@@ -376,7 +376,7 @@ var E262 = new function() {
     
     for (var i = 0; i < self.whiteSpace.length; ++i) {
         if (parseInt(self.whiteSpace[i] + '0') !== 0) {
-            _parseInt = parseInt;
+            this.__parseInt = parseInt;
             parseInt = self._parseInt;
             break;
         }
