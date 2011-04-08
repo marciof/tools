@@ -13,8 +13,9 @@ use JavaScript::Package ();
 
 my $test_suite = JavaScript::Package->new->test_suite;
 my $daemon = Mojo::Server::Daemon->new(app => app);
+my $auto_route = 'auto';
 
-get '/:type' => [type => qr/(?:auto)?/] => {type => ''} => sub {
+get '/:type' => [type => qr/(?: \Q$auto_route\E) ?/x] => {type => ''} => sub {
     my ($self) = @ARG;
     
     $self->render('index',
@@ -35,7 +36,7 @@ foreach my $module ($test_suite->modules) {
 
 foreach my $module ($test_suite->tests) {
     foreach my $auto ($false, $true) {
-        my $prefix = $auto ? 'auto' : '';
+        my $prefix = $auto ? $auto_route : '';
         my $route = $prefix . '/' . $module->file->name . '.html';
         
         get $route => sub {
