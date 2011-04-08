@@ -41,22 +41,30 @@ foreach my $module ($test_suite->tests) {
     }
 }
 
-my %tests = map {($ARG->file->name => $true)} $test_suite->tests;
+my %remaining_tests = map {($ARG->file->name => $true)} $test_suite->tests;
 my $timeout = 1;
 
 get '/done/:module' => sub {
     my ($self) = @ARG;
     
-    delete $tests{$self->param('module')};
+    delete $remaining_tests{$self->param('module')};
     $self->render_static('done.gif');
     
-    unless (%tests) {
+    unless (%remaining_tests) {
         $self->on_finish(sub {
             $daemon->ioloop->timer($timeout, sub {
                 $daemon->ioloop->stop;
             });
         });
     }
+};
+
+get '/failure/:module/:test' => sub {
+    my ($self) = @ARG;
+    my ($module, $test) = ($self->param('module'), $self->param('test'));
+    
+    say $module, '.', $test, ': ', $self->param('reason');
+    $self->render_static('done.gif');
 };
 
 app->log->level('info');
@@ -86,6 +94,10 @@ __DATA__
 % title $module->file->name;
 % layout 'page';
     <script src="test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+test.auto = false;
+test.module = '<%= $module->file->name %>';
+    </script>
 % foreach my $dependency ($module->dependencies) {
     <script src="<%= $dependency->file->path %>" type="text/javascript"></script>
 % }
@@ -95,11 +107,14 @@ __DATA__
 % title $module->file->name;
 % layout 'page';
     <script src="/test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+test.auto = true;
+test.module = '<%= $module->file->name %>';
+    </script>
 % foreach my $dependency ($module->dependencies) {
     <script src="/<%= $dependency->file->path %>" type="text/javascript"></script>
 % }
     <script src="/<%= $module->file->path %>" type="text/javascript"></script>
-    <div class="Result"><img src="/done/<%= $module->file->name %>" alt=""/></div>
 
 @@ layouts/page.html.ep
 <?xml version="1.0" encoding="UTF-8"?>
@@ -146,6 +161,7 @@ function test(label, tests) {
         }
         catch (exception) {
             failures[failures.length] = {exception: exception, name: name};
+            test.failure(name, exception.message);
         }
     }
     
@@ -172,4 +188,24 @@ function test(label, tests) {
         
         document.write('</ul>');
     }
+    
+    test.done();
 }
+
+test.done = function() {
+    test.reply('/done/' + encodeURIComponent(test.module));
+};
+
+test.failure = function(name, reason) {
+    test.reply('/failure'
+        + '/' + encodeURIComponent(test.module)
+        + '/' + encodeURIComponent(name)
+        + '?reason=' + encodeURIComponent(reason));
+};
+
+test.reply = function(url) {
+    if (test.auto) {
+        document.write('<div class="Result"><img src="'
+            + url + '" alt=""/></div>');
+    }
+};
