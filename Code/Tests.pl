@@ -34,9 +34,16 @@ foreach my $module ($test_suite->modules) {
 }
 
 foreach my $module ($test_suite->tests) {
-    foreach my $type ('', 'auto/') {
-        get '/' . $type . $module->file->name . '.html' => sub {
-            shift->render($type . 'module', module => $module);
+    foreach my $auto ($false, $true) {
+        my $prefix = $auto ? 'auto' : '';
+        my $route = $prefix . '/' . $module->file->name . '.html';
+        
+        get $route => sub {
+            my ($self) = @ARG;
+            
+            $self->render('module',
+                auto => $auto,
+                module => $module);
         };
     }
 }
@@ -87,22 +94,9 @@ __DATA__
 @@ module.html.ep
 % title $module->file->name;
 % layout 'page';
-    <script src="test.js" type="text/javascript"></script>
-    <script type="text/javascript">
-test.auto = false;
-test.module = '<%= $module->file->name %>';
-    </script>
-% foreach my $dependency ($module->dependencies) {
-    <script src="<%= $dependency->file->path %>" type="text/javascript"></script>
-% }
-    <script src="<%= $module->file->path %>" type="text/javascript"></script>
-
-@@ auto/module.html.ep
-% title $module->file->name;
-% layout 'page';
     <script src="/test.js" type="text/javascript"></script>
     <script type="text/javascript">
-test.auto = true;
+test.auto = <%= $auto ? 'true' : 'false' %>;
 test.module = '<%= $module->file->name %>';
     </script>
 % foreach my $dependency ($module->dependencies) {
