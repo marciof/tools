@@ -1,22 +1,17 @@
 /**
- * @fileoverview Ensures E262 conformance.
+ * @fileoverview Ensures E262-3 conformance.
  * @author Márcio Faustino
- * @version 2010-04-15
+ * @version 2011-04-08
  * @see http://www.mozilla.org/js/language/E262-3.pdf
  */
 
 
-var E262 = new function() {
+var E262_3 = new function() {
     var self = this;
     
     
     /**
-     * Specification edition.
-     */
-    this.edition = 3;
-    
-    /**
-     * White space characters.
+     * List of white space characters.
      */
     this.whiteSpace = [
         '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0',
