@@ -14,12 +14,12 @@ use JavaScript::Package ();
 my $test_suite = JavaScript::Package->new->test_suite;
 my $daemon = Mojo::Server::Daemon->new(app => app);
 
-get '/' => sub {
-    shift->render('index', modules => scalar $test_suite->tests);
-};
-
-get '/auto' => sub {
-    shift->render('auto', modules => scalar $test_suite->tests);
+get '/:type' => [type => qr/(?:auto)?/] => {type => ''} => sub {
+    my ($self) = @ARG;
+    
+    $self->render('index',
+        type => $self->param('type'),
+        modules => scalar $test_suite->tests);
 };
 
 foreach my $suffix (JavaScript::File->suffixes) {
@@ -79,15 +79,9 @@ __DATA__
 % title 'Tests';
 % layout 'page';
 % foreach my $module (@$modules) {
-    <h2><a href="<%= $module->file->name %>.html"><%= $module->file->name %></a></h2>
-    <iframe class="Test" src="<%= $module->file->name %>.html"></iframe>
-% }
-
-@@ auto.html.ep
-% title 'Automated Tests';
-% layout 'page';
-% foreach my $module (@$modules) {
-    <iframe src="auto/<%= $module->file->name %>.html"></iframe>
+%   my $url = $type . '/' . $module->file->name . '.html';
+    <h2><a href="<%= $url %>"><%= $module->file->name %></a></h2>
+    <iframe class="Test" src="<%= $url %>"></iframe>
 % }
 
 @@ module.html.ep
