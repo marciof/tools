@@ -2,6 +2,9 @@
 
 package Firefox;
 
+# TODO: Terminate processes cleanly, http://support.microsoft.com/kb/178893.
+# TODO: Abstract OS specific code.
+
 use defaults;
 use File::Find ();
 use IPC::Open2 ();
@@ -140,7 +143,6 @@ sub browse {
 }
 
 
-# TODO: Terminate Windows cleanly, http://support.microsoft.com/kb/178893.
 sub exit {
     my ($self) = @ARG;
     
