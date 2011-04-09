@@ -4,6 +4,8 @@ package Firefox;
 
 # TODO: Terminate processes cleanly, http://support.microsoft.com/kb/178893.
 # TODO: Abstract OS specific code.
+# TODO: Use logging package.
+# TODO: Test on Windows 32-bit, use Sys::Info?
 
 use defaults;
 use File::Find ();
@@ -47,6 +49,11 @@ sub available {
         return $class->_available_from_registry($Win32::TieRegistry::Registry);
     }
     else {
+        my $error = $EXTENDED_OS_ERROR;
+        require Win32;
+        $error .= ": Administrator rights?" unless Win32::IsAdminUser();
+        
+        warn "Registry access error: $error\n";
         return $class->_available_from_file_system();
     }
 }
@@ -58,7 +65,8 @@ sub running {
     
     Win32::Process::Info->import;
     my $processes = Win32::Process::Info->new;
-
+    warn "Process list search: " . $processes->Get('variant') . "\n";
+    
     foreach my $pid ($processes->ListPids) {
         my ($info) = $processes->GetProcInfo($pid);
         next unless defined($info) && defined($info->{ExecutablePath});
@@ -78,14 +86,15 @@ sub running {
 
 sub _available_from_file_system {
     require Win32;
-    
     my @program_files;
-    my @executables;
     
     foreach my $variable (qw(%ProgramFiles% %ProgramFiles(x86)%)) {
         my $path = Win32::ExpandEnvironmentStrings($variable);
         push @program_files, $path unless $path eq $variable;
     }
+    
+    warn "File system search: @program_files\n";
+    my @executables;
     
     File::Find::find({
         preprocess => sub {
@@ -150,9 +159,13 @@ sub exit {
         kill POSIX::SIGTERM, $self->pid;
         
         if (kill 0, $self->pid) {
+            warn "Process SIGTERM failure: " . $self->pid . "\n";
             eval {kill POSIX::SIGKILL, $self->pid};
             
-            if ($EVAL_ERROR ne '') {
+            if ((my $error = $EVAL_ERROR) ne '') {
+                chomp $error;
+                warn "Process SIGKILL failure: " . $self->pid . ": $error\n";
+                
                 require Win32::Process;
                 Win32::Process::KillProcess($self->pid, 0);
             }
@@ -167,6 +180,8 @@ sub exit {
 
 sub _get_version {
     my ($self) = @ARG;
+    
+    # https://developer.mozilla.org/en/Command_Line_Options
     my $pid = IPC::Open2::open2(my $output, undef, $self->path, '--version');
     
     waitpid $pid, 0;
@@ -180,7 +195,7 @@ use defaults;
 
 my ($firefox) = Firefox->running || Firefox->available;
 
-say $firefox->version;
+say "--> " . $firefox->version;
 $firefox->browse('http://www.example.com');
 sleep 5;
 $firefox->exit;
