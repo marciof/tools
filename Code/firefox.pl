@@ -144,8 +144,7 @@ sub _parse_version {
 
 sub browse {
     my ($self, $url) = @ARG;
-    my @program = ($self->path, '-url', $url);
-    my $pid = IPC::Open2::open2(undef, undef, @program);
+    my $pid = IPC::Open2::open2(undef, undef, $self->path, '-url', $url);
     
     $self->pid($pid) unless $self->has_pid;
     return;
