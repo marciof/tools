@@ -11,6 +11,8 @@ use JavaScript::File ();
 use JavaScript::Package ();
 
 
+# TODO: Split into files.
+
 my $test_suite = JavaScript::Package->new->test_suite;
 my $daemon = Mojo::Server::Daemon->new(app => app);
 my $auto_route = 'auto';
