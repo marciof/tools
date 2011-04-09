@@ -1,7 +1,5 @@
 #!/usr/bin/env perl
 
-# TODO: Split into files.
-
 use defaults;
 
 # External modules:

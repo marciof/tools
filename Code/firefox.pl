@@ -1,11 +1,6 @@
 #!/usr/bin/env perl
 
-package Firefox;
-
-# TODO: Terminate processes cleanly, http://support.microsoft.com/kb/178893.
-# TODO: Abstract OS specific code.
-# TODO: Use logging package.
-# TODO: Test on Windows 32-bit, use Sys::Info?
+package Browser::Firefox;
 
 use defaults;
 use File::Find ();
@@ -74,7 +69,7 @@ sub running {
         my $executable = Path::Class::File->new($info->{ExecutablePath});
         
         if ($executable->basename eq $EXECUTABLE_NAME) {
-            return Firefox->new(
+            return Browser::Firefox->new(
                 path => $executable,
                 pid => $info->{ProcessId});
         }
@@ -108,7 +103,7 @@ sub _available_from_file_system {
         },
     }, @program_files);
     
-    return map {Firefox->new(path => $ARG)} @executables;
+    return map {Browser::Firefox->new(path => $ARG)} @executables;
 }
 
 
@@ -123,7 +118,7 @@ sub _available_from_registry {
         my $version = $class->_parse_version($install) or next;
         my $program = $registry->{$key}->{$install}->{'Main/PathToExe'};
         
-        push @executables, Firefox->new(
+        push @executables, Browser::Firefox->new(
             path => $program,
             version => $version);
     }
@@ -192,7 +187,7 @@ package main;
 
 use defaults;
 
-my ($firefox) = Firefox->running || Firefox->available;
+my ($firefox) = Browser::Firefox->running || Browser::Firefox->available;
 
 say "--> " . $firefox->version;
 $firefox->browse('http://www.example.com');
