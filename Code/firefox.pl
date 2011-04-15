@@ -1,14 +1,14 @@
 #!/usr/bin/env perl
 
-package Browser::Firefox;
+package Browser;
 
 use defaults;
-use File::Find ();
-use IPC::Open2 ();
 use Moose;
+use MooseX::ABC;
 use MooseX::Types::Path::Class;
-use POSIX ();
 
+
+requires qw(browse exit);
 
 has path => (
     is => 'ro',
@@ -27,9 +27,66 @@ has pid => (
 has version => (
     is => 'ro',
     isa => 'Str',
+    required => $true,
+);
+
+
+package Browser::Firefox;
+
+use defaults;
+use Moose;
+use MooseX::ABC;
+use IPC::Open2 ();
+
+
+extends 'Browser';
+
+has '+version' => (
+    required => $false,
     lazy => $true,
     default => \&_get_version,
 );
+
+
+# --- Class methods ---
+
+sub _parse_version {
+    my ($class, $version) = @ARG;
+    
+    $version =~ m/(\d+ (?: \.\d+) +)/x;
+    return $1;
+}
+
+
+# --- Instance methods ---
+
+sub browse {
+    my ($self, $url) = @ARG;
+    my $pid = IPC::Open2::open2(undef, undef, $self->path, '-url', $url);
+    
+    $self->pid($pid) unless $self->has_pid;
+    return;
+}
+
+
+sub _get_version {
+    my ($self) = @ARG;
+    
+    waitpid IPC::Open2::open2(my $output, undef, $self->path, '--version'), 0;
+    return $self->_parse_version(join '', <$output>);
+}
+
+
+package Browser::Firefox::Windows;
+
+use defaults;
+use File::Find ();
+use IPC::Open2 ();
+use Moose;
+use POSIX ();
+
+
+extends 'Browser::Firefox';
 
 const my $EXECUTABLE_NAME = 'firefox.exe';
 
@@ -69,7 +126,7 @@ sub running {
         my $executable = Path::Class::File->new($info->{ExecutablePath});
         
         if ($executable->basename eq $EXECUTABLE_NAME) {
-            return Browser::Firefox->new(
+            return $class->new(
                 path => $executable,
                 pid => $info->{ProcessId});
         }
@@ -80,8 +137,9 @@ sub running {
 
 
 sub _available_from_file_system {
-    require Win32;
+    my ($class) = @ARG;
     my @program_files;
+    require Win32;
     
     foreach my $variable (qw(%ProgramFiles% %ProgramFiles(x86)%)) {
         my $path = Win32::ExpandEnvironmentStrings($variable);
@@ -103,7 +161,7 @@ sub _available_from_file_system {
         },
     }, @program_files);
     
-    return map {Browser::Firefox->new(path => $ARG)} @executables;
+    return map {$class->new(path => $ARG)} @executables;
 }
 
 
@@ -113,12 +171,13 @@ sub _available_from_registry {
     my @executables;
     
     $registry->Delimiter('/');
+    warn "Registry search: $key\n";
 
     foreach my $install ($registry->{$key}->SubKeyNames) {
         my $version = $class->_parse_version($install) or next;
         my $program = $registry->{$key}->{$install}->{'Main/PathToExe'};
         
-        push @executables, Browser::Firefox->new(
+        push @executables, $class->new(
             path => $program,
             version => $version);
     }
@@ -127,24 +186,7 @@ sub _available_from_registry {
 }
 
 
-sub _parse_version {
-    my ($class, $version) = @ARG;
-    
-    $version =~ m/(\d+ (?: \.\d+) +)/x;
-    return $1;
-}
-
-
 # --- Instance methods ---
-
-sub browse {
-    my ($self, $url) = @ARG;
-    my $pid = IPC::Open2::open2(undef, undef, $self->path, '-url', $url);
-    
-    $self->pid($pid) unless $self->has_pid;
-    return;
-}
-
 
 sub exit {
     my ($self) = @ARG;
@@ -172,24 +214,15 @@ sub exit {
 }
 
 
-sub _get_version {
-    my ($self) = @ARG;
-    
-    # https://developer.mozilla.org/en/Command_Line_Options
-    my $pid = IPC::Open2::open2(my $output, undef, $self->path, '--version');
-    
-    waitpid $pid, 0;
-    return $self->_parse_version(join '', <$output>);
-}
-
-
 package main;
 
 use defaults;
 
-my ($firefox) = Browser::Firefox->running || Browser::Firefox->available;
+my (@firefox) = Browser::Firefox::Windows->running
+    || Browser::Firefox::Windows->available;
 
-say "--> " . $firefox->version;
-$firefox->browse('http://www.example.com');
-sleep 5;
-$firefox->exit;
+say join ', ', map {$ARG->version} @firefox;
+
+# $firefox->browse('http://www.example.com');
+# sleep 5;
+# $firefox->exit;
