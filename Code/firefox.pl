@@ -167,19 +167,27 @@ sub _available_from_file_system {
 
 sub _available_from_registry {
     my ($class, $registry) = @ARG;
-    my $key = 'HKEY_LOCAL_MACHINE/SOFTWARE/Wow6432Node/Mozilla/Mozilla Firefox';
+    my $software_key = 'HKEY_LOCAL_MACHINE/SOFTWARE';
+    my $browser_key = 'Mozilla/Mozilla Firefox';
     my @executables;
+    my @keys = (
+        "$software_key/$browser_key",
+        "$software_key/Wow6432Node/$browser_key",
+    );
     
     $registry->Delimiter('/');
-    warn "Registry search: $key\n";
-
-    foreach my $install ($registry->{$key}->SubKeyNames) {
-        my $version = $class->_parse_version($install) or next;
-        my $program = $registry->{$key}->{$install}->{'Main/PathToExe'};
+    
+    foreach my $key (grep {defined $ARG} map {$registry->{$ARG}} @keys) {
+        warn "Registry search: " . $key->Path . "\n";
         
-        push @executables, $class->new(
-            path => $program,
-            version => $version);
+        foreach my $install ($key->SubKeyNames) {
+            my $version = $class->_parse_version($install) or next;
+            my $program = $key->{$install}->{'Main/PathToExe'};
+            
+            push @executables, $class->new(
+                path => $program,
+                version => $version);
+        }
     }
     
     return @executables;
