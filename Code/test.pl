@@ -1,12 +1,9 @@
 #!/usr/bin/env perl
 
 use defaults;
-
-# External modules:
 use Mojo::Server::Daemon ();
 use Mojolicious::Lite;
 
-# Internal modules:
 use JavaScript::File ();
 use JavaScript::Package ();
 

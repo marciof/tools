@@ -1,28 +1,24 @@
 package JavaScript::Package;
 
 use defaults;
-
-# External modules:
 use File::Spec ();
 use Graph::Directed ();
 use Moose;
 use MooseX::Types::Path::Class;
 
-# Internal modules:
 use JavaScript::File ();
 use JavaScript::Module ();
 use JavaScript::TestSuite ();
 
 
-has path => (
+has path =>,
     is => 'ro',
     isa => 'Path::Class::Dir',
     default => File::Spec->curdir,
-    coerce => $true,
-);
+    coerce => $true;
 
 
-# --- Instance methods ---
+# --- Instance ---
 
 sub dependencies {
     my ($self) = @ARG;

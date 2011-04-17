@@ -4,22 +4,20 @@ use defaults;
 use Moose;
 
 
-has implementations => (
+has implementations =>,
     is => 'ro',
     isa => 'ArrayRef[JavaScript::Module]',
     required => $true,
-    auto_deref => $true,
-);
+    auto_deref => $true;
 
-has tests => (
+has tests =>,
     is => 'ro',
     isa => 'ArrayRef[JavaScript::Module]',
     required => $true,
-    auto_deref => $true,
-);
+    auto_deref => $true;
 
 
-# --- Instance methods ---
+# --- Instance ---
 
 sub modules {
     my ($self) = @ARG;
