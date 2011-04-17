@@ -4,7 +4,7 @@ use defaults;
 use File::Spec ();
 use Graph::Directed ();
 use Moose;
-use MooseX::Types::Path::Class;
+use MooseX::Types::Path::Class ();
 
 use JavaScript::File ();
 use JavaScript::Module ();

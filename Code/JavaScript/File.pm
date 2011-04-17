@@ -3,16 +3,15 @@ package JavaScript::File;
 use defaults;
 use File::Basename ();
 use Moose;
-use MooseX::Types::Path::Class;
+use MooseX::Types::Path::Class ();
 use Regexp::Common qw(comment);
 
 
-has path => (
+has path =>,
     is => 'ro',
     isa => 'Path::Class::File',
     required => $true,
-    coerce => $true,
-);
+    coerce => $true;
 
 
 # --- Class methods ---
