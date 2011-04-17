@@ -45,6 +45,3 @@ sub find_in_registry {
         system => $self,
         version => $install->{$VERSION_KEY});
 }
-
-
-1;

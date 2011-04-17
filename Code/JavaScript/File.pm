@@ -4,7 +4,7 @@ use defaults;
 use File::Basename ();
 use Moose;
 use MooseX::Types::Path::Class ();
-use Regexp::Common qw(comment);
+use Regexp::Common 'comment';
 
 
 has path =>,
@@ -69,6 +69,3 @@ sub requires {
     
     return split m/\s+/, ($requires // '');
 }
-
-
-1;

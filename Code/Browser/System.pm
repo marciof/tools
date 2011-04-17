@@ -7,6 +7,3 @@ use MooseX::ABC;
 
 with 'MooseX::LogDispatch';
 requires qw(execute find);
-
-
-1;

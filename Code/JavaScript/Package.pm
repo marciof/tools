@@ -78,6 +78,3 @@ sub test_suite {
         implementations => \@implementations,
         tests => \@tests);
 }
-
-
-1;

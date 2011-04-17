@@ -15,6 +15,3 @@ sub go_to {
     $self->system->execute($self->path, $url);
     return;
 }
-
-
-1;

@@ -14,6 +14,3 @@ has file =>,
     is => 'ro',
     isa => 'JavaScript::File',
     required => $true;
-
-
-1;

@@ -56,6 +56,3 @@ sub find_in_registry {
     
     return @browsers;
 }
-
-
-1;

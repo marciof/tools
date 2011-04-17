@@ -24,6 +24,3 @@ has version =>
     is => 'ro',
     isa => 'Str',
     required => $true;
-
-
-1;

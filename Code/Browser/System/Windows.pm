@@ -10,7 +10,6 @@ use Path::Class::Dir ();
 use Path::Class::File ();
 use Perl6::Slurp ();
 use Throwable::Error ();
-use Try::Tiny;
 use Win32 ();
 use Win32::TieRegistry ();
 
@@ -76,14 +75,12 @@ sub search_user_files {
 sub _search_programs {
     my ($self, $executable, @paths) = @ARG;
     my @resolved_paths = map {Win32::ExpandEnvironmentStrings($ARG)} @paths;
-    
-    $self->logger->debug("File system search: @resolved_paths");
-    
     my $file_name = File::Basename::fileparse($executable, '.exe');
     my @executables;
     
     do {
         no warnings 'File::Find';
+        $self->logger->debug("File system search: @resolved_paths");
         
         File::Find::find({
             preprocess => sub {
@@ -118,6 +115,3 @@ sub _load_registry {
         Throwable::Error->throw(join ': ', @error);
     }
 }
-
-
-1;

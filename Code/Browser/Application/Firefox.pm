@@ -49,6 +49,3 @@ sub _get_version {
     
     return $self->parse_version($output);
 }
-
-
-1;

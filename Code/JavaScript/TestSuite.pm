@@ -23,6 +23,3 @@ sub modules {
     my ($self) = @ARG;
     return $self->implementations, $self->tests;
 }
-
-
-1;
