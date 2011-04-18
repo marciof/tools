@@ -24,7 +24,6 @@ const my $USER_FILES = [
     '%LOCALAPPDATA%',
 ];
 
-
 has registry =>
     is => 'ro',
     isa => 'Win32::TieRegistry',
