@@ -68,7 +68,9 @@ sub get_product_version {
         Throwable::Error->throw("$EXTENDED_OS_ERROR: " . $executable);
     }
     
-    return $info->{Lang}{'Language Neutral'}{ProductVersion}
+    my $lang = each %{$info->{Lang}};
+    
+    return $info->{Lang}{$lang}{ProductVersion}
         // $info->{ProductVersion};
 }
 
