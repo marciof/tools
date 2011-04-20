@@ -54,7 +54,7 @@ sub find_in_registry {
         foreach my $install ($key->SubKeyNames) {
             my $version = Browser::Application::Firefox->parse_version($install);
             next unless defined $version;
-            my $path = $key->{$install}->{$EXECUTABLE_KEY};
+            my $path = $key->{$install}{$EXECUTABLE_KEY};
             
             push @browsers, Browser::Application::Firefox->new(
                 path => $path,
