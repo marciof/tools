@@ -4,11 +4,16 @@ use defaults;
 use Browser::Application::Chrome::Windows ();
 use Browser::Application::Firefox::Windows ();
 
-my ($browser) = Browser::Application::Firefox::Windows->new->find;
+my @browsers = (
+    Browser::Application::Chrome::Windows->new->find,
+    Browser::Application::Firefox::Windows->new->find,
+);
 
-say $browser->version;
-say $browser->path;
-$browser->go_to('http://www.example.com');
+foreach my $browser (@browsers) {
+    say $browser->version, ' -> ', $browser->path;
+}
+
+# $browser->go_to('http://www.example.com');
 
 __END__
 sub running {
