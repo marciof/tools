@@ -1,6 +1,7 @@
 package Browser::Application::Opera::Windows;
 
 use defaults;
+use List::MoreUtils ();
 use Moose;
 use Path::Class::File ();
 
@@ -35,10 +36,9 @@ sub find_in_file_system {
 sub find_in_registry {
     my ($self) = @ARG;
     my @browsers;
-    my @paths = (
+    my @paths = List::MoreUtils::uniq(
         $self->_find_in_registry_install,
-        $self->_find_in_registry_uninstall,
-    );
+        $self->_find_in_registry_uninstall);
     
     foreach my $path (@paths) {
         push @browsers, Browser::Application::Opera->new(
@@ -61,6 +61,10 @@ sub _find_in_registry_install {
     while (my ($key, $value) = each %$information) {
         if ($key =~ m/\b (directory | path) \b/ix) {
             my $path = Path::Class::File->new($value, $EXECUTABLE_FILE);
+            push @paths, $path if -e $path;
+        }
+        elsif ($key =~ m/\b CommandLine \b/ix) {
+            my ($path) = ($value =~ m/^(.+ \Q$EXECUTABLE_FILE\E)/x);
             push @paths, $path if -e $path;
         }
     }
