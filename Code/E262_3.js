@@ -1,7 +1,7 @@
 /**
  * @fileoverview Ensures E262-3 conformance.
  * @author Márcio Faustino
- * @version 2011-04-08
+ * @version 2011-04-20
  * @see http://www.mozilla.org/js/language/E262-3.pdf
  */
 
@@ -241,7 +241,14 @@ var E262_3 = new function() {
      * @type number
      */
     this.toUInt32 = function(value) {
-        return self.toInt32(value) >>> 0;
+        var uint32 = self.toInt32(value) >>> 0;
+        
+        if (uint32 < 0) {
+            return Math.pow(2, 32) + uint32;
+        }
+        else {
+            return uint32;
+        }
     };
     
     
