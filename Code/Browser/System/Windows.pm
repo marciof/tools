@@ -70,9 +70,7 @@ sub get_product_version {
     }
     
     my $lang = each %{$info->{Lang}};
-    
-    return $info->{Lang}{$lang}{ProductVersion}
-        // $info->{ProductVersion};
+    return $info->{Lang}{$lang}{ProductVersion} // $info->{ProductVersion};
 }
 
 
