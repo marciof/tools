@@ -24,18 +24,10 @@ sub find_in_file_system {
     foreach my $path ($self->search_user_files($EXECUTABLE_LAUNCHER_FILE)) {
         my $main_path = $path->dir->parent->file($EXECUTABLE_FILE);
         
-        my $version = try {
-            $self->get_product_version($path);
-        }
-        catch {
-            $self->logger->debug($ARG->message);
-            $path->dir->dir_list(-1);
-        };
-        
         push @browsers, Browser::Application::Chrome->new(
             path => $main_path,
             system => $self,
-            version => $version);
+            version => $self->get_product_version($path));
     }
     
     return @browsers;
