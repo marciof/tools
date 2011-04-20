@@ -22,9 +22,18 @@ sub find_in_file_system {
     my @browsers;
     
     foreach my $path ($self->search_program_files($EXECUTABLE_FILE)) {
+        my %version = try {
+            version => $self->get_product_version($path);
+        }
+        catch {
+            $self->logger->debug($ARG->message);
+            ();
+        };
+        
         push @browsers, Browser::Application::Firefox->new(
             path => $path,
-            system => $self);
+            system => $self,
+            %version);
     }
     
     return @browsers;
