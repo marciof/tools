@@ -50,14 +50,15 @@ sub execute {
 
 sub find {
     my ($self) = @ARG;
-    
-    return try {
+    my @registry = try {
         $self->find_in_registry;
     }
     catch {
         $self->logger->debug($ARG->message);
-        $self->find_in_file_system;
+        ();
     };
+    
+    return @registry == 0 ? $self->find_in_file_system : @registry;
 }
 
 
