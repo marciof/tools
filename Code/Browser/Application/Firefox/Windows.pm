@@ -42,16 +42,17 @@ sub find_in_file_system {
 sub find_in_registry {
     my ($self) = @ARG;
     my @browsers;
-    
-    my @keys = grep {defined $ARG} map {$self->registry->{$ARG}}
+    my @keys = (
         "$SOFTWARE_KEY/$Browser::System::Windows::WIN64_KEY/$VENDOR_KEY",
-        "$SOFTWARE_KEY/$VENDOR_KEY";
+        "$SOFTWARE_KEY/$VENDOR_KEY",
+    );
     
-    foreach my $key (@keys) {
-        $self->logger->debug('Registry search: ' . $key->Path);
-        
+    $self->logger->debug("Registry search: @keys");
+    
+    foreach my $key (grep {defined $ARG} map {$self->registry->{$ARG}} @keys) {
         foreach my $install ($key->SubKeyNames) {
             my $version = Browser::Application::Firefox->parse_version($install);
+            
             next unless defined $version;
             my $path = $key->{$install}{$EXECUTABLE_KEY};
             
