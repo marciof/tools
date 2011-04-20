@@ -22,11 +22,18 @@ sub find_in_file_system {
     my @browsers;
     
     foreach my $path ($self->search_user_files($EXECUTABLE_LAUNCHER_FILE)) {
-        my $real_path = $path->dir->parent->file($EXECUTABLE_FILE);
-        my $version = $path->dir->dir_list(-1);
+        my $main_path = $path->dir->parent->file($EXECUTABLE_FILE);
+        
+        my $version = try {
+            $self->get_product_version($path);
+        }
+        catch {
+            $self->logger->debug($ARG->message);
+            $path->dir->dir_list(-1)
+        };
         
         push @browsers, Browser::Application::Chrome->new(
-            path => $real_path,
+            path => $main_path,
             system => $self,
             version => $version);
     }
