@@ -29,7 +29,7 @@ sub find_in_file_system {
         }
         catch {
             $self->logger->debug($ARG->message);
-            $path->dir->dir_list(-1)
+            $path->dir->dir_list(-1);
         };
         
         push @browsers, Browser::Application::Chrome->new(
