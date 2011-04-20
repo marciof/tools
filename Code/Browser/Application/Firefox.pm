@@ -45,7 +45,13 @@ sub go_to {
 
 sub _get_version {
     my ($self) = @ARG;
-    my $output = $self->system->execute($self->path, '--version');
     
-    return $self->parse_version($output);
+    return try {
+        $self->system->get_product_version($self->path);
+    }
+    catch {
+        $self->logger->debug($ARG->message);
+        my $output = $self->system->execute($self->path, '--version');
+        $self->parse_version($output);
+    };
 }

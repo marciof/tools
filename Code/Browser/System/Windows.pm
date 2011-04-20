@@ -11,6 +11,7 @@ use Path::Class::File ();
 use Perl6::Slurp ();
 use Throwable::Error ();
 use Win32 ();
+use Win32::File::VersionInfo ();
 use Win32::TieRegistry ();
 
 
@@ -56,6 +57,19 @@ sub find {
         $self->logger->debug($ARG->message);
         $self->find_in_file_system;
     };
+}
+
+
+sub get_product_version {
+    my ($self, $executable) = @ARG;
+    my $info = Win32::File::VersionInfo::GetFileVersionInfo($executable);
+    
+    unless (defined $info) {
+        Throwable::Error->throw("$EXTENDED_OS_ERROR: " . $executable);
+    }
+    
+    return $info->{Lang}{'Language Neutral'}{ProductVersion}
+        // $info->{ProductVersion};
 }
 
 
