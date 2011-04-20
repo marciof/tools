@@ -12,7 +12,6 @@ const my $EXECUTABLE_FILE = 'firefox.exe';
 const my $EXECUTABLE_KEY = 'Main/PathToExe';
 const my $SOFTWARE_KEY = 'HKEY_LOCAL_MACHINE/SOFTWARE';
 const my $VENDOR_KEY = 'Mozilla/Mozilla Firefox';
-const my $WIN64_KEY = 'Wow6432Node';
 
 
 # --- Instance ---
@@ -45,7 +44,7 @@ sub find_in_registry {
     my @browsers;
     
     my @keys = grep {defined $ARG} map {$self->registry->{$ARG}}
-        "$SOFTWARE_KEY/$WIN64_KEY/$VENDOR_KEY",
+        "$SOFTWARE_KEY/$Browser::System::Windows::WIN64_KEY/$VENDOR_KEY",
         "$SOFTWARE_KEY/$VENDOR_KEY";
     
     foreach my $key (@keys) {

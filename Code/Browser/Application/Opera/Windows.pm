@@ -11,7 +11,7 @@ extends 'Browser::System::Windows';
 
 const my $EXECUTABLE_FILE = 'opera.exe';
 const my $PATH_KEY = 'InstallLocation';
-const my $UNINSTALL_KEY = 'HKEY_LOCAL_MACHINE/SOFTWARE/Wow6432Node/Microsoft/Windows/CurrentVersion/Uninstall';
+const my $UNINSTALL_KEY = "HKEY_LOCAL_MACHINE/SOFTWARE/$Browser::System::Windows::WIN64_KEY/Microsoft/Windows/CurrentVersion/Uninstall";
 const my $VENDOR_KEY = 'HKEY_CURRENT_USER/Software/Opera Software';
 
 

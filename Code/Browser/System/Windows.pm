@@ -18,6 +18,7 @@ use Win32::TieRegistry ();
 extends 'Browser::System';
 requires qw(find_in_file_system find_in_registry);
 
+const our $WIN64_KEY = 'Wow6432Node';
 const my $PROGRAM_FILES = [qw{%ProgramFiles(x86)% %ProgramFiles%}];
 const my $SKIP_PROGRAMS = qr/^ (?: Common | Microsoft | Windows)/ix;
 const my $USER_FILES = [
