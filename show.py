@@ -141,9 +141,9 @@ class InputType (argparse.FileType):
                 raise
 
 
-class Arguments (argparse.ArgumentParser):
+class ArgumentsParser (argparse.ArgumentParser):
     def __init__(self):
-        super(Arguments, self).__init__(
+        super(ArgumentsParser, self).__init__(
             description = 'Automatic pager with syntax highlighting and diff\
                 support.',
             epilog = '''An input can be '-' for standard input (default), a\
@@ -214,7 +214,7 @@ class Arguments (argparse.ArgumentParser):
     
     
     def parse_args(self):
-        args = super(Arguments, self).parse_args()
+        args = super(ArgumentsParser, self).parse_args()
         
         if args.new_file is not None:
             self._parse_git_diff_arguments(args)
@@ -543,7 +543,7 @@ class Pager (Reader):
 
 
 try:
-    args = Arguments().parse_args()
+    args = ArgumentsParser().parse_args()
 except KeyboardInterrupt:
     print()
     sys.exit()
