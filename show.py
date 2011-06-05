@@ -112,13 +112,13 @@ class InputType (argparse.FileType):
             
             try:
                 stream = urllib2.build_opener(handler).open(request)
-                stream.name = url
-                
-                self._password_manager.add_password(None, url, user, password)
-                return stream
             except urllib2.HTTPError as error:
                 if error.code != httplib.UNAUTHORIZED:
                     raise
+            else:
+                stream.name = url
+                self._password_manager.add_password(None, url, user, password)
+                return stream
     
     
     def _open_url(self, url):
@@ -392,8 +392,6 @@ class Pager (Reader):
             try:
                 if not isinstance(line, unicode):
                     line = line.decode(encoding)
-                
-                yield self._clean_input(line)
             except UnicodeDecodeError:
                 if detected:
                     raise
@@ -401,6 +399,8 @@ class Pager (Reader):
                 text = self._buffer.encode() + line
                 (detected, encoding) = (True, chardet.detect(text)['encoding'])
                 yield self._clean_input(line.decode(encoding))
+            else:
+                yield self._clean_input(line)
         
         if self._follow:
             (text, self._buffer) = (self._buffer, '')
