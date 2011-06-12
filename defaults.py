@@ -9,13 +9,13 @@
 
 # Standard library:
 from __future__ import division, print_function, unicode_literals
-import ConfigParser, email.feedparser, email.parser, imaplib
+import ConfigParser, email.feedparser, email.parser, imaplib, urllib2
 from abc import *
 
 
 __author__ = 'Marcio Faustino'
 __doc__ = 'Sets some defaults and implements important fixes.'
-__version__ = '2011-06-05'
+__version__ = '2011-06-12'
 
 
 def externals(*modules):
@@ -47,7 +47,6 @@ def fix(object = None, version = None, name = None, call = False):
     if not hasattr(fix, 'symbols'):
         setattr(fix, 'symbols', set())
     
-    
     # Namespace cleanup.
     if object is None and version is None:
         symbols = globals()
@@ -57,7 +56,6 @@ def fix(object = None, version = None, name = None, call = False):
         
         fix.symbols.clear()
         return
-    
     
     def apply_fix(value):
         import sys
@@ -69,7 +67,6 @@ def fix(object = None, version = None, name = None, call = False):
         
         fix.symbols.add(value.__name__)
         return value
-    
     
     import inspect
     symbol = inspect.getmodule(object).__name__.split('.', 1).pop(0)
@@ -92,6 +89,11 @@ def parsestr(self, text, headersonly = False):
     
     feed_parser.feed(text)
     return feed_parser.close()
+
+
+@fix(urllib2.URLError, 0x20604F0, '__unicode__')
+def urlerror_to_unicode(self):
+    return unicode(str(self))
 
 
 @fix(ConfigParser.SafeConfigParser, 0x20602F0, '_badpercent_re', call = True)
