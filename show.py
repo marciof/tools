@@ -382,7 +382,7 @@ class Pager (Reader):
         self._output = None
         
         self._line_separator = '\n'
-        self._inline_lines_threshold = 0.375
+        self._inline_lines_threshold = 0.4
     
     
     def __iter__(self):
