@@ -199,7 +199,6 @@ if [ -e "$show_py" ]; then
     alias s=\"$show_py\"
     alias diff='s'
     export ACK_PAGER=\"$show_py\"
-    export GIT_EXTERNAL_DIFF=\"$show_py\"
     export GIT_PAGER=\"$show_py\"
 else
     alias s='less'
