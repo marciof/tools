@@ -120,16 +120,23 @@ if _have git; then
         [ -n "$ps1" ] && echo -e "\033[00m:\033[0;33m$ps1"
     }
     
-    git config --global alias.co checkout
-    git config --global alias.br 'branch -vv'
-    git config --global alias.pub '!bash -c '"'"'\
+    _set_git_config() {
+        local option=$1
+        local value=$2
+        
+        if ! git config --global "$option" > /dev/null; then
+            git config --global "$option" "$value"
+        fi
+    }
+    
+    _set_git_config color.ui auto
+    _set_git_config push.default tracking
+    _set_git_config alias.co checkout
+    _set_git_config alias.br 'branch -vv'
+    _set_git_config alias.pub '!bash -c '"'"'\
         COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
         && echo $COMMAND \
-        && $COMMAND \
-    '"'"
-    
-    git config --global color.ui auto
-    git config --global push.default tracking
+        && $COMMAND'"'"
     
     _have nano && export GIT_EDITOR=nano
     export GIT_PS1_SHOWDIRTYSTATE=x
