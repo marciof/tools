@@ -81,6 +81,7 @@ fi
 export ACK_COLOR_FILENAME='dark blue'
 export DISPLAY=:0.0
 export HISTCONTROL=ignoreboth
+export LC_TIME=en_DK.UTF-8                      # ISO 8601
 export LESS='--tabs=4 --clear-screen --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
 
