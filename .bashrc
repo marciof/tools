@@ -205,7 +205,6 @@ show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
 if [ -e "$show_py" ]; then
     alias s=\"$show_py\"
-    alias diff='s'
     export ACK_PAGER=\"$show_py\"
     export GIT_PAGER=\"$show_py\"
 else
