@@ -147,7 +147,7 @@ if _have git; then
         && echo $COMMAND \
         && $COMMAND'"'"
     
-    _have nano && export GIT_EDITOR=nano
+    export GIT_EDITOR='$EDITOR'
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
