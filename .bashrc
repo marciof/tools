@@ -115,6 +115,10 @@ else
     fi
 fi
 
+if pgrep metacity > /dev/null; then
+    gconftool-2 -s -t bool /apps/metacity/general/resize_with_right_button true
+fi
+
 if _have git; then
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
