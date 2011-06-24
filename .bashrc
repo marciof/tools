@@ -157,21 +157,6 @@ if _have git; then
     fi
 fi
 
-if [ -z "$CYGWIN_ENV" -a -n "$SVN_PS1" ] && _have svn; then
-    _color_svn_ps1() {
-        local rev=$(svn info 2> /dev/null | awk '/^Revision/ {print $2}')
-        
-        if [ -n "$rev" ]; then
-            local suffix=''
-            
-            [ $(svn status | egrep -c "[^MA]") -gt 0 ] && suffix=' *'
-            echo -e "\033[00m:\033[0;33mr$rev$suffix"
-        fi
-    }
-    
-    ps1_user_host="$ps1_user_host\$(_color_svn_ps1)"
-fi
-
 export PS1="\[\033[4;30;32m\]$ps1_user_host\[\033[00m\]:\[\033[01;34m\]\w\n\\$\[\033[00m\] "
 unset ps1_user_host
 
