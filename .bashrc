@@ -72,13 +72,7 @@ _have setxkbmap && $NAME -option 'nbsp:none'    # Allow e.g. AltGr + Space.
 
 [ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
 
-if [ -z "$CYGWIN_ENV" ]; then
-    _have lesspipe && eval "$($NAME)"
-    _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
-fi
-
 export ACK_COLOR_FILENAME='dark blue'
-export DISPLAY=:0.0
 export HISTCONTROL=ignoreboth
 export LC_TIME=en_DK.UTF-8                      # ISO 8601
 export LESS='--tabs=4 --clear-screen --RAW-CONTROL-CHARS'
@@ -90,6 +84,10 @@ export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
+    _have lesspipe && eval "$($NAME)"
+    _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
+    [ -z "$DISPLAY" ] && export DISPLAY=:0.0
+    
     if [ "$TERM" = "xterm" ]; then
         # Save history session to file and set terminal title.
         export PROMPT_COMMAND='
