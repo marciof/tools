@@ -126,10 +126,16 @@ if _have git; then
         local value=$2
         
         if ! git config --global "$option" > /dev/null; then
-            git config --global "$option" "$value"
+            if [ -z "$value" ]; then
+                echo "* Missing Git config: $option" >&2
+            else
+                git config --global "$option" "$value"
+            fi
         fi
     }
     
+    _set_git_config user.email
+    _set_git_config user.name
     _set_git_config color.ui auto
     _set_git_config push.default tracking
     _set_git_config alias.co checkout
