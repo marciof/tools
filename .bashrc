@@ -63,7 +63,6 @@ alias l='ls -CFXh --color=auto --group-directories-first'
 alias ll='l -l'
 alias dir='l -lA'
 alias sed='sed -r'
-alias grep='grep -E --color=auto'
 
 _have ack-grep ack && alias f="$NAME --sort-files"
 _have cpan && alias cpan="PERL_AUTOINSTALL=1 PERL_MM_USE_DEFAULT=1 FTP_PASSIVE=1 $NAME"
