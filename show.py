@@ -42,23 +42,27 @@ class InputType (argparse.FileType):
     def __call__(self, path, *args):
         try:
             return super(InputType, self).__call__(path, *args)
+        except argparse.ArgumentTypeError as error:
+            pass
         except IOError as error:
-            if error.errno == errno.ENOENT:
-                for url in [path, 'http://' + path]:
-                    try:
-                        return self._open_url(url)
-                    except (IOError, httplib.InvalidURL):
-                        pass
-                
-                try:
-                    return self._open_perldoc(path)
-                except IOError:
-                    pass
-                
-                if path == 'self':
-                    return file(inspect.getfile(InputType))
-            
-            raise error
+            if error.errno != errno.ENOENT:
+                raise
+        
+        for url in [path, 'http://' + path]:
+            try:
+                return self._open_url(url)
+            except (IOError, httplib.InvalidURL):
+                pass
+        
+        try:
+            return self._open_perldoc(path)
+        except IOError:
+            pass
+        
+        if path == 'self':
+            return file(inspect.getfile(InputType))
+        
+        raise error
     
     
     def _open_perldoc(self, module):
@@ -547,6 +551,8 @@ try:
 except KeyboardInterrupt:
     print()
     sys.exit()
+except argparse.ArgumentTypeError as error:
+    sys.exit(str(error))
 except IOError as error:
     if error.errno in (errno.ENOENT, errno.EISDIR):
         sys.exit(str(error))
