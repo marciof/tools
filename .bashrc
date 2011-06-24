@@ -67,7 +67,7 @@ alias sed='sed -r'
 _have ack-grep ack && alias f="$NAME --sort-files"
 _have cpan && alias cpan="PERL_AUTOINSTALL=1 PERL_MM_USE_DEFAULT=1 FTP_PASSIVE=1 $NAME"
 _have dircolors && eval "$($NAME -b)"
-_have kwrite nano && export EDITOR=$LOCATION
+_have kwrite gedit nano && export EDITOR=$LOCATION
 _have setxkbmap && $NAME -option 'nbsp:none'    # Allow e.g. AltGr + Space.
 
 [ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
@@ -112,6 +112,10 @@ else
         bind '"\e[2;2~": paste-from-clipboard'  # Shift + Insert
         [ -n "$CD" ] && cd "$(cygpath "$CD")" && unset CD
     fi
+fi
+
+if pgrep metacity > /dev/null; then
+    gconftool-2 -s -t bool /apps/metacity/general/resize_with_right_button true
 fi
 
 if _have git; then
