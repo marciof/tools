@@ -147,7 +147,12 @@ if _have git; then
         && echo $COMMAND \
         && $COMMAND'"'"
     
-    export GIT_EDITOR='$EDITOR'
+    if [ -n "$HAVE_KWRITE" ]; then
+        export GIT_EDITOR='$EDITOR 2> /dev/null'
+    else
+        export GIT_EDITOR='$EDITOR'
+    fi
+    
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
