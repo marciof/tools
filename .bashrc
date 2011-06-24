@@ -100,6 +100,11 @@ if [ -z "$CYGWIN_ENV" ]; then
         export CHROOT=x
         [ -n "$INTERACTIVE" ] && echo "* chroot: $(uname -srmo)"
     fi
+    
+    if pgrep metacity > /dev/null; then
+        gconftool-2 -s -t bool \
+            /apps/metacity/general/resize_with_right_button true
+    fi
 else
     export CYGWIN=nodosfilewarning
     export TERM=cygwin
@@ -110,10 +115,6 @@ else
         bind '"\e[2;2~": paste-from-clipboard'  # Shift + Insert
         [ -n "$CD" ] && cd "$(cygpath "$CD")" && unset CD
     fi
-fi
-
-if pgrep metacity > /dev/null; then
-    gconftool-2 -s -t bool /apps/metacity/general/resize_with_right_button true
 fi
 
 if _have git; then
