@@ -129,7 +129,7 @@ if _have git; then
         
         if ! git config --global "$option" > /dev/null; then
             if [ -z "$value" ]; then
-                echo "* Missing Git config: $option" >&2
+                [ -n "$INTERACTIVE" ] && echo "* Missing Git config: $option" >&2
             else
                 git config --global "$option" "$value"
             fi
