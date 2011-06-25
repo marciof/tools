@@ -15,10 +15,9 @@ use Try::Tiny ();
 
 
 our @EXPORT = qw(*STDNULL $false $true const);
-our $VERSION = v2011.05.13;
+our $VERSION = v2011.06.25;
 
 
-# TODO: Use first one available of Const::Fast, Data::Lock, Readonly::XS?
 sub const :lvalue {
     Carp::croak('Not a scalar variable') if @ARG != 1;
     Internals::SvREADONLY($ARG[0], 1);
