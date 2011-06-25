@@ -82,8 +82,6 @@ ps1_user_host='\u@\h'
 
 if locale -a | grep '^en_DK' -q; then
     export LC_TIME=en_DK.UTF-8                      # ISO 8601
-else
-    [ -n "$INTERACTIVE" ] && echo "* Locale en_DK not found." >&2
 fi
 
 if [ -z "$CYGWIN_ENV" ]; then
