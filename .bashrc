@@ -74,7 +74,6 @@ _have setxkbmap && $NAME -option 'nbsp:none'    # Allow e.g. AltGr + Space.
 
 export ACK_COLOR_FILENAME='dark blue'
 export HISTCONTROL=ignoreboth
-export LC_TIME=en_DK.UTF-8                      # ISO 8601
 export LESS='--tabs=4 --clear-screen --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
 
@@ -82,6 +81,12 @@ export PYTHONDONTWRITEBYTECODE=x
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
 ps1_user_host='\u@\h'
+
+if locale -a | grep '^en_DK' -q; then
+    export LC_TIME=en_DK.UTF-8                  # ISO 8601
+else
+    [ -n "$INTERACTIVE" ] && echo "* Locale en_DK not found." >&2
+fi
 
 if [ -z "$CYGWIN_ENV" ]; then
     _have lesspipe && eval "$($NAME)"
