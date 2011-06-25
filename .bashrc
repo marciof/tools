@@ -17,6 +17,7 @@ if [ -n "$WINDIR" -a -z "$INTERACTIVE" ]; then
     fi
 fi
 
+[ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
 source /etc/bash_completion 2> /dev/null
 
 # Disable tilde expansion only.
@@ -42,11 +43,11 @@ if [ -n "$INTERACTIVE" ]; then
     bind 'set completion-ignore-case on'
     bind 'set expand-tilde off'
     bind 'set mark-symlinked-directories on'
-    bind '"\e[1;5C": forward-word'              # Ctrl + Right
-    bind '"\e[1;5D": backward-word'             # Ctrl + Left
-    bind '"\e[3;5~": kill-word'                 # Ctrl + Delete
-    bind '"\e[2;5~": backward-kill-word'        # Ctrl + Insert
-    bind '"\e[2~": unix-word-rubout'            # Insert
+    bind '"\e[1;5C": forward-word'                  # Ctrl + Right
+    bind '"\e[1;5D": backward-word'                 # Ctrl + Left
+    bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
+    bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
+    bind '"\e[2~": unix-word-rubout'                # Insert
 fi
 
 shopt -s cdspell checkwinsize histappend
@@ -68,9 +69,6 @@ _have ack-grep ack && alias f="$NAME --sort-files"
 _have cpan && alias cpan="PERL_AUTOINSTALL=1 PERL_MM_USE_DEFAULT=1 FTP_PASSIVE=1 $NAME"
 _have dircolors && eval "$($NAME -b)"
 _have kwrite gedit nano && export EDITOR=$LOCATION
-_have setxkbmap && $NAME -option 'nbsp:none'    # Allow e.g. AltGr + Space.
-
-[ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
 
 export ACK_COLOR_FILENAME='dark blue'
 export HISTCONTROL=ignoreboth
@@ -83,14 +81,15 @@ export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 ps1_user_host='\u@\h'
 
 if locale -a | grep '^en_DK' -q; then
-    export LC_TIME=en_DK.UTF-8                  # ISO 8601
+    export LC_TIME=en_DK.UTF-8                      # ISO 8601
 else
     [ -n "$INTERACTIVE" ] && echo "* Locale en_DK not found." >&2
 fi
 
 if [ -z "$CYGWIN_ENV" ]; then
-    _have lesspipe && eval "$($NAME)"
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
+    _have lesspipe && eval "$($NAME)"
+    _have setxkbmap && $NAME -option 'nbsp:none'    # Allow e.g. AltGr + Space.
     [ -z "$DISPLAY" ] && export DISPLAY=:0.0
     
     if [ "$TERM" = "xterm" ]; then
@@ -117,7 +116,7 @@ else
     export TMP='$TMP'
     
     if [ -n "$INTERACTIVE" ]; then
-        bind '"\e[2;2~": paste-from-clipboard'  # Shift + Insert
+        bind '"\e[2;2~": paste-from-clipboard'      # Shift + Insert
         [ -n "$CD" ] && cd "$(cygpath "$CD")" && unset CD
     fi
 fi
