@@ -43,6 +43,7 @@ if [ -n "$INTERACTIVE" ]; then
     bind 'set completion-ignore-case on'
     bind 'set expand-tilde off'
     bind 'set mark-symlinked-directories on'
+    bind 'set visible-stats on'
     bind '"\e[1;5C": forward-word'                  # Ctrl + Right
     bind '"\e[1;5D": backward-word'                 # Ctrl + Left
     bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
