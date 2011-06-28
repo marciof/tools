@@ -23,6 +23,7 @@ sub new {
     my $class = shift;
     my $self = bless $class->SUPER::new(@ARG), $class;
     
+    $self->StifleHistory(undef);
     return $class->meta->new_object(__INSTANCE__ => $self);
 }
 
