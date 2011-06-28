@@ -51,6 +51,9 @@ if [ -n "$INTERACTIVE" ]; then
     bind '"\e[2~": unix-word-rubout'                # Insert
 fi
 
+# Disable XON/XOFF flow control to allow: bind -q forward-search-history
+stty -ixon
+
 shopt -s cdspell checkwinsize histappend
 
 alias c='cd'
