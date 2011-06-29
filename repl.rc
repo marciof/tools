@@ -65,7 +65,8 @@ use English qw(-no_match_vars);
 
 around 'format_result' => sub {
     my ($super, $self) = splice @ARG, 0, 2;
-    my $result = Data::Dumper::Concise::Dumper(@ARG);
+    my $result = Data::Dumper::Concise::Dumper(
+        map {overload::Method($ARG, '""') ? "$ARG" : $ARG} @ARG);
     
     chomp $result;
     return $self->$super($result);
