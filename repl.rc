@@ -63,7 +63,7 @@ use Data::Dumper::Concise ();
 use Devel::REPL::Plugin;
 use English qw(-no_match_vars);
 
-around 'format_result' => sub {
+around format_result => sub {
     my ($super, $self) = splice @ARG, 0, 2;
     
     if ((@ARG == 1) && ($ARG[0] eq '')) {
