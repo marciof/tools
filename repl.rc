@@ -97,7 +97,6 @@ $_REPL->load_plugins(qw(
     CompletionDriver::Keywords
     CompletionDriver::LexEnv
     CompletionDriver::Methods
-    DumpHistory
     FancyPrompt
     Interrupt
     NoHistoryExpansion
