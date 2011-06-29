@@ -65,11 +65,17 @@ use English qw(-no_match_vars);
 
 around 'format_result' => sub {
     my ($super, $self) = splice @ARG, 0, 2;
-    my $result = Data::Dumper::Concise::Dumper(
-        map {overload::Method($ARG, '""') ? "$ARG" : $ARG} @ARG);
     
-    chomp $result;
-    return $self->$super($result);
+    if ((@ARG == 1) && ($ARG[0] eq '')) {
+        return $self->$super(@ARG);
+    }
+    else {
+        my $result = Data::Dumper::Concise::Dumper(
+            map {overload::Method($ARG, '""') ? "$ARG" : $ARG} @ARG);
+        
+        chomp $result;
+        return $self->$super($result);
+    }
 };
 
 
