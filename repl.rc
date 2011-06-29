@@ -40,8 +40,12 @@ sub add_history {
     else {
         # Move existing lines to the top of the history stack.
         foreach my $line (@lines) {
-            $self->remove_history($self->history_search($line));
-            $self->SUPER::add_history($line);
+            my $position = $self->history_search_pos($line, 0, 0);
+            
+            if ($self->history_get($position + 1) eq $line) {
+                $self->remove_history($position);
+                $self->SUPER::add_history($line);
+            }
         }
     }
     
