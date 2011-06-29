@@ -57,6 +57,21 @@ around readline => sub {
 };
 
 
+package Devel::REPL::Plugin::Data::Dumper::Concise;
+
+use Data::Dumper::Concise ();
+use Devel::REPL::Plugin;
+use English qw(-no_match_vars);
+
+around 'format_result' => sub {
+    my ($super, $self) = splice @ARG, 0, 2;
+    my $result = Data::Dumper::Concise::Dumper(@ARG);
+    
+    chomp $result;
+    return $self->$super($result);
+};
+
+
 package Devel::REPL::Plugin::NoHistoryExpansion;
 
 use Devel::REPL::Plugin;
@@ -97,6 +112,7 @@ $_REPL->load_plugins(qw(
     CompletionDriver::Keywords
     CompletionDriver::LexEnv
     CompletionDriver::Methods
+    Data::Dumper::Concise
     FancyPrompt
     Interrupt
     NoHistoryExpansion
