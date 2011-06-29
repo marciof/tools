@@ -121,3 +121,5 @@ $_REPL->term->Attribs->{history_inhibit_expansion_function} = sub {
 
 $_REPL->fancy_continuation_prompt($_REPL->fancy_prompt);
 $_REPL->term->Attribs->{history_expansion_char} = 0;
+
+no strict 'vars';
