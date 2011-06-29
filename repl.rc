@@ -154,6 +154,7 @@ no strict 'vars';
 require List::Util;
 
 use File::Basename;
+use File::Slurp;
 use List::MoreUtils qw(:all);
 use List::Util @List::Util::EXPORT_OK;
 use Path::Class;
