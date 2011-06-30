@@ -70,7 +70,6 @@ alias dir='l -lA'
 alias sed='sed -r'
 
 _have ack-grep ack && alias f="$NAME --sort-files"
-_have cpan && alias cpan="PERL_AUTOINSTALL=1 PERL_MM_USE_DEFAULT=1 FTP_PASSIVE=1 $NAME"
 _have dircolors && eval "$($NAME -b)"
 _have kwrite gedit nano && export EDITOR=$LOCATION
 
@@ -78,6 +77,11 @@ export ACK_COLOR_FILENAME='dark blue'
 export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
+
+# Automate CPAN.
+export FTP_PASSIVE=1
+export PERL_AUTOINSTALL=1
+export PERL_MM_USE_DEFAULT=1
 
 # Remove bright colors.
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
