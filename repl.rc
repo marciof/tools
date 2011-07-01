@@ -66,6 +66,7 @@ package Devel::REPL::Plugin::Data::Dumper::Concise;
 use Data::Dumper::Concise ();
 use Devel::REPL::Plugin;
 use English qw(-no_match_vars);
+use Scalar::Util ();
 
 around format_result => sub {
     my ($super, $self) = splice @ARG, 0, 2;
@@ -75,12 +76,21 @@ around format_result => sub {
     }
     else {
         my $result = Data::Dumper::Concise::Dumper(
-            map {overload::Method($ARG, '""') ? "$ARG" : $ARG} @ARG);
+            map {$self->prepare_object($ARG)} @ARG);
         
         chomp $result;
         return $self->$super($result);
     }
 };
+
+
+sub prepare_object {
+    my ($self, $object) = @ARG;
+    
+    return overload::Method($object, '""') || Scalar::Util::blessed($object)
+        ? "$ARG"
+        : $ARG;
+}
 
 
 package Devel::REPL::Plugin::NoHistoryExpansion;
