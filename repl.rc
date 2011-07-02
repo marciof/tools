@@ -7,7 +7,13 @@ use Moose;
 use MooseX::NonMoose::InsideOut;
 use Set::Object ();
 
-extends 'Term::ReadLine';
+eval {
+    require Term::ReadLine::Gnu;
+    extends 'Term::ReadLine::Gnu';
+}
+or do {
+    extends 'Term::ReadLine';
+};
 
 has history_set =>
     is => 'ro',
