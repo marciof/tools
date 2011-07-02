@@ -35,15 +35,16 @@ sub new {
     return $class->meta->new_object(__INSTANCE__ => $self);
 }
 
-sub addhistory {
-    return shift->_add_history('SUPER::addhistory', @ARG);
-}
+around addhistory => sub {
+    my ($super, $self) = splice @ARG, 0, 2;
+    return $self->_add_history_implementation($super, @ARG);
+};
 
 sub add_history {
-    return shift->_add_history('SUPER::add_history', @ARG);
+    return shift->_add_history_implementation('SUPER::add_history', @ARG);
 }
 
-sub _add_history {
+sub _add_history_implementation {
     my ($self, $super, @lines) = @ARG;
     my $new_lines = Set::Object->new(@lines) - $self->history_set;
     
