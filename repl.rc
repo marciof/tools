@@ -7,13 +7,7 @@ use Moose;
 use MooseX::NonMoose::InsideOut;
 use Set::Object ();
 
-eval {
-    require Term::ReadLine::Gnu;
-    extends 'Term::ReadLine::Gnu';
-}
-or do {
-    extends 'Term::ReadLine';
-};
+extends 'Term::ReadLine';
 
 has history_set =>
     is => 'ro',
@@ -41,8 +35,16 @@ sub new {
     return $class->meta->new_object(__INSTANCE__ => $self);
 }
 
-around [grep {__PACKAGE__->can($ARG)} qw(addhistory add_history)] => sub {
-    my ($super, $self, @lines) = @ARG;
+sub addhistory {
+    return shift->_add_history('SUPER::addhistory', @ARG);
+}
+
+sub add_history {
+    return shift->_add_history('SUPER::add_history', @ARG);
+}
+
+sub _add_history {
+    my ($self, $super, @lines) = @ARG;
     my $new_lines = Set::Object->new(@lines) - $self->history_set;
     
     if ($new_lines->size > 0) {
@@ -50,10 +52,10 @@ around [grep {__PACKAGE__->can($ARG)} qw(addhistory add_history)] => sub {
         $self->history_set->insert($new_lines->elements);
         $self->$super($new_lines->elements);
     }
-    elsif (my $search_hist = $self->can('history_search_pos')) {
+    elsif ($self->isa('Term::ReadLine::Gnu')) {
         # Move existing lines to the top of the history stack.
         foreach my $line (@lines) {
-            my $position = $self->$search_hist($line, 0, 0);
+            my $position = $self->history_search_pos($line, 0, 0);
             
             if ($self->history_get($position + 1) eq $line) {
                 $self->remove_history($position);
@@ -66,7 +68,7 @@ around [grep {__PACKAGE__->can($ARG)} qw(addhistory add_history)] => sub {
     }
     
     return;
-};
+}
 
 around readline => sub {
     my ($super, $self) = splice @ARG, 0, 2;
