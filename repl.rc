@@ -4,7 +4,7 @@ package Term::ReadLine::NoDuplicates;
 
 use English qw(-no_match_vars);
 use Moose;
-use MooseX::NonMoose::InsideOut;
+use MooseX::InsideOut;
 use Set::Object ();
 
 extends 'Term::ReadLine';
