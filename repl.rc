@@ -25,8 +25,8 @@ sub new {
         eval {$Term::ReadLine::Perl::term} // $class->SUPER::new(@ARG),
         $class;
     
-    if (my $stifle_hist = $self->can('StifleHistory')) {
-        $self->$stifle_hist(undef);
+    if ($self->can('StifleHistory')) {
+        $self->StifleHistory(undef);
     }
     else {
         warn "Unlimited history not available.\n";
