@@ -4,7 +4,7 @@ package Term::ReadLine::NoDuplicates;
 
 use English qw(-no_match_vars);
 use Moose;
-use MooseX::NonMoose;
+use MooseX::NonMoose::InsideOut;
 use Set::Object ();
 
 extends 'Term::ReadLine';
@@ -20,37 +20,45 @@ has last_read_line =>
     isa => 'Maybe[Str]';
 
 sub new {
-    my $class = shift;
+    my $class = shift @ARG;
     my $self = bless $class->SUPER::new(@ARG), $class;
     
-    $self->StifleHistory(undef);
+    if (my $stifle_hist = $self->can('StifleHistory')) {
+        $self->$stifle_hist(undef);
+    }
+    else {
+        warn "Unlimited history not available.\n";
+    }
+    
     return $class->meta->new_object(__INSTANCE__ => $self);
 }
 
-# Seems like Term::ReadLine::Gnu uses this one instead.
-sub add_history {
-    my ($self, @lines) = @ARG;
+around [grep {__PACKAGE__->can($ARG)} qw(addhistory add_history)] => sub {
+    my ($super, $self, @lines) = @ARG;
     my $new_lines = Set::Object->new(@lines) - $self->history_set;
     
     if ($new_lines->size > 0) {
         # Insert new lines.
         $self->history_set->insert($new_lines->elements);
-        $self->SUPER::add_history($new_lines->elements);
+        $self->$super($new_lines->elements);
     }
-    else {
+    elsif (my $search_hist = $self->can('history_search_pos')) {
         # Move existing lines to the top of the history stack.
         foreach my $line (@lines) {
-            my $position = $self->history_search_pos($line, 0, 0);
+            my $position = $self->$search_hist($line, 0, 0);
             
             if ($self->history_get($position + 1) eq $line) {
                 $self->remove_history($position);
-                $self->SUPER::add_history($line);
+                $self->$super($line);
             }
         }
     }
+    else {
+        warn "History search not available.\n";
+    }
     
     return;
-}
+};
 
 around readline => sub {
     my ($super, $self) = splice @ARG, 0, 2;
@@ -123,14 +131,8 @@ package main;
 
 use English qw(-no_match_vars);
 
-if ($_REPL->term->isa('Term::ReadLine::Gnu')) {
-    $_REPL->term(Term::ReadLine::NoDuplicates->new(
-        $_REPL->term->Attribs->{readline_name}));
-    $_REPL->load_plugin('NoHistoryExpansion');
-}
-else {
-    warn 'Term::ReadLine::Gnu not found, using ' . ref $_REPL->term;
-}
+$_REPL->term(Term::ReadLine::NoDuplicates->new(
+    $_REPL->term->Attribs->{readline_name}));
 
 $_REPL->load_plugins(qw(
     Colors
@@ -143,6 +145,7 @@ $_REPL->load_plugins(qw(
     Data::Dumper::Concise
     FancyPrompt
     Interrupt
+    NoHistoryExpansion
     OutputCache
     ReadLineHistory
     Refresh
