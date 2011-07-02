@@ -21,7 +21,9 @@ has last_read_line =>
 
 sub new {
     my $class = shift @ARG;
-    my $self = bless $class->SUPER::new(@ARG), $class;
+    my $self = bless
+        eval {$Term::ReadLine::Perl::term} // $class->SUPER::new(@ARG),
+        $class;
     
     if (my $stifle_hist = $self->can('StifleHistory')) {
         $self->$stifle_hist(undef);
