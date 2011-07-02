@@ -79,11 +79,6 @@ export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
 
-# Automate CPAN.
-export FTP_PASSIVE=1
-export PERL_AUTOINSTALL=1
-export PERL_MM_USE_DEFAULT=1
-
 # Remove bright colors.
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
@@ -126,6 +121,25 @@ else
         bind '"\e[2;2~": paste-from-clipboard'      # Shift + Insert
         [ -n "$CD" ] && cd "$(cygpath "$CD")" && unset CD
     fi
+fi
+
+if _have cpan; then
+    export FTP_PASSIVE=1
+    export PERL_AUTOINSTALL=1
+    export PERL_MM_USE_DEFAULT=1
+    cpan_config=~/.cpan/CPAN/MyConfig.pm
+    
+    [ ! -e "$cpan_config" ] && cat << 'TEXT' >> "$cpan_config"
+$CPAN::Config = {
+    halt_on_failure => 1,
+    inhibit_startup_message => 1,
+    make_install_make_command => 'sudo make',
+    mbuild_install_build_command => 'sudo ./Build',
+};
+1;
+TEXT
+    
+    unset cpan_config
 fi
 
 if _have git; then
