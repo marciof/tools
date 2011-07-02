@@ -83,7 +83,6 @@ around format_result => sub {
     }
 };
 
-
 sub prepare_object {
     my ($self, $object) = @ARG;
     
