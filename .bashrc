@@ -129,7 +129,9 @@ if _have cpan; then
     export PERL_MM_USE_DEFAULT=1
     cpan_config=~/.cpan/CPAN/MyConfig.pm
     
-    [ ! -e "$cpan_config" ] && cat << 'TEXT' >> "$cpan_config"
+    if [ ! -e "$cpan_config" ]; then
+        mkdir -p $(dirname $cpan_config)
+        cat << 'TEXT' >> "$cpan_config"
 $CPAN::Config = {
     halt_on_failure => 1,
     inhibit_startup_message => 1,
@@ -138,6 +140,7 @@ $CPAN::Config = {
 };
 1;
 TEXT
+    fi
     
     unset cpan_config
 fi
