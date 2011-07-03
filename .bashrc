@@ -138,7 +138,6 @@ $CPAN::Config = {
     make_install_make_command => 'sudo make',
     mbuild_install_build_command => 'sudo ./Build',
 };
-1;
 TEXT
     fi
     
