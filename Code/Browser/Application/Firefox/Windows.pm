@@ -4,6 +4,7 @@ use defaults;
 use Moose;
 
 use Browser::Application::Firefox ();
+use Browser::System::Windows ();
 
 
 extends 'Browser::System::Windows';
