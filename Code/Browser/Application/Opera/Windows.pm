@@ -6,6 +6,7 @@ use Moose;
 use Path::Class::File ();
 
 use Browser::Application::Opera ();
+use Browser::System::Windows ();
 
 
 extends 'Browser::System::Windows';
