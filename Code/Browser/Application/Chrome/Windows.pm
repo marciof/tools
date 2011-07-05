@@ -38,10 +38,8 @@ sub find_in_file_system {
 
 sub find_in_registry {
     my ($self) = @ARG;
-    my $install = $self->registry->{$VENDOR_KEY};
-    
     $self->logger->debug("Registry search: $VENDOR_KEY");
-    return () unless defined $install;
+    my $install = $self->registry->{$VENDOR_KEY} // return ();
     
     return Browser::Application::Chrome->new(
         path => $install->{$EXECUTABLE_KEY},
