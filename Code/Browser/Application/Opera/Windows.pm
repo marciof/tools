@@ -79,13 +79,11 @@ sub _find_in_registry_install {
 
 sub _find_in_registry_uninstall {
     my ($self) = @ARG;
-    my $uninstall = $self->registry->{$UNINSTALL_KEY};
+    $self->logger->debug("Registry search: $UNINSTALL_KEY");
+    my $uninstall = $self->registry->{$UNINSTALL_KEY} // return ();
     my @paths;
     
-    $self->logger->debug("Registry search: $UNINSTALL_KEY");
-    return () unless defined $uninstall;
-    
-    foreach my $application (grep m/^Opera\b/, $uninstall->SubKeyNames) {
+    foreach my $application (grep m/^ Opera \b/x, $uninstall->SubKeyNames) {
         my $path = $uninstall->{$application}{$PATH_KEY};
         push @paths, Path::Class::file($path, $EXECUTABLE_FILE);
     }
