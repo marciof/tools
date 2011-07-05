@@ -1,10 +1,10 @@
 package JavaScript::Package;
 
 use defaults;
-use File::Spec ();
 use Graph::Directed ();
 use Moose;
 use MooseX::Types::Path::Class ();
+use Path::Class ();
 use Throwable::Error ();
 
 use JavaScript::File ();
@@ -15,7 +15,7 @@ use JavaScript::TestSuite ();
 has path =>,
     is => 'ro',
     isa => 'Path::Class::Dir',
-    default => File::Spec->curdir,
+    default => sub {Path::Class::dir},
     coerce => $true;
 
 
