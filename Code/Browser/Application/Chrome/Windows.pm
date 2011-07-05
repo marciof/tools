@@ -11,7 +11,9 @@ extends 'Browser::System::Windows';
 const my $EXECUTABLE_FILE = 'chrome.exe';
 const my $EXECUTABLE_LAUNCHER_FILE = 'chrome_launcher.exe';
 const my $EXECUTABLE_KEY = 'DisplayIcon';
-const my $VENDOR_KEY = 'HKEY_CURRENT_USER/Software/Microsoft/Windows/CurrentVersion/Uninstall/Google Chrome';
+const my $VENDOR_KEY = join '/',
+    qw(HKEY_CURRENT_USER Software Microsoft Windows CurrentVersion Uninstall),
+    'Google Chrome';
 const my $VERSION_KEY = 'Version';
 
 
