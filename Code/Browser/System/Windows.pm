@@ -66,7 +66,7 @@ sub get_product_version {
     my $info = Win32::File::VersionInfo::GetFileVersionInfo($executable);
     
     unless (defined $info) {
-        Throwable::Error->throw("$EXTENDED_OS_ERROR: " . $executable);
+        Throwable::Error->throw($EXTENDED_OS_ERROR . ': ' . $executable);
     }
     
     my $lang = each %{$info->{Lang}};
