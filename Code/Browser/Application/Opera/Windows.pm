@@ -3,7 +3,7 @@ package Browser::Application::Opera::Windows;
 use defaults;
 use List::MoreUtils ();
 use Moose;
-use Path::Class::File ();
+use Path::Class ();
 
 use Browser::Application::Opera ();
 use Browser::System::Windows ();
@@ -61,7 +61,7 @@ sub _find_in_registry_install {
     
     while (my ($key, $value) = each %$information) {
         if ($key =~ m/\b (directory | path) \b/ix) {
-            my $path = Path::Class::File->new($value, $EXECUTABLE_FILE);
+            my $path = Path::Class::file($value, $EXECUTABLE_FILE);
             push @paths, $path if -e $path;
         }
         elsif ($key =~ m/\b CommandLine \b/ix) {
@@ -84,7 +84,7 @@ sub _find_in_registry_uninstall {
     
     foreach my $application (grep m/^Opera\b/, $uninstall->SubKeyNames) {
         my $path = $uninstall->{$application}{$PATH_KEY};
-        push @paths, Path::Class::File->new($path, $EXECUTABLE_FILE);
+        push @paths, Path::Class::file($path, $EXECUTABLE_FILE);
     }
     
     return @paths;
