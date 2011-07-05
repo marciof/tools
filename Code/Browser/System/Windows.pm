@@ -6,8 +6,7 @@ use File::Find ();
 use IPC::Open2 ();
 use Moose;
 use MooseX::ABC;
-use Path::Class::Dir ();
-use Path::Class::File ();
+use Path::Class ();
 use Perl6::Slurp ();
 use Throwable::Error ();
 use Win32 ();
@@ -22,7 +21,7 @@ const our $WIN64_KEY = 'Wow6432Node';
 const my $PROGRAM_FILES = [qw{%ProgramFiles(x86)% %ProgramFiles%}];
 const my $SKIP_PROGRAMS = qr/^ (?: Common | Microsoft | Windows)/ix;
 const my $USER_FILES = [
-    Path::Class::Dir->new('%USERPROFILE%', 'Local Settings', 'Application Data'),
+    Path::Class::dir('%USERPROFILE%', 'Local Settings', 'Application Data'),
     '%LOCALAPPDATA%',
 ];
 
@@ -106,7 +105,7 @@ sub _search_programs {
             },
             wanted => sub {
                 if ($ARG eq $executable) {
-                    push @executables, Path::Class::File->new($File::Find::name);
+                    push @executables, Path::Class::file($File::Find::name);
                 }
             },
         }, @resolved_paths);
