@@ -15,5 +15,5 @@ my @browsers = (
 
 foreach my $browser (@browsers) {
     say $browser->version, ' -> ', $browser->path;
-#     $browser->go_to('http://www.example.com');
+#    $browser->go_to('http://www.example.com');
 }
