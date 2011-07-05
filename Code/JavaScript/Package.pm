@@ -5,6 +5,7 @@ use File::Spec ();
 use Graph::Directed ();
 use Moose;
 use MooseX::Types::Path::Class ();
+use Throwable::Error ();
 
 use JavaScript::File ();
 use JavaScript::Module ();
@@ -32,8 +33,17 @@ sub dependencies {
     
     foreach my $file (@files) {
         foreach my $requirement ($file->requires) {
-            $dependencies->add_edge($files{$requirement}, $file);
+            my $required_file = $files{$requirement};
+            
+            unless (defined $required_file) {
+                Throwable::Error->throw(
+                    sprintf 'Requirement not found: %s <- %s',
+                        $requirement, $file->full_name);
+            }
+            
+            $dependencies->add_edge($required_file, $file);
         }
+        
         if ($file->is_test) {
             $dependencies->add_edge($files{$file->name}, $file);
         }
