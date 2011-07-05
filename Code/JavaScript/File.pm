@@ -64,7 +64,7 @@ sub name {
 sub requires {
     my ($self) = @ARG;
     my $comment_re = $Regexp::Common::RE{comment}{JavaScript};
-    my ($overview) = ($self->content =~ m/^($comment_re)/);
+    my ($overview) = ($self->content =~ m/^($comment_re)/) // return ();
     my ($requires) = ($overview =~ m/\@requires \s+ (.+)/x);
     
     return split m/\s+/, ($requires // '');
