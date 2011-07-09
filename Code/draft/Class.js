@@ -17,10 +17,11 @@ Function.prototype.extend = function(BaseClass) {
     // Unless an intermediate class is used, the prototype of the sub class
     // would also be the same of the base class. If so, any changes in the
     // prototype of the sub class would also be reflected in the base class.
-    function Link() {}
+    function InheritanceLink() {
+    }
     
-    Link.prototype = BaseClass.prototype;
-    this.prototype = new Link();
+    InheritanceLink.prototype = BaseClass.prototype;
+    this.prototype = new InheritanceLink();
     this.prototype.constructor = this;
 };
 
