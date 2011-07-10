@@ -43,7 +43,7 @@ assert.equals = function(x, y) {
 /**
  * Asserts that an exception is thrown.
  *
- * @param {Object} type expected exception type
+ * @param {Function} type expected exception type
  * @param {Function} code function that should throw an exception
  * @throws {Error} Assertion failed.
  * @throws {SyntaxError} Wrong number of arguments.
