@@ -1,15 +1,16 @@
 /**
- * @fileoverview Implements assertions.
+ * @fileOverview Implements assertions.
  * @author Márcio Faustino
- * @version 2011-03-31
+ * @version 2011-07-10
  */
 
 
 /**
  * Asserts a condition.
  *
+ * @namespace Assertion functions.
  * @param value condition value to assert
- * @throws Error Assertion failed.
+ * @throws {Error} Assertion failed.
  */
 function assert(value) {
     if (arguments.length != 1) {
@@ -22,19 +23,19 @@ function assert(value) {
 
 
 /**
- * Asserts that two values are equal.
+ * Asserts that two values are identical.
  *
  * @param x first value to compare with
  * @param y second value to compare with
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.equals = function(x, y) {
     if (arguments.length != 2) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (x !== y) {
-        throw new Error('Assertion failed: Not equal: ' + x + ' !== ' + y);
+        throw new Error('Assertion failed: Not identical: ' + x + ' !== ' + y);
     }
 };
 
@@ -43,9 +44,9 @@ assert.equals = function(x, y) {
  * Asserts that an exception is thrown.
  *
  * @param {Object} type expected exception type
- * @param {Function} code function to be called
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @param {Function} code function that should throw an exception
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.exception = function(type, code) {
     if (arguments.length != 2) {
@@ -74,8 +75,8 @@ assert.exception = function(type, code) {
  * Asserts that a value is false.
  *
  * @param value value to assert it's false
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.False = function(value) {
     if (arguments.length != 1) {
@@ -91,8 +92,8 @@ assert.False = function(value) {
  * Asserts that a value is NaN.
  *
  * @param value value to assert it's NaN
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.NaN = function(value) {
     if (arguments.length != 1) {
@@ -105,19 +106,19 @@ assert.NaN = function(value) {
 
 
 /**
- * Asserts that two values are not equal.
+ * Asserts that two values are not identical.
  *
  * @param x first value to compare with
  * @param y second value to compare with
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.notEquals = function(x, y) {
     if (arguments.length != 2) {
         throw new SyntaxError('Wrong number of arguments');
     }
     if (x === y) {
-        throw new Error('Assertion failed: Equal: ' + x + ' === ' + y);
+        throw new Error('Assertion failed: Identical: ' + x + ' === ' + y);
     }
 };
 
@@ -126,8 +127,8 @@ assert.notEquals = function(x, y) {
  * Asserts that a value is null.
  *
  * @param value value to assert it's null
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.Null = function(value) {
     if (arguments.length != 1) {
@@ -143,8 +144,8 @@ assert.Null = function(value) {
  * Asserts that a value is true.
  *
  * @param value value to assert it's true
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.True = function(value) {
     if (arguments.length != 1) {
@@ -160,8 +161,8 @@ assert.True = function(value) {
  * Asserts that a value is undefined.
  *
  * @param value value to assert it's undefined
- * @throws Error Assertion failed.
- * @throws SyntaxError Wrong number of arguments.
+ * @throws {Error} Assertion failed.
+ * @throws {SyntaxError} Wrong number of arguments.
  */
 assert.Undefined = function(value) {
     if (arguments.length != 1) {

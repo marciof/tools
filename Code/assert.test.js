@@ -1,5 +1,5 @@
 /**
- * @fileoverview Tests assertions.
+ * @fileOverview Tests assertions.
  * @author Márcio Faustino
  */
 
