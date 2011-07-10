@@ -1,17 +1,22 @@
 /**
- * @fileoverview Ensures E262-3 conformance.
+ * @fileOverview Ensures E262-3 conformance.
  * @author Márcio Faustino
  * @version 2011-04-20
  * @see http://www.mozilla.org/js/language/E262-3.pdf
  */
 
 
+/**
+ * @namespace E262-3 support.
+ */
 var E262_3 = new function() {
     var self = this;
     
     
     /**
      * List of white space characters.
+     * 
+     * @type Array
      */
     this.whiteSpace = [
         '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0',
@@ -27,12 +32,13 @@ var E262_3 = new function() {
      * Gets the default (primitive) value of an object.
      *
      * @param object object for which to get the default value
-     * @param hint optional hint for the default value, String or Number
-     * @return default value for the given object
-     * @type null, undefined, boolean, number, string
-     * @throws SyntaxError The hint is an object other than String or Number.
-     * @throws SyntaxError The object has no properties.
-     * @throws TypeError The object has no default value.
+     * @param {Function} hint optional hint for the default value, String or
+     *        Number
+     * @returns {null|undefined|boolean|number|string} default value for the
+     *          given object
+     * @throws {SyntaxError} The hint is an object other than String or Number.
+     * @throws {SyntaxError} The object has no properties.
+     * @throws {TypeError} The object has no default value.
      */
     this.getDefaultValue = function(object, hint) {
         if (object == undefined) {
@@ -71,12 +77,13 @@ var E262_3 = new function() {
     /**
      * Gets the global object.
      *
-     * @return default global object
-     * @type Object
+     * @returns {Object} default global object
      */
     this.getGlobalObject = function() {
         // Nested functions have the global object as the receiver.
-        return (function() {return this})();
+        return (function() {
+            return this;
+        })();
     };
     
     
@@ -87,8 +94,8 @@ var E262_3 = new function() {
      * types: null, undefined, boolean, number or string.
      *
      * @param value value to check
-     * @return true if the given value is a primitive value or false otherwise
-     * @type boolean
+     * @returns {boolean} true if the given value is a primitive value or false
+     *          otherwise
      */
     this.isPrimitive = function(value) {
         return (value === null)
@@ -103,8 +110,7 @@ var E262_3 = new function() {
      * Converts a value to a boolean.
      *
      * @param value value to convert
-     * @return corresponding boolean value
-     * @type boolean
+     * @returns {boolean} corresponding boolean value
      */
     this.toBoolean = function(value) {
         return !!value;
@@ -115,8 +121,7 @@ var E262_3 = new function() {
      * Converts a value to a signed 32 bit integer.
      *
      * @param value value to convert
-     * @return corresponding signed 32 bit integer value
-     * @type number
+     * @returns {number} corresponding signed 32 bit integer value
      */
     this.toInt32 = function(value) {
         return self.toInteger(value) | 0;
@@ -127,8 +132,7 @@ var E262_3 = new function() {
      * Converts a value to an integer.
      *
      * @param value value to convert
-     * @return corresponding integer value
-     * @type number
+     * @returns {number} corresponding integer value
      */
     this.toInteger = function(value) {
         var number = self.toNumber(value);
@@ -150,8 +154,7 @@ var E262_3 = new function() {
      * Converts a value to a number.
      *
      * @param value value to convert
-     * @return corresponding number value
-     * @type number
+     * @returns {number} corresponding number value
      */
     this.toNumber = function(value) {
         if (value === null) {
@@ -177,9 +180,8 @@ var E262_3 = new function() {
      * Converts a value to an object.
      *
      * @param value value to convert
-     * @return corresponding Object value
-     * @type Object
-     * @throws TypeError The value to convert is null or undefined.
+     * @returns {Object} corresponding Object value
+     * @throws {TypeError} The value to convert is null or undefined.
      */
     this.toObject = function(value) {
         if ((value === null) || (value === undefined)) {
@@ -203,10 +205,11 @@ var E262_3 = new function() {
      * Converts a value to a primitive value.
      *
      * @param value value to convert
-     * @param preferredType optional type to favour the conversion of the value
-     *        to, if capable of converting to more than one primitive type
-     * @return primitive value of the given value
-     * @type Undefined, Null, Boolean, String, Number
+     * @param {Function} preferredType optional type to favour the conversion
+     *        of the value to, if capable of converting to more than one
+     *        primitive type
+     * @returns {Undefined|Null|Boolean|String|Number} primitive value of the
+     *          given value
      */
     this.toPrimitive = function(value, preferredType) {
         if (self.isPrimitive(value)) {
@@ -225,8 +228,7 @@ var E262_3 = new function() {
      * Converts a value to a string.
      *
      * @param value value to convert
-     * @return corresponding string value
-     * @type string
+     * @returns {string} corresponding string value
      */
     this.toString = function(value) {
         return value + '';
@@ -237,8 +239,7 @@ var E262_3 = new function() {
      * Converts a value to an unsigned 32 bit integer.
      *
      * @param value value to convert
-     * @return corresponding unsigned 32 bit integer value
-     * @type number
+     * @returns {number} corresponding unsigned 32 bit integer value
      */
     this.toUInt32 = function(value) {
         var uint32 = self.toInt32(value) >>> 0;
