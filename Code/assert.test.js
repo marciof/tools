@@ -14,9 +14,9 @@ test({
     },
     
     assertEquals: function() {
-        assert.equals('', '');
-        assert.equals(-0, +0);
-        assert.equals(1, 1.0);
+        assert.identical('', '');
+        assert.identical(-0, +0);
+        assert.identical(1, 1.0);
     },
     
     assertException: function() {
@@ -55,8 +55,8 @@ test({
         assert.exception(SyntaxError, function() {assert()});
         assert.exception(SyntaxError, function() {assert(1, 2)});
         
-        assert.exception(SyntaxError, function() {assert.equals(1)});
-        assert.exception(SyntaxError, function() {assert.equals(1, 2, 3)});
+        assert.exception(SyntaxError, function() {assert.identical(1)});
+        assert.exception(SyntaxError, function() {assert.identical(1, 2, 3)});
         
         assert.exception(SyntaxError, function() {assert.exception(Error)});
         assert.exception(SyntaxError, function() {assert.exception(Error, 2, 3)});
@@ -82,8 +82,8 @@ test({
     
     assertionFailures: function() {
         assert.exception(Error, function() {assert('')});
-        assert.exception(Error, function() {assert.equals(true, false)});
-        assert.exception(Error, function() {assert.equals(null, undefined)});
+        assert.exception(Error, function() {assert.identical(true, false)});
+        assert.exception(Error, function() {assert.identical(null, undefined)});
         assert.exception(Error, function() {assert.False(0)});
         assert.exception(Error, function() {assert.NaN(0)});
         assert.exception(Error, function() {assert.notEquals(0, 0)});

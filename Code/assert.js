@@ -30,7 +30,7 @@ function assert(value) {
  * @throws {Error} Assertion failed.
  * @throws {SyntaxError} Wrong number of arguments.
  */
-assert.equals = function(x, y) {
+assert.identical = function(x, y) {
     if (arguments.length != 2) {
         throw new SyntaxError('Wrong number of arguments');
     }
