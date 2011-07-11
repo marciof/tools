@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
+# TODO: List directory using "ls" (accepting all of its arguments), if given a
+#       single argument which is a directory?
+# TODO: Add option to disable coloring. Should it be automatic for large files?
+# TODO: Accept line numbers in file names, and scroll automatically if paging?
+#       $ ./show.py main.cpp:12
 # TODO: Don't display diff for removed files.
 # TODO: Take line width and wrapping into account when paging.
 # TODO: Follow file automatically if it changes size?
