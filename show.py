@@ -5,8 +5,6 @@
 # TODO: List directory using "ls" (accepting all of its arguments), if given a
 #       single argument which is a directory?
 # TODO: Add option to disable coloring. Should it be automatic for large files?
-# TODO: Accept line numbers in file names, and scroll automatically if paging?
-#       $ ./show.py main.cpp:12
 # TODO: Don't display diff for removed files.
 # TODO: Take line width and wrapping into account when paging.
 # TODO: Follow file automatically if it changes size?
@@ -67,6 +65,16 @@ class InputType (argparse.FileType):
         if path == 'self':
             return file(inspect.getfile(InputType))
         
+        go_to_line = re.search(r'^ (.+?) : (\d+) $', path, re.VERBOSE)
+        
+        if go_to_line is not None:
+            (path, line) = go_to_line.group(1, 2)
+            try:
+                return self._set_attrs_or_wrap(self.__call__(path),
+                    line = int(line))
+            except IOError:
+                pass
+        
         raise error
     
     
@@ -93,9 +101,7 @@ class InputType (argparse.FileType):
             raise IOError(str(OSError(errno.ENOENT)))
         
         if process.wait() == 0:
-            output = filelike.wrappers.FileWrapper(process.stdout)
-            output.name = module
-            return output
+            return self._set_attrs_or_wrap(process.stdout, name = module)
         else:
             raise IOError(error_message + module)
     
@@ -148,16 +154,27 @@ class InputType (argparse.FileType):
                 raise httplib.InvalidURL(url)
             else:
                 raise
+    
+    
+    def _set_attrs_or_wrap(self, input, **kargs):
+        try:
+            for name, value in kargs.items():
+                setattr(input, name, value)
+            return input
+        except AttributeError:
+            return self._set_attrs_or_wrap(filelike.wrappers.FileWrapper(input),
+                **kargs)
 
 
 class ArgumentsParser (argparse.ArgumentParser):
     def __init__(self):
         super(ArgumentsParser, self).__init__(
-            description = 'Automatic pager with syntax highlighting and diff\
-                support.',
-            epilog = '''An input can be '-' for standard input (default), a\
-                file path, an URL, a Perl module name, or 'self' for the\
-                source code.''')
+            description = '''Automatic pager with syntax highlighting and diff
+                support.''',
+            epilog = '''An input can be '-' for standard input (default), a
+                file path, an URL, a Perl module name, or 'self' for the
+                source code. The input's name can also be suffixed with a colon
+                followed by a line number to scroll to.''')
         
         self._input_type = InputType()
         
@@ -366,9 +383,9 @@ class DiffReader (ProgramReader):
 
 
 class TextReader (ProgramReader):
-    def __init__(self):
+    def __init__(self, line = 1):
         try:
-            super(TextReader, self).__init__(['less'])
+            super(TextReader, self).__init__(['less', '+%dg' % line])
             self._accepts_color = True
         except NotImplementedError:
             super(TextReader, self).__init__(['cmd', '/C', 'more'])
@@ -538,9 +555,9 @@ class Pager (Reader):
             try:
                 self._output = DiffReader()
             except NotImplementedError:
-                self._output = TextReader()
+                self._output = TextReader(getattr(self._input, 'line', 1))
         else:
-            self._output = TextReader()
+            self._output = TextReader(getattr(self._input, 'line', 1))
         
         if re.search(self.ansi_color_escape, text):
             self._lexer = pygments.lexers.TextLexer(stripnl = False)
