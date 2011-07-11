@@ -49,10 +49,10 @@ if [ -n "$INTERACTIVE" ]; then
     bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
     bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
     bind '"\e[2~": unix-word-rubout'                # Insert
+    
+    # Disable XON/XOFF flow control to allow: bind -q forward-search-history
+    stty -ixon
 fi
-
-# Disable XON/XOFF flow control to allow: bind -q forward-search-history
-stty -ixon
 
 shopt -s cdspell checkwinsize histappend
 
