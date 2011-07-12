@@ -180,14 +180,14 @@ class ArgumentsParser (argparse.ArgumentParser):
         
         arguments = [
             ('-f', {
-                b'dest': 'follow',
                 b'action': 'store_true',
                 b'default': False,
+                b'dest': 'follow',
                 b'help': 'follow file like tail, and disable paging',
             }),
             ('-L', {
-                b'dest': 'label',
                 b'action': 'append',
+                b'dest': 'label',
                 b'help': 'diff labels',
             }),
             ('-u', {
@@ -196,38 +196,38 @@ class ArgumentsParser (argparse.ArgumentParser):
                 b'help': 'ignored for diff compatibility',
             }),
             ('input', {
-                b'nargs': '?',
                 b'default': sys.stdin,
                 b'help': 'input to display, or Git diff file path',
+                b'nargs': '?',
             }),
             ('input2', {
+                b'help': 'input to compare with, or current Git file version',
                 b'nargs': '?',
                 b'type': self._input_type,
-                b'help': 'input to compare with, or current Git file version',
             }),
         ]
         
         git_arguments = [
             ('old_hex', {
-                b'nargs': '?',
                 b'help': 'current Git file commit',
+                b'nargs': '?',
             }),
             ('old_mode', {
-                b'nargs': '?',
                 b'help': 'current Git file mode',
+                b'nargs': '?',
             }),
             ('new_file', {
+                b'help': 'working copy Git file version',
                 b'nargs': '?',
                 b'type': self._input_type,
-                b'help': 'working copy Git file version',
             }),
             ('new_hex', {
-                b'nargs': '?',
                 b'help': 'working copy Git file commit',
+                b'nargs': '?',
             }),
             ('new_mode', {
-                b'nargs': '?',
                 b'help': 'working copy Git file mode',
+                b'nargs': '?',
             }),
         ]
         
