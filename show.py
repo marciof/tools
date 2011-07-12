@@ -190,6 +190,12 @@ class ArgumentsParser (argparse.ArgumentParser):
                 b'dest': 'label',
                 b'help': 'diff labels',
             }),
+            ('-t', {
+                b'action': 'store_true',
+                b'default': False,
+                b'dest': 'terminal_only',
+                b'help': 'use terminal only, no graphical interfaces',
+            }),
             ('-u', {
                 b'action': 'store_const',
                 b'const': None,
@@ -366,42 +372,66 @@ class ProgramReader (StreamReader):
         return False
 
 
-class DiffReader (ProgramReader):
-    def __init__(self):
-        super(DiffReader, self).__init__(['kompare', '-o', '-'],
-            stderr = file(os.path.devnull))
+class TextReader (ProgramReader):
+    def __init__(self, line = 1, **kargs):
+        if 'command' in kargs:
+            super(TextReader, self).__init__(**kargs)
+            self._accepts_color = None
+        else:
+            try:
+                super(TextReader, self).__init__(['less', '+%dg' % line])
+                self._accepts_color = True
+            except NotImplementedError:
+                super(TextReader, self).__init__(['cmd', '/C', 'more'])
+                self._accepts_color = False
     
     
     @property
     def accepts_color(self):
-        return False
+        if self._accepts_color is None:
+            return super(TextReader, self).accepts_color
+        else:
+            return self._accepts_color
+
+
+class DiffReader (TextReader):
+    def __init__(self, terminal_only = False, **kargs):
+        self._terminal_only = terminal_only
+        
+        if self._terminal_only:
+            super(DiffReader, self).__init__(**kargs)
+        else:
+            super(DiffReader, self).__init__(
+                command = ['kompare', '-o', '-'],
+                stderr = file(os.path.devnull))
+    
+    
+    @property
+    def accepts_color(self):
+        if self._terminal_only:
+            return super(DiffReader, self).accepts_color
+        else:
+            return False
     
     
     @property
     def detached(self):
-        return True
-
-
-class TextReader (ProgramReader):
-    def __init__(self, line = 1):
-        try:
-            super(TextReader, self).__init__(['less', '+%dg' % line])
-            self._accepts_color = True
-        except NotImplementedError:
-            super(TextReader, self).__init__(['cmd', '/C', 'more'])
-            self._accepts_color = False
-    
-    
-    @property
-    def accepts_color(self):
-        return self._accepts_color
+        if self._terminal_only:
+            return super(DiffReader, self).detached
+        else:
+            return True
 
 
 class Pager (Reader):
-    def __init__(self, input, diff_mode, follow):
+    def __init__(self, input,
+            diff_mode = False,
+            follow = False,
+            terminal_only = False):
+        
         self._input = input
         self._diff_mode = diff_mode
         self._follow = follow
+        self._terminal_only = terminal_only
         
         self._buffer = ''
         self._buffered_lines = 0
@@ -548,16 +578,19 @@ class Pager (Reader):
     
     def _setup_output(self, text):
         lexer = self._guess_lexer(text)
+        go_to_line = getattr(self._input, 'line', 1)
         
         if self._buffered_lines <= self._max_inline_lines:
             self._output = StreamReader(sys.stdout)
         elif self._diff_mode or isinstance(lexer, pygments.lexers.DiffLexer):
             try:
-                self._output = DiffReader()
+                self._output = DiffReader(
+                    line = go_to_line,
+                    terminal_only = self._terminal_only)
             except NotImplementedError:
-                self._output = TextReader(getattr(self._input, 'line', 1))
+                self._output = TextReader(line = go_to_line)
         else:
-            self._output = TextReader(getattr(self._input, 'line', 1))
+            self._output = TextReader(line = go_to_line)
         
         if re.search(self.ansi_color_escape, text):
             self._lexer = pygments.lexers.TextLexer(stripnl = False)
@@ -581,7 +614,10 @@ except IOError as error:
     else:
         raise
 
-pager = Pager(args.input, args.diff_mode, args.follow)
+pager = Pager(args.input,
+    diff_mode = args.diff_mode,
+    follow = args.follow,
+    terminal_only = args.terminal_only)
 
 try:
     for line in pager:
