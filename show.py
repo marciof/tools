@@ -160,7 +160,7 @@ class InputType (argparse.FileType):
             for name, value in kargs.items():
                 setattr(input, name, value)
             return input
-        except AttributeError:
+        except (AttributeError, TypeError):
             return self._set_attrs_or_wrap(filelike.wrappers.FileWrapper(input),
                 **kargs)
 
