@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-# TODO: List directory using "ls" (accepting all of its arguments), if given a
-#       single argument which is a directory?
 # TODO: Add option to disable coloring. Should it be automatic for large files?
 # TODO: Automatic decoding of Base 64, quoted-printable, and encoded URI's?
 # TODO: Don't display diff for removed files.
@@ -248,9 +246,17 @@ class ArgumentsParser (argparse.ArgumentParser):
     
     def parse_args(self):
         args = super(ArgumentsParser, self).parse_args()
-        
+        return self._handle_arguments(args)
+    
+    
+    def parse_known_args(self):
+        (args, unknown_args) = super(ArgumentsParser, self).parse_known_args()
+        return (self._handle_arguments(args), unknown_args)
+    
+    
+    def _handle_arguments(self, args):
         if args.new_file is not None:
-            self._parse_git_diff_arguments(args)
+            self._handle_git_diff_arguments(args)
         elif isinstance(args.input, basestring):
             args.input = self._input_type(args.input)
         
@@ -258,12 +264,12 @@ class ArgumentsParser (argparse.ArgumentParser):
             args.diff_mode = False
         else:
             args.diff_mode = True
-            self._parse_diff_arguments(args)
+            self._handle_diff_arguments(args)
         
         return args
     
     
-    def _parse_diff_arguments(self, args):
+    def _handle_diff_arguments(self, args):
         labels = args.label if args.label is not None else \
             [self._resolve_path(input) for input in args.input, args.input2]
         
@@ -276,7 +282,7 @@ class ArgumentsParser (argparse.ArgumentParser):
             'diff -u %s %s\n' % tuple(labels) + diff)
     
     
-    def _parse_git_diff_arguments(self, args):
+    def _handle_git_diff_arguments(self, args):
         path = self._resolve_path(args.input)
         args.label = [path, path]
         (args.input, args.input2) = (args.input2, args.new_file)
@@ -602,23 +608,40 @@ class Pager (Reader):
         self._formatter = pygments.formatters.Terminal256Formatter()
 
 
+def open_ls_process(args):
+    color_mode = '--color=%s' % 'always' if sys.stdout.isatty() else 'auto'
+    
+    process = subprocess.Popen(
+        args = ['ls', '-CFXh', color_mode, '--group-directories-first'] \
+            + args,
+        stdout = subprocess.PIPE)
+    
+    return process.stdout
+
+
 try:
-    args = ArgumentsParser().parse_args()
+    (args, unknown_args) = ArgumentsParser().parse_known_args()
 except KeyboardInterrupt:
     print()
     sys.exit()
 except argparse.ArgumentTypeError as error:
     sys.exit(str(error))
 except IOError as error:
-    if error.errno in (errno.ENOENT, errno.EISDIR):
+    if error.errno == errno.ENOENT:
         sys.exit(str(error))
+    elif error.errno == errno.EISDIR:
+        pager = Pager(open_ls_process(sys.argv[1:]))
     else:
         raise
-
-pager = Pager(args.input,
-    diff_mode = args.diff_mode,
-    follow = args.follow,
-    terminal_only = args.terminal_only)
+else:
+    if getattr(args.input, 'isatty', lambda: False)() \
+            and (len(unknown_args) > 0 or len(sys.argv) == 1):
+        args.input = open_ls_process(unknown_args)
+    
+    pager = Pager(args.input,
+        diff_mode = args.diff_mode,
+        follow = args.follow,
+        terminal_only = args.terminal_only)
 
 try:
     for line in pager:
