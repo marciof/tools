@@ -173,7 +173,8 @@ class ArgumentsParser (argparse.ArgumentParser):
             epilog = '''An input can be '-' for standard input (default), a
                 file path, an URL, a Perl module name, or 'self' for the
                 source code. The input's name can also be suffixed with a colon
-                followed by a line number to scroll to.''')
+                followed by a line number to scroll to. If given a directory,
+                its' contents are listed instead.''')
         
         self._input_type = InputType()
         
