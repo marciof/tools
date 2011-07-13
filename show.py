@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+# TODO: Support directories in InputType to allow line numbers.
 # TODO: Add option to disable coloring. Should it be automatic for large files?
 # TODO: Automatic decoding of Base 64, quoted-printable, and encoded URI's?
 # TODO: Don't display diff for removed files.
