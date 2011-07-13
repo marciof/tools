@@ -57,17 +57,13 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c='cd'
+alias e='$EDITOR'
+alias sed='sed -r'
 alias -- -='c -'
 alias ..='c ..'
 alias ...='c ../..'
 alias ....='c ../../..'
 alias .....='c ../../../..'
-
-alias e='$EDITOR'
-alias l='ls -CFXh --color=auto --group-directories-first'
-alias ll='l -l'
-alias dir='l -lA'
-alias sed='sed -r'
 
 _have ack-grep ack && alias f="$NAME --sort-files"
 _have dircolors && eval "$($NAME -b)"
@@ -230,10 +226,15 @@ show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
 if [ -e "$show_py" ]; then
     alias s=\"$show_py\"
+    alias ss='s -l'
+    alias sss='s -lA'
     export ACK_PAGER=\"$show_py\"
     export GIT_PAGER=\"$show_py\"
 else
     alias s='less'
+    alias l='ls -CFXh --color=auto --group-directories-first'
+    alias ss='l -l'
+    alias sss='l -lA'
     _have colordiff && alias diff=$NAME
 fi
 
