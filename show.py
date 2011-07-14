@@ -620,7 +620,7 @@ class Pager (Reader):
 
 
 def open_ls_process(args):
-    color_mode = '--color=%s' % 'always' if sys.stdout.isatty() else 'auto'
+    color_mode = '--color=%s' % ('always' if sys.stdout.isatty() else 'auto')
     
     process = subprocess.Popen(
         args = ['ls', '-CFXh', color_mode, '--group-directories-first'] \
