@@ -86,6 +86,12 @@ use Data::Dumper::Concise ();
 use Devel::REPL::Plugin;
 use English qw(-no_match_vars);
 use Scalar::Util ();
+use String::Escape ();
+
+has to_string_length =>
+    is => 'ro',
+    isa => 'Str',
+    default => 2000;
 
 around format_result => sub {
     my ($super, $self) = splice @ARG, 0, 2;
@@ -105,9 +111,23 @@ around format_result => sub {
 sub prepare_object {
     my ($self, $object) = @ARG;
     
-    return overload::Method($object, '""') || Scalar::Util::blessed($object)
-        ? "$ARG"
-        : $ARG;
+    if (overload::Method($object, '""')) {
+        return "$object";
+    }
+    elsif (Scalar::Util::blessed($object)) {
+        foreach my $to_string (qw(as_string stringify to_string)) {
+            if (my $to_string_method = $object->can($to_string)) {
+                return String::Escape::elide(
+                    $object->$to_string_method,
+                    $self->to_string_length);
+            }
+        }
+        
+        return "$object";
+    }
+    else {
+        return $object;
+    }
 }
 
 
