@@ -191,6 +191,12 @@ class ArgumentsParser (argparse.ArgumentParser):
                 b'dest': 'label',
                 b'help': 'diff labels',
             }),
+            ('-p', {
+                b'action': 'store_true',
+                b'default': False,
+                b'dest': 'passthrough',
+                b'help': 'passthrough mode, just page input',
+            }),
             ('-t', {
                 b'action': 'store_true',
                 b'default': False,
@@ -435,11 +441,13 @@ class Pager (Reader):
     def __init__(self, input,
             diff_mode = False,
             follow = False,
+            passthrough = False,
             terminal_only = False):
         
         self._input = input
         self._diff_mode = diff_mode
         self._follow = follow
+        self._passthrough = passthrough
         self._terminal_only = terminal_only
         
         self._buffer = ''
@@ -518,11 +526,16 @@ class Pager (Reader):
     
     
     def _display(self, text):
+        if not self._passthrough:
+            text = re.sub(self.ansi_color_escape, '', text)
+        
         self._output.write(pygments.highlight(text,
             self._lexer, self._formatter))
     
     
     def _guess_lexer(self, text):
+        if self._passthrough:
+            return pygments.lexers.TextLexer(stripnl = False)
         if self._diff_mode:
             return pygments.lexers.DiffLexer(stripnl = False)
         else:
@@ -601,12 +614,8 @@ class Pager (Reader):
         else:
             self._output = TextReader(line = go_to_line)
         
-        if re.search(self.ansi_color_escape, text):
-            self._lexer = pygments.lexers.TextLexer(stripnl = False)
-        else:
-            self._lexer = lexer
-            self._lexer.add_filter('codetagify')
-        
+        self._lexer = lexer
+        self._lexer.add_filter('codetagify')
         self._formatter = pygments.formatters.Terminal256Formatter()
 
 
@@ -632,17 +641,19 @@ except IOError as error:
     if error.errno == errno.ENOENT:
         sys.exit(str(error))
     elif error.errno == errno.EISDIR:
-        pager = Pager(open_ls_process(sys.argv[1:]))
+        pager = Pager(open_ls_process(sys.argv[1:]), passthrough = True)
     else:
         raise
 else:
     if getattr(args.input, 'isatty', lambda: False)() \
             and (len(unknown_args) > 0 or len(sys.argv) == 1):
         args.input = open_ls_process(unknown_args)
+        args.passthrough = True
     
     pager = Pager(args.input,
         diff_mode = args.diff_mode,
         follow = args.follow,
+        passthrough = args.passthrough,
         terminal_only = args.terminal_only)
 
 try:
