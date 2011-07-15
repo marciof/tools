@@ -16,7 +16,6 @@
 #       $ ./show.py '\d+' ~
 # TODO: Do a file search if given a directory as the fist file (e.g. find).
 #       $ ./show.py . '*.txt'
-# TODO: Implement color support on Windows.
 # TODO: Simplify logic (e.g. Pager.run, encoding, etc), add documentation.
 # TODO: Detect missing programs and provide fallbacks (e.g. KDiff3, Meld).
 
