@@ -42,13 +42,15 @@ class InputType (argparse.FileType):
         self._password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
     
     
-    def __call__(self, path, *args):
+    def __call__(self, path):
         try:
-            return super(InputType, self).__call__(path, *args)
+            return super(InputType, self).__call__(path)
         except argparse.ArgumentTypeError as error:
             pass
         except IOError as error:
-            if error.errno != errno.ENOENT:
+            if error.errno == errno.EISDIR:
+                return self._list_directory(path)
+            elif error.errno != errno.ENOENT:
                 raise
         
         for url in [path, 'http://' + path]:
@@ -76,6 +78,17 @@ class InputType (argparse.FileType):
                 pass
         
         raise error
+    
+    
+    def _list_directory(self, path):
+        color = '--color=%s' % ('always' if sys.stdout.isatty() else 'auto')
+        options = ['-CFXh', color, '--group-directories-first'] + sys.argv[1:]
+        
+        process = subprocess.Popen(
+            args = ['ls'] + options,
+            stdout = subprocess.PIPE)
+        
+        return self._set_attrs_or_wrap(process.stdout, name = path)
     
     
     def _open_perldoc(self, module):
@@ -209,7 +222,6 @@ class ArgumentsParser (argparse.ArgumentParser):
                 b'help': 'ignored for diff compatibility',
             }),
             ('input', {
-                b'default': sys.stdin,
                 b'help': 'input to display, or Git diff file path',
                 b'nargs': '?',
             }),
@@ -259,13 +271,23 @@ class ArgumentsParser (argparse.ArgumentParser):
     
     def parse_known_args(self):
         (args, unknown_args) = super(ArgumentsParser, self).parse_known_args()
-        return (self._handle_arguments(args), unknown_args)
+        return (self._handle_arguments(args, unknown_args), unknown_args)
     
     
-    def _handle_arguments(self, args):
+    def _handle_arguments(self, args, unknown_args = []):
+        if args.input is None:
+            if sys.stdin.isatty() \
+                    and (len(unknown_args) > 0 or len(sys.argv) == 1):
+                args.input = os.path.curdir
+            else:
+                args.input = sys.stdin
+        
         if args.new_file is not None:
             self._handle_git_diff_arguments(args)
         elif isinstance(args.input, basestring):
+            if os.path.isdir(args.input):
+                args.passthrough = True
+            
             args.input = self._input_type(args.input)
         
         if args.input2 is None:
@@ -619,17 +641,6 @@ class Pager (Reader):
         self._formatter = pygments.formatters.Terminal256Formatter()
 
 
-def open_ls_process(args):
-    color_mode = '--color=%s' % ('always' if sys.stdout.isatty() else 'auto')
-    
-    process = subprocess.Popen(
-        args = ['ls', '-CFXh', color_mode, '--group-directories-first'] \
-            + args,
-        stdout = subprocess.PIPE)
-    
-    return process.stdout
-
-
 try:
     (args, unknown_args) = ArgumentsParser().parse_known_args()
 except KeyboardInterrupt:
@@ -640,21 +651,14 @@ except argparse.ArgumentTypeError as error:
 except IOError as error:
     if error.errno == errno.ENOENT:
         sys.exit(str(error))
-    elif error.errno == errno.EISDIR:
-        pager = Pager(open_ls_process(sys.argv[1:]), passthrough = True)
     else:
         raise
-else:
-    if getattr(args.input, 'isatty', lambda: False)() \
-            and (len(unknown_args) > 0 or len(sys.argv) == 1):
-        args.input = open_ls_process(unknown_args)
-        args.passthrough = True
-    
-    pager = Pager(args.input,
-        diff_mode = args.diff_mode,
-        follow = args.follow,
-        passthrough = args.passthrough,
-        terminal_only = args.terminal_only)
+
+pager = Pager(args.input,
+    diff_mode = args.diff_mode,
+    follow = args.follow,
+    passthrough = args.passthrough,
+    terminal_only = args.terminal_only)
 
 try:
     for line in pager:
