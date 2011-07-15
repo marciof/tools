@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+# TODO: Simplify logic (e.g. Pager.run, encoding, etc), add documentation.
 # TODO: Add option to disable coloring. Should it be automatic for large files?
 # TODO: Automatic decoding of Base 64, quoted-printable, and encoded URI's?
 # TODO: Don't display diff for removed files.
@@ -16,8 +17,6 @@
 #       $ ./show.py '\d+' ~
 # TODO: Do a file search if given a directory as the fist file (e.g. find).
 #       $ ./show.py . '*.txt'
-# TODO: Simplify logic (e.g. Pager.run, encoding, etc), add documentation.
-# TODO: Detect missing programs and provide fallbacks (e.g. KDiff3, Meld).
 
 
 # Standard library:
