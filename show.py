@@ -463,6 +463,7 @@ class Pager (Reader):
     def __init__(self, input,
             diff_mode = False,
             follow = False,
+            inline_lines_threshold = 0.4,
             passthrough = False,
             terminal_only = False):
         
@@ -474,10 +475,14 @@ class Pager (Reader):
         
         self._buffer = ''
         self._buffered_lines = 0
+        self._line_separator = '\n'
         self._output = None
         
-        self._line_separator = '\n'
-        self._inline_lines_threshold = 0.4
+        if not sys.stdout.isatty() or self._follow:
+            self._max_inline_lines = Infinity
+        else:
+            (rows, columns) = self._guess_terminal_size()
+            self._max_inline_lines = int(round(rows * inline_lines_threshold))
     
     
     def __iter__(self):
@@ -611,15 +616,6 @@ class Pager (Reader):
             pass
         
         return (0, 0)
-    
-    
-    @property
-    def _max_inline_lines(self):
-        if not sys.stdout.isatty() or self._follow:
-            return Infinity
-        
-        (rows, columns) = self._guess_terminal_size()
-        return int(round(rows * self._inline_lines_threshold))
     
     
     def _setup_output(self, text):
