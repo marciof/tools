@@ -228,7 +228,7 @@ if [ -e "$show_py" ]; then
     alias s=\"$show_py\"
     alias ss='s -l'
     alias sss='s -lA'
-    export ACK_PAGER=\"$show_py\"
+    export ACK_PAGER="$show_py -p"
     export GIT_PAGER=\"$show_py\"
 else
     alias s='less'
