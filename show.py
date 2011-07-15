@@ -548,17 +548,19 @@ class Pager (Reader):
     
     
     def _display(self, text):
-        if not self._passthrough:
-            text = re.sub(self.ansi_color_escape, '', text)
-        
-        self._output.write(pygments.highlight(text,
-            self._lexer, self._formatter))
+        if self._passthrough or (self._lexer is None):
+            self._output.write(text)
+        else:
+            self._output.write(pygments.highlight(
+                re.sub(self.ansi_color_escape, '', text),
+                self._lexer,
+                self._formatter))
     
     
     def _guess_lexer(self, text):
         if self._passthrough:
-            return pygments.lexers.TextLexer(stripnl = False)
-        if self._diff_mode:
+            return None
+        elif self._diff_mode:
             return pygments.lexers.DiffLexer(stripnl = False)
         else:
             clean_text = re.sub(self.ansi_color_escape, '', text)
@@ -574,7 +576,7 @@ class Pager (Reader):
                 return pygments.lexers.guess_lexer_for_filename(
                     self._input.name, clean_text, stripnl = False)
             except pygments.util.ClassNotFound:
-                return pygments.lexers.TextLexer(stripnl = False)
+                return None
     
     
     def _guess_terminal_size(self):
@@ -636,9 +638,10 @@ class Pager (Reader):
         else:
             self._output = TextReader(line = go_to_line)
         
-        self._lexer = lexer
-        self._lexer.add_filter('codetagify')
-        self._formatter = pygments.formatters.Terminal256Formatter()
+        if lexer is not None:
+            self._lexer = lexer
+            self._lexer.add_filter('codetagify')
+            self._formatter = pygments.formatters.Terminal256Formatter()
 
 
 try:
