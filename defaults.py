@@ -15,27 +15,27 @@ from abc import *
 
 __author__ = 'Marcio Faustino'
 __doc__ = 'Sets some defaults and implements important fixes.'
-__version__ = '2011-06-12'
+__version__ = '2011-07-15'
 
 
 def externals(*modules):
     import inspect, sys
     
     missing = set()
-    importee = inspect.getmodule(sys._getframe(1).f_code)
+    importee = sys._getframe(1).f_locals
     
     for module in modules:
         package = module.split('.', 1).pop(0)
         
         if package != module:
             try:
-                setattr(importee, package, __import__(package))
+                importee[package] = __import__(package)
             except ImportError:
                 missing.add(package)
                 continue
         
         try:
-            setattr(importee, module, __import__(module))
+            importee[module] = __import__(module)
         except ImportError:
             missing.add(module)
     
