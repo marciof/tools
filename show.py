@@ -17,6 +17,9 @@
 #       $ ./show.py '\d+' ~
 # TODO: Do a file search if given a directory as the fist file (e.g. find).
 #       $ ./show.py . '*.txt'
+# TODO: Convert to C++ for speed? Or re-use existing programs?
+#       http://www.andre-simon.de/doku/highlight/en/highlight.html
+#       http://www.gnu.org/software/src-highlite/
 
 
 # Standard library:
