@@ -618,12 +618,13 @@ class Pager (Reader):
     
     
     def _setup_output(self, text):
-        lexer = self._guess_lexer(text)
+        self._lexer = self._guess_lexer(text)
         go_to_line = getattr(self._input, 'line', 1)
         
         if self._buffered_lines <= self._max_inline_lines:
             self._output = StreamReader(sys.stdout)
-        elif self._diff_mode or isinstance(lexer, pygments.lexers.DiffLexer):
+        elif self._diff_mode or \
+                isinstance(self._lexer, pygments.lexers.DiffLexer):
             try:
                 self._output = DiffReader(
                     line = go_to_line,
@@ -633,8 +634,7 @@ class Pager (Reader):
         else:
             self._output = TextReader(line = go_to_line)
         
-        if lexer is not None:
-            self._lexer = lexer
+        if self._lexer is not None:
             self._lexer.add_filter('codetagify')
             self._formatter = pygments.formatters.Terminal256Formatter()
 
