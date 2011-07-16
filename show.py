@@ -8,6 +8,7 @@
 # TODO: Don't display diff for removed files.
 # TODO: Take line width and wrapping into account when paging.
 # TODO: Follow file automatically if it changes size?
+# TODO: Add support for data URI's? data:text/plain,www.example.com
 # TODO: Clean up exception handling.
 #       $ ./show.py -f file ^C ^C
 #       $ ./show.py long-file ^C
