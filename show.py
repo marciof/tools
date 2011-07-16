@@ -36,7 +36,7 @@ import argparse, chardet, filelike, \
 class InputType (argparse.FileType):
     def __init__(self):
         super(InputType, self).__init__()
-        self._password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        self._password_manager = None
     
     
     def __call__(self, path):
@@ -119,6 +119,9 @@ class InputType (argparse.FileType):
     def _open_auth_url(self, url, error):
         if not sys.stdout.isatty():
             raise error
+        
+        if self._password_manager is None:
+            self._password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
         
         while True:
             password_manager = self._password_manager
