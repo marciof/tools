@@ -25,15 +25,12 @@
 
 # Standard library:
 from __future__ import division, print_function, unicode_literals
-import codecs, difflib, errno, getpass, httplib, inspect, locale, os, re, \
+import abc, codecs, difflib, errno, getpass, httplib, inspect, locale, os, re, \
     StringIO, struct, subprocess, sys, time, urllib2
 
 # External modules:
-from defaults import *
-
-
-externals('argparse', 'chardet', 'filelike',
-    'pygments', 'pygments.formatters', 'pygments.lexers')
+import argparse, chardet, filelike, \
+    pygments, pygments.formatters, pygments.lexers
 
 
 class InputType (argparse.FileType):
@@ -340,7 +337,7 @@ class ArgumentsParser (argparse.ArgumentParser):
 
 
 class Reader (object):
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
     ansi_color_escape = r'\x1B\[(\d+(;\d+)*)?m'
     
     
@@ -349,12 +346,12 @@ class Reader (object):
         return True
     
     
-    @abstractmethod
+    @abc.abstractmethod
     def close(self):
         pass
     
     
-    @abstractmethod
+    @abc.abstractmethod
     def write(self, text):
         pass
 
@@ -479,7 +476,7 @@ class Pager (Reader):
         self._output = None
         
         if not sys.stdout.isatty() or self._follow:
-            self._max_inline_lines = Infinity
+            self._max_inline_lines = float('Infinity')
         else:
             (rows, columns) = self._guess_terminal_size()
             self._max_inline_lines = int(round(rows * inline_lines_threshold))
