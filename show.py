@@ -25,7 +25,7 @@
 
 # Standard library:
 from __future__ import unicode_literals
-import abc, codecs, errno, locale, os, re, struct, subprocess, sys
+import abc, codecs, errno, locale, os, re, subprocess, sys
 
 # External modules:
 import argparse, chardet, peak.util.imports, \
@@ -597,7 +597,8 @@ class Pager (Reader):
     
     def _guess_terminal_size(self):
         def ioctl_GWINSZ(fd):
-            import fcntl, termios
+            import fcntl, struct, termios
+            
             size_data = fcntl.ioctl(fd, termios.TIOCGWINSZ, b'1234')
             (rows, columns) = struct.unpack(b'hh', size_data)
             return (rows, columns)
