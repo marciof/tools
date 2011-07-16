@@ -308,7 +308,11 @@ class ArgumentsParser (argparse.ArgumentParser):
             return unicode(string, locale.getpreferredencoding())
         except UnicodeDecodeError:
             encoding = chardet.detect(string)['encoding']
-            return unicode(string, encoding, 'replace')
+            
+            if encoding is None:
+                return unicode(string, errors = 'replace')
+            else:
+                return unicode(string, encoding, errors = 'replace')
 
 
 class Reader (object):
