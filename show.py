@@ -29,8 +29,11 @@ import abc, codecs, errno, getpass, httplib, locale, os, re, struct, \
     subprocess, sys, urllib2
 
 # External modules:
-import argparse, chardet, filelike, \
+import argparse, chardet, peak.util.imports, \
     pygments, pygments.formatters, pygments.lexers
+
+
+filelike = peak.util.imports.lazyModule(b'filelike')
 
 
 class InputType (argparse.FileType):
