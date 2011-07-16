@@ -284,7 +284,7 @@ class ArgumentsParser (argparse.ArgumentParser):
         if args.input is None:
             if sys.stdin.isatty() \
                     and (len(unknown_args) > 0 or len(sys.argv) == 1):
-                args.input = os.path.curdir
+                args.input = os.curdir
             else:
                 args.input = sys.stdin
         
@@ -448,7 +448,7 @@ class DiffReader (TextReader):
         else:
             super(DiffReader, self).__init__(
                 command = ['kompare', '-o', '-'],
-                stderr = file(os.path.devnull))
+                stderr = file(os.devnull))
     
     
     @property
