@@ -25,8 +25,8 @@
 
 # Standard library:
 from __future__ import unicode_literals
-import abc, codecs, errno, getpass, httplib, locale, os, re, struct, \
-    subprocess, sys, urllib2
+import abc, codecs, errno, getpass, locale, os, re, struct, subprocess, sys, \
+    urllib2
 
 # External modules:
 import argparse, chardet, peak.util.imports, \
@@ -34,6 +34,7 @@ import argparse, chardet, peak.util.imports, \
 
 
 filelike = peak.util.imports.lazyModule(b'filelike')
+httplib = peak.util.imports.lazyModule(b'httplib')
 
 
 class InputType (argparse.FileType):
