@@ -25,8 +25,8 @@
 
 # Standard library:
 from __future__ import division, print_function, unicode_literals
-import abc, codecs, errno, getpass, httplib, inspect, locale, os, re, \
-    StringIO, struct, subprocess, sys, time, urllib2
+import abc, codecs, errno, getpass, httplib, inspect, locale, os, re, struct, \
+    subprocess, sys, time, urllib2
 
 # External modules:
 import argparse, chardet, filelike, \
@@ -300,7 +300,7 @@ class ArgumentsParser (argparse.ArgumentParser):
     
     
     def _handle_diff_arguments(self, args):
-        import difflib
+        import difflib, StringIO
         
         labels = args.label if args.label is not None else \
             [self._resolve_path(input) for input in args.input, args.input2]
