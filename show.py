@@ -346,7 +346,7 @@ class ArgumentsParser (argparse.ArgumentParser):
 
 class Reader (object):
     __metaclass__ = abc.ABCMeta
-    ansi_color_escape = r'\x1B\[(\d+(;\d+)*)?m'
+    ansi_color_escape = re.compile(r'\x1B\[(\d+(;\d+)*)?m')
     
     
     @property
@@ -376,7 +376,7 @@ class StreamReader (Reader):
     
     def write(self, text):
         if not self.accepts_color:
-            text = re.sub(self.ansi_color_escape, '', text)
+            text = self.ansi_color_escape.sub('', text)
         
         try:
             self._stream.write(text)
@@ -564,7 +564,7 @@ class Pager (Reader):
             self._output.write(text)
         else:
             self._output.write(pygments.highlight(
-                re.sub(self.ansi_color_escape, '', text),
+                self.ansi_color_escape.sub('', text),
                 self._lexer,
                 self._formatter))
     
@@ -575,7 +575,7 @@ class Pager (Reader):
         elif self._diff_mode:
             return pygments.lexers.DiffLexer(stripnl = False)
         else:
-            clean_text = re.sub(self.ansi_color_escape, '', text)
+            clean_text = self.ansi_color_escape.sub('', text)
             
             try:
                 return pygments.lexers.guess_lexer_for_filename(
