@@ -5,7 +5,6 @@
 # TODO: Simplify logic (e.g. Pager.run, encoding, etc), add documentation.
 # TODO: Add option to disable coloring. Should it be automatic for large files?
 # TODO: Automatic decoding of Base 64, quoted-printable, and encoded URI's?
-# TODO: Don't display diff for removed files.
 # TODO: Take line width and wrapping into account when paging.
 # TODO: Follow file automatically if it changes size?
 # TODO: Add support for data URI's? data:text/plain,www.example.com
