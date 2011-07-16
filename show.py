@@ -12,7 +12,7 @@
 #       $ ./show.py -f file ^C ^C
 #       $ ./show.py long-file ^C
 # TODO: Do a text search if given a directory as the second file (e.g. ack-grep,
-#       git-grep).
+#       git-grep). Leverage grin? <http://pypi.python.org/pypi/grin>
 #       $ ./show.py text .
 #       $ ./show.py '\d+' ~
 # TODO: Do a file search if given a directory as the fist file (e.g. find).
