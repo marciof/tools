@@ -465,6 +465,9 @@ class DiffReader (TextReader):
 
 
 class Pager (Reader):
+    backspace_control = re.compile(r'.\x08')
+    
+    
     def __init__(self, input,
             diff_mode = False,
             follow = False,
@@ -503,9 +506,9 @@ class Pager (Reader):
                 
                 text = self._buffer.encode() + line
                 (detected, encoding) = (True, chardet.detect(text)['encoding'])
-                yield self._clean_input(line.decode(encoding))
+                yield self.backspace_control.sub('', line.decode(encoding))
             else:
-                yield self._clean_input(line)
+                yield self.backspace_control.sub('', line)
         
         if self._follow:
             import time
@@ -524,7 +527,7 @@ class Pager (Reader):
                     if os.path.getsize(self._input.name) < previous_size:
                         self._input.seek(0)
                 else:
-                    yield self._clean_input(line.decode(encoding))
+                    yield self.backspace_control.sub('', line.decode(encoding))
         
         raise StopIteration
     
@@ -552,11 +555,6 @@ class Pager (Reader):
             self._setup_output(text)
         
         self._display(text)
-    
-    
-    def _clean_input(self, text):
-        # Clean up the backspace control character.
-        return re.sub(r'.\x08', '', text)
     
     
     def _display(self, text):
