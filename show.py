@@ -24,7 +24,7 @@
 
 
 # Standard library:
-from __future__ import division, print_function, unicode_literals
+from __future__ import unicode_literals
 import abc, codecs, errno, getpass, httplib, locale, os, re, struct, \
     subprocess, sys, urllib2
 
@@ -132,7 +132,7 @@ class InputType (argparse.FileType):
                 None, url)
             
             if (user is None) and (password is None):
-                print(str(error) + ': ' + url, file = sys.stderr)
+                print >> sys.stderr, str(error) + ': ' + url
                 user = raw_input('User: ')
                 password = getpass.getpass()
                 password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -650,7 +650,7 @@ class Pager (Reader):
 try:
     (args, unknown_args) = ArgumentsParser().parse_known_args()
 except KeyboardInterrupt:
-    print()
+    print
     sys.exit()
 except argparse.ArgumentTypeError as error:
     sys.exit(str(error))
@@ -670,7 +670,7 @@ try:
     for line in pager:
         pager.write(line)
 except KeyboardInterrupt:
-    print()
+    print
 except EOFError:
     pass
 
