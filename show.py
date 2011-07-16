@@ -228,46 +228,18 @@ class ArgumentsParser (argparse.ArgumentParser):
                 b'help': 'ignored for diff compatibility',
             }),
             ('input', {
-                b'help': 'input to display, or Git diff file path',
+                b'help': 'input to display',
                 b'nargs': '?',
             }),
             ('input2', {
-                b'help': 'input to compare with, or current Git file version',
+                b'help': 'input to compare with',
                 b'nargs': '?',
                 b'type': self._input_type,
             }),
         ]
         
-        git_arguments = [
-            ('old_hex', {
-                b'help': 'current Git file commit',
-                b'nargs': '?',
-            }),
-            ('old_mode', {
-                b'help': 'current Git file mode',
-                b'nargs': '?',
-            }),
-            ('new_file', {
-                b'help': 'working copy Git file version',
-                b'nargs': '?',
-                b'type': self._input_type,
-            }),
-            ('new_hex', {
-                b'help': 'working copy Git file commit',
-                b'nargs': '?',
-            }),
-            ('new_mode', {
-                b'help': 'working copy Git file mode',
-                b'nargs': '?',
-            }),
-        ]
-        
-        git_group = self.add_argument_group(
-            title = 'Git external diff arguments')
-        
-        for (group, args) in [(self, arguments), (git_group, git_arguments)]:
-            for name, options in args:
-                group.add_argument(name, **options)
+        for name, options in arguments:
+            self.add_argument(name, **options)
     
     
     def parse_args(self):
@@ -288,9 +260,7 @@ class ArgumentsParser (argparse.ArgumentParser):
             else:
                 args.input = sys.stdin
         
-        if args.new_file is not None:
-            self._handle_git_diff_arguments(args)
-        elif isinstance(args.input, basestring):
+        if isinstance(args.input, basestring):
             if os.path.isdir(args.input):
                 args.passthrough = True
             
@@ -318,12 +288,6 @@ class ArgumentsParser (argparse.ArgumentParser):
         
         args.input = StringIO.StringIO(
             'diff -u %s %s\n' % tuple(labels) + diff)
-    
-    
-    def _handle_git_diff_arguments(self, args):
-        path = self._resolve_path(args.input)
-        args.label = [path, path]
-        (args.input, args.input2) = (args.input2, args.new_file)
     
     
     def _resolve_path(self, stream):
