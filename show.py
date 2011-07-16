@@ -25,7 +25,7 @@
 
 # Standard library:
 from __future__ import unicode_literals
-import abc, codecs, errno, getpass, locale, os, re, struct, subprocess, sys
+import abc, codecs, errno, locale, os, re, struct, subprocess, sys
 
 # External modules:
 import argparse, chardet, peak.util.imports, \
@@ -126,6 +126,8 @@ class InputType (argparse.FileType):
         
         if self._password_manager is None:
             self._password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        
+        import getpass
         
         while True:
             password_manager = self._password_manager
