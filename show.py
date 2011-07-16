@@ -26,7 +26,7 @@
 # Standard library:
 from __future__ import division, print_function, unicode_literals
 import abc, codecs, errno, getpass, httplib, inspect, locale, os, re, struct, \
-    subprocess, sys, time, urllib2
+    subprocess, sys, urllib2
 
 # External modules:
 import argparse, chardet, filelike, \
@@ -505,6 +505,8 @@ class Pager (Reader):
                 yield self._clean_input(line)
         
         if self._follow:
+            import time
+            
             (text, self._buffer) = (self._buffer, '')
             self._setup_output(text)
             self._display(text)
