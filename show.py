@@ -639,7 +639,6 @@ class Pager (Reader):
             self._output = TextReader(line = go_to_line)
         
         if self._lexer is not None:
-            self._lexer.add_filter('codetagify')
             self._formatter = pygments.formatters.Terminal256Formatter()
 
 
