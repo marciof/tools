@@ -25,7 +25,7 @@
 
 # Standard library:
 from __future__ import division, print_function, unicode_literals
-import abc, codecs, errno, getpass, httplib, inspect, locale, os, re, struct, \
+import abc, codecs, errno, getpass, httplib, locale, os, re, struct, \
     subprocess, sys, urllib2
 
 # External modules:
@@ -62,7 +62,7 @@ class InputType (argparse.FileType):
             pass
         
         if path == 'self':
-            return file(inspect.getfile(InputType))
+            return file(sys.argv[0])
         
         go_to_line = re.search(r'^ (.+?) : (\d+) $', path, re.VERBOSE)
         
