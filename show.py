@@ -276,18 +276,18 @@ class ArgumentsParser (argparse.ArgumentParser):
     
     
     def _handle_diff_arguments(self, args):
-        import difflib, StringIO
+        import difflib, cStringIO
         
         labels = args.label if args.label is not None else \
             [self._resolve_path(input) for input in args.input, args.input2]
         
-        diff = ''.join(difflib.unified_diff(
-            [self._to_unicode(line) for line in args.input.readlines()],
-            [self._to_unicode(line) for line in args.input2.readlines()],
-            *labels))
+        diff = 'diff -u %s %s\n' % tuple(labels) \
+            + ''.join(difflib.unified_diff(
+                [self._to_unicode(line) for line in args.input.readlines()],
+                [self._to_unicode(line) for line in args.input2.readlines()],
+                *labels))
         
-        args.input = StringIO.StringIO(
-            'diff -u %s %s\n' % tuple(labels) + diff)
+        args.input = cStringIO.StringIO(diff.encode('UTF-8'))
     
     
     def _resolve_path(self, stream):
