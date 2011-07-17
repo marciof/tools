@@ -204,7 +204,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
                     re.VERBOSE)
                 
                 if go_to_line is not None:
-                    (path, line) = go_to_line.group(1, 2)
+                    (path, line) = go_to_line.groups()
                     
                     try:
                         stream = self.open_input(path)
