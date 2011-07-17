@@ -80,6 +80,7 @@ class UriInput (StreamInput):
 class Options:
     # TODO: Too long, refactor.
     def __init__(self,
+            default_encoding = 'UTF-8',
             default_protocol = 'http://',
             self_path = sys.argv[0],
             self_repr = 'self',
@@ -96,6 +97,7 @@ class Options:
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
+        self.default_encoding = default_encoding
         self.default_protocol = default_protocol
         self.ls_arguments = []
         self.self_path = self_path
@@ -165,13 +167,13 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 if len(inputs) > 1:
                     self.input = self._open_diff_input(inputs)
                 else:
-                    [self.input] = inputs
+                    self.input = inputs[0]
     
     
     def _open_diff_input(self, inputs):
         import difflib, cStringIO
         
-        labels = [input.name for input in inputs]
+        labels = [input.name.encode(self.default_encoding) for input in inputs]
         header = b'diff -u %s %s' % tuple(labels)
         
         diff = cStringIO.StringIO(
@@ -244,4 +246,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
 
 if __name__ == '__main__':
     options = Options()
+    
+    for line in options.input.stream:
+        print line,
+    
     options.input.close()
