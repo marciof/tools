@@ -87,6 +87,7 @@ class Options:
             stdin_repr = '-',
             terminal_only = False):
         
+        # argparse isn't used for performance.
         import getopt
         
         try:
@@ -165,6 +166,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
         try:
             return FileInput(path)
         except IOError as error:
+            # Check common and fail-fast cases first, for performance.
+            
             if error.errno == errno.EISDIR:
                 return DirectoryInput(path, self.ls_arguments)
             
