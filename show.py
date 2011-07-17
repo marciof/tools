@@ -193,7 +193,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
                         parts = urlparse.urlparse(path)
                         
                         try:
-                            return open_input(parts.path)
+                            return self.open_input(parts.path)
                         except IOError:
                             pass
                 
@@ -207,7 +207,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
                     (path, line) = go_to_line.group(1, 2)
                     
                     try:
-                        stream = open_input(path)
+                        stream = self.open_input(path)
                         stream.line = int(line)
                         return stream
                     except IOError:
