@@ -111,10 +111,8 @@ def open_input(path,
             
             if path == self_repr:
                 return FileInput(self_path)
-            
-            raise exception[0], exception[1], exception[2]
-        else:
-            raise
+        
+        raise exception[0], exception[1], exception[2]
 
 
 if __name__ == '__main__':
