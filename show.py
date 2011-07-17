@@ -53,6 +53,8 @@ class DirectoryInput (SubProcessInput):
 class UriInput (StreamInput):
     def __init__(self, uri, default_protocol):
         import urllib, urlparse
+        global urlparse
+        
         parts = urlparse.urlparse(uri)
         
         if parts.scheme == '':
@@ -108,7 +110,6 @@ def open_input(path,
                 pass
             except IOError as uri_error:
                 if uri_error.filename is not None:
-                    import urlparse
                     parts = urlparse.urlparse(path)
                     
                     try:
@@ -119,8 +120,8 @@ def open_input(path,
                         pass
             
             import re
-            go_to_line = re.search(r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $', path,
-                re.VERBOSE)
+            go_to_line = re.search(r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $',
+                path, re.VERBOSE)
             
             if go_to_line is not None:
                 (path, line) = go_to_line.group(1, 2)
