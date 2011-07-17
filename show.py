@@ -143,27 +143,45 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 self.terminal_only = True
         
         if len(arguments) == 2:
-            self.diff_mode = True
-            self.inputs = map(self._open_input, arguments)
+            self.input = self._open_diff_input(map(self._open_input, arguments))
         else:
             self.diff_mode = False
-            self.inputs = []
             
             if len(arguments) == 0:
                 if self.stdin_stream.isatty():
-                    self.inputs.append(self._open_input(os.curdir))
+                    self.input = self._open_input(os.curdir)
                 else:
-                    self.inputs.append(
-                        StreamInput(self.stdin_stream, name = self.stdin_repr))
+                    self.input = StreamInput(self.stdin_stream,
+                        name = self.stdin_repr)
             elif len(arguments) == 1:
+                inputs = []
+                
                 if not self.stdin_stream.isatty():
-                    self.inputs.append(
-                        StreamInput(self.stdin_stream, name = self.stdin_repr))
+                    inputs.append(StreamInput(self.stdin_stream,
+                        name = self.stdin_repr))
                 
-                self.inputs.append(self._open_input(arguments[0]))
+                inputs.append(self._open_input(arguments[0]))
                 
-                if len(self.inputs) > 1:
-                    self.diff_mode = True
+                if len(inputs) > 1:
+                    self.input = self._open_diff_input(inputs)
+                else:
+                    [self.input] = inputs
+    
+    
+    def _open_diff_input(self, inputs):
+        import difflib, cStringIO
+        
+        labels = [input.name for input in inputs]
+        header = b'diff -u %s %s' % tuple(labels)
+        
+        diff = cStringIO.StringIO(
+            header + b'\n' + b''.join(difflib.unified_diff(
+                inputs[0].stream.readlines(),
+                inputs[1].stream.readlines(),
+                *labels)))
+        
+        self.diff_mode = True
+        return StreamInput(diff, name = header)
     
     
     # TODO: Too long, refactor.
@@ -226,6 +244,4 @@ The input's name can also be suffixed with a colon followed by a line number to 
 
 if __name__ == '__main__':
     options = Options()
-    
-    for input in options.inputs:
-        input.close()
+    options.input.close()
