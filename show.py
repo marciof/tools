@@ -34,7 +34,7 @@ class SubProcessInput (StreamInput):
             stdout = subprocess.PIPE)
         
         if process.wait() != 0:
-            # No error message for performance, since it doesn't get shown.
+            # No error message for performance, since it isn't shown anyway.
             raise IOError()
         
         StreamInput.__init__(self, stream = process.stdout, **kargs)
@@ -91,6 +91,7 @@ class Options:
         import getopt
         
         try:
+            # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:], 'f:hi:l:m:p:s:t')
         except getopt.GetoptError as error:
             sys.exit(str(error))
@@ -170,7 +171,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
         try:
             return FileInput(path)
         except IOError as error:
-            # Check common and fail-fast cases first, for performance.
+            # Check common and fail-fast cases first for performance.
             
             if error.errno == errno.EISDIR:
                 return DirectoryInput(path, self.ls_arguments)
