@@ -9,7 +9,8 @@ import errno, os, sys
 
 # NOTE: No abstract base class for performance.
 class StreamInput:
-    def __init__(self, stream, name):
+    def __init__(self, stream, name, line = 1):
+        self.line = line
         self.name = name
         self.stream = stream
     
@@ -85,37 +86,63 @@ def open_input(path,
         return FileInput(path)
     except IOError as error:
         exception = sys.exc_info()
+    
+    if error.errno == errno.EISDIR:
+        return DirectoryInput(path, ls_args)
+    
+    if error.errno == errno.ENOENT:
+        if path == stdin_repr:
+            return StreamInput(sys.stdin, name = stdin_repr)
         
-        if error.errno == errno.EISDIR:
-            return DirectoryInput(path, ls_args)
-        elif error.errno == errno.ENOENT:
-            if path == stdin_repr:
-                return StreamInput(sys.stdin, name = stdin_repr)
-            
-            try:
-                return PerlDocInput(path)
-            except IOError:
-                pass
-            
-            import httplib
-            
-            try:
-                return UriInput(path, default_protocol)
-            except httplib.InvalidURL:
-                pass
-            except IOError as uri_error:
-                if uri_error.filename is not None:
-                    return open_input(uri_error.filename,
+        try:
+            return PerlDocInput(path)
+        except IOError:
+            pass
+        
+        if path == self_repr:
+            return FileInput(self_path)
+        
+        import httplib
+        
+        try:
+            return UriInput(path, default_protocol)
+        except httplib.InvalidURL:
+            pass
+        except IOError as uri_error:
+            if uri_error.filename is not None:
+                import urlparse
+                parts = urlparse.urlparse(path)
+                
+                try:
+                    return open_input(parts.path,
                         default_protocol, ls_args,
                         self_path, self_repr, stdin_repr)
-            
-            if path == self_repr:
-                return FileInput(self_path)
+                except IOError:
+                    pass
         
-        raise exception[0], exception[1], exception[2]
+        import re
+        go_to_line = re.search(r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $', path,
+            re.VERBOSE)
+        
+        if go_to_line is not None:
+            (path, line) = go_to_line.group(1, 2)
+            
+            try:
+                stream = open_input(path,
+                    default_protocol, ls_args,
+                    self_path, self_repr, stdin_repr)
+            except IOError:
+                pass
+            else:
+                stream.line = int(line)
+                return stream
+        
+    raise exception[0], exception[1], exception[2]
 
 
 if __name__ == '__main__':
     input = open_input(sys.argv[1])
-    print input, input.name
+    print input
+    print input.stream
+    print input.name, '@', input.line
     input.close()
