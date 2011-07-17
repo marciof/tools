@@ -41,12 +41,10 @@ class DirectoryInput (StreamInput):
 
 class UriInput (StreamInput):
     def __init__(self, uri, default_protocol):
-        import filelike, urlparse
+        import urllib, urlparse
         parts = urlparse.urlparse(uri)
         
         if parts.scheme == '':
-            import urllib
-            
             clean_uri = urllib.unquote(parts.path)
             clean_parts = urlparse.urlparse(clean_uri)
             
@@ -57,26 +55,62 @@ class UriInput (StreamInput):
             else:
                 uri = clean_uri
         
-        StreamInput.__init__(self, filelike.open(uri), name = uri)
+        StreamInput.__init__(self, urllib.urlopen(uri), name = uri)
+
+
+class PerlDocInput (StreamInput):
+    def __init__(self, module):
+        import subprocess, tempfile
+        
+        self._stderr = tempfile.TemporaryFile()
+        
+        self._process = subprocess.Popen(['perldoc', '-t', module],
+            stderr = self._stderr,
+            stdout = subprocess.PIPE)
+        
+        if self._process.wait() != 0:
+            self._stderr.seek(0)
+            raise Exception('perldoc: ' + self._stderr.read().strip())
+        
+        StreamInput.__init__(self, self._process.stdout, name = module)
+    
+    
+    def close(self):
+        self._process.communicate()
+        StreamInput.close(self)
 
 
 def open_input(path,
         default_protocol = 'http://',
-        ls_args = sys.argv[1:],
+        ls_args = [],
         stdin_repr = '-'):
     
     try:
         return FileInput(path)
     except IOError as error:
+        exception = sys.exc_info()
+        
         if error.errno == errno.EISDIR:
             return DirectoryInput(path, ls_args)
         elif error.errno == errno.ENOENT:
             if path == stdin_repr:
                 return StreamInput(sys.stdin, name = stdin_repr)
-            else:
+            
+            try:
                 return UriInput(path, default_protocol)
-        else:
-            raise
+            except IOError as uri_error:
+                if uri_error.filename is not None:
+                    return open_input(uri_error.filename,
+                        default_protocol, ls_args, stdin_repr)
+                
+                pass
+        
+        try:
+            return PerlDocInput(path)
+        except Exception:
+            pass
+        
+        raise exception[0], exception[1], exception[2]
 
 
 if __name__ == '__main__':
