@@ -77,6 +77,8 @@ class PerlDocInput (SubProcessInput):
 def open_input(path,
         default_protocol = 'http://',
         ls_args = [],
+        self_path = sys.argv[0],
+        self_repr = 'self',
         stdin_repr = '-'):
     
     try:
@@ -100,12 +102,20 @@ def open_input(path,
             except Exception:
                 pass
             
+            import httplib
+            
             try:
                 return UriInput(path, default_protocol)
+            except httplib.InvalidURL:
+                pass
             except IOError as uri_error:
                 if uri_error.filename is not None:
                     return open_input(uri_error.filename,
-                        default_protocol, ls_args, stdin_repr)
+                        default_protocol, ls_args,
+                        self_path, self_repr, stdin_repr)
+            
+            if path == self_repr:
+                return FileInput(self_path)
             
             raise exception[0], exception[1], exception[2]
         else:
