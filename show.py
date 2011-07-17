@@ -138,9 +138,35 @@ def open_input(path,
         raise error
 
 
+class Options:
+    def __init__(self,
+            default_protocol = 'http://',
+            self_repr = 'self',
+            stdin_repr = '-'):
+        
+        import getopt
+        
+        try:
+            (options, arguments) = getopt.getopt(sys.argv[1:], 'd:hi:p:s:')
+        except getopt.GetoptError as error:
+            sys.exit(str(error))
+        
+        for option, value in options:
+            if option in '-h':
+                print '''
+Automatic pager with syntax highlighting and diff support.
+
+Usage: [options] [input-1 [input-2]]
+
+Options:
+  -d        option for "ls"
+  -h        show usage help
+  -i        standard input string representation, defaults to "%s"
+  -p        protocol for URI's without explicit scheme, defaults to "%s"
+  -s        script's string representation, defaults to "%s"
+'''.strip() % (stdin_repr, default_protocol, self_repr)
+                sys.exit()
+
+
 if __name__ == '__main__':
-    input = open_input(sys.argv[1])
-    print input
-    print input.stream
-    print input.name, '@', input.line
-    input.close()
+    Options()
