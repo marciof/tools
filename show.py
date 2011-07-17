@@ -119,10 +119,10 @@ Options:
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
   -p        protocol for URI's with missing scheme, defaults to "%s"
-  -s        script's string representation, defaults to "%s"
+  -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
 
-An input can be a path, an URI, a Perl module name, or standard input or this script's source code given their string representation.
+An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation).
 
 The input's name can also be suffixed with a colon followed by a line number to scroll to, if possible.
 '''.strip() % (stdin_repr, default_protocol, self_repr)
