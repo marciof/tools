@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import errno, os, sys
 
 
-# NOTE: No abstract base class for performance.
+# No abstract base class for performance.
 class StreamInput:
     def __init__(self, stream, name, line = 1):
         self.line = line
@@ -29,10 +29,12 @@ class SubProcessInput (StreamInput):
         import subprocess
         
         process = subprocess.Popen(args,
+            close_fds = True,
             stderr = open(os.devnull),
             stdout = subprocess.PIPE)
         
         if process.wait() != 0:
+            # No error message for performance, since it doesn't get shown.
             raise IOError()
         
         StreamInput.__init__(self, stream = process.stdout, **kargs)
@@ -48,6 +50,12 @@ class DirectoryInput (SubProcessInput):
     def __init__(self, path, ls_args):
         SubProcessInput.__init__(self, ['ls'] + ls_args,
             name = os.path.abspath(path))
+
+
+class PerlDocInput (SubProcessInput):
+    def __init__(self, module):
+        SubProcessInput.__init__(self, ['perldoc', '-t', module],
+            name = module)
 
 
 class UriInput (StreamInput):
@@ -69,79 +77,13 @@ class UriInput (StreamInput):
         StreamInput.__init__(self, urllib.urlopen(uri), name = uri)
 
 
-class PerlDocInput (SubProcessInput):
-    def __init__(self, module):
-        SubProcessInput.__init__(self, ['perldoc', '-t', module],
-            name = module)
-
-
-def open_input(path,
-        default_protocol = 'http://',
-        ls_args = [],
-        self_path = sys.argv[0],
-        self_repr = 'self',
-        stdin_repr = '-'):
-    
-    try:
-        return FileInput(path)
-    except IOError as error:
-        if error.errno == errno.EISDIR:
-            return DirectoryInput(path, ls_args)
-        
-        if error.errno == errno.ENOENT:
-            if path == stdin_repr:
-                return StreamInput(sys.stdin, name = stdin_repr)
-            
-            try:
-                return PerlDocInput(path)
-            except IOError:
-                pass
-            
-            if path == self_repr:
-                return FileInput(self_path)
-            
-            import httplib
-            
-            try:
-                return UriInput(path, default_protocol)
-            except httplib.InvalidURL:
-                pass
-            except IOError as uri_error:
-                if uri_error.filename is not None:
-                    import urlparse
-                    parts = urlparse.urlparse(path)
-                    
-                    try:
-                        return open_input(parts.path,
-                            default_protocol, ls_args,
-                            self_path, self_repr, stdin_repr)
-                    except IOError:
-                        pass
-            
-            import re
-            go_to_line = re.search(r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $',
-                path, re.VERBOSE)
-            
-            if go_to_line is not None:
-                (path, line) = go_to_line.group(1, 2)
-                
-                try:
-                    stream = open_input(path,
-                        default_protocol, ls_args,
-                        self_path, self_repr, stdin_repr)
-                except IOError:
-                    pass
-                else:
-                    stream.line = int(line)
-                    return stream
-        
-        raise error
-
-
 class Options:
+    # TODO: Too long, refactor.
     def __init__(self,
             default_protocol = 'http://',
+            self_path = sys.argv[0],
             self_repr = 'self',
+            stdin_stream = sys.stdin,
             stdin_repr = '-'):
         
         import getopt
@@ -151,22 +93,126 @@ class Options:
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
+        self.default_protocol = default_protocol
+        self.ls_arguments = []
+        self.self_path = self_path
+        self.self_repr = self_repr
+        self.stdin_stream = stdin_stream
+        self.stdin_repr = stdin_repr
+        
+        if len(arguments) > 2:
+            options.append(('-h', ''))
+        
         for option, value in options:
-            if option in '-h':
+            if option == '-d':
+                self.ls_arguments.append(value)
+            elif option == '-h':
                 print '''
-Automatic pager with syntax highlighting and diff support.
-
 Usage: [options] [input-1 [input-2]]
+
+Automatic pager with syntax highlighting and diff support.
 
 Options:
   -d        option for "ls"
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
-  -p        protocol for URI's without explicit scheme, defaults to "%s"
+  -p        protocol for URI's with missing scheme, defaults to "%s"
   -s        script's string representation, defaults to "%s"
+
+An input can be a path, an URI, a Perl module name, or standard input or this script's source code given their string representation.
+
+The input's name can also be suffixed with a colon followed by a line number to scroll to, if possible.
 '''.strip() % (stdin_repr, default_protocol, self_repr)
                 sys.exit()
+            elif option == '-i':
+                self.stdin_repr = value
+            elif option == '-p':
+                self.default_protocol = value
+            elif option == '-s':
+                self.self_repr = value
+        
+        if len(arguments) == 2:
+            self.diff_mode = True
+            self.inputs = map(self.open_input, arguments)
+        else:
+            self.diff_mode = False
+            self.inputs = []
+            
+            if len(arguments) == 0:
+                if stdin_stream.isatty():
+                    self.inputs.append(self.open_input(os.curdir))
+                else:
+                    self.inputs.append(
+                        StreamInput(self.stdin_stream, name = self.stdin_repr))
+            elif len(arguments) == 1:
+                if not stdin_stream.isatty():
+                    self.inputs.append(
+                        StreamInput(self.stdin_stream, name = self.stdin_repr))
+                
+                self.inputs.append(self.open_input(arguments[0]))
+                
+                if len(self.inputs) > 1:
+                    self.diff_mode = True
+    
+    
+    # TODO: Too long, refactor.
+    def open_input(self, path):
+        try:
+            return FileInput(path)
+        except IOError as error:
+            if error.errno == errno.EISDIR:
+                return DirectoryInput(path, self.ls_arguments)
+            
+            if error.errno == errno.ENOENT:
+                if path == self.stdin_repr:
+                    return StreamInput(self.stdin_stream,
+                        name = self.stdin_repr)
+                
+                try:
+                    return PerlDocInput(path)
+                except IOError:
+                    pass
+                
+                if path == self.self_repr:
+                    return FileInput(self.self_path)
+                
+                import httplib
+                
+                try:
+                    return UriInput(path, self.default_protocol)
+                except httplib.InvalidURL:
+                    pass
+                except IOError as uri_error:
+                    if uri_error.filename is not None:
+                        import urlparse
+                        parts = urlparse.urlparse(path)
+                        
+                        try:
+                            return open_input(parts.path)
+                        except IOError:
+                            pass
+                
+                import re
+                
+                go_to_line = re.search(
+                    r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $', path,
+                    re.VERBOSE)
+                
+                if go_to_line is not None:
+                    (path, line) = go_to_line.group(1, 2)
+                    
+                    try:
+                        stream = open_input(path)
+                        stream.line = int(line)
+                        return stream
+                    except IOError:
+                        pass
+            
+            raise error
 
 
 if __name__ == '__main__':
-    Options()
+    options = Options()
+    
+    for input in options.inputs:
+        input.close()
