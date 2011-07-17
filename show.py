@@ -85,59 +85,57 @@ def open_input(path,
     try:
         return FileInput(path)
     except IOError as error:
-        exception = sys.exc_info()
-    
-    if error.errno == errno.EISDIR:
-        return DirectoryInput(path, ls_args)
-    
-    if error.errno == errno.ENOENT:
-        if path == stdin_repr:
-            return StreamInput(sys.stdin, name = stdin_repr)
+        if error.errno == errno.EISDIR:
+            return DirectoryInput(path, ls_args)
         
-        try:
-            return PerlDocInput(path)
-        except IOError:
-            pass
-        
-        if path == self_repr:
-            return FileInput(self_path)
-        
-        import httplib
-        
-        try:
-            return UriInput(path, default_protocol)
-        except httplib.InvalidURL:
-            pass
-        except IOError as uri_error:
-            if uri_error.filename is not None:
-                import urlparse
-                parts = urlparse.urlparse(path)
+        if error.errno == errno.ENOENT:
+            if path == stdin_repr:
+                return StreamInput(sys.stdin, name = stdin_repr)
+            
+            try:
+                return PerlDocInput(path)
+            except IOError:
+                pass
+            
+            if path == self_repr:
+                return FileInput(self_path)
+            
+            import httplib
+            
+            try:
+                return UriInput(path, default_protocol)
+            except httplib.InvalidURL:
+                pass
+            except IOError as uri_error:
+                if uri_error.filename is not None:
+                    import urlparse
+                    parts = urlparse.urlparse(path)
+                    
+                    try:
+                        return open_input(parts.path,
+                            default_protocol, ls_args,
+                            self_path, self_repr, stdin_repr)
+                    except IOError:
+                        pass
+            
+            import re
+            go_to_line = re.search(r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $', path,
+                re.VERBOSE)
+            
+            if go_to_line is not None:
+                (path, line) = go_to_line.group(1, 2)
                 
                 try:
-                    return open_input(parts.path,
+                    stream = open_input(path,
                         default_protocol, ls_args,
                         self_path, self_repr, stdin_repr)
                 except IOError:
                     pass
+                else:
+                    stream.line = int(line)
+                    return stream
         
-        import re
-        go_to_line = re.search(r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $', path,
-            re.VERBOSE)
-        
-        if go_to_line is not None:
-            (path, line) = go_to_line.group(1, 2)
-            
-            try:
-                stream = open_input(path,
-                    default_protocol, ls_args,
-                    self_path, self_repr, stdin_repr)
-            except IOError:
-                pass
-            else:
-                stream.line = int(line)
-                return stream
-        
-    raise exception[0], exception[1], exception[2]
+        raise error
 
 
 if __name__ == '__main__':
