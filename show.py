@@ -144,13 +144,13 @@ The input's name can also be suffixed with a colon followed by a line number to 
             self.inputs = []
             
             if len(arguments) == 0:
-                if stdin_stream.isatty():
+                if self.stdin_stream.isatty():
                     self.inputs.append(self.open_input(os.curdir))
                 else:
                     self.inputs.append(
                         StreamInput(self.stdin_stream, name = self.stdin_repr))
             elif len(arguments) == 1:
-                if not stdin_stream.isatty():
+                if not self.stdin_stream.isatty():
                     self.inputs.append(
                         StreamInput(self.stdin_stream, name = self.stdin_repr))
                 
