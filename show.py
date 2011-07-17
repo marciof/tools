@@ -23,20 +23,30 @@ class FileInput (StreamInput):
         StreamInput.__init__(self, open(path), name = os.path.abspath(path))
 
 
-class DirectoryInput (StreamInput):
-    def __init__(self, path, ls_args):
+class SubProcessInput (StreamInput):
+    def __init__(self, args, **kargs):
         import subprocess
         
-        self._process = subprocess.Popen(['ls'] + ls_args,
+        process = subprocess.Popen(args,
+            stderr = open(os.devnull),
             stdout = subprocess.PIPE)
         
-        StreamInput.__init__(self, self._process.stdout,
-            name = os.path.abspath(path))
+        if process.wait() != 0:
+            raise Exception()
+        
+        StreamInput.__init__(self, stream = process.stdout, **kargs)
+        self._process = process
     
     
     def close(self):
         self._process.communicate()
         StreamInput.close(self)
+
+
+class DirectoryInput (SubProcessInput):
+    def __init__(self, path, ls_args):
+        SubProcessInput.__init__(self, ['ls'] + ls_args,
+            name = os.path.abspath(path))
 
 
 class UriInput (StreamInput):
@@ -58,42 +68,10 @@ class UriInput (StreamInput):
         StreamInput.__init__(self, urllib.urlopen(uri), name = uri)
 
 
-class PerlDocInput (StreamInput):
+class PerlDocInput (SubProcessInput):
     def __init__(self, module):
-        import subprocess
-        
-        self._process = subprocess.Popen(['perldoc', '-t', module],
-            stderr = open(os.devnull),
-            stdout = subprocess.PIPE)
-        
-        if self._process.wait() != 0:
-            raise Exception('perldoc error')
-        
-        StreamInput.__init__(self, self._process.stdout, name = module)
-    
-    
-    def close(self):
-        self._process.communicate()
-        StreamInput.close(self)
-
-
-class PyDocInput (StreamInput):
-    def __init__(self, name):
-        import subprocess
-        
-        self._process = subprocess.Popen(['pydoc', name],
-            stderr = open(os.devnull),
-            stdout = subprocess.PIPE)
-        
-        if self._process.wait() != 0:
-            raise Exception('pydoc error')
-        
-        StreamInput.__init__(self, self._process.stdout, name = name)
-    
-    
-    def close(self):
-        self._process.communicate()
-        StreamInput.close(self)
+        SubProcessInput.__init__(self, ['perldoc', '-t', module],
+            name = module)
 
 
 def open_input(path,
@@ -136,5 +114,5 @@ def open_input(path,
 
 if __name__ == '__main__':
     input = open_input(sys.argv[1])
-    print 'name:', input.name
+    print input, input.name
     input.close()
