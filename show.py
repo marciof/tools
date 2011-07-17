@@ -32,7 +32,7 @@ class SubProcessInput (StreamInput):
             stdout = subprocess.PIPE)
         
         if process.wait() != 0:
-            raise Exception()
+            raise IOError()
         
         StreamInput.__init__(self, stream = process.stdout, **kargs)
         self._process = process
@@ -94,12 +94,7 @@ def open_input(path,
             
             try:
                 return PerlDocInput(path)
-            except Exception:
-                pass
-            
-            try:
-                return PyDocInput(path)
-            except Exception:
+            except IOError:
                 pass
             
             import httplib
