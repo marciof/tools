@@ -244,10 +244,27 @@ The input's name can also be suffixed with a colon followed by a line number to 
             raise error
 
 
+# No abstract base class for performance.
+class Output:
+    def close(self):
+        raise NotImplementedError()
+
+
+class Pager (Output):
+    def __init__(self, options):
+        self._options = options
+    
+    
+    def close(self):
+        self._options.input.close()
+    
+    
+    def display(self):
+        for line in self._options.input.stream:
+            print line,
+
+
 if __name__ == '__main__':
-    options = Options()
-    
-    for line in options.input.stream:
-        print line,
-    
-    options.input.close()
+    pager = Pager(Options())
+    pager.display()
+    pager.close()
