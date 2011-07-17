@@ -77,6 +77,25 @@ class PerlDocInput (StreamInput):
         StreamInput.close(self)
 
 
+class PyDocInput (StreamInput):
+    def __init__(self, name):
+        import subprocess
+        
+        self._process = subprocess.Popen(['pydoc', name],
+            stderr = open(os.devnull),
+            stdout = subprocess.PIPE)
+        
+        if self._process.wait() != 0:
+            raise Exception('pydoc error')
+        
+        StreamInput.__init__(self, self._process.stdout, name = name)
+    
+    
+    def close(self):
+        self._process.communicate()
+        StreamInput.close(self)
+
+
 def open_input(path,
         default_protocol = 'http://',
         ls_args = [],
@@ -95,6 +114,11 @@ def open_input(path,
             
             try:
                 return PerlDocInput(path)
+            except Exception:
+                pass
+            
+            try:
+                return PyDocInput(path)
             except Exception:
                 pass
             
