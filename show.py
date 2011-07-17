@@ -91,7 +91,7 @@ class Options:
         import getopt
         
         try:
-            (options, arguments) = getopt.getopt(sys.argv[1:], 'd:hi:p:s:t')
+            (options, arguments) = getopt.getopt(sys.argv[1:], 'hi:l:p:s:t')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -107,18 +107,16 @@ class Options:
             options.append(('-h', ''))
         
         for option, value in options:
-            if option == '-d':
-                self.ls_arguments.append(value)
-            elif option == '-h':
+            if option == '-h':
                 print '''
 Usage: [options] [input-1 [input-2]]
 
 Automatic pager with syntax highlighting and diff support.
 
 Options:
-  -d        option for "ls"
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
+  -l        option for "ls"
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
@@ -130,6 +128,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 sys.exit()
             elif option == '-i':
                 self.stdin_repr = value
+            if option == '-l':
+                self.ls_arguments.append(value)
             elif option == '-p':
                 self.default_protocol = value
             elif option == '-s':
@@ -139,14 +139,14 @@ The input's name can also be suffixed with a colon followed by a line number to 
         
         if len(arguments) == 2:
             self.diff_mode = True
-            self.inputs = map(self.open_input, arguments)
+            self.inputs = map(self._open_input, arguments)
         else:
             self.diff_mode = False
             self.inputs = []
             
             if len(arguments) == 0:
                 if self.stdin_stream.isatty():
-                    self.inputs.append(self.open_input(os.curdir))
+                    self.inputs.append(self._open_input(os.curdir))
                 else:
                     self.inputs.append(
                         StreamInput(self.stdin_stream, name = self.stdin_repr))
@@ -155,14 +155,14 @@ The input's name can also be suffixed with a colon followed by a line number to 
                     self.inputs.append(
                         StreamInput(self.stdin_stream, name = self.stdin_repr))
                 
-                self.inputs.append(self.open_input(arguments[0]))
+                self.inputs.append(self._open_input(arguments[0]))
                 
                 if len(self.inputs) > 1:
                     self.diff_mode = True
     
     
     # TODO: Too long, refactor.
-    def open_input(self, path):
+    def _open_input(self, path):
         try:
             return FileInput(path)
         except IOError as error:
@@ -196,7 +196,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
                         parts = urlparse.urlparse(path)
                         
                         try:
-                            return self.open_input(parts.path)
+                            return self._open_input(parts.path)
                         except IOError:
                             pass
                 
@@ -210,7 +210,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
                     (path, line) = go_to_line.groups()
                     
                     try:
-                        stream = self.open_input(path)
+                        stream = self._open_input(path)
                         stream.line = int(line)
                         return stream
                     except IOError:
