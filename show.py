@@ -84,12 +84,13 @@ class Options:
             self_path = sys.argv[0],
             self_repr = 'self',
             stdin_stream = sys.stdin,
-            stdin_repr = '-'):
+            stdin_repr = '-',
+            terminal_only = False):
         
         import getopt
         
         try:
-            (options, arguments) = getopt.getopt(sys.argv[1:], 'd:hi:p:s:')
+            (options, arguments) = getopt.getopt(sys.argv[1:], 'd:hi:p:s:t')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -99,6 +100,7 @@ class Options:
         self.self_repr = self_repr
         self.stdin_stream = stdin_stream
         self.stdin_repr = stdin_repr
+        self.terminal_only = terminal_only
         
         if len(arguments) > 2:
             options.append(('-h', ''))
@@ -118,6 +120,7 @@ Options:
   -i        standard input string representation, defaults to "%s"
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -s        script's string representation, defaults to "%s"
+  -t        use terminal only, no graphical interfaces
 
 An input can be a path, an URI, a Perl module name, or standard input or this script's source code given their string representation.
 
@@ -130,6 +133,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 self.default_protocol = value
             elif option == '-s':
                 self.self_repr = value
+            elif option == '-t':
+                self.terminal_only = True
         
         if len(arguments) == 2:
             self.diff_mode = True
