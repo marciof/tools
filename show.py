@@ -48,7 +48,7 @@ class SubProcessInput (StreamInput):
 
 class DirectoryInput (SubProcessInput):
     def __init__(self, path, ls_args):
-        SubProcessInput.__init__(self, ['ls'] + ls_args,
+        SubProcessInput.__init__(self, ['ls', path] + ls_args,
             name = os.path.abspath(path))
 
 
@@ -256,7 +256,6 @@ class Output:
 
 class Pager (Output):
     def __init__(self, options):
-        self._buffer = []
         self._options = options
         
         if options.stdout_stream.isatty():
@@ -272,8 +271,21 @@ class Pager (Output):
     
     
     def display(self):
+        buffered_lines = []
+        
         for line in self._options.input.stream:
-            print line,
+            buffered_lines.append(line)
+            
+            if len(buffered_lines) > self._max_inline_lines:
+                # TODO: Flush buffer.
+                break
+        else:
+            # TODO: Flush buffer.
+            return
+        
+        for line in self._options.input.stream:
+            # TODO: Write to output object.
+            self._options.stdout_stream.write(line)
     
     
     def _guess_terminal_size(self):
