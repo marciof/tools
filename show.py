@@ -82,10 +82,12 @@ class Options:
     def __init__(self,
             default_encoding = 'UTF-8',
             default_protocol = 'http://',
+            inline_lines_threshold = 0.4,
             self_path = sys.argv[0],
             self_repr = 'self',
             stdin_stream = sys.stdin,
             stdin_repr = '-',
+            stdout_stream = sys.stdout,
             terminal_only = False):
         
         # argparse isn't used for performance.
@@ -99,11 +101,13 @@ class Options:
         
         self.default_encoding = default_encoding
         self.default_protocol = default_protocol
+        self.inline_lines_threshold = inline_lines_threshold
         self.ls_arguments = []
         self.self_path = self_path
         self.self_repr = self_repr
         self.stdin_stream = stdin_stream
         self.stdin_repr = stdin_repr
+        self.stdout_stream = stdout_stream
         self.terminal_only = terminal_only
         
         if len(arguments) > 2:
@@ -252,7 +256,15 @@ class Output:
 
 class Pager (Output):
     def __init__(self, options):
+        self._buffer = []
         self._options = options
+        
+        if options.stdout_stream.isatty():
+            (rows, columns) = self._guess_terminal_size()
+            self._max_inline_lines = int(round(
+                rows * options.inline_lines_threshold))
+        else:
+            self._max_inline_lines = float('Infinity')
     
     
     def close(self):
@@ -262,6 +274,40 @@ class Pager (Output):
     def display(self):
         for line in self._options.input.stream:
             print line,
+    
+    
+    def _guess_terminal_size(self):
+        def ioctl_GWINSZ(fd):
+            import fcntl, struct, termios
+            return struct.unpack(b'hh',
+                fcntl.ioctl(fd, termios.TIOCGWINSZ, b'1234'))
+        
+        for stream in [
+                self._options.stdin_stream,
+                self._options.stdout_stream,
+                sys.stderr]:
+            try:
+                return ioctl_GWINSZ(stream.fileno())
+            except:
+                continue
+        
+        try:
+            fd = os.open(os.ctermid(), os.O_RDONLY)
+            try:
+                return ioctl_GWINSZ(fd)
+            finally:
+                os.close(fd)
+        except:
+            pass
+        
+        try:
+            import subprocess
+            stty = subprocess.Popen(['stty', 'size'], stdout = subprocess.PIPE)
+            return stty.stdout.read().split()
+        except:
+            pass
+        
+        return (0, 0)
 
 
 if __name__ == '__main__':
