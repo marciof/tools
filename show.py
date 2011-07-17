@@ -91,7 +91,7 @@ class Options:
         import getopt
         
         try:
-            (options, arguments) = getopt.getopt(sys.argv[1:], 'hi:l:p:s:t')
+            (options, arguments) = getopt.getopt(sys.argv[1:], 'f:hi:l:m:p:s:t')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -109,19 +109,23 @@ class Options:
         for option, value in options:
             if option == '-h':
                 print '''
-Usage: [options] [input-1 [input-2]]
+Automatic pager with syntax highlighting, diff support and file/text search.
 
-Automatic pager with syntax highlighting and diff support.
+Usage:
+  pager     [options] [input-1 [input-2]]
+  search    [options] [input]*
 
 Options:
+  -f        list files with names matching the given pattern
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
-  -l        option for "ls"
+  -l        option for "ls", when listing directories
+  -m        list file matches for the given pattern
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
 
-An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation).
+An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation). If given a directory, its' contents are listed via "ls".
 
 The input's name can also be suffixed with a colon followed by a line number to scroll to, if possible.
 '''.strip() % (stdin_repr, default_protocol, self_repr)
