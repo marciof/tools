@@ -53,8 +53,6 @@ class DirectoryInput (SubProcessInput):
 class UriInput (StreamInput):
     def __init__(self, uri, default_protocol):
         import urllib, urlparse
-        global urlparse
-        
         parts = urlparse.urlparse(uri)
         
         if parts.scheme == '':
@@ -110,6 +108,7 @@ def open_input(path,
                 pass
             except IOError as uri_error:
                 if uri_error.filename is not None:
+                    import urlparse
                     parts = urlparse.urlparse(path)
                     
                     try:
