@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import errno, os, sys
 
 
-# No abstract base class for performance.
+# Not an abstract base class for performance.
 class StreamInput:
     def __init__(self, stream, name, line = 1, passthrough_mode = False):
         self.line = line
@@ -260,7 +260,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
             raise error
 
 
-# No abstract base class for performance.
+# Not an abstract base class for performance.
 class Output:
     def close(self):
         raise NotImplementedError()
