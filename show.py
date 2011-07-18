@@ -261,7 +261,7 @@ class Pager (Output):
         self._options = options
         
         if options.stdout_stream.isatty():
-            (rows, columns) = self._guess_terminal_size()
+            (rows, self._terminal_width) = self._guess_terminal_size()
             self._max_inline_lines = int(round(
                 rows * options.inline_lines_threshold))
         else:
@@ -274,11 +274,13 @@ class Pager (Output):
     
     def display(self):
         buffered_lines = []
+        wrapped_lines = 0
         
         for line in self._options.input.stream:
             buffered_lines.append(line)
+            wrapped_lines += int(round((len(line) - 1.0) / self._terminal_width))
             
-            if len(buffered_lines) > self._max_inline_lines:
+            if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
                 # TODO: Flush buffer.
                 break
         else:
@@ -321,7 +323,7 @@ class Pager (Output):
         except:
             pass
         
-        return (0, 0)
+        return (1, 1)
 
 
 if __name__ == '__main__':
