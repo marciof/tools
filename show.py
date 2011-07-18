@@ -180,7 +180,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 else:
                     self.input = inputs[0]
         
-        self.passthrough_mode = self.input.passthrough_mode
+        if self.input.passthrough_mode:
+            self.passthrough_mode = True
     
     
     def _open_diff_input(self, inputs):
