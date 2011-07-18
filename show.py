@@ -455,10 +455,10 @@ class Pager (Output):
             if self._options.passthrough_mode:
                 if self._options.show_line_nrs:
                     for line in self._options.input.stream:
+                        line_nr += 1
                         self._output.stream.write(
                             str(line_nr).rjust(width) + b' ')
                         
-                        line_nr += 1
                         self._output.stream.write(line)
                 else:
                     for line in self._options.input.stream:
@@ -466,10 +466,10 @@ class Pager (Output):
             elif self._output.passthrough_mode:
                 if self._options.show_line_nrs:
                     for line in self._options.input.stream:
+                        line_nr += 1
                         self._output.stream.write(
                             str(line_nr).rjust(width) + b' ')
                         
-                        line_nr += 1
                         self._output.stream.write(
                             self._ansi_color_re.sub(b'', line))
                 else:
@@ -485,9 +485,9 @@ class Pager (Output):
                 
                 if self._options.show_line_nrs:
                     for line in self._options.input.stream:
+                        line_nr += 1
                         self._output.stream.write(
                             str(line_nr).rjust(width) + b' ')
-                        line_nr += 1
                         
                         self._output.stream.write(pygments_highlight(
                             self._ansi_color_re.sub(b'', line).decode(encoding),
