@@ -285,7 +285,7 @@ class Pager (Output):
         
         for line in self._options.input.stream:
             # TODO: Write to output object.
-            self._options.stdout_stream.write(line)
+            pass
     
     
     def _guess_terminal_size(self):
