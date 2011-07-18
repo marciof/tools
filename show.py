@@ -327,9 +327,9 @@ class Pager (Output):
         if self._options.diff_mode:
             self._lexer = pygments.lexers.DiffLexer(stripnl = False)
         else:
+            # Remove ANSI color escape sequences.
             import re
-            ansi_color = re.compile(r'\x1B \[ (\d+ (; \d+)* )? m', re.X)
-            text = ansi_color.sub(b'', text)
+            text = re.sub(br'\x1B\[(\d+(;\d+)*)?m', b'', text)
             
             try:
                 self._lexer = pygments.lexers.guess_lexer_for_filename(
