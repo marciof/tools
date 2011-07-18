@@ -358,7 +358,7 @@ class Pager (Output):
             return
         
         for line in self._options.input.stream:
-            # TODO: Write to output object.
+            # TODO: Syntax highlight.
             self._output.stream.write(line)
     
     
@@ -408,8 +408,8 @@ class Pager (Output):
             else:
                 self._output = TextOutput(self._options)
         
-        # TODO: Setup formatter. Is it output dependent? E.g. Kompare doesn't
-        # accept color.
+        # TODO: Setup formatter. Is it output dependent? E.g. Kompare
+        # TODO: Syntax highlight.
         self._output.stream.write(text)
     
     
