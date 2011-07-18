@@ -2,7 +2,6 @@
 # -*- coding: UTF-8 -*-
 
 
-# TODO: Add option to display line numbers.
 # TODO: Fix diff encoding (use None as the input default?)
 #       ./show.py -t my.opera.com www.google.com
 # TODO: Display contents of zip files.
@@ -141,17 +140,19 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'df:hi:l:L:m:p:r:s:tuw')
+                'df:hi:j:l:L:m:np:r:s:tuw')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
         self.default_protocol = 'http://'
         self.diff_mode = False
+        self.line_nr_field_width = 4
         self.ls_arguments = []
         self.paging_threshold_ratio = 0.4
         self.passthrough_mode = False
         self.self_path = sys.argv[0]
         self.self_repr = 'self'
+        self.show_line_nrs = False
         self.stdin_stream = sys.stdin
         self.stdin_repr = '-'
         self.stdout_stream = sys.stdout
@@ -177,9 +178,11 @@ Options:
   -f        list files with names matching the given pattern
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
+  -j        line number right-justified field width, defaults to %s
   -l        option for "ls", when listing directories
   -L        ignored for Subversion compatibility
   -m        list file matches for the given pattern
+  -n        show line numbers (slower)
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -r        paging ratio of input lines / terminal height, defaults to %s (%%)
   -s        this script's path string representation, defaults to "%s"
@@ -191,13 +194,22 @@ An input can be a path, an URI, a Perl module name, standard input or this
 script's (given their string representation). The input's name can also be
 suffixed with a colon followed by a line number to scroll to, if possible.
 '''.strip() % (
-    self.stdin_repr, self.default_protocol,
+    self.stdin_repr, self.line_nr_field_width, self.default_protocol,
     self.paging_threshold_ratio, self.self_repr)
                 sys.exit()
             elif option == '-i':
                 self.stdin_repr = value
+            elif option == '-j':
+                try:
+                    self.line_nr_field_width = int(value)
+                    if self.line_nr_field_width < 2:
+                        raise ValueError()
+                except ValueError:
+                    sys.exit('invalid line number field width: ' + value)
             if option == '-l':
                 self.ls_arguments.append(value)
+            if option == '-n':
+                self.show_line_nrs = True
             elif option == '-p':
                 self.default_protocol = value
             elif option == '-r':
@@ -207,7 +219,7 @@ suffixed with a colon followed by a line number to scroll to, if possible.
                     
                     if math.isinf(r) or math.isnan(r) or (r < 0) or (r > 1):
                         raise ValueError()
-                except ValueError as error:
+                except ValueError:
                     sys.exit('invalid paging ratio value: ' + value)
             elif option == '-s':
                 self.self_repr = value
@@ -436,24 +448,57 @@ class Pager (Output):
                 
                 return
             
+            if self._options.show_line_nrs:
+                line_nr = len(buffered_lines)
+                width = self._options.line_nr_field_width - 1
+            
             if self._options.passthrough_mode:
-                for line in self._options.input.stream:
-                    self._output.stream.write(line)
+                if self._options.show_line_nrs:
+                    for line in self._options.input.stream:
+                        self._output.stream.write(
+                            str(line_nr).rjust(width) + b' ')
+                        
+                        line_nr += 1
+                        self._output.stream.write(line)
+                else:
+                    for line in self._options.input.stream:
+                        self._output.stream.write(line)
             elif self._output.passthrough_mode:
-                for line in self._options.input.stream:
-                    self._output.stream.write(
-                        self._ansi_color_re.sub(b'', line))
+                if self._options.show_line_nrs:
+                    for line in self._options.input.stream:
+                        self._output.stream.write(
+                            str(line_nr).rjust(width) + b' ')
+                        
+                        line_nr += 1
+                        self._output.stream.write(
+                            self._ansi_color_re.sub(b'', line))
+                else:
+                    for line in self._options.input.stream:
+                        self._output.stream.write(
+                            self._ansi_color_re.sub(b'', line))
             else:
                 from pygments import highlight as pygments_highlight
                 encoding = self._options.input.encoding
                 
                 # TODO: Highlight in batches to amortize the performance penalty?
                 # E.g. read stream in chunked bytes.
-                for line in self._options.input.stream:
-                    self._output.stream.write(pygments_highlight(
-                        self._ansi_color_re.sub(b'', line).decode(encoding),
-                        self._lexer,
-                        self._output.formatter).encode(self._output_encoding))
+                
+                if self._options.show_line_nrs:
+                    for line in self._options.input.stream:
+                        self._output.stream.write(
+                            str(line_nr).rjust(width) + b' ')
+                        line_nr += 1
+                        
+                        self._output.stream.write(pygments_highlight(
+                            self._ansi_color_re.sub(b'', line).decode(encoding),
+                            self._lexer,
+                            self._output.formatter).encode(self._output_encoding))
+                else:
+                    for line in self._options.input.stream:
+                        self._output.stream.write(pygments_highlight(
+                            self._ansi_color_re.sub(b'', line).decode(encoding),
+                            self._lexer,
+                            self._output.formatter).encode(self._output_encoding))
         except IOError as error:
             if error.errno != errno.EPIPE:
                 raise
@@ -463,12 +508,16 @@ class Pager (Output):
     
     # TODO: Too long, refactor.
     def _flush_buffer(self, buffered_lines, text_output, diff_output):
-        text = b''.join(buffered_lines)
-        
         if self._options.passthrough_mode:
             self._output = text_output(self._options)
-            self._output.stream.write(text)
+            
+            if self._options.show_line_nrs:
+                self._flush_buffer_line_nrs(buffered_lines)
+            else:
+                self._output.stream.write(b''.join(buffered_lines))
             return
+        
+        text = b''.join(buffered_lines)
         
         # No re.VERBOSE option for performance.
         import re
@@ -477,7 +526,6 @@ class Pager (Output):
         if self._options.diff_mode:
             from pygments.lexers.text import DiffLexer
             self._lexer = DiffLexer(stripnl = False)
-            clean_text = text
             
             try:
                 self._output = diff_output(self._options)
@@ -507,7 +555,11 @@ class Pager (Output):
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
                     self._output = text_output(self._options)
-                    self._output.stream.write(text)
+                    
+                    if self._options.show_line_nrs:
+                        self._flush_buffer_line_nrs(buffered_lines)
+                    else:
+                        self._output.stream.write(text)
                     return
             
             # isinstance() isn't used for performance.
@@ -520,9 +572,16 @@ class Pager (Output):
                     self._output = text_output(self._options)
             else:
                 self._output = text_output(self._options)
+            
+            if not self._options.show_line_nrs:
+                text = clean_text
         
         if self._output.passthrough_mode:
-            self._output.stream.write(clean_text)
+            if self._options.show_line_nrs:
+                self._flush_buffer_line_nrs(
+                    [self._ansi_color_re.sub(b'', l) for l in buffered_lines])
+            else:
+                self._output.stream.write(text)
             return
         
         import locale
@@ -537,10 +596,30 @@ class Pager (Output):
         if self._options.visible_white_space:
             self._lexer.add_filter('whitespace', spaces = True, tabs = True)
         
-        self._output.stream.write(pygments_highlight(
-            clean_text.decode(self._options.input.encoding),
-            self._lexer,
-            self._output.formatter).encode(self._output_encoding))
+        if self._options.show_line_nrs:
+            lines = []
+            
+            for line in buffered_lines:
+                line = self._ansi_color_re.sub(b'', line)
+                
+                lines.append(pygments_highlight(
+                    line.decode(self._options.input.encoding),
+                    self._lexer,
+                    self._output.formatter).encode(self._output_encoding))
+            
+            self._flush_buffer_line_nrs(lines)
+        else:
+            self._output.stream.write(pygments_highlight(
+                text.decode(self._options.input.encoding),
+                self._lexer,
+                self._output.formatter).encode(self._output_encoding))
+    
+    
+    def _flush_buffer_line_nrs(self, buffered_lines):
+        width = self._options.line_nr_field_width - 1
+        
+        for line_nr, line in enumerate(buffered_lines, start = 1):
+            self._output.stream.write(str(line_nr).rjust(width) + b' ' + line)
     
     
     # Used instead of pygments.lexers.guess_lexer() to get a count of ambiguous
