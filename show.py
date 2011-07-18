@@ -99,7 +99,8 @@ class Options:
         
         try:
             # No long options available for performance.
-            (options, arguments) = getopt.getopt(sys.argv[1:], 'df:hi:l:m:p:s:t')
+            (options, arguments) = getopt.getopt(sys.argv[1:],
+                'df:hi:l:m:p:s:t')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -298,7 +299,8 @@ class Pager (Output):
         
         for line in self._options.input.stream:
             buffered_lines.append(line)
-            wrapped_lines += int(round((len(line) - 1.0) / self._terminal_width))
+            wrapped_lines += int(round(
+                (len(line) - 1.0) / self._terminal_width))
             
             if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
                 self._flush_buffer(buffered_lines)
