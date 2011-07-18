@@ -172,7 +172,7 @@ Automatic pager with syntax highlighting, diff support and file/text search.
 
 Usage:
   pager     [options] [input-1 [input-2]]
-  search    [options] [input]*
+  search    [options] input*
 
 Options:
   -d        passthrough mode, don't attempt to syntax highlight input (faster)
