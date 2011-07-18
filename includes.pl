@@ -7,6 +7,7 @@
 # TODO: Treat "namespace::autoclean" as a pragma?
 # TODO: Detect "use English" without any usage of its symbols.
 
+
 use defaults;
 use File::Slurp ();
 use Module::Runtime ();
@@ -37,6 +38,7 @@ my $words = $doc->find(
                 || $element->isa('PPI::Token::Symbol'));
     });
 
+$words = [] if $words eq '';
 my %uniq_includes;
 
 INCLUDE:
@@ -72,3 +74,5 @@ foreach my $include (@$includes) {
     say "Unused $module at line $line"
         . ($column > 1 ? ", column $column." : '.');
 }
+
+exit 1;
