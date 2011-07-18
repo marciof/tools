@@ -9,9 +9,10 @@ import errno, os, sys
 
 # No abstract base class for performance.
 class StreamInput:
-    def __init__(self, stream, name, line = 1):
+    def __init__(self, stream, name, line = 1, passthrough_mode = False):
         self.line = line
         self.name = name
+        self.passthrough_mode = passthrough_mode
         self.stream = stream
     
     
@@ -49,7 +50,8 @@ class SubProcessInput (StreamInput):
 class DirectoryInput (SubProcessInput):
     def __init__(self, path, ls_args):
         SubProcessInput.__init__(self, ['ls', path] + ls_args,
-            name = os.path.abspath(path))
+            name = os.path.abspath(path),
+            passthrough_mode = True)
 
 
 class PerlDocInput (SubProcessInput):
@@ -80,9 +82,11 @@ class UriInput (StreamInput):
 class Options:
     # TODO: Too long, refactor.
     def __init__(self,
+            diff_mode = False,
             default_encoding = 'UTF-8',
             default_protocol = 'http://',
             inline_lines_threshold = 0.4,
+            passthrough_mode = False,
             self_path = sys.argv[0],
             self_repr = 'self',
             stdin_stream = sys.stdin,
@@ -95,14 +99,16 @@ class Options:
         
         try:
             # No long options available for performance.
-            (options, arguments) = getopt.getopt(sys.argv[1:], 'f:hi:l:m:p:s:t')
+            (options, arguments) = getopt.getopt(sys.argv[1:], 'df:hi:l:m:p:s:t')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
         self.default_encoding = default_encoding
         self.default_protocol = default_protocol
+        self.diff_mode = diff_mode
         self.inline_lines_threshold = inline_lines_threshold
         self.ls_arguments = []
+        self.passthrough_mode = passthrough_mode
         self.self_path = self_path
         self.self_repr = self_repr
         self.stdin_stream = stdin_stream
@@ -111,10 +117,12 @@ class Options:
         self.terminal_only = terminal_only
         
         if len(arguments) > 2:
-            options.append(('-h', ''))
+            options.insert(0, ('-h', ''))
         
         for option, value in options:
-            if option == '-h':
+            if option == '-d':
+                self.passthrough_mode = True
+            elif option == '-h':
                 print '''
 Automatic pager with syntax highlighting, diff support and file/text search.
 
@@ -123,6 +131,7 @@ Usage:
   search    [options] [input]*
 
 Options:
+  -d        passthrough mode, don't attempt to syntax highlight input
   -f        list files with names matching the given pattern
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
@@ -151,8 +160,6 @@ The input's name can also be suffixed with a colon followed by a line number to 
         if len(arguments) == 2:
             self.input = self._open_diff_input(map(self._open_input, arguments))
         else:
-            self.diff_mode = False
-            
             if len(arguments) == 0:
                 if self.stdin_stream.isatty():
                     self.input = self._open_input(os.curdir)
@@ -172,6 +179,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                     self.input = self._open_diff_input(inputs)
                 else:
                     self.input = inputs[0]
+        
+        self.passthrough_mode = self.input.passthrough_mode
     
     
     def _open_diff_input(self, inputs):
@@ -256,16 +265,27 @@ class Output:
         raise NotImplementedError()
 
 
+class StreamOutput (Output):
+    def __init__(self, stream):
+        self.stream = stream
+    
+    
+    def close(self):
+        self.stream.close()
+
+
 class Pager (Output):
     def __init__(self, options):
         self._options = options
         
+        # TODO: Use None when unavailable for performance?
         if options.stdout_stream.isatty():
             (rows, self._terminal_width) = self._guess_terminal_size()
             self._max_inline_lines = int(round(
                 rows * options.inline_lines_threshold))
         else:
             self._max_inline_lines = float('Infinity')
+            self._terminal_width = float('Infinity')
     
     
     def close(self):
@@ -281,15 +301,49 @@ class Pager (Output):
             wrapped_lines += int(round((len(line) - 1.0) / self._terminal_width))
             
             if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
-                # TODO: Flush buffer.
+                self._flush_buffer(buffered_lines)
                 break
         else:
-            # TODO: Flush buffer.
+            self._flush_buffer(buffered_lines)
             return
         
         for line in self._options.input.stream:
             # TODO: Write to output object.
             pass
+    
+    
+    def _flush_buffer(self, buffered_lines):
+        text = b''.join(buffered_lines)
+        
+        if self._options.passthrough_mode:
+            self._output = StreamOutput(self._options.stdout_stream)
+            self._output.stream.write(text)
+            return
+        
+        import pygments, pygments.lexers
+        
+        if self._options.diff_mode:
+            self._lexer = pygments.lexers.DiffLexer(stripnl = False)
+        else:
+            import re
+            ansi_color = re.compile(r'\x1B \[ (\d+ (; \d+)* )? m', re.X)
+            text = ansi_color.sub(b'', text)
+            
+            try:
+                self._lexer = pygments.lexers.guess_lexer_for_filename(
+                    self._options.input.name, text, stripnl = False)
+            except pygments.util.ClassNotFound:
+                try:
+                    self._lexer = pygments.lexers.guess_lexer(text,
+                        stripnl = False)
+                except TypeError:
+                    # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
+                    self._options.passthrough_mode = True
+                    self._output = StreamOutput(self._options.stdout_stream)
+                    self._output.stream.write(text)
+                    return
+        
+        # TODO: Setup output and formatter.
     
     
     def _guess_terminal_size(self):
@@ -323,7 +377,7 @@ class Pager (Output):
         except:
             pass
         
-        return (1, 1)
+        return (float('Infinity'), float('Infinity'))
 
 
 if __name__ == '__main__':
