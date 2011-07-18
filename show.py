@@ -30,7 +30,6 @@ class SubProcessInput (StreamInput):
         import subprocess
         
         process = subprocess.Popen(args,
-            close_fds = True,
             stderr = open(os.devnull),
             stdout = subprocess.PIPE)
         
@@ -275,9 +274,54 @@ class StreamOutput (Output):
         self.stream.close()
 
 
+class SubProcessOutput (StreamOutput):
+    def __init__(self, args, detached = False, stderr = None):
+        import subprocess
+        
+        try:
+            self._process = subprocess.Popen(args,
+                stderr = stderr,
+                stdin = subprocess.PIPE)
+        except OSError as error:
+            if error.errno == errno.ENOENT:
+                raise NotImplementedError
+            else:
+                raise
+        
+        import signal
+        
+        # TODO: Possible race condition between starting the process and
+        # registering the signal handler?
+        signal.signal(signal.SIGINT,
+            lambda sig_int, frame: self._process.send_signal(sig_int))
+        
+        StreamOutput.__init__(self, self._process.stdin)
+        self._detached = detached
+    
+    
+    def close(self):
+        if not self._detached:
+            self._process.communicate()
+        
+        StreamOutput.close(self)
+
+
+class TextOutput (SubProcessOutput):
+    def __init__(self, options):
+        SubProcessOutput.__init__(self, ['less', '+%dg' % options.input.line])
+
+
+class DiffOutput (TextOutput):
+    def __init__(self, options):
+        raise NotImplementedError()
+
+
 class Pager (Output):
     def __init__(self, options):
+        self._formatter = None
+        self._lexer = None
         self._options = options
+        self._output = None
         
         # TODO: Use None when unavailable for performance?
         if options.stdout_stream.isatty():
@@ -290,7 +334,11 @@ class Pager (Output):
     
     
     def close(self):
-        self._options.input.close()
+        try:
+            self._options.input.close()
+        finally:
+            if self._output is not None:
+                self._output.close()
     
     
     def display(self):
@@ -311,7 +359,7 @@ class Pager (Output):
         
         for line in self._options.input.stream:
             # TODO: Write to output object.
-            pass
+            self._output.stream.write(line)
     
     
     def _flush_buffer(self, buffered_lines):
@@ -326,6 +374,11 @@ class Pager (Output):
         
         if self._options.diff_mode:
             self._lexer = pygments.lexers.DiffLexer(stripnl = False)
+            
+            try:
+                self._output = DiffOutput(self._options)
+            except NotImplementedError:
+                self._output = TextOutput(self._options)
         else:
             # Remove ANSI color escape sequences.
             import re
@@ -344,8 +397,20 @@ class Pager (Output):
                     self._output = StreamOutput(self._options.stdout_stream)
                     self._output.stream.write(text)
                     return
+            
+            if isinstance(self._lexer, pygments.lexers.DiffLexer):
+                self._options.diff_mode = True
+                
+                try:
+                    self._output = DiffOutput(self._options)
+                except NotImplementedError:
+                    self._output = TextOutput(self._options)
+            else:
+                self._output = TextOutput(self._options)
         
-        # TODO: Setup output and formatter.
+        # TODO: Setup formatter. Is it output dependent? E.g. Kompare doesn't
+        # accept color.
+        self._output.stream.write(text)
     
     
     def _guess_terminal_size(self):
@@ -384,5 +449,8 @@ class Pager (Output):
 
 if __name__ == '__main__':
     pager = Pager(Options())
-    pager.display()
-    pager.close()
+    
+    try:
+        pager.display()
+    finally:
+        pager.close()
