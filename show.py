@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 
-# TODO: Add filter option to display line numbers.
+# TODO: Add option to display line numbers.
 # TODO: Fix diff encoding (use None as the input default?)
 #       ./show.py -t my.opera.com www.google.com
 # TODO: Display contents of zip files.
@@ -298,7 +298,7 @@ suffixed with a colon followed by a line number to scroll to, if possible.
                         except IOError:
                             pass
                 
-                # No re.VERBOSE flag for performance.
+                # No re.VERBOSE option for performance.
                 import re
                 go_to_line = re.search(r'^(.+?):([+-]?(?:[1-9]|\d{2,}))$', path)
                 
@@ -470,7 +470,7 @@ class Pager (Output):
             self._output.stream.write(text)
             return
         
-        # No re.VERBOSE flag for performance.
+        # No re.VERBOSE option for performance.
         import re
         self._ansi_color_re = re.compile(br'\x1B\[(?:\d+(?:;\d+)*)?m')
         
