@@ -180,6 +180,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
         labels = [input.name.encode(self.default_encoding) for input in inputs]
         header = b'diff -u %s %s' % tuple(labels)
         
+        # TODO: Use the generator directly to stream by line instead of
+        # concatenating into a StringIO object, to improve performance.
         diff = cStringIO.StringIO(
             header + b'\n' + b''.join(difflib.unified_diff(
                 inputs[0].stream.readlines(),
