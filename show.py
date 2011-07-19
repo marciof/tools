@@ -276,7 +276,8 @@ class StreamOutput (Output):
     
     
     def close(self):
-        self.stream.close()
+        if self.stream is not sys.stdout:
+            self.stream.close()
 
 
 class SubProcessOutput (StreamOutput):
@@ -326,6 +327,7 @@ class DiffOutput (TextOutput):
 
 class Pager (Output):
     def __init__(self, options):
+        self._ansi_color_re = None
         self._lexer = None
         self._options = options
         self._output = None
@@ -374,10 +376,13 @@ class Pager (Output):
             
             for line in self._options.input.stream:
                 self._output.stream.write(
-                    pygments_highlight(line.decode(encoding), self._lexer,
+                    pygments_highlight(
+                        self._ansi_color_re.sub(b'', line).decode(encoding),
+                        self._lexer,
                         self._output.formatter).encode(encoding))
     
     
+    # TODO: Too long, refactor.
     def _flush_buffer(self, buffered_lines, text_output_class):
         text = b''.join(buffered_lines)
         
@@ -398,18 +403,25 @@ class Pager (Output):
             from pygments.util import ClassNotFound as LexerClassNotFound
             import re
             
-            # Remove ANSI color escape sequences.
-            text = re.sub(br'\x1B\[(?:\d+(?:;\d+)*)?m', b'', text)
+            self._ansi_color_re = re.compile(br'\x1B\[(?:\d+(?:;\d+)*)?m')
+            clean_text = self._ansi_color_re.sub(b'', text)
             
             try:
                 from pygments.lexers import guess_lexer_for_filename
                 self._lexer = guess_lexer_for_filename(self._options.input.name,
-                    text, stripnl = False)
+                    clean_text, stripnl = False)
             except LexerClassNotFound:
                 try:
-                    from pygments.lexers import guess_lexer
-                    self._lexer = guess_lexer(text, stripnl = False)
-                except TypeError:
+                    (self._lexer, matches) = self._guess_lexer(clean_text,
+                        stripnl = False)
+                    
+                    if (matches > 0) and (len(clean_text) != len(text)):
+                        # More than one lexer was found with the same weight
+                        # and the input was already colored, so preserve it.
+                        # No error message for performance, since it isn't shown
+                        # anyway.
+                        raise LexerClassNotFound()
+                except (TypeError, LexerClassNotFound):
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
                     self._output = text_output_class(self._options)
@@ -434,8 +446,35 @@ class Pager (Output):
         encoding = self._options.input.encoding
         
         self._output.stream.write(
-            pygments_highlight(text.decode(encoding), self._lexer,
+            pygments_highlight(clean_text.decode(encoding), self._lexer,
                 self._output.formatter).encode(encoding))
+    
+    
+    # Used instead of pygments.lexers.guess_lexer() to get a count of ambiguous
+    # matches.
+    def _guess_lexer(self, text, **options):
+        from pygments.lexers import _iter_lexerclasses as lexer_classes
+        
+        (best_lexer, best_weight) = (None, 0.0)
+        matches = 0
+        
+        for lexer in lexer_classes():
+            weight = lexer.analyse_text(text)
+            
+            if weight == 1.0:
+                return (lexer(**options), 0)
+            elif weight > best_weight:
+                (best_lexer, best_weight) = (weight, lexer)
+                matches = 0
+            elif weight == best_weight:
+                matches += 1
+        
+        if best_lexer is None:
+            # No error message for performance, since it isn't shown anyway.
+            # Also, pygments.util.ClassNotFound() isn't used to avoid an import.
+            raise TypeError()
+        
+        return (best_lexer(**options), matches)
     
     
     def _guess_terminal_size(self):
