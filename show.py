@@ -377,6 +377,7 @@ class Pager (Output):
             from pygments import highlight as pygments_highlight
             encoding = self._options.input.encoding
             
+            # TODO: Highlight in batches to amortize the performance penalty?
             for line in self._options.input.stream:
                 self._output.stream.write(
                     pygments_highlight(
