@@ -210,11 +210,11 @@ The input's name can also be suffixed with a colon followed by a line number to 
     
     # TODO: Too long, refactor.
     def _open_input(self, path):
+        # Check common and fail-fast cases first for performance.
+        
         try:
             return FileInput(path)
         except IOError as error:
-            # Check common and fail-fast cases first for performance.
-            
             if error.errno == errno.EISDIR:
                 return DirectoryInput(path, self.ls_arguments)
             
