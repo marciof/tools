@@ -394,6 +394,9 @@ class Pager (Output):
             self._output.stream.write(text)
             return
         
+        import re
+        self._ansi_color_re = re.compile(br'\x1B\[(?:\d+(?:;\d+)*)?m')
+        
         if self._options.diff_mode:
             from pygments.lexers.text import DiffLexer
             self._lexer = DiffLexer(stripnl = False)
@@ -405,9 +408,6 @@ class Pager (Output):
                 self._output = text_output_class(self._options)
         else:
             from pygments.util import ClassNotFound as LexerClassNotFound
-            import re
-            
-            self._ansi_color_re = re.compile(br'\x1B\[(?:\d+(?:;\d+)*)?m')
             clean_text = self._ansi_color_re.sub(b'', text)
             
             try:
