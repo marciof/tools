@@ -58,6 +58,9 @@ shopt -s cdspell checkwinsize histappend
 
 alias c='cd'
 alias e='$EDITOR'
+alias l='ls -CFXh --color=auto --group-directories-first'
+alias ll='l -l'
+alias dir='l -lA'
 alias sed='sed -r'
 alias -- -='c -'
 alias ..='c ..'
@@ -231,10 +234,6 @@ if [ -e "$show_py" ]; then
     export ACK_PAGER="$show_py -d"
     export GIT_PAGER=\"$show_py\"
 else
-    alias s='less'
-    alias l='ls -CFXh --color=auto --group-directories-first'
-    alias ss='l -l'
-    alias sss='l -lA'
     _have colordiff && alias diff=$NAME
 fi
 
