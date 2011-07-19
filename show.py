@@ -426,12 +426,14 @@ class Pager (Output):
                         # anyway.
                         raise LexerClassNotFound()
                 except (TypeError, LexerClassNotFound):
+                    # TypeError might unexpectedly be raised:
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
                     self._output = text_output_class(self._options)
                     self._output.stream.write(text)
                     return
             
+            # isinstance() isn't used for performance.
             if self._lexer.name == 'Diff':
                 self._options.diff_mode = True
                 
