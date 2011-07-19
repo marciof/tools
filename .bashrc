@@ -228,7 +228,7 @@ if [ -e "$show_py" ]; then
     alias s="$show_py -l-CFXh -l--color=always -l--group-directories-first"
     alias ss='s -l-l'
     alias sss='s -l-lA'
-    export ACK_PAGER="$show_py -p"
+    export ACK_PAGER="$show_py -d"
     export GIT_PAGER=\"$show_py\"
 else
     alias s='less'
