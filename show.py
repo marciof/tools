@@ -267,7 +267,8 @@ class Output:
 
 
 class StreamOutput (Output):
-    def __init__(self, stream):
+    def __init__(self, stream, formatter = None):
+        self.formatter = formatter
         self.stream = stream
     
     
@@ -276,7 +277,7 @@ class StreamOutput (Output):
 
 
 class SubProcessOutput (StreamOutput):
-    def __init__(self, args, detached = False, stderr = None):
+    def __init__(self, args, detached = False, stderr = None, **kargs):
         import subprocess
         
         try:
@@ -296,7 +297,7 @@ class SubProcessOutput (StreamOutput):
         signal.signal(signal.SIGINT,
             lambda sig_int, frame: self._process.send_signal(sig_int))
         
-        StreamOutput.__init__(self, self._process.stdin)
+        StreamOutput.__init__(self, self._process.stdin, **kargs)
         self._detached = detached
     
     
@@ -309,7 +310,10 @@ class SubProcessOutput (StreamOutput):
 
 class TextOutput (SubProcessOutput):
     def __init__(self, options):
-        SubProcessOutput.__init__(self, ['less', '+%dg' % options.input.line])
+        import pygments, pygments.formatters
+        
+        SubProcessOutput.__init__(self, ['less', '+%dg' % options.input.line],
+            formatter = pygments.formatters.Terminal256Formatter())
 
 
 class DiffOutput (TextOutput):
@@ -319,7 +323,6 @@ class DiffOutput (TextOutput):
 
 class Pager (Output):
     def __init__(self, options):
-        self._formatter = None
         self._lexer = None
         self._options = options
         self._output = None
@@ -359,16 +362,22 @@ class Pager (Output):
                 lambda options: StreamOutput(self._options.stdout_stream))
             return
         
-        for line in self._options.input.stream:
-            # TODO: Syntax highlight.
-            self._output.stream.write(line)
+        if self._options.passthrough_mode:
+            for line in self._options.input.stream:
+                self._output.stream.write(line)
+        else:
+            import pygments
+            
+            for line in self._options.input.stream:
+                self._output.stream.write(pygments.highlight(line, self._lexer,
+                    self._output.formatter))
     
     
-    def _flush_buffer(self, buffered_lines, output_class):
+    def _flush_buffer(self, buffered_lines, text_output_class):
         text = b''.join(buffered_lines)
         
         if self._options.passthrough_mode:
-            self._output = output_class(self._options)
+            self._output = text_output_class(self._options)
             self._output.stream.write(text)
             return
         
@@ -380,7 +389,7 @@ class Pager (Output):
             try:
                 self._output = DiffOutput(self._options)
             except NotImplementedError:
-                self._output = output_class(self._options)
+                self._output = text_output_class(self._options)
         else:
             # Remove ANSI color escape sequences.
             import re
@@ -396,7 +405,7 @@ class Pager (Output):
                 except TypeError:
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
-                    self._output = output_class(self._options)
+                    self._output = text_output_class(self._options)
                     self._output.stream.write(text)
                     return
             
@@ -406,13 +415,16 @@ class Pager (Output):
                 try:
                     self._output = DiffOutput(self._options)
                 except NotImplementedError:
-                    self._output = output_class(self._options)
+                    self._output = text_output_class(self._options)
             else:
-                self._output = output_class(self._options)
+                self._output = text_output_class(self._options)
         
-        # TODO: Setup formatter. Is it output dependent? E.g. Kompare
-        # TODO: Syntax highlight.
-        self._output.stream.write(text)
+        if self._output.formatter is None:
+            import pygments.formatters
+            self._output.formatter = pygments.formatters.Terminal256Formatter()
+        
+        self._output.stream.write(pygments.highlight(text, self._lexer,
+            self._output.formatter))
     
     
     def _guess_terminal_size(self):
