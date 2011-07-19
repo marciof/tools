@@ -352,10 +352,11 @@ class Pager (Output):
                 (len(line) - 1.0) / self._terminal_width))
             
             if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
-                self._flush_buffer(buffered_lines)
+                self._flush_buffer(buffered_lines, TextOutput)
                 break
         else:
-            self._flush_buffer(buffered_lines)
+            self._flush_buffer(buffered_lines,
+                lambda options: StreamOutput(self._options.stdout_stream))
             return
         
         for line in self._options.input.stream:
@@ -363,11 +364,11 @@ class Pager (Output):
             self._output.stream.write(line)
     
     
-    def _flush_buffer(self, buffered_lines):
+    def _flush_buffer(self, buffered_lines, output_class):
         text = b''.join(buffered_lines)
         
         if self._options.passthrough_mode:
-            self._output = StreamOutput(self._options.stdout_stream)
+            self._output = output_class(self._options)
             self._output.stream.write(text)
             return
         
@@ -379,7 +380,7 @@ class Pager (Output):
             try:
                 self._output = DiffOutput(self._options)
             except NotImplementedError:
-                self._output = TextOutput(self._options)
+                self._output = output_class(self._options)
         else:
             # Remove ANSI color escape sequences.
             import re
@@ -395,7 +396,7 @@ class Pager (Output):
                 except TypeError:
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
-                    self._output = StreamOutput(self._options.stdout_stream)
+                    self._output = output_class(self._options)
                     self._output.stream.write(text)
                     return
             
@@ -405,9 +406,9 @@ class Pager (Output):
                 try:
                     self._output = DiffOutput(self._options)
                 except NotImplementedError:
-                    self._output = TextOutput(self._options)
+                    self._output = output_class(self._options)
             else:
-                self._output = TextOutput(self._options)
+                self._output = output_class(self._options)
         
         # TODO: Setup formatter. Is it output dependent? E.g. Kompare
         # TODO: Syntax highlight.
