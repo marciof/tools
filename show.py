@@ -313,10 +313,10 @@ class SubProcessOutput (StreamOutput):
 
 class TextOutput (SubProcessOutput):
     def __init__(self, options):
-        import pygments.formatters
+        from pygments.formatters.terminal256 import Terminal256Formatter
         
         SubProcessOutput.__init__(self, ['less', '+%dg' % options.input.line],
-            formatter = pygments.formatters.Terminal256Formatter())
+            formatter = Terminal256Formatter())
 
 
 class DiffOutput (TextOutput):
@@ -369,12 +369,12 @@ class Pager (Output):
             for line in self._options.input.stream:
                 self._output.stream.write(line)
         else:
-            import pygments
+            from pygments import highlight as pygments_highlight
             encoding = self._options.input.encoding
             
             for line in self._options.input.stream:
                 self._output.stream.write(
-                    pygments.highlight(line.decode(encoding), self._lexer,
+                    pygments_highlight(line.decode(encoding), self._lexer,
                         self._output.formatter).encode(encoding))
     
     
@@ -386,27 +386,29 @@ class Pager (Output):
             self._output.stream.write(text)
             return
         
-        import pygments.lexers
-        
         if self._options.diff_mode:
-            self._lexer = pygments.lexers.DiffLexer(stripnl = False)
+            from pygments.lexers.text import DiffLexer
+            self._lexer = DiffLexer(stripnl = False)
             
             try:
                 self._output = DiffOutput(self._options)
             except NotImplementedError:
                 self._output = text_output_class(self._options)
         else:
-            # Remove ANSI color escape sequences.
+            from pygments.util import ClassNotFound as LexerClassNotFound
             import re
+            
+            # Remove ANSI color escape sequences.
             text = re.sub(br'\x1B\[(\d+(;\d+)*)?m', b'', text)
             
             try:
-                self._lexer = pygments.lexers.guess_lexer_for_filename(
-                    self._options.input.name, text, stripnl = False)
-            except pygments.util.ClassNotFound:
+                from pygments.lexers import guess_lexer_for_filename
+                self._lexer = guess_lexer_for_filename(self._options.input.name,
+                    text, stripnl = False)
+            except LexerClassNotFound:
                 try:
-                    self._lexer = pygments.lexers.guess_lexer(text,
-                        stripnl = False)
+                    from pygments.lexers import guess_lexer
+                    self._lexer = guess_lexer(text, stripnl = False)
                 except TypeError:
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
@@ -414,7 +416,7 @@ class Pager (Output):
                     self._output.stream.write(text)
                     return
             
-            if isinstance(self._lexer, pygments.lexers.DiffLexer):
+            if self._lexer.name == 'Diff':
                 self._options.diff_mode = True
                 
                 try:
@@ -425,13 +427,14 @@ class Pager (Output):
                 self._output = text_output_class(self._options)
         
         if self._output.formatter is None:
-            import pygments.formatters
-            self._output.formatter = pygments.formatters.Terminal256Formatter()
+            from pygments.formatters.terminal256 import Terminal256Formatter
+            self._output.formatter = Terminal256Formatter()
         
+        from pygments import highlight as pygments_highlight
         encoding = self._options.input.encoding
         
         self._output.stream.write(
-            pygments.highlight(text.decode(encoding), self._lexer,
+            pygments_highlight(text.decode(encoding), self._lexer,
                 self._output.formatter).encode(encoding))
     
     
