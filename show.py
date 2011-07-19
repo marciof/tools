@@ -464,7 +464,7 @@ class Pager (Output):
             if weight == 1.0:
                 return (lexer(**options), 0)
             elif weight > best_weight:
-                (best_lexer, best_weight) = (weight, lexer)
+                (best_lexer, best_weight) = (lexer, weight)
                 matches = 0
             elif weight == best_weight:
                 matches += 1
