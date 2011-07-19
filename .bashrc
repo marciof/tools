@@ -225,9 +225,9 @@ unset kde_start_ssh_add
 show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
 if [ -e "$show_py" ]; then
-    alias s=\"$show_py\"
-    alias ss='s -l'
-    alias sss='s -lA'
+    alias s="$show_py -l-CFXh -l--color=always -l--group-directories-first"
+    alias ss='s -l-l'
+    alias sss='s -l-lA'
     export ACK_PAGER="$show_py -p"
     export GIT_PAGER=\"$show_py\"
 else
