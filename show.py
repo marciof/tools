@@ -399,7 +399,7 @@ class Pager (Output):
             import re
             
             # Remove ANSI color escape sequences.
-            text = re.sub(br'\x1B\[(\d+(;\d+)*)?m', b'', text)
+            text = re.sub(br'\x1B\[(?:\d+(?:;\d+)*)?m', b'', text)
             
             try:
                 from pygments.lexers import guess_lexer_for_filename
