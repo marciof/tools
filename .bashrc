@@ -72,7 +72,7 @@ _have kwrite gedit nano && export EDITOR=$LOCATION
 export ACK_COLOR_FILENAME='dark blue'
 export HARNESS_COLOR=1
 export HISTCONTROL=ignoreboth
-export LESS='--tabs=4 --clear-screen --RAW-CONTROL-CHARS'
+export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
 
 # Remove bright colors.
