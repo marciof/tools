@@ -17,8 +17,11 @@ class StreamInput:
         self.encoding = encoding
         self.line = line
         self.name = name
-        self.passthrough_mode = passthrough_mode
         self.stream = stream
+        
+        # This option exists mainly for performance, e.g. when listing
+        # directories using "ls" don't bother syntax highlighting its output.
+        self.passthrough_mode = passthrough_mode
     
     
     def close(self):
