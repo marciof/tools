@@ -9,7 +9,12 @@ import errno, os, sys
 
 # Not an abstract base class for performance.
 class StreamInput:
-    def __init__(self, stream, name, line = 1, passthrough_mode = False):
+    def __init__(self, stream, name,
+            encoding = 'UTF-8',
+            line = 1,
+            passthrough_mode = False):
+        
+        self.encoding = encoding
         self.line = line
         self.name = name
         self.passthrough_mode = passthrough_mode
@@ -82,7 +87,6 @@ class Options:
     # TODO: Too long, refactor.
     def __init__(self,
             diff_mode = False,
-            default_encoding = 'UTF-8',
             default_protocol = 'http://',
             inline_lines_threshold = 0.4,
             passthrough_mode = False,
@@ -103,7 +107,6 @@ class Options:
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
-        self.default_encoding = default_encoding
         self.default_protocol = default_protocol
         self.diff_mode = diff_mode
         self.inline_lines_threshold = inline_lines_threshold
@@ -187,7 +190,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
     def _open_diff_input(self, inputs):
         import difflib, cStringIO
         
-        labels = [input.name.encode(self.default_encoding) for input in inputs]
+        labels = [input.name.encode('UTF-8') for input in inputs]
         header = b'diff -u %s %s' % tuple(labels)
         
         # TODO: Use the generator directly to stream by line instead of
@@ -367,10 +370,12 @@ class Pager (Output):
                 self._output.stream.write(line)
         else:
             import pygments
+            encoding = self._options.input.encoding
             
             for line in self._options.input.stream:
-                self._output.stream.write(pygments.highlight(line, self._lexer,
-                    self._output.formatter))
+                self._output.stream.write(
+                    pygments.highlight(line.decode(encoding), self._lexer,
+                        self._output.formatter).encode(encoding))
     
     
     def _flush_buffer(self, buffered_lines, text_output_class):
@@ -423,8 +428,11 @@ class Pager (Output):
             import pygments.formatters
             self._output.formatter = pygments.formatters.Terminal256Formatter()
         
-        self._output.stream.write(pygments.highlight(text, self._lexer,
-            self._output.formatter))
+        encoding = self._options.input.encoding
+        
+        self._output.stream.write(
+            pygments.highlight(text.decode(encoding), self._lexer,
+                self._output.formatter).encode(encoding))
     
     
     def _guess_terminal_size(self):
