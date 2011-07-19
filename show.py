@@ -313,7 +313,7 @@ class SubProcessOutput (StreamOutput):
 
 class TextOutput (SubProcessOutput):
     def __init__(self, options):
-        import pygments, pygments.formatters
+        import pygments.formatters
         
         SubProcessOutput.__init__(self, ['less', '+%dg' % options.input.line],
             formatter = pygments.formatters.Terminal256Formatter())
@@ -386,7 +386,7 @@ class Pager (Output):
             self._output.stream.write(text)
             return
         
-        import pygments, pygments.lexers
+        import pygments.lexers
         
         if self._options.diff_mode:
             self._lexer = pygments.lexers.DiffLexer(stripnl = False)
