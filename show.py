@@ -394,6 +394,7 @@ class Pager (Output):
         if self._options.diff_mode:
             from pygments.lexers.text import DiffLexer
             self._lexer = DiffLexer(stripnl = False)
+            clean_text = text
             
             try:
                 self._output = DiffOutput(self._options)
