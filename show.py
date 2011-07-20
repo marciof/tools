@@ -375,10 +375,11 @@ class Pager (Output):
                 (len(line) - 1.0) / self._terminal_width))
             
             if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
-                self._flush_buffer(buffered_lines, TextOutput)
+                self._flush_buffer(buffered_lines, TextOutput, DiffOutput)
                 break
         else:
             self._flush_buffer(buffered_lines,
+                lambda options: StreamOutput(self._options.stdout_stream),
                 lambda options: StreamOutput(self._options.stdout_stream))
             return
         
@@ -421,11 +422,11 @@ class Pager (Output):
     
     
     # TODO: Too long, refactor.
-    def _flush_buffer(self, buffered_lines, text_output_class):
+    def _flush_buffer(self, buffered_lines, text_output, diff_output):
         text = b''.join(buffered_lines)
         
         if self._options.passthrough_mode:
-            self._output = text_output_class(self._options)
+            self._output = text_output(self._options)
             self._output.stream.write(text)
             return
         
@@ -438,9 +439,9 @@ class Pager (Output):
             clean_text = text
             
             try:
-                self._output = DiffOutput(self._options)
+                self._output = diff_output(self._options)
             except NotImplementedError:
-                self._output = text_output_class(self._options)
+                self._output = text_output(self._options)
         else:
             from pygments.util import ClassNotFound as LexerClassNotFound
             clean_text = self._ansi_color_re.sub(b'', text)
@@ -464,7 +465,7 @@ class Pager (Output):
                     # TypeError might unexpectedly be raised:
                     # http://bitbucket.org/birkenfeld/pygments-main/issue/618/
                     self._options.passthrough_mode = True
-                    self._output = text_output_class(self._options)
+                    self._output = text_output(self._options)
                     self._output.stream.write(text)
                     return
             
@@ -473,11 +474,11 @@ class Pager (Output):
                 self._options.diff_mode = True
                 
                 try:
-                    self._output = DiffOutput(self._options)
+                    self._output = diff_output(self._options)
                 except NotImplementedError:
-                    self._output = text_output_class(self._options)
+                    self._output = text_output(self._options)
             else:
-                self._output = text_output_class(self._options)
+                self._output = text_output(self._options)
         
         if self._output.formatter is None:
             from pygments.formatters.terminal256 import Terminal256Formatter
