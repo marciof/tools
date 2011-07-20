@@ -98,7 +98,8 @@ class Options:
             stdin_stream = sys.stdin,
             stdin_repr = '-',
             stdout_stream = sys.stdout,
-            terminal_only = False):
+            terminal_only = False,
+            visible_white_space = False):
         
         # argparse isn't used for performance.
         import getopt
@@ -106,7 +107,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'df:hi:l:m:p:s:t')
+                'df:hi:l:m:p:s:tw')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -121,6 +122,7 @@ class Options:
         self.stdin_repr = stdin_repr
         self.stdout_stream = stdout_stream
         self.terminal_only = terminal_only
+        self.visible_white_space = visible_white_space
         
         if len(arguments) > 2:
             options.insert(0, ('-h', ''))
@@ -137,7 +139,7 @@ Usage:
   search    [options] [input]*
 
 Options:
-  -d        passthrough mode, don't attempt to syntax highlight input
+  -d        passthrough mode, don't attempt to syntax highlight input (faster)
   -f        list files with names matching the given pattern
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
@@ -146,6 +148,7 @@ Options:
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
+  -w        convert blank spaces to visible characters (slower)
 
 An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation). If given a directory, its' contents are listed via "ls".
 
@@ -162,6 +165,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 self.self_repr = value
             elif option == '-t':
                 self.terminal_only = True
+            elif option == '-w':
+                self.visible_white_space = True
         
         if len(arguments) == 2:
             self.input = self._open_diff_input(map(self._open_input, arguments))
@@ -493,6 +498,9 @@ class Pager (Output):
         if self._output.passthrough_mode:
             self._output.stream.write(clean_text)
         else:
+            if self._options.visible_white_space:
+                self._lexer.add_filter('whitespace', spaces = True)
+            
             self._output.stream.write(
                 pygments_highlight(clean_text.decode(encoding), self._lexer,
                     self._output.formatter).encode(encoding))
