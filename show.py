@@ -83,7 +83,15 @@ class UriInput (StreamInput):
             else:
                 uri = clean_uri
         
-        StreamInput.__init__(self, urllib.urlopen(uri), name = uri)
+        from email import message_from_string as email_from_string
+        
+        stream = urllib.urlopen(uri)
+        charset = email_from_string(str(stream.headers)).get_content_charset()
+        
+        if charset is None:
+            StreamInput.__init__(self, stream, name = uri)
+        else:
+            StreamInput.__init__(self, stream, name = uri, encoding = charset)
 
 
 class Options:
@@ -338,6 +346,7 @@ class Pager (Output):
         self._lexer = None
         self._options = options
         self._output = None
+        self._output_encoding = None
         
         # TODO: Use None when unavailable for performance?
         if options.stdout_stream.isatty():
@@ -391,11 +400,10 @@ class Pager (Output):
                 # TODO: Highlight in batches to amortize the performance penalty?
                 # E.g. read stream in chunked bytes.
                 for line in self._options.input.stream:
-                    self._output.stream.write(
-                        pygments_highlight(
-                            self._ansi_color_re.sub(b'', line).decode(encoding),
-                            self._lexer,
-                            self._output.formatter).encode(encoding))
+                    self._output.stream.write(pygments_highlight(
+                        self._ansi_color_re.sub(b'', line).decode(encoding),
+                        self._lexer,
+                        self._output.formatter).encode(self._output_encoding))
         except IOError as error:
             if error.errno != errno.EPIPE:
                 raise
@@ -465,17 +473,20 @@ class Pager (Output):
             self._output.formatter = Terminal256Formatter()
         
         from pygments import highlight as pygments_highlight
-        encoding = self._options.input.encoding
         
         if self._output.passthrough_mode:
             self._output.stream.write(clean_text)
         else:
+            import locale
+            self._output_encoding = locale.getpreferredencoding()
+            
             if self._options.visible_white_space:
                 self._lexer.add_filter('whitespace', spaces = True)
             
-            self._output.stream.write(
-                pygments_highlight(clean_text.decode(encoding), self._lexer,
-                    self._output.formatter).encode(encoding))
+            self._output.stream.write(pygments_highlight(
+                clean_text.decode(self._options.input.encoding),
+                self._lexer,
+                self._output.formatter).encode(self._output_encoding))
     
     
     # Used instead of pygments.lexers.guess_lexer() to get a count of ambiguous
