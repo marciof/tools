@@ -248,8 +248,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                         except IOError:
                             pass
                 
-                import re
                 # No re.VERBOSE flag for performance.
+                import re
                 go_to_line = re.search(r'^(.+?):([+-]?(?:[1-9]|\d{2,}))$', path)
                 
                 if go_to_line is not None:
@@ -416,8 +416,8 @@ class Pager (Output):
             self._output.stream.write(text)
             return
         
-        import re
         # No re.VERBOSE flag for performance.
+        import re
         self._ansi_color_re = re.compile(br'\x1B\[(?:\d+(?:;\d+)*)?m')
         
         if self._options.diff_mode:
@@ -467,25 +467,26 @@ class Pager (Output):
             else:
                 self._output = text_output(self._options)
         
+        if self._output.passthrough_mode:
+            self._output.stream.write(clean_text)
+            return
+        
+        import locale
+        from pygments import highlight as pygments_highlight
+        
+        self._output_encoding = locale.getpreferredencoding()
+        
         if self._output.formatter is None:
             from pygments.formatters.terminal256 import Terminal256Formatter
             self._output.formatter = Terminal256Formatter()
         
-        from pygments import highlight as pygments_highlight
+        if self._options.visible_white_space:
+            self._lexer.add_filter('whitespace', spaces = True)
         
-        if self._output.passthrough_mode:
-            self._output.stream.write(clean_text)
-        else:
-            import locale
-            self._output_encoding = locale.getpreferredencoding()
-            
-            if self._options.visible_white_space:
-                self._lexer.add_filter('whitespace', spaces = True)
-            
-            self._output.stream.write(pygments_highlight(
-                clean_text.decode(self._options.input.encoding),
-                self._lexer,
-                self._output.formatter).encode(self._output_encoding))
+        self._output.stream.write(pygments_highlight(
+            clean_text.decode(self._options.input.encoding),
+            self._lexer,
+            self._output.formatter).encode(self._output_encoding))
     
     
     # Used instead of pygments.lexers.guess_lexer() to get a count of ambiguous
