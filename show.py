@@ -377,56 +377,43 @@ class Pager (Output):
         buffered_lines = []
         wrapped_lines = 0
         
-        for line in self._options.input.stream:
-            buffered_lines.append(line)
-            wrapped_lines += int(round(
-                (len(line) - 1.0) / self._terminal_width))
-            
-            if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
-                self._flush_buffer(buffered_lines, TextOutput, DiffOutput)
-                break
-        else:
-            self._flush_buffer(buffered_lines,
-                lambda options: StreamOutput(self._options.stdout_stream),
-                lambda options: StreamOutput(self._options.stdout_stream))
-            return
-        
-        if self._options.passthrough_mode:
+        try:
             for line in self._options.input.stream:
-                try:
+                buffered_lines.append(line)
+                wrapped_lines += int(round(
+                    (len(line) - 1.0) / self._terminal_width))
+                
+                if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
+                    self._flush_buffer(buffered_lines, TextOutput, DiffOutput)
+                    break
+            else:
+                self._flush_buffer(buffered_lines,
+                    lambda options: StreamOutput(self._options.stdout_stream),
+                    lambda options: StreamOutput(self._options.stdout_stream))
+                return
+            
+            if self._options.passthrough_mode:
+                for line in self._options.input.stream:
                     self._output.stream.write(line)
-                except IOError as error:
-                    if error.errno == errno.EPIPE:
-                        break
-                    else:
-                        raise
-        elif self._output.passthrough_mode:
-            for line in self._options.input.stream:
-                try:
-                    self._output.stream.write(self._ansi_color_re.sub(b'', line))
-                except IOError as error:
-                    if error.errno == errno.EPIPE:
-                        break
-                    else:
-                        raise
-        else:
-            from pygments import highlight as pygments_highlight
-            encoding = self._options.input.encoding
-            
-            # TODO: Highlight in batches to amortize the performance penalty?
-            # E.g. read stream in chunked bytes.
-            for line in self._options.input.stream:
-                try:
+            elif self._output.passthrough_mode:
+                for line in self._options.input.stream:
+                    self._output.stream.write(
+                        self._ansi_color_re.sub(b'', line))
+            else:
+                from pygments import highlight as pygments_highlight
+                encoding = self._options.input.encoding
+                
+                # TODO: Highlight in batches to amortize the performance penalty?
+                # E.g. read stream in chunked bytes.
+                for line in self._options.input.stream:
                     self._output.stream.write(
                         pygments_highlight(
                             self._ansi_color_re.sub(b'', line).decode(encoding),
                             self._lexer,
                             self._output.formatter).encode(encoding))
-                except IOError as error:
-                    if error.errno == errno.EPIPE:
-                        break
-                    else:
-                        raise
+        except IOError as error:
+            if error.errno != errno.EPIPE:
+                raise
     
     
     # TODO: Too long, refactor.
