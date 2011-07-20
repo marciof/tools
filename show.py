@@ -88,19 +88,7 @@ class UriInput (StreamInput):
 
 class Options:
     # TODO: Too long, refactor.
-    def __init__(self,
-            diff_mode = False,
-            default_protocol = 'http://',
-            inline_lines_threshold = 0.4,
-            passthrough_mode = False,
-            self_path = sys.argv[0],
-            self_repr = 'self',
-            stdin_stream = sys.stdin,
-            stdin_repr = '-',
-            stdout_stream = sys.stdout,
-            terminal_only = False,
-            visible_white_space = False):
-        
+    def __init__(self):
         # argparse isn't used for performance.
         import getopt
         
@@ -111,18 +99,18 @@ class Options:
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
-        self.default_protocol = default_protocol
-        self.diff_mode = diff_mode
-        self.inline_lines_threshold = inline_lines_threshold
+        self.default_protocol = 'http://'
+        self.diff_mode = False
+        self.inline_lines_threshold = 0.4
         self.ls_arguments = []
-        self.passthrough_mode = passthrough_mode
-        self.self_path = self_path
-        self.self_repr = self_repr
-        self.stdin_stream = stdin_stream
-        self.stdin_repr = stdin_repr
-        self.stdout_stream = stdout_stream
-        self.terminal_only = terminal_only
-        self.visible_white_space = visible_white_space
+        self.passthrough_mode = False
+        self.self_path = sys.argv[0]
+        self.self_repr = 'self'
+        self.stdin_stream = sys.stdin
+        self.stdin_repr = '-'
+        self.stdout_stream = sys.stdout
+        self.terminal_only = False
+        self.visible_white_space = False
         
         if len(arguments) > 2:
             options.insert(0, ('-h', ''))
@@ -153,7 +141,7 @@ Options:
 An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation). If given a directory, its' contents are listed via "ls".
 
 The input's name can also be suffixed with a colon followed by a line number to scroll to, if possible.
-'''.strip() % (stdin_repr, default_protocol, self_repr)
+'''.strip() % (self.stdin_repr, self.default_protocol, self.self_repr)
                 sys.exit()
             elif option == '-i':
                 self.stdin_repr = value
