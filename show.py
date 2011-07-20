@@ -353,6 +353,7 @@ class Pager (Output):
                 self._output.close()
     
     
+    # TODO: Too long, refactor.
     def display(self):
         buffered_lines = []
         wrapped_lines = 0
@@ -386,11 +387,17 @@ class Pager (Output):
             # TODO: Highlight in batches to amortize the performance penalty?
             # E.g. read stream in chunked bytes.
             for line in self._options.input.stream:
-                self._output.stream.write(
-                    pygments_highlight(
-                        self._ansi_color_re.sub(b'', line).decode(encoding),
-                        self._lexer,
-                        self._output.formatter).encode(encoding))
+                try:
+                    self._output.stream.write(
+                        pygments_highlight(
+                            self._ansi_color_re.sub(b'', line).decode(encoding),
+                            self._lexer,
+                            self._output.formatter).encode(encoding))
+                except IOError as error:
+                    if error.errno == errno.EPIPE:
+                        break
+                    else:
+                        raise
     
     
     # TODO: Too long, refactor.
