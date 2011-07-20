@@ -273,8 +273,9 @@ class Output:
 
 
 class StreamOutput (Output):
-    def __init__(self, stream, formatter = None):
+    def __init__(self, stream, formatter = None, passthrough_mode = False):
         self.formatter = formatter
+        self.passthrough_mode = passthrough_mode
         self.stream = stream
     
     
@@ -316,17 +317,27 @@ class SubProcessOutput (StreamOutput):
 
 
 class TextOutput (SubProcessOutput):
-    def __init__(self, options):
-        from pygments.formatters.terminal256 import Terminal256Formatter
-        
-        SubProcessOutput.__init__(self, ['less', '+%dg' % options.input.line],
-            formatter = Terminal256Formatter())
+    def __init__(self, options, **kargs):
+        if 'args' in kargs:
+            SubProcessOutput.__init__(self, **kargs)
+        else:
+            from pygments.formatters.terminal256 import Terminal256Formatter
+            
+            SubProcessOutput.__init__(self,
+                args = ['less', '+%dg' % options.input.line],
+                formatter = Terminal256Formatter())
 
 
 class DiffOutput (TextOutput):
     def __init__(self, options):
-        raise NotImplementedError()
-
+        if options.terminal_only:
+            TextOutput.__init__(self, options)
+        else:
+            TextOutput.__init__(self, options,
+                args = ['kompare', '-o', '-'],
+                detached = True,
+                passthrough_mode = True,
+                stderr = open(os.devnull))
 
 class Pager (Output):
     def __init__(self, options):
@@ -375,6 +386,15 @@ class Pager (Output):
             for line in self._options.input.stream:
                 try:
                     self._output.stream.write(line)
+                except IOError as error:
+                    if error.errno == errno.EPIPE:
+                        break
+                    else:
+                        raise
+        elif self._output.passthrough_mode:
+            for line in self._options.input.stream:
+                try:
+                    self._output.stream.write(self._ansi_color_re.sub(b'', line))
                 except IOError as error:
                     if error.errno == errno.EPIPE:
                         break
@@ -466,9 +486,12 @@ class Pager (Output):
         from pygments import highlight as pygments_highlight
         encoding = self._options.input.encoding
         
-        self._output.stream.write(
-            pygments_highlight(clean_text.decode(encoding), self._lexer,
-                self._output.formatter).encode(encoding))
+        if self._output.passthrough_mode:
+            self._output.stream.write(clean_text)
+        else:
+            self._output.stream.write(
+                pygments_highlight(clean_text.decode(encoding), self._lexer,
+                    self._output.formatter).encode(encoding))
     
     
     # Used instead of pygments.lexers.guess_lexer() to get a count of ambiguous
