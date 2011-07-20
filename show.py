@@ -249,10 +249,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                             pass
                 
                 import re
-                
-                go_to_line = re.search(
-                    r'^ (.+?) : ([+-]? (?: [1-9] | \d{2,})) $', path,
-                    re.VERBOSE)
+                # No re.VERBOSE flag for performance.
+                go_to_line = re.search(r'^(.+?):([+-]?(?:[1-9]|\d{2,}))$', path)
                 
                 if go_to_line is not None:
                     (path, line) = go_to_line.groups()
@@ -419,6 +417,7 @@ class Pager (Output):
             return
         
         import re
+        # No re.VERBOSE flag for performance.
         self._ansi_color_re = re.compile(br'\x1B\[(?:\d+(?:;\d+)*)?m')
         
         if self._options.diff_mode:
