@@ -204,6 +204,9 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 inputs[1].stream.readlines(),
                 *labels)))
         
+        for input in inputs:
+            input.close()
+        
         self.diff_mode = True
         return StreamInput(diff, name = header)
     
