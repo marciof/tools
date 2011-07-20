@@ -372,7 +372,13 @@ class Pager (Output):
         
         if self._options.passthrough_mode:
             for line in self._options.input.stream:
-                self._output.stream.write(line)
+                try:
+                    self._output.stream.write(line)
+                except IOError as error:
+                    if error.errno == errno.EPIPE:
+                        break
+                    else:
+                        raise
         else:
             from pygments import highlight as pygments_highlight
             encoding = self._options.input.encoding
