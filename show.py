@@ -172,22 +172,14 @@ The input's name can also be suffixed with a colon followed by a line number to 
         if len(arguments) == 2:
             self.ls_arguments.append('--color=never')
             self.input = self._open_diff_input(map(self._open_input, arguments))
-        else:
-            if len(arguments) == 0:
-                if self.stdin_stream.isatty():
-                    self.input = self._open_input(os.curdir)
-                else:
-                    self.input = StreamInput(self.stdin_stream,
-                        name = self.stdin_repr)
-            elif len(arguments) == 1:
-                if self.stdin_stream.isatty():
-                    self.input = self._open_input(arguments[0])
-                else:
-                    self.ls_arguments.append('--color=never')
-                    
-                    self.input = self._open_diff_input([
-                        StreamInput(self.stdin_stream, name = self.stdin_repr),
-                        self._open_input(arguments[0])])
+        elif len(arguments) == 1:
+                self.input = self._open_input(arguments[0])
+        elif len(arguments) == 0:
+            if self.stdin_stream.isatty():
+                self.input = self._open_input(os.curdir)
+            else:
+                self.input = StreamInput(self.stdin_stream,
+                    name = self.stdin_repr)
         
         if self.input.passthrough_mode:
             self.passthrough_mode = True
