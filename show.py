@@ -110,7 +110,7 @@ class UriInput (StreamInput):
             StreamInput.__init__(self, stream, name = uri, encoding = charset)
 
 
-class TarInput (SubProcessInput):
+class TarFileInput (SubProcessInput):
     @staticmethod
     def handles(path):
         import re
@@ -240,7 +240,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
         # Check common and fail-fast cases first for performance.
         
         try:
-            if TarInput.handles(path):
+            if TarFileInput.handles(path):
                 return TarInput(path)
             else:
                 return FileInput(path)
