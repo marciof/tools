@@ -10,7 +10,6 @@
 # Standard library:
 from __future__ import division, print_function, unicode_literals
 import ConfigParser, email.feedparser, email.parser, imaplib, urllib2
-from abc import *
 
 
 __author__ = 'Marcio Faustino'
