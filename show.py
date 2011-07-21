@@ -114,7 +114,7 @@ class TarFileInput (SubProcessInput):
     @staticmethod
     def handles(path):
         import re
-        return bool(re.search(r'\.(?:tgz|tar(?:\.\w+))$', path, re.IGNORECASE))
+        return bool(re.search(r'\.(?:tgz|tar(?:\.\w+)?)$', path, re.IGNORECASE))
     
     
     def __init__(self, path):
@@ -241,7 +241,7 @@ The input's name can also be suffixed with a colon followed by a line number to 
         
         try:
             if TarFileInput.handles(path):
-                return TarInput(path)
+                return TarFileInput(path)
             else:
                 return FileInput(path)
         except IOError as error:
