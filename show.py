@@ -437,6 +437,8 @@ class Pager (Output):
         except IOError as error:
             if error.errno != errno.EPIPE:
                 raise
+        except KeyboardInterrupt:
+            self._options.stdout_stream.write('\n')
     
     
     # TODO: Too long, refactor.
