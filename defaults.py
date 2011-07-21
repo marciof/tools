@@ -15,7 +15,7 @@ from abc import *
 
 __author__ = 'Marcio Faustino'
 __doc__ = 'Sets some defaults and implements important fixes.'
-__version__ = '2011-07-15'
+__version__ = '2011-07-21'
 
 
 def externals(*modules):
@@ -187,6 +187,3 @@ class RemoveDoublePercents (object):
 
 
 fix()
-
-NaN = float('NaN')
-Infinity = float('Infinity')
