@@ -2,6 +2,23 @@
 # -*- coding: UTF-8 -*-
 
 
+# TODO: Fix diff encoding (use None as the input default?)
+#       ./show.py -t my.opera.com www.google.com
+# TODO: Type check "paging_threshold_ratio" option.
+# TODO: Allow special glob input?
+#       ./show.py .py # '*.py'
+# TODO: Add filter to highlight trailing white-space?
+# TODO: Add option to follow file? (Automatically if it changes size?)
+# TODO: Print header for less to show the input's path?
+#       perl -MTerm::ANSIColor -we "print colored(sprintf('%-80s', 'test'), 'bright_white on_black')"
+# TODO: Convert to C++ for speed? Or re-use existing programs?
+#       highlight -A source.c
+#           http://www.andre-simon.de/doku/highlight/en/highlight.html
+#       source-highlight -f esc -i source.c
+#           http://www.gnu.org/software/src-highlite/
+# TODO: Add documentation and tests.
+
+
 # Standard library:
 from __future__ import unicode_literals
 import errno, os, sys
