@@ -270,6 +270,16 @@ reload() {
     exec $SHELL
 }
 
+sbl() {
+    if _in_git; then
+        git blame --date=short $@
+    elif _in_svn; then
+        svn blame $@
+    else
+        _in_scm
+    fi
+}
+
 sci() {
     if _in_git; then
         local cached=$(git diff --cached --name-only | wc -l)
