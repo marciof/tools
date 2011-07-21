@@ -17,20 +17,7 @@ __doc__ = 'Sets some defaults and implements important fixes.'
 __version__ = '2011-07-21'
 
 
-def fix(object = None, version = None, name = None, call = False):
-    if not hasattr(fix, 'symbols'):
-        setattr(fix, 'symbols', set())
-    
-    # Namespace cleanup.
-    if object is None and version is None:
-        symbols = globals()
-        
-        for symbol in fix.symbols:
-            del symbols[symbol]
-        
-        fix.symbols.clear()
-        return
-    
+def fix(object, version, name = None, call = False):
     def apply_fix(value):
         import sys
         
@@ -39,12 +26,7 @@ def fix(object = None, version = None, name = None, call = False):
                 value.__name__ if name is None else name,
                 value(object) if call else value)
         
-        fix.symbols.add(value.__name__)
         return value
-    
-    import inspect
-    symbol = inspect.getmodule(object).__name__.split('.', 1).pop(0)
-    fix.symbols.add(symbol)
     
     return apply_fix
 
@@ -158,6 +140,3 @@ class RemoveDoublePercents (object):
     
     def sub(self, replacement, value, *args, **kargs):
         return value.replace('%%', '')
-
-
-fix()
