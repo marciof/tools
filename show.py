@@ -239,11 +239,14 @@ The input's name can also be suffixed with a colon followed by a line number to 
     def _open_input(self, path):
         # Check common and fail-fast cases first for performance.
         
-        try:
-            if TarFileInput.handles(path):
+        if TarFileInput.handles(path):
+            try:
                 return TarFileInput(path)
-            else:
-                return FileInput(path)
+            except IOError:
+                pass
+        
+        try:
+            return FileInput(path)
         except IOError as error:
             if error.errno == errno.EISDIR:
                 return DirectoryInput(path, self.ls_arguments)
