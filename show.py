@@ -171,7 +171,7 @@ Options:
   -l        option for "ls", when listing directories
   -m        list file matches for the given pattern
   -p        protocol for URI's with missing scheme, defaults to "%s"
-  -r        paging ratio of lines / terminal height, defaults to %s (%%) of input
+  -r        paging ratio of input lines / terminal height, defaults to %s (%%)
   -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
   -w        convert blank spaces to visible characters (slower)
