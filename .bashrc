@@ -57,7 +57,7 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c='cd'
-alias e='$EDITOR'
+alias e='$(if pgrep kompare > /dev/null; then echo $EDITOR; else echo $VISUAL; fi)'
 alias l='ls -CFXh --color=auto --group-directories-first'
 alias ll='l -l'
 alias dir='l -lA'
@@ -70,7 +70,8 @@ alias .....='c ../../../..'
 
 _have ack-grep ack && alias f="$NAME --sort-files"
 _have dircolors && eval "$($NAME -b)"
-_have kwrite gedit nano && export EDITOR=$LOCATION
+_have kwrite gedit nano && export VISUAL=$LOCATION
+_have nano && export EDITOR=$LOCATION
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
@@ -173,12 +174,8 @@ if _have git; then
         COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
         && echo $COMMAND \
         && $COMMAND'"'"
-    
-    if [ -n "$HAVE_KWRITE" ]; then
-        export GIT_EDITOR='$EDITOR 2> /dev/null'
-    else
-        export GIT_EDITOR='$EDITOR'
-    fi
+    _set_git_config core.editor 'bash -c "
+        if pgrep kompare > /dev/null; then $EDITOR; else $VISUAL; fi"'
     
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
