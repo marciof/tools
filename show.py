@@ -176,9 +176,9 @@ Options:
   -t        use terminal only, no graphical interfaces
   -w        convert blank spaces to visible characters (slower)
 
-An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation). If given a directory, its' contents are listed via "ls".
-
-The input's name can also be suffixed with a colon followed by a line number to scroll to, if possible.
+An input can be a path, an URI, a Perl module name, standard input or this
+script's (given their string representation). The input's name can also be
+suffixed with a colon followed by a line number to scroll to, if possible.
 '''.strip() % (
     self.stdin_repr, self.default_protocol,
     self.paging_threshold_ratio, self.self_repr)
