@@ -103,14 +103,14 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'df:hi:l:m:p:s:tw')
+                'df:hi:l:m:p:r:s:tw')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
         self.default_protocol = 'http://'
         self.diff_mode = False
-        self.inline_lines_threshold = 0.4
         self.ls_arguments = []
+        self.paging_threshold_ratio = 0.4
         self.passthrough_mode = False
         self.self_path = sys.argv[0]
         self.self_repr = 'self'
@@ -142,6 +142,7 @@ Options:
   -l        option for "ls", when listing directories
   -m        list file matches for the given pattern
   -p        protocol for URI's with missing scheme, defaults to "%s"
+  -r        paging ratio of lines / terminal height, defaults to %s (%%) of input
   -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
   -w        convert blank spaces to visible characters (slower)
@@ -149,7 +150,9 @@ Options:
 An input can be a path, an URI, a Perl module name, standard input or this script's (given their string representation). If given a directory, its' contents are listed via "ls".
 
 The input's name can also be suffixed with a colon followed by a line number to scroll to, if possible.
-'''.strip() % (self.stdin_repr, self.default_protocol, self.self_repr)
+'''.strip() % (
+    self.stdin_repr, self.default_protocol,
+    self.paging_threshold_ratio, self.self_repr)
                 sys.exit()
             elif option == '-i':
                 self.stdin_repr = value
@@ -157,6 +160,8 @@ The input's name can also be suffixed with a colon followed by a line number to 
                 self.ls_arguments.append(value)
             elif option == '-p':
                 self.default_protocol = value
+            elif option == '-r':
+                self.paging_threshold_ratio = float(value)
             elif option == '-s':
                 self.self_repr = value
             elif option == '-t':
@@ -350,7 +355,7 @@ class Pager (Output):
         if options.stdout_stream.isatty():
             (rows, self._terminal_width) = self._guess_terminal_size()
             self._max_inline_lines = int(round(
-                rows * options.inline_lines_threshold))
+                rows * options.paging_threshold_ratio))
         else:
             self._max_inline_lines = float('Infinity')
             self._terminal_width = float('Infinity')
