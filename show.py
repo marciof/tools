@@ -63,8 +63,7 @@ class DirectoryInput (SubProcessInput):
 
 class PerlDocInput (SubProcessInput):
     def __init__(self, module):
-        SubProcessInput.__init__(self, ['perldoc', '-t', module],
-            name = module)
+        SubProcessInput.__init__(self, ['perldoc', '-t', module], name = module)
 
 
 class UriInput (StreamInput):
@@ -92,6 +91,19 @@ class UriInput (StreamInput):
             StreamInput.__init__(self, stream, name = uri)
         else:
             StreamInput.__init__(self, stream, name = uri, encoding = charset)
+
+
+class TarInput (SubProcessInput):
+    @staticmethod
+    def handles(path):
+        import re
+        return bool(re.search(r'\.(?:tgz|tar(?:\.\w+))$', path, re.IGNORECASE))
+    
+    
+    def __init__(self, path):
+        SubProcessInput.__init__(self, ['tar', 'tf', path],
+            name = path,
+            passthrough_mode = True)
 
 
 class Options:
@@ -211,7 +223,10 @@ The input's name can also be suffixed with a colon followed by a line number to 
         # Check common and fail-fast cases first for performance.
         
         try:
-            return FileInput(path)
+            if TarInput.handles(path):
+                return TarInput(path)
+            else:
+                return FileInput(path)
         except IOError as error:
             if error.errno == errno.EISDIR:
                 return DirectoryInput(path, self.ls_arguments)
