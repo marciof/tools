@@ -17,31 +17,6 @@ __doc__ = 'Sets some defaults and implements important fixes.'
 __version__ = '2011-07-21'
 
 
-def externals(*modules):
-    import inspect, sys
-    
-    missing = set()
-    importee = sys._getframe(1).f_locals
-    
-    for module in modules:
-        package = module.split('.', 1).pop(0)
-        
-        if package != module:
-            try:
-                importee[package] = __import__(package)
-            except ImportError:
-                missing.add(package)
-                continue
-        
-        try:
-            importee[module] = __import__(module)
-        except ImportError:
-            missing.add(module)
-    
-    if len(missing) > 0:
-        sys.exit('Modules not found: ' + ', '.join(sorted(missing)))
-
-
 def fix(object = None, version = None, name = None, call = False):
     if not hasattr(fix, 'symbols'):
         setattr(fix, 'symbols', set())
