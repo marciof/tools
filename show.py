@@ -113,8 +113,15 @@ class UriInput (StreamInput):
 class TarFileInput (SubProcessInput):
     @staticmethod
     def handles(path):
-        import re
-        return bool(re.search(r'\.(?:tgz|tar(?:\.\w+)?)$', path, re.IGNORECASE))
+        path = path.lower()
+        
+        # No regular expression used for performance. List of extensions taken
+        # from "lesspipe".
+        return path.endswith('.tar.gz') \
+            or path.endswith('.tgz') \
+            or path.endswith('.tar.z') \
+            or path.endswith('.tar.dz') \
+            or path.endswith('.tar')
     
     
     def __init__(self, path):
