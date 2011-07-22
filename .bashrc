@@ -57,7 +57,7 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c='cd'
-alias e='$(if pgrep kompare > /dev/null; then echo $EDITOR; else echo $VISUAL; fi)'
+alias e='$VISUAL'
 alias l='ls -CFXh --color=auto --group-directories-first'
 alias ll='l -l'
 alias dir='l -lA'
@@ -175,7 +175,7 @@ if _have git; then
         && echo $COMMAND \
         && $COMMAND'"'"
     _set_git_config core.editor 'bash -c "
-        if pgrep kompare > /dev/null; then $EDITOR; else $VISUAL; fi"'
+        if pgrep kompare > /dev/null; then $EDITOR $@; else $VISUAL $@; fi"'
     
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
