@@ -418,9 +418,11 @@ class Pager (Output):
                     self._flush_buffer(buffered_lines, TextOutput, DiffOutput)
                     break
             else:
-                self._flush_buffer(buffered_lines,
-                    lambda options: StreamOutput(self._options.stdout_stream),
-                    lambda options: StreamOutput(self._options.stdout_stream))
+                if len(buffered_lines) > 0:
+                    self._flush_buffer(buffered_lines,
+                        lambda options: StreamOutput(options.stdout_stream),
+                        lambda options: StreamOutput(options.stdout_stream))
+                
                 return
             
             if self._options.passthrough_mode:
