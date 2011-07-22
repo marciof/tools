@@ -230,7 +230,7 @@ if [ -e "$show_py" ]; then
     alias ss='s -l-l'
     alias sss='s -l-lA'
     export ACK_PAGER="$show_py -d"
-    export GIT_PAGER=\"$show_py\"
+    export GIT_PAGER=$show_py
 else
     _have colordiff && alias diff=$NAME
 fi
