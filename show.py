@@ -4,7 +4,6 @@
 
 # TODO: Fix diff encoding (use None as the input default?)
 #       ./show.py -t my.opera.com www.google.com
-# TODO: Type check the "paging_threshold_ratio" option.
 # TODO: Allow special glob input?
 #       ./show.py .py # '*.py'
 # TODO: Add filter to highlight trailing white-space?
@@ -197,7 +196,14 @@ suffixed with a colon followed by a line number to scroll to, if possible.
             elif option == '-p':
                 self.default_protocol = value
             elif option == '-r':
-                self.paging_threshold_ratio = float(value)
+                try:
+                    self.paging_threshold_ratio = r = float(value)
+                    import math
+                    
+                    if math.isinf(r) or math.isnan(r) or (r < 0) or (r > 1):
+                        raise ValueError()
+                except ValueError as error:
+                    sys.exit('invalid paging ratio value: ' + value)
             elif option == '-s':
                 self.self_repr = value
             elif option == '-t':
