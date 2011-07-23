@@ -138,7 +138,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'df:hi:l:m:p:r:s:tw')
+                'df:hi:l:L:m:p:r:s:tuw')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -175,11 +175,13 @@ Options:
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
   -l        option for "ls", when listing directories
+  -L        ignored for Subversion compatibility
   -m        list file matches for the given pattern
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -r        paging ratio of input lines / terminal height, defaults to %s (%%)
   -s        this script's path string representation, defaults to "%s"
   -t        use terminal only, no graphical interfaces
+  -u        ignored for diff compatibility
   -w        convert blank spaces to visible characters (slower)
 
 An input can be a path, an URI, a Perl module name, standard input or this
