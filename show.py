@@ -309,7 +309,7 @@ suffixed with a colon followed by a line number to scroll to, if possible.
                     except IOError:
                         pass
             
-            raise error
+            sys.exit(str(error))
 
 
 # Not an abstract base class for performance.
