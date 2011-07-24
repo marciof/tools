@@ -4,6 +4,7 @@
 
 # TODO: Fix diff encoding (use None as the input default?)
 #       ./show.py -t my.opera.com www.google.com
+# TODO: Fix line length counting when the input contains ANSI color codes?
 # TODO: Allow special glob input?
 #       ./show.py .py # '*.py'
 # TODO: Add filter to highlight trailing white-space?
