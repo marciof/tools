@@ -4,6 +4,7 @@
 
 # TODO: Fix diff encoding (use None as the input default?)
 #       ./show.py -t my.opera.com www.google.com
+# TODO: Display contents of zip files.
 # TODO: Fix line length counting when the input contains ANSI color codes?
 # TODO: Allow special glob input?
 #       ./show.py .py # '*.py'
