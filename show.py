@@ -534,7 +534,7 @@ class Pager (Output):
             self._output.formatter = Terminal256Formatter()
         
         if self._options.visible_white_space:
-            self._lexer.add_filter('whitespace', spaces = True)
+            self._lexer.add_filter('whitespace', spaces = True, tabs = True)
         
         self._output.stream.write(pygments_highlight(
             clean_text.decode(self._options.input.encoding),
