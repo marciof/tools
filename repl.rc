@@ -160,6 +160,7 @@ around read => sub {
 package main;
 
 use English qw(-no_match_vars);
+use Term::ANSIColor ();
 
 $_REPL->term(Term::ReadLine::NoDuplicates->new(
     $_REPL->term->Attribs->{readline_name}));
@@ -185,7 +186,7 @@ $_REPL->fancy_prompt(sub {
     my ($self) = @ARG;
     
     return sprintf '%s%s> ',
-        $self->current_package,
+        Term::ANSIColor::colored($self->current_package, 'blue'),
         $self->line_depth > 0 ? (':' . $self->line_depth) : '';
 });
 
