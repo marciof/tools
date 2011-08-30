@@ -1,7 +1,0 @@
-/* https://addons.opera.com/addons/extensions/details/focus-on-textbox/ */
-input:focus,
-select:focus,
-textarea:focus {
-    border-radius: 0 !important;
-    box-shadow: 0 0 5px 0 #0066FF !important;
-}
