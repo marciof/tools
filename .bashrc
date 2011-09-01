@@ -68,7 +68,7 @@ alias ...='c ../..'
 alias ....='c ../../..'
 alias .....='c ../../../..'
 
-_have ack-grep ack && alias f="$NAME --sort-files"
+_have ack-grep ack && alias f="$NAME --all --sort-files"
 _have dircolors && eval "$($NAME -b)"
 _have kwrite gedit nano && export VISUAL=$LOCATION
 _have nano && export EDITOR=$LOCATION
