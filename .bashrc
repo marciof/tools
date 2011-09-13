@@ -99,7 +99,7 @@ if [ -z "$CYGWIN_ENV" ]; then
         # Save history session to file and set terminal title.
         export PROMPT_COMMAND='
             history -a
-            echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
+            echo -ne "\e]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
     fi
     
     if [ "$(stat --format=%i /)" != '2' ]; then
@@ -123,6 +123,13 @@ else
         [ -n "$CD" ] && cd "$(cygpath "$CD")" && unset CD
     fi
 fi
+
+_jobs_nr_ps1() {
+    local jobs=$(jobs | wc -l)
+    [ $jobs -gt 0 ] && echo -e ":\e[0;31m$jobs\e[00m"
+}
+
+ps1_user_host="\[\e[4;30;32m\]$ps1_user_host\[\e[00m\]\$(_jobs_nr_ps1)"
 
 if _have cpan; then
     export FTP_PASSIVE=1
@@ -148,7 +155,7 @@ fi
 if _have git; then
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo -e "\033[00m:\033[0;33m$ps1"
+        [ -n "$ps1" ] && echo -e ":\e[0;33m$ps1\e[00m"
     }
     
     _set_git_config() {
@@ -186,7 +193,7 @@ if _have git; then
     fi
 fi
 
-export PS1="\[\033[4;30;32m\]$ps1_user_host\[\033[00m\]:\[\033[01;34m\]\w\n\\$\[\033[00m\] "
+export PS1="$ps1_user_host:\[\e[01;34m\]\w\n\\$\[\e[00m\] "
 unset ps1_user_host
 
 nano_rc=~/.nanorc
