@@ -56,8 +56,9 @@ fi
 
 shopt -s cdspell checkwinsize histappend
 
-alias c='cd'
+alias c=cd
 alias e='$VISUAL'
+alias j=jobs
 alias l='ls -CFXh --color=auto --group-directories-first'
 alias ll='l -l'
 alias dir='l -lA'
