@@ -208,6 +208,7 @@ use File::Slurp;
 use List::MoreUtils qw(:all);
 use List::Util @List::Util::EXPORT_OK;
 use Path::Class;
+use Set::Object;
 
 use Data::Printer {
     class => {
@@ -234,3 +235,4 @@ sub i {
 
 *explain = \&e;
 *inspect = \&i;
+*set = \&Set::Object::set;
