@@ -20,6 +20,8 @@ my $includes = $doc->find(
     
     });
 
+exit unless $includes;
+
 my $words = $doc->find(
     sub {
         my ($root, $element) = @ARG;
