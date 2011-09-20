@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+# TODO: Take into account multiple packages in a single file.
+# TODO: Differentiate between A::B::f() and A::f() for a "use A".
+
 use defaults;
 use File::Slurp ();
 use List::MoreUtils ();
@@ -36,7 +39,6 @@ foreach my $include (@$includes) {
     
     if (exists $uniq_includes{$module}) {
         my ($line, $column) = ($include->line_number, $include->column_number);
-        
         say "Duplicate $module at line $line"
             . ($column > 1 ? ", column $column." : '.');
     }
@@ -51,5 +53,5 @@ foreach my $include (@$includes) {
     
     my ($line, $column) = ($include->line_number, $include->column_number);
     say "Unused $module at line $line"
-            . ($column > 1 ? ", column $column." : '.');
+        . ($column > 1 ? ", column $column." : '.');
 }
