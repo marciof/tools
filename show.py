@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 
+# TODO: Add filter option to display line numbers.
 # TODO: Fix diff encoding (use None as the input default?)
 #       ./show.py -t my.opera.com www.google.com
 # TODO: Display contents of zip files.
