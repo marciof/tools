@@ -1,7 +1,11 @@
 #!/usr/bin/env perl
 
 # TODO: Take into account multiple packages in a single file.
-# TODO: Check and warn for absolute imports only, e.g. "use A ();"
+# TODO: Check and warn for absolute imports only, e.g. "use A ()"
+# TODO: Add support for transitive imports, e.g. "use XML::DOM::XPath"
+#       implies "use XML::DOM::Parser".
+# TODO: Treat "namespace::autoclean" as a pragma?
+# TODO: Detect "use English" without any usage of its symbols.
 
 use defaults;
 use File::Slurp ();
