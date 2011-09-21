@@ -23,7 +23,7 @@ my $includes = $doc->find(
     
     });
 
-exit unless defined $includes;
+exit if $includes eq '';
 
 my $words = $doc->find(
     sub {
