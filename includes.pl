@@ -18,25 +18,22 @@ my $doc = PPI::Document->new(@ARGV == 0
     ? File::Slurp::slurp(\*STDIN)
     : $ARGV[0]);
 
-my $includes = $doc->find(
-    sub {
-        my ($root, $element) = @ARG;
-        return $element->isa('PPI::Statement::Include')
-            && ($element->type ne 'no')
-            && ($element->pragma eq '')
-            && ($element->version eq '')
-    
-    });
+my $includes = $doc->find(sub {
+    my ($root, $element) = @ARG;
+    return $element->isa('PPI::Statement::Include')
+        && ($element->type ne 'no')
+        && ($element->pragma eq '')
+        && ($element->version eq '')
+});
 
 exit if $includes eq '';
 
-my $words = $doc->find(
-    sub {
-        my ($root, $element) = @ARG;
-        return !$element->parent->isa('PPI::Statement::Include')
-            && ($element->isa('PPI::Token::Word')
-                || $element->isa('PPI::Token::Symbol'));
-    });
+my $words = $doc->find(sub {
+    my ($root, $element) = @ARG;
+    return !$element->parent->isa('PPI::Statement::Include')
+        && ($element->isa('PPI::Token::Word')
+            || $element->isa('PPI::Token::Symbol'));
+});
 
 $words = [] if $words eq '';
 my %uniq_includes;
