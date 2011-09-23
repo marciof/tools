@@ -1,21 +1,21 @@
 package defaults;
 
 use base qw(Exporter autodie);
-use feature qw(:5.10);
+use feature ':5.10';
 use strict;
 use true;
 use utf8;
 use warnings;
 
 use Carp ();
-use English qw(-no_match_vars);
+use English '-no_match_vars';
 use File::Spec ();
 use IO::Handle ();
 use Try::Tiny ();
 
 
 our @EXPORT = qw(*STDNULL $false $true const);
-our $VERSION = v2011.06.25;
+our $VERSION = v2011.09.23;
 
 
 sub const :lvalue {
@@ -26,7 +26,7 @@ sub const :lvalue {
 
 
 sub import {
-    feature->import(qw(:5.10));
+    feature->import(':5.10');
     strict->import;
     true->import;
     utf8->import;
@@ -76,7 +76,7 @@ some defaults and exports useful definitions.
 
 =item C<autodie>
 
-=item C<feature qw(:5.10)>
+=item C<feature ':5.10'>
 
 =item C<strict>
 
@@ -86,7 +86,7 @@ some defaults and exports useful definitions.
 
 =item C<warnings>
 
-=item C<English qw(-no_match_vars)>
+=item C<English '-no_match_vars'>
 
 =item C<Try::Tiny>
 
