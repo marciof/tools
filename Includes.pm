@@ -160,6 +160,3 @@ unless (caller) {
             ucfirst($defect), $include->module, $include->line_number;
     });
 }
-
-
-1;
