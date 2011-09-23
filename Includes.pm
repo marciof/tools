@@ -18,7 +18,7 @@ do {
     
     sub uses_module {
         my ($self, $module) = @ARG;
-        return $self =~ /^ \Q${\$self->raw_type}$module\E (::\w+) $/x;
+        return $self =~ /^ \Q${\$self->raw_type}$module\E :: (\w+)? $/x;
     }
 };
 
@@ -34,7 +34,7 @@ do {
         my ($self, $module) = @ARG;
         
         return ($self =~ /^ \Q$module\E (::)? $/x)
-            || (($self =~ /^ \Q$module\E (::\w+) $/x)
+            || (($self =~ /^ \Q$module\E :: \w+ $/x)
                 && !eval {Module::Runtime::require_module($self)});
     }
 };
@@ -152,6 +152,15 @@ use Carp ();
 Carp:;
 
         ok(exists $defect->{unused});
+    }
+    
+    
+    sub use_module_namespace : Test(1) {
+        my ($doc, @defects) = Includes->analyze(\<< '');
+use Carp ();
+%Carp::;
+
+        is(scalar(@defects), 0);
     }
     
     
