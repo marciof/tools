@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 
+# TODO: Add tests.
 # TODO: Take into account multiple packages in a single file.
 # TODO: Check and warn for absolute imports only, e.g. "use A ()"
 # TODO: Add support for transitive imports, e.g. "use XML::DOM::XPath"
@@ -52,6 +53,12 @@ do {
         my $document = PPI::Document->new($input);
         my $included_modules = Set::Scalar->new;
         my @tokens = $class->list_tokens($document);
+        my @defects;
+        
+        $handler //= sub {
+            my ($defect, $include) = @ARG;
+            push @defects, {$defect => $include};
+        };
         
         INCLUDE:
         foreach my $include ($class->list_includes($document)) {
@@ -68,7 +75,7 @@ do {
             $handler->(unused => $include);
         }
         
-        return;
+        return ($document, @defects);
     }
     
     
@@ -101,6 +108,42 @@ do {
         });
         
         return ($tokens eq '') ? () : @$tokens;
+    }
+};
+
+
+do {
+    package Includes::Test;
+    
+    use defaults;
+    use base 'Test::Class';
+    use Test::More;
+    
+    
+    sub duplicate : Test(5) {
+        my ($doc, @defects) = Includes->analyze(\<< 'CODE');
+use Carp;
+use Carp ();
+use Carp 'confess';
+CODE
+        
+        foreach my $i (0 .. $#defects) {
+            ok(exists $defects[$i]{(($i % 2) == 0) ? 'unused' : 'duplicate'});
+        }
+    }
+    
+    
+    sub unused : Test(3) {
+        my @variations = (
+            'use Carp',
+            'use Carp ()',
+            q{use Carp 'confess'},
+        );
+        
+        foreach my $code (@variations) {
+            my ($doc, $defect) = Includes->analyze(\$code);
+            ok(exists $defect->{unused});
+        }
     }
 };
 
