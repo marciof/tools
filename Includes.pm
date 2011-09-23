@@ -147,37 +147,22 @@ use Carp 'confess';
     
     
     sub unused_with_label : Test(1) {
-        my ($doc, $defect) = Includes->analyze(\<< '');
-use Carp ();
-Carp:;
-
+        my ($doc, $defect) = Includes->analyze(\'use Carp (); Carp:;');
         ok(exists $defect->{unused});
     }
     
     
-    sub use_module_namespace : Test(1) {
-        my ($doc, @defects) = Includes->analyze(\<< '');
-use Carp ();
-%Carp::;
-
-        is(scalar(@defects), 0);
-    }
-    
-    
-    sub use_module_literal : Test(1) {
-        my ($doc, @defects) = Includes->analyze(\<< '');
-use Carp ();
-Carp::;
-
-        is(scalar(@defects), 0);
+    sub use_module_name : Test(2) {
+        my ($doc, @defects) = Includes->analyze(\'use Carp (); %Carp::;');
+        is(scalar(@defects), 0, 'use module namespace');
+        
+        ($doc, @defects) = Includes->analyze(\'use Carp (); Carp::;');
+        is(scalar(@defects), 0, 'use module literal');
     }
     
     
     sub use_module_scalar : Test(1) {
-        my ($doc, @defects) = Includes->analyze(\<< '');
-use Carp ();
-$Carp::Verbose = 1;
-
+        my ($doc, @defects) = Includes->analyze(\'use Carp (); $Carp::Verbose = 1;');
         is(scalar(@defects), 0);
     }
 };
