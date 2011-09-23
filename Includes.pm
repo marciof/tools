@@ -145,6 +145,33 @@ CODE
             ok(exists $defect->{unused});
         }
     }
+    
+    
+    sub unused_with_label : Test(1) {
+        my ($doc, $defect) = Includes->analyze(\<< 'CODE');
+use Carp ();
+Carp:;
+CODE
+        ok(exists $defect->{unused});
+    }
+    
+    
+    sub use_module_literal : Test(1) {
+        my ($doc, @defects) = Includes->analyze(\<< 'CODE');
+use Carp ();
+Carp::;
+CODE
+        is(scalar(@defects), 0);
+    }
+    
+    
+    sub use_module_scalar : Test(1) {
+        my ($doc, @defects) = Includes->analyze(\<< 'CODE');
+use Carp ();
+$Carp::Verbose = 1;
+CODE
+        is(scalar(@defects), 0);
+    }
 };
 
 
