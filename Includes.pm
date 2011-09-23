@@ -121,12 +121,11 @@ do {
     
     
     sub duplicate : Test(5) {
-        my ($doc, @defects) = Includes->analyze(\<< 'CODE');
+        my ($doc, @defects) = Includes->analyze(\<< '');
 use Carp;
 use Carp ();
 use Carp 'confess';
-CODE
-        
+
         foreach my $i (0 .. $#defects) {
             ok(exists $defects[$i]{(($i % 2) == 0) ? 'unused' : 'duplicate'});
         }
@@ -148,28 +147,28 @@ CODE
     
     
     sub unused_with_label : Test(1) {
-        my ($doc, $defect) = Includes->analyze(\<< 'CODE');
+        my ($doc, $defect) = Includes->analyze(\<< '');
 use Carp ();
 Carp:;
-CODE
+
         ok(exists $defect->{unused});
     }
     
     
     sub use_module_literal : Test(1) {
-        my ($doc, @defects) = Includes->analyze(\<< 'CODE');
+        my ($doc, @defects) = Includes->analyze(\<< '');
 use Carp ();
 Carp::;
-CODE
+
         is(scalar(@defects), 0);
     }
     
     
     sub use_module_scalar : Test(1) {
-        my ($doc, @defects) = Includes->analyze(\<< 'CODE');
+        my ($doc, @defects) = Includes->analyze(\<< '');
 use Carp ();
 $Carp::Verbose = 1;
-CODE
+
         is(scalar(@defects), 0);
     }
 };
