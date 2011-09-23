@@ -8,9 +8,36 @@
 # TODO: Detect "use English" without any usage of its symbols.
 
 
+do {
+    package PPI::Token::Symbol;
+    
+    use defaults;
+    
+    sub uses_module {
+        my ($self, $module) = @ARG;
+        return $self =~ /^ \Q${\$self->raw_type}$module\E (::\w+) $/x;
+    }
+};
+
+
+do {
+    package PPI::Token::Word;
+    
+    use defaults;
+    use Module::Runtime ();
+    
+    sub uses_module {
+        my ($self, $module) = @ARG;
+        
+        return ($self eq $module)
+            || (($self =~ /^ \Q$module\E (::\w+) $/x)
+                && !eval {Module::Runtime::require_module($self)});
+    }
+};
+
+
 use defaults;
 use File::Slurp ();
-use Module::Runtime ();
 use PPI ();
 
 
@@ -31,8 +58,8 @@ exit if $includes eq '';
 my $words = $doc->find(sub {
     my ($root, $element) = @ARG;
     return !$element->parent->isa('PPI::Statement::Include')
-        && ($element->isa('PPI::Token::Word')
-            || $element->isa('PPI::Token::Symbol'));
+        && ($element->isa('PPI::Token::Symbol')
+            || $element->isa('PPI::Token::Word'));
 });
 
 $words = [] if $words eq '';
@@ -51,21 +78,7 @@ foreach my $include (@$includes) {
         $uniq_includes{$module} = $include;
     }
     
-    foreach my $word (@$words) {
-        if ($word->isa('PPI::Token::Word')) {
-            next INCLUDE if
-                $word eq $module
-                || (($word =~ /^ \Q$module\E (::\w+) $/x)
-                    && !eval {Module::Runtime::require_module($word)});
-        }
-        elsif ($word->isa('PPI::Token::Symbol')) {
-            next INCLUDE if
-                $word =~ /^ \Q${\$word->raw_type}$module\E (::\w+) $/x;
-        }
-        else {
-            die "Unknown word: " . ref($word) . ": $word";
-        }
-    }
+    $ARG->uses_module($module) and next INCLUDE foreach @$words;
     
     my ($line, $column) = ($include->line_number, $include->column_number);
     say "Unused $module at line $line"
