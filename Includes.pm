@@ -33,7 +33,7 @@ do {
     sub uses_module {
         my ($self, $module) = @ARG;
         
-        return ($self eq $module)
+        return ($self =~ /^ \Q$module\E (::)? $/x)
             || (($self =~ /^ \Q$module\E (::\w+) $/x)
                 && !eval {Module::Runtime::require_module($self)});
     }
