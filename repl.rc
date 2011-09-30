@@ -209,6 +209,8 @@ use List::MoreUtils qw(:all);
 use List::Util @List::Util::EXPORT_OK;
 use Path::Class;
 use Set::Object;
+use URI ();
+use URI::QueryParam ();
 
 use Data::Printer {
     class => {
