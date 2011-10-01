@@ -9,65 +9,71 @@
 #include "main.h"
 
 
-static NPObject* _pluginObj = NULL;
 static NPNetscapeFuncs* _browser = NULL;
+static NPObject* _plugin = NULL;
 
 
-static bool hasMethod(NPObject* obj, NPIdentifier name) {
+static bool has_method(NPObject* object, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
     std::cout << __func__ << ": name=" << cname << std::endl;
     return cname == "test";
 }
 
 
-static bool invokeDefault(
-    NPObject* obj,
-    const NPVariant* argv,
-    uint32_t argc,
+static bool invoke_default(
+    NPObject* object,
+    const NPVariant* arguments,
+    uint32_t nr_arguments,
     NPVariant* result)
 {
-    std::cout << __func__ << ": argc=" << argc << std::endl;
+    std::cout << __func__ << ": #args=" << nr_arguments << std::endl;
     INT32_TO_NPVARIANT(12345, *result);
     return true;
 }
 
 
 static bool invoke(
-    NPObject* obj,
+    NPObject* object,
     NPIdentifier name,
-    const NPVariant* argv,
-    uint32_t argc,
+    const NPVariant* arguments,
+    uint32_t nr_arguments,
     NPVariant* result)
 {
     std::string cname = _browser->utf8fromidentifier(name);
-    std::cout << __func__ << ": name=" << cname << " argc=" << argc << std::endl;
+    
+    std::cout << __func__ << ": name=" << cname
+        << " #args=" << nr_arguments << std::endl;
     
     if (cname == "test") {
-        return invokeDefault(obj, argv, argc, result);
+        return invoke_default(object, arguments, nr_arguments, result);
     }
     else {
-        _browser->setexception(obj, "Exception during invocation.");
+        _browser->setexception(object, "Exception during invocation.");
         return false;
     }
 }
 
 
-static bool hasProperty(NPObject* obj, NPIdentifier name) {
+static bool has_property(NPObject* object, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
     std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
 
-static bool getProperty(NPObject* obj, NPIdentifier name, NPVariant* result) {
+static bool get_property(
+    NPObject* object,
+    NPIdentifier name,
+    NPVariant* result)
+{
     std::string cname = _browser->utf8fromidentifier(name);
     std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
 
-static bool setProperty(
-    NPObject* obj,
+static bool set_property(
+    NPObject* object,
     NPIdentifier name,
     const NPVariant* value)
 {
@@ -77,25 +83,25 @@ static bool setProperty(
 }
 
 
-static bool removeProperty(NPObject* obj, NPIdentifier name) {
+static bool remove_property(NPObject* object, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
     std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
 
-static NPClass _pluginClass = {
+static NPClass _plugin_class = {
     NP_CLASS_STRUCT_VERSION,
     NULL,
     NULL,
     NULL,
-    hasMethod,
+    has_method,
     invoke,
-    invokeDefault,
-    hasProperty,
-    getProperty,
-    setProperty,
-    removeProperty,
+    invoke_default,
+    has_property,
+    get_property,
+    set_property,
+    remove_property,
 };
 
 
@@ -103,12 +109,13 @@ static NPError create(
     NPMIMEType type,
     NPP instance,
     uint16_t mode,
-    int16_t argc,
+    int16_t nr_arguments,
     char* argn[],
     char* argv[],
     NPSavedData* data)
 {
-    std::cout << __func__ << ": mode=" << mode << " argc=" << argc << std::endl;
+    std::cout << __func__ << ": mode=" << mode
+        << " #args=" << nr_arguments << std::endl;
     return NPERR_NO_ERROR;
 }
 
@@ -116,17 +123,18 @@ static NPError create(
 static NPError destroy(NPP instance, NPSavedData** data) {
     std::cout << __func__ << std::endl;
     
-    if (_pluginObj != NULL) {
-        _browser->releaseobject(_pluginObj);
-        _pluginObj = NULL;
+    if (_plugin != NULL) {
+        _browser->releaseobject(_plugin);
+        _plugin = NULL;
     }
     
     return NPERR_NO_ERROR;
 }
 
 
-static NPError getValue(NPP instance, NPPVariable what, void* value) {
-    std::cout << __func__ << ": what=" << what << " value=" << value << std::endl;
+static NPError get_value(NPP instance, NPPVariable what, void* value) {
+    std::cout << __func__ << ": what=" << what
+        << " value=" << value << std::endl;
     
     if (value == NULL) {
         return NPERR_INVALID_PARAM;
@@ -140,11 +148,11 @@ static NPError getValue(NPP instance, NPPVariable what, void* value) {
         *reinterpret_cast<const char**>(value) = PLUGIN_DESCRIPTION;
         break;
     case NPPVpluginScriptableNPObject:
-        if (_pluginObj == NULL) {
-            _pluginObj = _browser->createobject(instance, &_pluginClass);
+        if (_plugin == NULL) {
+            _plugin = _browser->createobject(instance, &_plugin_class);
         }
-        _browser->retainobject(_pluginObj);
-        *reinterpret_cast<NPObject**>(value) = _pluginObj;
+        _browser->retainobject(_plugin);
+        *reinterpret_cast<NPObject**>(value) = _plugin;
         break;
     default:
         return NPERR_GENERIC_ERROR;
@@ -154,13 +162,13 @@ static NPError getValue(NPP instance, NPPVariable what, void* value) {
 }
 
 
-static NPError handleEvent(NPP instance, void* event) {
+static NPError handle_event(NPP instance, void* event) {
     std::cout << __func__ << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
-static NPError setWindow(NPP instance, NPWindow* window) {
+static NPError set_window(NPP instance, NPWindow* window) {
     std::cout << __func__ << std::endl;
     return NPERR_NO_ERROR;
 }
@@ -176,9 +184,9 @@ extern "C" NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
     plugin->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
     plugin->newp = create;
     plugin->destroy = destroy;
-    plugin->getvalue = getValue;
-    plugin->event = handleEvent;
-    plugin->setwindow = setWindow;
+    plugin->getvalue = get_value;
+    plugin->event = handle_event;
+    plugin->setwindow = set_window;
     
     return NPERR_NO_ERROR;
 }
@@ -228,5 +236,5 @@ extern "C" NPError OSCALL NP_GetValue(
     NPPVariable what,
     void* value)
 {
-    return getValue(reinterpret_cast<NPP>(instance), what, value);
+    return get_value(reinterpret_cast<NPP>(instance), what, value);
 }
