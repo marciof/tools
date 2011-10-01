@@ -154,6 +154,8 @@ TEXT
 fi
 
 if _have git; then
+    alias g=$NAME
+    
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
         [ -n "$ps1" ] && echo -e ":\e[0;33m$ps1\e[00m"

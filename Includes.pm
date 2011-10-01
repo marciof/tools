@@ -2,12 +2,11 @@
 
 
 # TODO: Add tests.
-# TODO: Take into account multiple packages in a single file.
-# TODO: Check and warn for absolute imports only, e.g. "use A ()"
-# TODO: Add support for transitive imports, e.g. "use XML::DOM::XPath"
-#       implies "use XML::DOM::Parser".
+# TODO: String interpolation.
+# TODO: Multiple packages in a single file.
+# TODO: Warn for absolute imports only, e.g. "use A ()"
+# TODO: Transitive imports, e.g. XML::DOM::XPath implies XML::DOM::Parser.
 # TODO: Treat "namespace::autoclean" as a pragma?
-# TODO: Detect "use English" without any usage of its symbols.
 
 
 do {
