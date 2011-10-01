@@ -6,7 +6,7 @@
 #include <npruntime.h>
 #include <nptypes.h>
 
-#include "npExample.h"
+#include "main.h"
 
 
 static NPObject* _pluginObj = NULL;

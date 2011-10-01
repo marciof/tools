@@ -1,5 +1,5 @@
-#ifndef __NPEXAMPLE__
-#define __NPEXAMPLE__
+#ifndef __MAIN__
+#define __MAIN__
 
 
 #define PLUGIN_NAME "Example"
