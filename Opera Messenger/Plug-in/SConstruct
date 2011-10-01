@@ -1,22 +1,24 @@
 import os, SConsX
 
 
-env = Environment(
-    CPPPATH = os.environ['NP_API_SDK_INCLUDE_PATH'].split(os.pathsep))
+project_name = 'Messenger'
 
-project = 'npExample'
+env = Environment(
+    CPPPATH = os.environ['NP_API_SDK_INCLUDE_PATH'].split(os.pathsep),
+    SHLIBPREFIX = 'np')
+
 files = Glob('*.cpp')
 tool = env.BuildTool()[0]
 
 if tool == 'GNU':
     env.Append(CCFLAGS = ['-ansi', '-Wall'])
 elif tool == 'MSVC':
-    files += env.RES(project + '.rc')
+    files += env.RES(Glob('*.rc'))
     env['WINDOWS_INSERT_DEF'] = True
     env.Append(CPPDEFINES = ['_WINDOWS', '_X86_', 'WIN32'])
     env.Append(CCFLAGS = ['/EHsc', '/MD'])
 
-library = env.SharedLibrary(project, files).pop(0)
+library = env.SharedLibrary(project_name, files)[0]
 
 if tool == 'MSVC':
     env.EmbedManifest(library)
