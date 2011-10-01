@@ -40,7 +40,7 @@ static bool has_method(NPObject* object, NPIdentifier name) {
         return true;
     }
     else {
-        std::cout << __func__ << "; name=" << cname << "; error=" << error
+        std::cerr << __func__ << "; name=" << cname << "; error=" << error
             << std::endl;
         return false;
     }
@@ -256,7 +256,7 @@ extern "C" NPError OSCALL NP_Shutdown() {
     _browser = NULL;
     
     if (dlclose(_lib_purple) != 0) {
-        std::cout << __func__ << "; error=" << dlerror() << std::endl;
+        std::cerr << __func__ << "; error=" << dlerror() << std::endl;
     }
     
     _lib_purple = NULL;
