@@ -16,7 +16,7 @@ static NPNetscapeFuncs* _browser = NULL;
 static bool hasMethod(NPObject* obj, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
     std::cout << __func__ << ": name=" << cname << std::endl;
-    return true;
+    return cname == "test";
 }
 
 
