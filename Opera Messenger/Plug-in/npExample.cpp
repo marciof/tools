@@ -1,8 +1,11 @@
+#include <string>
+
 #include <npapi.h>
 #include <npfunctions.h>
 #include <npruntime.h>
-#include <string>
+#include <nptypes.h>
 #include <xpcom-config.h>
+
 #include "npExample.h"
 
 
@@ -15,16 +18,23 @@ static bool hasMethod(NPObject* obj, NPIdentifier name) {
 }
 
 
-static bool invokeDefault(NPObject* obj, const NPVariant* argv, uint32_t argc,
-                          NPVariant* result)
+static bool invokeDefault(
+    NPObject* obj,
+    const NPVariant* argv,
+    uint32_t argc,
+    NPVariant* result)
 {
     INT32_TO_NPVARIANT(12345, *result);
     return true;
 }
 
 
-static bool invoke(NPObject* obj, NPIdentifier name, const NPVariant* argv,
-                   uint32_t argc, NPVariant* result)
+static bool invoke(
+    NPObject* obj,
+    NPIdentifier name,
+    const NPVariant* argv,
+    uint32_t argc,
+    NPVariant* result)
 {
     std::string cname = _browser->utf8fromidentifier(name);
     
@@ -75,8 +85,14 @@ static NPClass _pluginClass = {
 };
 
 
-static NPError create(NPMIMEType type, NPP instance, uint16 mode, int16 argc,
-                      char* argn[], char* argv[], NPSavedData* data)
+static NPError create(
+    NPMIMEType type,
+    NPP instance,
+    uint16_t mode,
+    int16_t argc,
+    char* argn[],
+    char* argv[],
+    NPSavedData* data)
 {
     return NPERR_NO_ERROR;
 }
@@ -129,8 +145,7 @@ static NPError setWindow(NPP instance, NPWindow* window) {
 }
 
 
-extern "C"
-NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+extern "C" NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
     if (plugin == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
@@ -179,6 +194,10 @@ extern "C" char* NP_GetMIMEDescription() {
 }
 
 
-extern "C" NPError OSCALL NP_GetValue(void* instance, NPPVariable what, void* value) {
+extern "C" NPError OSCALL NP_GetValue(
+    void* instance,
+    NPPVariable what,
+    void* value)
+{
     return getValue(reinterpret_cast<NPP>(instance), what, value);
 }
