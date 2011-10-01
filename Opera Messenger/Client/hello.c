@@ -1,4 +1,6 @@
-// gcc `pkg-config --libs --cflags purple` -ansi -Wall hello.c
+/*
+gcc $(pkg-config --libs --cflags purple) -ansi -Wall hello.c
+*/
 
 /*
  * Sample libpurple program written by Michael C. Brook (http://libpurple.com/)
