@@ -216,7 +216,7 @@ extern "C" NPError OSCALL NP_Shutdown() {
 extern "C" char* NP_GetMIMEDescription() {
     std::cout << __func__ << std::endl;
     
-    // <MIME Type>:<.extension>:<e-mail address>
+    // <MIME Type>:<extension>:<description>
     return const_cast<char*>(PLUGIN_MIME_TYPE ": : ");
 }
 
