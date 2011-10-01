@@ -66,8 +66,10 @@ static bool getProperty(NPObject* obj, NPIdentifier name, NPVariant* result) {
 }
 
 
-static bool setProperty(NPObject* obj, NPIdentifier name,
-                        const NPVariant* value)
+static bool setProperty(
+    NPObject* obj,
+    NPIdentifier name,
+    const NPVariant* value)
 {
     std::string cname = _browser->utf8fromidentifier(name);
     std::cout << __func__ << ": name=" << cname << std::endl;
