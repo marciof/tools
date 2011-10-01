@@ -4,7 +4,6 @@
   http://opensource.palm.com/packages.html
   http://developer.pidgin.im/doxygen/dev/html/modules.html
   http://developer.pidgin.im/wiki/Development%20FAQ
-  http://developer.pidgin.im/wiki/WhatIsLibpurple
 
 * Create an Example NPAPI plug-in.
   * Expose all exported functions/variables to JavaScript, then script it.

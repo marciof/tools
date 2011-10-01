@@ -2,20 +2,20 @@ Plug-in
 -------
 
 * Install XULRunner SDK.
-  
   * Linux (tested with 1.9.2.23):
     $ sudo apt-get install xulrunner-dev
-  
   * Windows (tested with 1.9.1.19):
     http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/
 
 * Set the "NP_API_SDK_INCLUDE_PATH" environment variable.
-  
   * Linux:
     /usr/include/xulrunner-1.9.2.23:/usr/include/nspr
-  
   * Windows:
     C:\Program Files\xulrunner-sdk\sdk\include
+
+* Install libpurple.
+  * Linux:
+    $ sudo apt-get install libpurple-dev
 
 
 Etc
