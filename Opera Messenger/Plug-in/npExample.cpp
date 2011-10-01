@@ -1,5 +1,5 @@
 #include <npapi.h>
-#include <npupp.h>
+#include <npfunctions.h>
 #include <npruntime.h>
 #include <string>
 #include <xpcom-config.h>
