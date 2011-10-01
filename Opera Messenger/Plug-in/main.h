@@ -2,15 +2,15 @@
 #define __MAIN__
 
 
-#define PLUGIN_NAME "Example"
+#define PLUGIN_NAME "libPurple"
 
-#define PLUGIN_DESCRIPTION "Sample NP API plug-in."
+#define PLUGIN_DESCRIPTION "libPurple interface wrapper."
 
-#define PLUGIN_MIME_TYPE "application/x-example"
+#define PLUGIN_MIME_TYPE "application/x-libpurple"
 
-#define PLUGIN_MAJOR_VERSION 2009
+#define PLUGIN_MAJOR_VERSION 2011
 
-#define PLUGIN_MINOR_VERSION 03
+#define PLUGIN_MINOR_VERSION 10
 
 #define PLUGIN_MICRO_VERSION 01
 

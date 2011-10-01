@@ -84,7 +84,7 @@ static bool invoke(
 
 static bool has_property(NPObject* object, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
-    std::cout << __func__ << ": name=" << cname << std::endl;
+    std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
 
@@ -95,7 +95,7 @@ static bool get_property(
     NPVariant* result)
 {
     std::string cname = _browser->utf8fromidentifier(name);
-    std::cout << __func__ << ": name=" << cname << std::endl;
+    std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
 
@@ -106,14 +106,14 @@ static bool set_property(
     const NPVariant* value)
 {
     std::string cname = _browser->utf8fromidentifier(name);
-    std::cout << __func__ << ": name=" << cname << std::endl;
+    std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
 
 
 static bool remove_property(NPObject* object, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
-    std::cout << __func__ << ": name=" << cname << std::endl;
+    std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
 
@@ -142,8 +142,8 @@ static NPError create(
     char* argv[],
     NPSavedData* data)
 {
-    std::cout << __func__ << ": mode=" << mode
-        << " #args=" << nr_arguments << std::endl;
+    std::cout << __func__ << "; mode=" << mode << " #args=" << nr_arguments
+        << std::endl;
     return NPERR_NO_ERROR;
 }
 
@@ -161,8 +161,8 @@ static NPError destroy(NPP instance, NPSavedData** data) {
 
 
 static NPError get_value(NPP instance, NPPVariable what, void* value) {
-    std::cout << __func__ << ": what=" << what
-        << " value=" << value << std::endl;
+    std::cout << __func__ << "; what=" << what << " value=" << value
+        << std::endl;
     
     if (value == NULL) {
         return NPERR_INVALID_PARAM;
@@ -237,7 +237,7 @@ extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
     _lib_purple = dlopen("libpurple.so", RTLD_NOW);
     
     if (_lib_purple == NULL) {
-        std::cerr << __func__ << ": " << dlerror() << std::endl;
+        std::cerr << __func__ << "; error=" << dlerror() << std::endl;
         return NPERR_MODULE_LOAD_FAILED_ERROR;
     }
     
@@ -256,7 +256,7 @@ extern "C" NPError OSCALL NP_Shutdown() {
     _browser = NULL;
     
     if (dlclose(_lib_purple) != 0) {
-        std::cout << __func__ << ": " << dlerror() << std::endl;
+        std::cout << __func__ << "; error=" << dlerror() << std::endl;
     }
     
     _lib_purple = NULL;

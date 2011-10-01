@@ -4,34 +4,27 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <title>Messenger</title>
+    <title>Test</title>
     <meta name="Author" content="Márcio Moniz Bandim Faustino"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     
     <style type="text/css" media="screen">
-#Messenger {
+object {
     width: 0;
     height: 0;
 }
     </style>
     
     <script type="text/javascript">
-function test() {
-    try {
-        var Messenger = document.getElementById('Messenger');
-        alert(Messenger.test());
-    }
-    catch (exception) {
-        alert(exception);
-    }
-}
+window.addEventListener('load', function () {
+    libPurple = document.getElementById('libPurple');
+}, false);
     </script>
   </head>
   
   <body>
     <p>
-      <object id="Messenger" type="application/x-example">Plug-in not loaded.</object>
-      <button onclick="test()">Messenger.test()</button>
+      <object id="libPurple" type="application/x-libpurple">Not loaded.</object>
     </p>
   </body>
 </html>
