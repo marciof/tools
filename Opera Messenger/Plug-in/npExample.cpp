@@ -1,10 +1,10 @@
+#include <iostream>
 #include <string>
 
 #include <npapi.h>
 #include <npfunctions.h>
 #include <npruntime.h>
 #include <nptypes.h>
-#include <xpcom-config.h>
 
 #include "npExample.h"
 
@@ -14,6 +14,8 @@ static NPNetscapeFuncs* _browser = NULL;
 
 
 static bool hasMethod(NPObject* obj, NPIdentifier name) {
+    std::string cname = _browser->utf8fromidentifier(name);
+    std::cout << __func__ << ": name=" << cname << std::endl;
     return true;
 }
 
@@ -24,6 +26,7 @@ static bool invokeDefault(
     uint32_t argc,
     NPVariant* result)
 {
+    std::cout << __func__ << ": argc=" << argc << std::endl;
     INT32_TO_NPVARIANT(12345, *result);
     return true;
 }
@@ -37,6 +40,7 @@ static bool invoke(
     NPVariant* result)
 {
     std::string cname = _browser->utf8fromidentifier(name);
+    std::cout << __func__ << ": name=" << cname << " argc=" << argc << std::endl;
     
     if (cname == "test") {
         return invokeDefault(obj, argv, argc, result);
@@ -49,11 +53,15 @@ static bool invoke(
 
 
 static bool hasProperty(NPObject* obj, NPIdentifier name) {
+    std::string cname = _browser->utf8fromidentifier(name);
+    std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
 
 static bool getProperty(NPObject* obj, NPIdentifier name, NPVariant* result) {
+    std::string cname = _browser->utf8fromidentifier(name);
+    std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
@@ -61,11 +69,15 @@ static bool getProperty(NPObject* obj, NPIdentifier name, NPVariant* result) {
 static bool setProperty(NPObject* obj, NPIdentifier name,
                         const NPVariant* value)
 {
+    std::string cname = _browser->utf8fromidentifier(name);
+    std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
 
 static bool removeProperty(NPObject* obj, NPIdentifier name) {
+    std::string cname = _browser->utf8fromidentifier(name);
+    std::cout << __func__ << ": name=" << cname << std::endl;
     return false;
 }
 
@@ -94,11 +106,14 @@ static NPError create(
     char* argv[],
     NPSavedData* data)
 {
+    std::cout << __func__ << ": mode=" << mode << " argc=" << argc << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
 static NPError destroy(NPP instance, NPSavedData** data) {
+    std::cout << __func__ << std::endl;
+    
     if (_pluginObj != NULL) {
         _browser->releaseobject(_pluginObj);
         _pluginObj = NULL;
@@ -109,6 +124,8 @@ static NPError destroy(NPP instance, NPSavedData** data) {
 
 
 static NPError getValue(NPP instance, NPPVariable what, void* value) {
+    std::cout << __func__ << ": what=" << what << " value=" << value << std::endl;
+    
     if (value == NULL) {
         return NPERR_INVALID_PARAM;
     }
@@ -136,16 +153,20 @@ static NPError getValue(NPP instance, NPPVariable what, void* value) {
 
 
 static NPError handleEvent(NPP instance, void* event) {
+    std::cout << __func__ << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
 static NPError setWindow(NPP instance, NPWindow* window) {
+    std::cout << __func__ << std::endl;
     return NPERR_NO_ERROR;
 }
 
 
 extern "C" NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+    std::cout << __func__ << std::endl;
+    
     if (plugin == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
@@ -166,6 +187,8 @@ extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
     , NPPluginFuncs* plugin
 #endif
 ) {
+    std::cout << __func__ << std::endl;
+    
     if (browser == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
@@ -184,13 +207,17 @@ extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 
 
 extern "C" NPError OSCALL NP_Shutdown() {
+    std::cout << __func__ << std::endl;
     _browser = NULL;
     return NPERR_NO_ERROR;
 }
 
 
 extern "C" char* NP_GetMIMEDescription() {
-    return const_cast<char*>(PLUGIN_MIME_TYPE "::");
+    std::cout << __func__ << std::endl;
+    
+    // <MIME Type>:<.extension>:<e-mail address>
+    return const_cast<char*>(PLUGIN_MIME_TYPE ": : ");
 }
 
 
