@@ -5,7 +5,6 @@
 #include <npfunctions.h>
 #include <npruntime.h>
 #include <nptypes.h>
-#include <xpcom-config.h>
 
 #include "npExample.h"
 
