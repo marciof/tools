@@ -22,18 +22,13 @@ Etc
 ---
 
 * Resources:
-  
   * NPAPI Hello World:
     http://git.webvm.net/?p=npsimple
-  
   * MDN Plugins:
     https://developer.mozilla.org/en/Plugins
-  
   * Opera plug-in interface:
     http://dev.opera.com/articles/view/the-opera-plug-in-interface
-  
   * NPAPI Common sample:
     http://mxr.mozilla.org/seamonkey/source/modules/plugin/tools/sdk/samples/common
-  
   * Mozilla plugins dev group:
     http://groups.google.com/group/mozilla.dev.tech.plugins
