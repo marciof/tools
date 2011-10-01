@@ -1,0 +1,39 @@
+Plug-in
+-------
+
+* Install XULRunner SDK.
+  
+  * Linux (tested with 1.9.2.23):
+    $ sudo apt-get install xulrunner-dev
+  
+  * Windows (tested with 1.9.1.19):
+    http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/
+
+* Set the "NP_API_SDK_INCLUDE_PATH" environment variable.
+  
+  * Linux:
+    /usr/include/xulrunner-1.9.2.23:/usr/include/nspr
+  
+  * Windows:
+    C:\Program Files\xulrunner-sdk\sdk\include
+
+
+Etc
+---
+
+* Resources:
+  
+  * NPAPI Hello World:
+    http://git.webvm.net/?p=npsimple
+  
+  * MDN Plugins:
+    https://developer.mozilla.org/en/Plugins
+  
+  * Opera plug-in interface:
+    http://dev.opera.com/articles/view/the-opera-plug-in-interface
+  
+  * NPAPI Common sample:
+    http://mxr.mozilla.org/seamonkey/source/modules/plugin/tools/sdk/samples/common
+  
+  * Mozilla plugins dev group:
+    http://groups.google.com/group/mozilla.dev.tech.plugins
