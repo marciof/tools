@@ -1,4 +1,6 @@
+#include <dlfcn.h>
 #include <iostream>
+#include <map>
 #include <string>
 
 #include <npapi.h>
@@ -9,14 +11,39 @@
 #include "main.h"
 
 
+typedef std::map<std::string, void*> SymbolMap;
+
+static void* _lib_purple = NULL;
+static SymbolMap _lib_purple_symbols;
 static NPNetscapeFuncs* _browser = NULL;
 static NPObject* _plugin = NULL;
 
 
 static bool has_method(NPObject* object, NPIdentifier name) {
     std::string cname = _browser->utf8fromidentifier(name);
-    std::cout << __func__ << ": name=" << cname << std::endl;
-    return cname == "test";
+    
+    if (_lib_purple_symbols.find(cname) != _lib_purple_symbols.end()) {
+        return true;
+    }
+    
+    // Clear any old error conditions.
+    dlerror();
+    
+    void* symbol = dlsym(_lib_purple, cname.c_str());
+    char* error = dlerror();
+    
+    if (error == NULL) {
+        _lib_purple_symbols[cname] = symbol;
+        
+        std::cout << __func__ << "; name=" << cname << "; dlsym=" << symbol
+            << std::endl;
+        return true;
+    }
+    else {
+        std::cout << __func__ << "; name=" << cname << "; error=" << error
+            << std::endl;
+        return false;
+    }
 }
 
 
@@ -26,9 +53,8 @@ static bool invoke_default(
     uint32_t nr_arguments,
     NPVariant* result)
 {
-    std::cout << __func__ << ": #args=" << nr_arguments << std::endl;
-    INT32_TO_NPVARIANT(12345, *result);
-    return true;
+    std::cout << __func__ << "; #args=" << nr_arguments << std::endl;
+    return false;
 }
 
 
@@ -40,16 +66,18 @@ static bool invoke(
     NPVariant* result)
 {
     std::string cname = _browser->utf8fromidentifier(name);
+    SymbolMap::iterator symbol = _lib_purple_symbols.find(cname);
     
-    std::cout << __func__ << ": name=" << cname
-        << " #args=" << nr_arguments << std::endl;
+    std::cout << __func__ << "; name=" << cname << "; #args=" << nr_arguments
+        << std::endl;
     
-    if (cname == "test") {
-        return invoke_default(object, arguments, nr_arguments, result);
-    }
-    else {
+    if (symbol == _lib_purple_symbols.end()) {
         _browser->setexception(object, "Exception during invocation.");
         return false;
+    }
+    else {
+        INT32_TO_NPVARIANT(12345, *result);
+        return true;
     }
 }
 
@@ -206,6 +234,13 @@ extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
     }
     
+    _lib_purple = dlopen("libpurple.so", RTLD_NOW);
+    
+    if (_lib_purple == NULL) {
+        std::cerr << __func__ << ": " << dlerror() << std::endl;
+        return NPERR_MODULE_LOAD_FAILED_ERROR;
+    }
+    
     _browser = browser;
     
 #ifndef _WINDOWS
@@ -219,6 +254,13 @@ extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 extern "C" NPError OSCALL NP_Shutdown() {
     std::cout << __func__ << std::endl;
     _browser = NULL;
+    
+    if (dlclose(_lib_purple) != 0) {
+        std::cout << __func__ << ": " << dlerror() << std::endl;
+    }
+    
+    _lib_purple = NULL;
+    _lib_purple_symbols.clear();
     return NPERR_NO_ERROR;
 }
 
