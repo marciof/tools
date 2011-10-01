@@ -18,7 +18,10 @@ elif tool == 'MSVC':
     env.Append(CPPDEFINES = ['_WINDOWS', '_X86_', 'WIN32'])
     env.Append(CCFLAGS = ['/EHsc', '/MD'])
 
-library = env.SharedLibrary(project_name, files)[0]
+[library] = env.SharedLibrary(
+    target = project_name,
+    source = files,
+    LIBS = ['dl'])
 
 if tool == 'MSVC':
     env.EmbedManifest(library)
