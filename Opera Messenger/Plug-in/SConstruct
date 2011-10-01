@@ -2,7 +2,6 @@ import os, SConsX
 
 
 env = Environment(
-    CPPDEFINES = ['MOZILLA_STRICT_API'],
     CPPPATH = os.environ['NP_API_SDK_INCLUDE_PATH'].split(os.pathsep))
 
 project = 'npExample'
