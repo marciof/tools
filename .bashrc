@@ -273,7 +273,7 @@ cleanup() {
 }
 
 ff() {
-    find $@ -a ! -name '*.svn-base'
+    find "$@" -a ! -name '*.svn-base'
 }
 
 reload() {
@@ -282,9 +282,9 @@ reload() {
 
 sbl() {
     if _in_git; then
-        git blame --date=short $@
+        git blame --date=short "$@"
     elif _in_svn; then
-        svn blame $@
+        svn blame "$@"
     else
         _in_scm
     fi
@@ -297,10 +297,10 @@ sci() {
         if  [ $# -eq 0 -a $cached -eq 0 ]; then
             git commit -a
         else
-            git commit $@
+            git commit "$@"
         fi
     elif _in_svn; then
-        svn commit $@
+        svn commit "$@"
     else
         _in_scm
     fi
@@ -308,9 +308,9 @@ sci() {
 
 sdi() {
     if _in_git; then
-        git diff $@
+        git diff "$@"
     elif _in_svn; then
-        svn diff $@
+        svn diff "$@"
     else
         _in_scm
     fi
@@ -318,9 +318,9 @@ sdi() {
 
 sl() {
     if _in_git; then
-        git log $@
+        git log "$@"
     elif _in_svn; then
-        svn log $@
+        svn log "$@"
     else
         _in_scm
     fi
@@ -328,9 +328,9 @@ sl() {
 
 sre() {
     if _in_git; then
-        git checkout $@
+        git checkout "$@"
     elif _in_svn; then
-        svn revert $@
+        svn revert "$@"
     else
         _in_scm
     fi
@@ -338,9 +338,9 @@ sre() {
 
 sst() {
     if _in_git; then
-        git status $@
+        git status "$@"
     elif _in_svn; then
-        svn status $@
+        svn status "$@"
     else
         _in_scm
     fi
@@ -348,9 +348,9 @@ sst() {
 
 sup() {
     if _in_git; then
-        git pull $@
+        git pull "$@"
     elif _in_svn; then
-        svn update $@
+        svn update "$@"
     else
         _in_scm
     fi
