@@ -3,10 +3,10 @@
 #include <map>
 #include <string>
 
+#include <eon/library/features.h>
+
 #include <npapi.h>
 #include <npfunctions.h>
-#include <npruntime.h>
-#include <nptypes.h>
 
 #include "main.h"
 
@@ -202,7 +202,7 @@ static NPError set_window(NPP instance, NPWindow* window) {
 }
 
 
-extern "C" NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+EXTERN_C NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
     std::cout << __func__ << std::endl;
     
     if (plugin == NULL) {
@@ -220,7 +220,7 @@ extern "C" NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
 }
 
 
-extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
+EXTERN_C NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 #ifndef _WINDOWS
     , NPPluginFuncs* plugin
 #endif
@@ -251,7 +251,7 @@ extern "C" NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 }
 
 
-extern "C" NPError OSCALL NP_Shutdown() {
+EXTERN_C NPError OSCALL NP_Shutdown() {
     std::cout << __func__ << std::endl;
     _browser = NULL;
     
@@ -265,7 +265,7 @@ extern "C" NPError OSCALL NP_Shutdown() {
 }
 
 
-extern "C" char* NP_GetMIMEDescription() {
+EXTERN_C char* NP_GetMIMEDescription() {
     std::cout << __func__ << std::endl;
     
     // <MIME Type>:<extension>:<description>
@@ -273,7 +273,7 @@ extern "C" char* NP_GetMIMEDescription() {
 }
 
 
-extern "C" NPError OSCALL NP_GetValue(
+EXTERN_C NPError OSCALL NP_GetValue(
     void* instance,
     NPPVariable what,
     void* value)
