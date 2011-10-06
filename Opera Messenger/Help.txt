@@ -9,7 +9,7 @@ Plug-in
 
 * Set the "NP_API_SDK_INCLUDE_PATH" environment variable.
   * Linux:
-    /usr/include/xulrunner-1.9.2.23:/usr/include/nspr
+    /usr/include/xulrunner-1.9.2.23
   * Windows:
     C:\Program Files\xulrunner-sdk\sdk\include
 
