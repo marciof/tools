@@ -77,11 +77,3 @@ ul.Panel > li.Information:before {
     position: relative;
     top: 6px;
 }
-
-#Server {
-    /* Don't set display to none, or the plug-in won't load. */
-    position: absolute;
-    
-    width: 0;
-    height: 0;
-}

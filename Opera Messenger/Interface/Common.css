@@ -24,3 +24,11 @@ input[onclick] {
 input[onclick]:hover {
     text-decoration: inherit;
 }
+
+object {
+    /* Don't set display to none, otherwise the plug-in won't load. */
+    position: absolute;
+    
+    width: 0;
+    height: 0;
+}

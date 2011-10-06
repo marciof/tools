@@ -1,4 +1,4 @@
-var _plugin;
+var libPurple;
 
 
 function addAccount(popup) {
@@ -6,15 +6,6 @@ function addAccount(popup) {
 }
 
 
-function initialize() {
-    _plugin = document.getElementById('Server');
-    
-    if (!('version' in _plugin)) {
-        alert('Plug-in error!');
-        return;
-    }
-}
-
-
-// Don't use the DOMContentLoaded event, otherwise the plug-in won't be detected.
-window.addEventListener('load', initialize, false);
+window.addEventListener('load', function() {
+    libPurple = document.getElementById('libPurple');
+}, false);
