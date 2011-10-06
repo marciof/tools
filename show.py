@@ -401,6 +401,7 @@ class DiffOutput (TextOutput):
                 passthrough_mode = True,
                 stderr = open(os.devnull))
 
+
 class Pager (Output):
     def __init__(self, options):
         self._ansi_color_re = None
