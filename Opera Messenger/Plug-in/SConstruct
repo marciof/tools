@@ -2,6 +2,7 @@ import os, SConsX
 
 
 env = Environment(
+    CPPDEFINES = {'PUBLIC_API': 'PUBLIC_EXPORT'},
     CPPPATH = os.environ['NP_API_SDK_INCLUDE_PATH'].split(os.pathsep),
     SHLIBPREFIX = 'np')
 
@@ -24,7 +25,6 @@ if tool == 'GNU':
     ])
 elif tool == 'MSVC':
     files += env.RES(Glob('*.rc'))
-    env['WINDOWS_INSERT_DEF'] = True
     env.Append(CPPDEFINES = ['_WINDOWS', '_X86_', 'WIN32'])
     env.Append(CCFLAGS = ['/EHsc', '/MD'])
 

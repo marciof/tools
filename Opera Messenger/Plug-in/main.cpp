@@ -202,7 +202,7 @@ static NPError set_window(NPP instance, NPWindow* window) {
 }
 
 
-EXTERN_C NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+PUBLIC NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
     std::cout << __func__ << std::endl;
     
     if (plugin == NULL) {
@@ -220,7 +220,7 @@ EXTERN_C NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
 }
 
 
-EXTERN_C NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
+PUBLIC NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 #ifndef _WINDOWS
     , NPPluginFuncs* plugin
 #endif
@@ -251,7 +251,7 @@ EXTERN_C NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 }
 
 
-EXTERN_C NPError OSCALL NP_Shutdown() {
+PUBLIC NPError OSCALL NP_Shutdown() {
     std::cout << __func__ << std::endl;
     _browser = NULL;
     
@@ -265,7 +265,7 @@ EXTERN_C NPError OSCALL NP_Shutdown() {
 }
 
 
-EXTERN_C char* NP_GetMIMEDescription() {
+PUBLIC char* NP_GetMIMEDescription() {
     std::cout << __func__ << std::endl;
     
     // <MIME Type>:<extension>:<description>
@@ -273,7 +273,7 @@ EXTERN_C char* NP_GetMIMEDescription() {
 }
 
 
-EXTERN_C NPError OSCALL NP_GetValue(
+PUBLIC NPError OSCALL NP_GetValue(
     void* instance,
     NPPVariable what,
     void* value)
