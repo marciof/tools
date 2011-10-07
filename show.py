@@ -80,6 +80,22 @@ class DirectoryInput (SubProcessInput):
             passthrough_mode = True)
 
 
+class ObjectFileInput (SubProcessInput):
+    @staticmethod
+    def handles(path):
+        path = path.lower()
+        
+        # No regular expression used for performance.
+        return path.endswith('.o') \
+            or path.endswith('.so')
+    
+    
+    def __init__(self, path):
+        SubProcessInput.__init__(self, ['nm', '-C', path],
+            name = path,
+            passthrough_mode = True)
+
+
 class PerlDocInput (SubProcessInput):
     def __init__(self, module):
         SubProcessInput.__init__(self, ['perldoc', '-t', module], name = module)
@@ -186,9 +202,11 @@ Options:
   -u        ignored for diff compatibility
   -w        convert blank spaces to visible characters (slower)
 
-An input can be a path, an URI, a Perl module name, standard input or this
-script's (given their string representation). The input's name can also be
-suffixed with a colon followed by a line number to scroll to, if possible.
+An input can be a path, an URI, a Perl module name, a tar archive, an object
+file, standard input or this script's (by their string representation).
+
+The input's name can also be suffixed with a colon followed by a line number to
+scroll to, if possible.
 '''.strip() % (
     self.stdin_repr, self.line_nr_field_width, self.default_protocol,
     self.paging_threshold_ratio, self.self_repr)
@@ -267,11 +285,12 @@ suffixed with a colon followed by a line number to scroll to, if possible.
     def _open_input(self, path):
         # Check common and fail-fast cases first for performance.
         
-        if TarFileInput.handles(path):
-            try:
-                return TarFileInput(path)
-            except IOError:
-                pass
+        for input_handler in (TarFileInput, ObjectFileInput):
+            if input_handler.handles(path):
+                try:
+                    return input_handler(path)
+                except IOError:
+                    pass
         
         try:
             return FileInput(path)
