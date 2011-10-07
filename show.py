@@ -85,6 +85,26 @@ class PerlDocInput (SubProcessInput):
         SubProcessInput.__init__(self, ['perldoc', '-t', module], name = module)
 
 
+class TarFileInput (SubProcessInput):
+    @staticmethod
+    def handles(path):
+        path = path.lower()
+        
+        # No regular expression used for performance. List of extensions taken
+        # from "lesspipe".
+        return path.endswith('.tar.gz') \
+            or path.endswith('.tgz') \
+            or path.endswith('.tar.z') \
+            or path.endswith('.tar.dz') \
+            or path.endswith('.tar')
+    
+    
+    def __init__(self, path):
+        SubProcessInput.__init__(self, ['tar', 'tf', path],
+            name = path,
+            passthrough_mode = True)
+
+
 class UriInput (StreamInput):
     def __init__(self, uri, default_protocol):
         import urllib, urlparse
@@ -110,26 +130,6 @@ class UriInput (StreamInput):
             StreamInput.__init__(self, stream, name = uri)
         else:
             StreamInput.__init__(self, stream, name = uri, encoding = charset)
-
-
-class TarFileInput (SubProcessInput):
-    @staticmethod
-    def handles(path):
-        path = path.lower()
-        
-        # No regular expression used for performance. List of extensions taken
-        # from "lesspipe".
-        return path.endswith('.tar.gz') \
-            or path.endswith('.tgz') \
-            or path.endswith('.tar.z') \
-            or path.endswith('.tar.dz') \
-            or path.endswith('.tar')
-    
-    
-    def __init__(self, path):
-        SubProcessInput.__init__(self, ['tar', 'tf', path],
-            name = path,
-            passthrough_mode = True)
 
 
 class Options:
