@@ -87,6 +87,7 @@ class ObjectFileInput (SubProcessInput):
         
         # No regular expression used for performance.
         return path.endswith('.o') \
+            or path.endswith('.os') \
             or path.endswith('.so')
     
     
