@@ -169,6 +169,7 @@ Automatic pager with syntax highlighting and diff support.
 
 Usage:
   pager     [options] [input [input]]
+  ls        [options] input{3,}
 
 Options:
   -d        passthrough mode, don't attempt to syntax highlight input (faster)
