@@ -28,7 +28,19 @@ public:
 
 
 struct PluginObject : public NPObject {
-    static void finalize(NPObject* plugin_object) {
+public:
+    static NPNetscapeFuncs* browser;
+    static NPClass class_implementation;
+    
+    
+public:
+    static void finalize() {
+        std::cout << "Finalize; browser=" << browser << std::endl;
+        browser = NULL;
+    }
+    
+    
+    static void finalize_instance(NPObject* plugin_object) {
         delete reinterpret_cast<PluginObject*>(plugin_object);
     }
     
@@ -55,7 +67,16 @@ struct PluginObject : public NPObject {
     }
     
     
-    static NPObject* initialize(NPP instance, UNUSED NPClass* class_impl) {
+    static void initialize(NPNetscapeFuncs* browser_instance) {
+        std::cout << "Initialize; browser=" << browser << std::endl;
+        browser = browser_instance;
+    }
+    
+    
+    static NPObject* initialize_instance(
+        NPP instance,
+        UNUSED NPClass* class_impl)
+    {
         return new PluginObject(reinterpret_cast<Plugin*>(instance->pdata));
     }
     
@@ -99,7 +120,6 @@ struct PluginObject : public NPObject {
     }
     
     
-    static NPClass class_implementation;
     Plugin* _plugin;
     
     
@@ -108,10 +128,12 @@ struct PluginObject : public NPObject {
 };
 
 
+NPNetscapeFuncs* PluginObject::browser;
+
 NPClass PluginObject::class_implementation = {
     NP_CLASS_STRUCT_VERSION,
-    initialize,
-    finalize,
+    initialize_instance,
+    finalize_instance,
     NULL,
     has_method,
     invoke,
@@ -126,17 +148,7 @@ NPClass PluginObject::class_implementation = {
 
 
 class Purple : public Plugin {
-private:
-    static NPNetscapeFuncs* _browser;
-    
-    
 public:
-    static void finalize() {
-        std::cout << "Finalize; browser=" << _browser << std::endl;
-        _browser = NULL;
-    }
-    
-    
     static NPError finalize_instance(NPP instance, NPSavedData** data) {
         Purple* purple = reinterpret_cast<Purple*>(instance->pdata);
         
@@ -145,7 +157,7 @@ public:
             << "; data=" << data
             << std::endl;
         
-        _browser->releaseobject(purple->_plugin);
+        PluginObject::browser->releaseobject(purple->_plugin);
         instance->pdata = NULL;
         delete purple;
         
@@ -178,11 +190,11 @@ public:
             Purple* purple = reinterpret_cast<Purple*>(instance->pdata);
             
             if (purple->_plugin == NULL) {
-                purple->_plugin = _browser->createobject(
+                purple->_plugin = PluginObject::browser->createobject(
                     instance, &PluginObject::class_implementation);
             }
             
-            _browser->retainobject(purple->_plugin);
+            PluginObject::browser->retainobject(purple->_plugin);
             *reinterpret_cast<NPObject**>(value) = purple->_plugin;
         }
         else {
@@ -190,12 +202,6 @@ public:
         }
         
         return NPERR_NO_ERROR;
-    }
-    
-    
-    static void initialize(NPNetscapeFuncs* browser) {
-        std::cout << "Initialize; browser=" << browser << std::endl;
-        _browser = browser;
     }
     
     
@@ -229,21 +235,21 @@ public:
     
     
     bool get_property(NPIdentifier name, UNUSED NPVariant* result) {
-        std::string cname = _browser->utf8fromidentifier(name);
+        std::string cname = PluginObject::browser->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
     
     
     bool has_method(NPIdentifier name) {
-        std::string cname = _browser->utf8fromidentifier(name);
+        std::string cname = PluginObject::browser->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
     
     
     bool has_property(NPIdentifier name) {
-        std::string cname = _browser->utf8fromidentifier(name);
+        std::string cname = PluginObject::browser->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
@@ -255,14 +261,15 @@ public:
         uint32_t nr_arguments,
         UNUSED NPVariant* result)
     {
-        std::string cname = _browser->utf8fromidentifier(name);
+        std::string cname = PluginObject::browser->utf8fromidentifier(name);
         
         std::cout << FUNCTION_NAME
             << "; name=" << cname
             << "; #args=" << nr_arguments
             << std::endl;
         
-        _browser->setexception(_plugin, "Exception during invocation.");
+        PluginObject::browser->setexception(_plugin,
+            "Exception during invocation.");
         return false;
     }
     
@@ -278,14 +285,14 @@ public:
     
     
     bool remove_property(NPIdentifier name) {
-        std::string cname = _browser->utf8fromidentifier(name);
+        std::string cname = PluginObject::browser->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
     
     
     bool set_property(NPIdentifier name, UNUSED const NPVariant* value) {
-        std::string cname = _browser->utf8fromidentifier(name);
+        std::string cname = PluginObject::browser->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
@@ -295,9 +302,6 @@ private:
     Purple(const Purple&);
     void operator=(const Purple&);
 };
-
-
-NPNetscapeFuncs* Purple::_browser;
 
 
 static NPError handle_event(UNUSED NPP instance, UNUSED void* event) {
@@ -339,7 +343,7 @@ PUBLIC NPError OSCALL NP_Initialize(
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
     }
     
-    Purple::initialize(browser_instance);
+    PluginObject::initialize(browser_instance);
     
 #ifndef _WINDOWS
     NP_GetEntryPoints(plugin_functions);
@@ -350,7 +354,7 @@ PUBLIC NPError OSCALL NP_Initialize(
 
 
 PUBLIC NPError OSCALL NP_Shutdown() {
-    Purple::finalize();
+    PluginObject::finalize();
     return NPERR_NO_ERROR;
 }
 
