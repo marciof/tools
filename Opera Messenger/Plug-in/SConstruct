@@ -17,12 +17,12 @@ if tool == 'GNU':
         '-pedantic-errors',
         '-Wall',
         '-Weffc++',
-        #'-Wextra',
+        '-Wextra',
         '-Wold-style-cast',
         '-Wredundant-decls',
         '-Wshadow',
         '-Wswitch-default',
-        #'-Wundef',
+        '-Wundef',
         '-Wunused-macros',
     ])
 else:
