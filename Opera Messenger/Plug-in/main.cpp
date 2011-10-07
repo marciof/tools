@@ -141,7 +141,7 @@ public:
         Purple* purple = reinterpret_cast<Purple*>(instance->pdata);
         
         std::cout << "Finalize instance"
-            << "; instance=" << purple
+            << "; plugin=" << purple
             << "; data=" << data
             << std::endl;
         
@@ -211,7 +211,7 @@ public:
         instance->pdata = new Purple();
         
         std::cout << "Initialize instance"
-            << "; instance=" << instance->pdata
+            << "; plugin=" << instance->pdata
             << "; type=" << type
             << std::endl;
         
