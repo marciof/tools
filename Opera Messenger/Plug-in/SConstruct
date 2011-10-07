@@ -3,7 +3,6 @@ import os, SConsX
 
 env = Environment(
     CPPDEFINES = {'PUBLIC_API': 'PUBLIC_EXPORT'},
-    CPPPATH = os.environ['NP_API_SDK_INCLUDE_PATH'].split(os.pathsep),
     SHLIBPREFIX = 'np')
 
 env.ParseConfig('pkg-config --cflags --libs purple | sed "s/-I/-isystem/g"')
@@ -13,6 +12,7 @@ tool = env.BuildTool()[0]
 
 if tool == 'GNU':
     env.Append(CCFLAGS = [
+        '-isystem' + os.environ['NP_API_SDK_INCLUDE_PATH'],
         '-ansi',
         '-pedantic-errors',
         '-Wall',
@@ -25,7 +25,10 @@ if tool == 'GNU':
         #'-Wundef',
         '-Wunused-macros',
     ])
-elif tool == 'MSVC':
+else:
+    env.Append(CPPPATH = [os.environ['NP_API_SDK_INCLUDE_PATH']])
+
+if tool == 'MSVC':
     files += env.RES(Glob('*.rc'))
     env.Append(CPPDEFINES = ['_WINDOWS', '_X86_', 'WIN32'])
     env.Append(CCFLAGS = ['/EHsc', '/MD'])
