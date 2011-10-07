@@ -19,7 +19,13 @@ class Plugin : public eon::library::Object {
 public:
     virtual bool get_property(NPIdentifier name, NPVariant* result) = 0;
     virtual bool has_method(NPIdentifier name) = 0;
-    virtual bool has_property(NPIdentifier name) = 0;
+    
+    
+    virtual bool has_property(UNUSED std::string name) {
+        return false;
+    }
+    
+    
     virtual bool invoke(NPIdentifier name, const NPVariant* arguments, uint32_t nr_arguments, NPVariant* result) = 0;
     virtual bool invoke_default(const NPVariant* arguments, uint32_t nr_arguments, NPVariant* result) = 0;
     virtual bool remove_property(NPIdentifier name) = 0;
@@ -62,8 +68,13 @@ public:
     
     
     static bool has_property(NPObject* plugin_object, NPIdentifier name) {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->has_property(name);
+        char* cname = browser->utf8fromidentifier(name);
+        
+        bool result = reinterpret_cast<PluginObject*>(plugin_object)
+            ->_plugin->has_property(cname);
+        
+        browser->memfree(cname);
+        return result;
     }
     
     
@@ -248,9 +259,8 @@ public:
     }
     
     
-    bool has_property(NPIdentifier name) {
-        std::string cname = PluginObject::browser->utf8fromidentifier(name);
-        std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
+    bool has_property(std::string name) {
+        std::cout << FUNCTION_NAME << "; name=" << name << std::endl;
         return false;
     }
     
