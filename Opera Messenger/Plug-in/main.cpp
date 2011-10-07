@@ -182,43 +182,44 @@ static NPError set_window(NPP instance, NPWindow* window) {
 }
 
 
-PUBLIC NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+PUBLIC NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin_functions) {
     std::cout << __func__ << std::endl;
     
-    if (plugin == NULL) {
+    if (plugin_functions == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
     
-    plugin->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
-    plugin->newp = create;
-    plugin->destroy = destroy;
-    plugin->getvalue = get_value;
-    plugin->event = handle_event;
-    plugin->setwindow = set_window;
+    plugin_functions->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
+    plugin_functions->newp = create;
+    plugin_functions->destroy = destroy;
+    plugin_functions->getvalue = get_value;
+    plugin_functions->event = handle_event;
+    plugin_functions->setwindow = set_window;
     
     return NPERR_NO_ERROR;
 }
 
 
-PUBLIC NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
+PUBLIC NPError OSCALL NP_Initialize(
+    NPNetscapeFuncs* browser_instance
 #ifndef _WINDOWS
-    , NPPluginFuncs* plugin
+    , NPPluginFuncs* plugin_functions
 #endif
 ) {
     std::cout << __func__ << std::endl;
     
-    if (browser == NULL) {
+    if (browser_instance == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
-    if ((browser->version >> 8) > NP_VERSION_MAJOR) {
+    if ((browser_instance->version >> 8) > NP_VERSION_MAJOR) {
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
     }
     
-    ::browser = browser;
+    ::browser = browser_instance;
     Purple::initialize();
     
 #ifndef _WINDOWS
-    NP_GetEntryPoints(plugin);
+    NP_GetEntryPoints(plugin_functions);
 #endif
     
     return NPERR_NO_ERROR;
