@@ -74,9 +74,9 @@ class SubProcessInput (StreamInput):
 
 
 class DirectoryInput (SubProcessInput):
-    def __init__(self, path, ls_args):
-        SubProcessInput.__init__(self, ['ls', path] + ls_args,
-            name = os.path.abspath(path),
+    def __init__(self, ls_args, *paths):
+        SubProcessInput.__init__(self, ['ls'] + ls_args + list(paths),
+            name = os.path.abspath(paths[0]) if len(paths) == 1 else os.getcwd(),
             passthrough_mode = True)
 
 
@@ -160,9 +160,6 @@ class Options:
         self.terminal_only = False
         self.visible_white_space = False
         
-        if len(arguments) > 2:
-            options.insert(0, ('-h', ''))
-        
         for option, value in options:
             if option == '-d':
                 self.passthrough_mode = True
@@ -229,7 +226,9 @@ suffixed with a colon followed by a line number to scroll to, if possible.
             elif option == '-w':
                 self.visible_white_space = True
         
-        if len(arguments) == 2:
+        if len(arguments) > 2:
+            self.input = DirectoryInput(self.ls_arguments, *arguments)
+        elif len(arguments) == 2:
             self.ls_arguments.append('--color=never')
             self.input = self._open_diff_input(map(self._open_input, arguments))
         elif len(arguments) == 1:
@@ -280,7 +279,7 @@ suffixed with a colon followed by a line number to scroll to, if possible.
             return FileInput(path)
         except IOError as error:
             if error.errno == errno.EISDIR:
-                return DirectoryInput(path, self.ls_arguments)
+                return DirectoryInput(self.ls_arguments, path)
             
             if error.errno == errno.ENOENT:
                 if path == self.stdin_repr:
