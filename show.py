@@ -165,21 +165,18 @@ class Options:
                 self.passthrough_mode = True
             elif option == '-h':
                 print '''
-Automatic pager with syntax highlighting, diff support and file/text search.
+Automatic pager with syntax highlighting and diff support.
 
 Usage:
-  pager     [options] [input-1 [input-2]]
-  search    [options] input*
+  pager     [options] [input [input]]
 
 Options:
   -d        passthrough mode, don't attempt to syntax highlight input (faster)
-  -f        list files with names matching the given pattern
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
   -j        line number right-justified field width, defaults to %s
   -l        option for "ls", when listing directories
   -L        ignored for Subversion compatibility
-  -m        list file matches for the given pattern
   -n        show line numbers (slower)
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -r        paging ratio of input lines / terminal height, defaults to %s (%%)
