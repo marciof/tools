@@ -1,49 +1,34 @@
-#include <dlfcn.h>
+// Standard library.
 #include <iostream>
-#include <map>
 #include <string>
 
-#include <eon/library/features.h>
+// libPurple
+#include <purple.h>
 
+// NPAPI
 #include <npapi.h>
 #include <npfunctions.h>
 
+#include <eon/library/features.h>
 #include "main.h"
 
 
-typedef std::map<std::string, void*> SymbolMap;
+class Purple {
+public:
+    static void initialize() {
+        purple_debug_set_enabled(true);
+    }
+};
 
-static void* _lib_purple = NULL;
-static SymbolMap _lib_purple_symbols;
-static NPNetscapeFuncs* _browser = NULL;
-static NPObject* _plugin = NULL;
+
+static NPNetscapeFuncs* browser = NULL;
+static NPObject* plugin = NULL;
 
 
 static bool has_method(NPObject* object, NPIdentifier name) {
-    std::string cname = _browser->utf8fromidentifier(name);
-    
-    if (_lib_purple_symbols.find(cname) != _lib_purple_symbols.end()) {
-        return true;
-    }
-    
-    // Clear any old error conditions.
-    dlerror();
-    
-    void* symbol = dlsym(_lib_purple, cname.c_str());
-    char* error = dlerror();
-    
-    if (error == NULL) {
-        _lib_purple_symbols[cname] = symbol;
-        
-        std::cout << __func__ << "; name=" << cname << "; dlsym=" << symbol
-            << std::endl;
-        return true;
-    }
-    else {
-        std::cerr << __func__ << "; name=" << cname << "; error=" << error
-            << std::endl;
-        return false;
-    }
+    std::string cname = ::browser->utf8fromidentifier(name);
+    std::cerr << __func__ << "; name=" << cname << "; error=" << std::endl;
+    return false;
 }
 
 
@@ -65,25 +50,18 @@ static bool invoke(
     uint32_t nr_arguments,
     NPVariant* result)
 {
-    std::string cname = _browser->utf8fromidentifier(name);
-    SymbolMap::iterator symbol = _lib_purple_symbols.find(cname);
+    std::string cname = ::browser->utf8fromidentifier(name);
     
     std::cout << __func__ << "; name=" << cname << "; #args=" << nr_arguments
         << std::endl;
     
-    if (symbol == _lib_purple_symbols.end()) {
-        _browser->setexception(object, "Exception during invocation.");
-        return false;
-    }
-    else {
-        INT32_TO_NPVARIANT(12345, *result);
-        return true;
-    }
+    ::browser->setexception(object, "Exception during invocation.");
+    return false;
 }
 
 
 static bool has_property(NPObject* object, NPIdentifier name) {
-    std::string cname = _browser->utf8fromidentifier(name);
+    std::string cname = ::browser->utf8fromidentifier(name);
     std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
@@ -94,7 +72,7 @@ static bool get_property(
     NPIdentifier name,
     NPVariant* result)
 {
-    std::string cname = _browser->utf8fromidentifier(name);
+    std::string cname = ::browser->utf8fromidentifier(name);
     std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
@@ -105,14 +83,14 @@ static bool set_property(
     NPIdentifier name,
     const NPVariant* value)
 {
-    std::string cname = _browser->utf8fromidentifier(name);
+    std::string cname = ::browser->utf8fromidentifier(name);
     std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
 
 
 static bool remove_property(NPObject* object, NPIdentifier name) {
-    std::string cname = _browser->utf8fromidentifier(name);
+    std::string cname = ::browser->utf8fromidentifier(name);
     std::cout << __func__ << "; name=" << cname << std::endl;
     return false;
 }
@@ -151,9 +129,11 @@ static NPError create(
 static NPError destroy(NPP instance, NPSavedData** data) {
     std::cout << __func__ << std::endl;
     
-    if (_plugin != NULL) {
-        _browser->releaseobject(_plugin);
-        _plugin = NULL;
+    if (::plugin != NULL) {
+        ::browser->releaseobject(::plugin);
+        
+        // TODO: Unset only when the reference count reaches zero?
+        ::plugin = NULL;
     }
     
     return NPERR_NO_ERROR;
@@ -176,11 +156,11 @@ static NPError get_value(NPP instance, NPPVariable what, void* value) {
         *reinterpret_cast<const char**>(value) = PLUGIN_DESCRIPTION;
         break;
     case NPPVpluginScriptableNPObject:
-        if (_plugin == NULL) {
-            _plugin = _browser->createobject(instance, &_plugin_class);
+        if (::plugin == NULL) {
+            ::plugin = ::browser->createobject(instance, &_plugin_class);
         }
-        _browser->retainobject(_plugin);
-        *reinterpret_cast<NPObject**>(value) = _plugin;
+        ::browser->retainobject(::plugin);
+        *reinterpret_cast<NPObject**>(value) = ::plugin;
         break;
     default:
         return NPERR_GENERIC_ERROR;
@@ -234,14 +214,8 @@ PUBLIC NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
     }
     
-    _lib_purple = dlopen("libpurple.so", RTLD_NOW);
-    
-    if (_lib_purple == NULL) {
-        std::cerr << __func__ << "; error=" << dlerror() << std::endl;
-        return NPERR_MODULE_LOAD_FAILED_ERROR;
-    }
-    
-    _browser = browser;
+    ::browser = browser;
+    Purple::initialize();
     
 #ifndef _WINDOWS
     NP_GetEntryPoints(plugin);
@@ -253,14 +227,8 @@ PUBLIC NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser
 
 PUBLIC NPError OSCALL NP_Shutdown() {
     std::cout << __func__ << std::endl;
-    _browser = NULL;
+    ::browser = NULL;
     
-    if (dlclose(_lib_purple) != 0) {
-        std::cerr << __func__ << "; error=" << dlerror() << std::endl;
-    }
-    
-    _lib_purple = NULL;
-    _lib_purple_symbols.clear();
     return NPERR_NO_ERROR;
 }
 
