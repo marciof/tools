@@ -76,7 +76,7 @@ class FileInput (StreamInput):
 class SconsDbInput (StreamInput):
     @staticmethod
     def handles(path):
-        return path == '.sconsign.dblite'
+        return path.endswith('.sconsign.dblite')
     
     
     def __init__(self, path):
