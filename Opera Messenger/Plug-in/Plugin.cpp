@@ -141,7 +141,7 @@ bool Plugin::has_property_wrapper(NPObject* plugin, NPIdentifier identifier) {
 
 
 NPError Plugin::initialize_plugin_instance(
-    NPMIMEType type,
+    UNUSED NPMIMEType type,
     NPP instance,
     UNUSED uint16_t mode,
     UNUSED int16_t nr_arguments,
