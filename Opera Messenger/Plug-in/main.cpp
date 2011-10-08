@@ -26,7 +26,7 @@ private:
     
 public:
     static void finalize_host() {
-        std::cout << "Finalize; host=" << host << std::endl;
+        std::cout << "Finalize host; host=" << host << std::endl;
         host = NULL;
     }
     
@@ -73,12 +73,14 @@ public:
     
     
     static void initialize_host(NPNetscapeFuncs* new_host) {
-        std::cout << "Initialize; host=" << host << std::endl;
+        std::cout << "Initialize host; host=" << host << std::endl;
         host = new_host;
     }
     
     
     static void initialize_plugin(NPPluginFuncs* plugin) {
+        std::cout << "Initialize plug-in; plugin=" << plugin << std::endl;
+        
         plugin->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
         plugin->newp = initialize_plugin_instance;
         plugin->destroy = finalize_plugin_instance;
@@ -103,7 +105,7 @@ private:
     
     
     static NPError finalize_plugin_instance(NPP instance, NPSavedData** data) {
-        std::cout << "Finalize instance"
+        std::cout << "Finalize plug-in instance"
             << "; plugin=" << instance->pdata
             << "; data=" << data
             << std::endl;
@@ -152,12 +154,13 @@ private:
         UNUSED int16_t nr_arguments,
         UNUSED char* argn[],
         UNUSED char* argv[],
-        UNUSED NPSavedData* data)
+        NPSavedData* data)
     {
         instance->pdata = NULL;
         
-        std::cout << "Initialize instance"
+        std::cout << "Initialize plug-in instance"
             << "; plugin=" << instance->pdata
+            << "; data=" << data
             << "; type=" << type
             << std::endl;
         
