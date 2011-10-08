@@ -1,13 +1,12 @@
-* Create a libpurple client (first Linux, then Windows):
-  http://libpurple.com/
-  http://purpled.sourceforge.net/
-  http://opensource.palm.com/packages.html
-  http://developer.pidgin.im/doxygen/dev/html/modules.html
-  http://developer.pidgin.im/wiki/Development%20FAQ
+* libPurple client (first Linux, then Windows):
+  * http://libpurple.com/
+  * http://purpled.sourceforge.net/
+  * http://opensource.palm.com/packages.html
+  * http://developer.pidgin.im/doxygen/dev/html/modules.html
+  * http://developer.pidgin.im/wiki/Development%20FAQ
 
-* Create an Example NPAPI plug-in.
-  * Expose all exported functions/variables to JavaScript, then script it?
-  * Use HTML5 (Webstorage to save logins, etc).
+* Interface:
+  * Use HTML5 (Webstorage to save logins, etc)?
   * Use lesscss? http://lesscss.org/
   * Create an "index.html" with the login page?
   * Choose favicon: http://tango.freedesktop.org/Tango_Icon_Library
