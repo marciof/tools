@@ -76,6 +76,21 @@ public:
 };
 
 
+const char* Plugin::get_plugin_description() {
+    return PLUGIN_DESCRIPTION;
+}
+
+
+const char* Plugin::get_plugin_mime_description() {
+    return PLUGIN_MIME_TYPE "::;";
+}
+
+
+const char* Plugin::get_plugin_name() {
+    return PLUGIN_NAME;
+}
+
+
 Plugin* Plugin::allocate_instance() {
     return new Purple();
 }

@@ -25,6 +25,15 @@ public:
     static void finalize_host();
     
     
+    static const char* get_plugin_description() /* = 0 */;
+    
+    
+    static const char* get_plugin_mime_description() /* = 0 */;
+    
+    
+    static const char* get_plugin_name() /* = 0 */;
+    
+    
     static NPError get_plugin_value(
         NPP instance,
         NPPVariable what,

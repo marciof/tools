@@ -7,9 +7,6 @@
 #include <eon/library/features.h>
 #include <eon/library/types.h>
 
-// TODO: Abstract plug-in information (e.g. MIME type, etc).
-#include "main.h"
-
 #include "Plugin.h"
 
 
@@ -50,10 +47,10 @@ NPError Plugin::get_plugin_value(NPP instance, NPPVariable what, void* value) {
     }
     
     if (what == NPPVpluginNameString) {
-        *static_cast<const char**>(value) = PLUGIN_NAME;
+        *static_cast<const char**>(value) = get_plugin_name();
     }
     else if (what == NPPVpluginDescriptionString) {
-        *static_cast<const char**>(value) = PLUGIN_DESCRIPTION;
+        *static_cast<const char**>(value) = get_plugin_description();
     }
     else if (what == NPPVpluginScriptableNPObject) {
         if (instance->pdata == NULL) {
@@ -157,7 +154,6 @@ NPError Plugin::initialize_plugin_instance(
     std::cout << "Initialize plug-in instance"
         << "; plugin=" << instance->pdata
         << "; data=" << data
-        << "; type=" << type
         << std::endl;
     
     return NPERR_NO_ERROR;
@@ -299,9 +295,9 @@ PUBLIC NPError OSCALL NP_Shutdown() {
 }
 
 
-PUBLIC char* NP_GetMIMEDescription() {
-    // <MIME Type>:<extension>:<description>
-    return const_cast<char*>(PLUGIN_MIME_TYPE ": : ");
+// <MIME Type>:<extension>:<description>;...
+PUBLIC const char* NP_GetMIMEDescription() {
+    return Plugin::get_plugin_mime_description();
 }
 
 
