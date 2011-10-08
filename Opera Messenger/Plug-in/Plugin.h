@@ -31,7 +31,7 @@ public:
         void* value);
     
     
-    static Plugin* allocate_instance();
+    static Plugin* allocate_instance() /* = 0 */;
     
     
     static void initialize_host(NPNetscapeFuncs* new_host);
