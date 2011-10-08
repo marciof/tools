@@ -47,6 +47,27 @@ class StreamInput:
         self.stream.close()
 
 
+class DiffInput (StreamInput):
+    def __init__(self, input_left, input_right):
+        import difflib, cStringIO
+        
+        labels = [i.name.encode('UTF-8') for i in input_left, input_right]
+        header = b'diff -u %s %s' % tuple(labels)
+        
+        # TODO: Use the generator directly to stream by line instead of
+        # concatenating into a StringIO object, to improve performance?
+        diff = cStringIO.StringIO(
+            header + b'\n' + b''.join(difflib.unified_diff(
+                input_left.stream.readlines(),
+                input_right.stream.readlines(),
+                *labels)))
+        
+        for input in input_left, input_right:
+            input.close()
+        
+        StreamInput.__init__(self, diff, name = header)
+
+
 class FileInput (StreamInput):
     def __init__(self, path):
         StreamInput.__init__(self, open(path), name = os.path.abspath(path))
@@ -247,7 +268,8 @@ scroll to, if possible.
             self.input = DirectoryInput(self.ls_arguments, *arguments)
         elif len(arguments) == 2:
             self.ls_arguments.append('--color=never')
-            self.input = self._open_diff_input(map(self._open_input, arguments))
+            self.input = DiffInput(*map(self._open_input, arguments))
+            self.diff_mode = True
         elif len(arguments) == 1:
                 self.input = self._open_input(arguments[0])
         elif len(arguments) == 0:
@@ -259,27 +281,6 @@ scroll to, if possible.
         
         if self.input.passthrough_mode:
             self.passthrough_mode = True
-    
-    
-    def _open_diff_input(self, inputs):
-        import difflib, cStringIO
-        
-        labels = [input.name.encode('UTF-8') for input in inputs]
-        header = b'diff -u %s %s' % tuple(labels)
-        
-        # TODO: Use the generator directly to stream by line instead of
-        # concatenating into a StringIO object, to improve performance.
-        diff = cStringIO.StringIO(
-            header + b'\n' + b''.join(difflib.unified_diff(
-                inputs[0].stream.readlines(),
-                inputs[1].stream.readlines(),
-                *labels)))
-        
-        for input in inputs:
-            input.close()
-        
-        self.diff_mode = True
-        return StreamInput(diff, name = header)
     
     
     # TODO: Too long, refactor.
