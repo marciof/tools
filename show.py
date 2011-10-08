@@ -73,6 +73,32 @@ class FileInput (StreamInput):
         StreamInput.__init__(self, open(path), name = os.path.abspath(path))
 
 
+class SconsDbInput (StreamInput):
+    @staticmethod
+    def handles(path):
+        return path == '.sconsign.dblite'
+    
+    
+    def __init__(self, path):
+        import pkg_resources
+        
+        [scons_package] = pkg_resources.require('SCons')
+        scons_path = scons_package.location + '/scons-' + scons_package.version
+        sys.path.append(scons_path)
+        
+        import SCons.dblite, pickle, pprint, cStringIO
+        
+        scons_db = SCons.dblite.open(path)
+        scons_db_dict = {}
+        
+        for key in scons_db:
+            scons_db_dict[key] = pickle.loads(scons_db[key])
+        
+        StreamInput.__init__(self,
+            stream = cStringIO.StringIO(pprint.pformat(scons_db_dict)),
+            name = path)
+
+
 class SubProcessInput (StreamInput):
     def __init__(self, args, **kargs):
         import subprocess
@@ -287,7 +313,7 @@ scroll to, if possible.
     def _open_input(self, path):
         # Check common and fail-fast cases first for performance.
         
-        for input_handler in (TarFileInput, ObjectFileInput):
+        for input_handler in (TarFileInput, ObjectFileInput, SconsDbInput):
             if input_handler.handles(path):
                 try:
                     return input_handler(path)
