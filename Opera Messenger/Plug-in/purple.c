@@ -7,7 +7,7 @@ gcc $(pkg-config --libs --cflags purple) -ansi -Wall hello.c
  * (Some fragments taken from libpurple nullclient.c example found at http://pidgin.im/)
  */
 
-#include "purple.h"
+#include <purple.h>
 
 #include <glib.h>
 
