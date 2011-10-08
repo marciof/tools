@@ -429,7 +429,7 @@ class DiffOutput (TextOutput):
     
     
     # Fix parse error when the diff header has a trailing tab character after
-    # file names.
+    # file names (e.g. Git built-in diff output).
     def _kompare_write(self, *data):
         TextOutput.write(self, *data[0].split(b'\t', 2))
         TextOutput.write(self, *data[1:])
