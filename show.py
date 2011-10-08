@@ -356,12 +356,17 @@ class StreamOutput (Output):
     def __init__(self, stream, formatter = None, passthrough_mode = False):
         self.formatter = formatter
         self.passthrough_mode = passthrough_mode
-        self.stream = stream
+        self._stream = stream
     
     
     def close(self):
-        if self.stream is not sys.stdout:
-            self.stream.close()
+        if self._stream is not sys.stdout:
+            self._stream.close()
+    
+    
+    def write(self, *data):
+        for string in data:
+            self._stream.write(string)
 
 
 class SubProcessOutput (StreamOutput):
@@ -418,6 +423,19 @@ class DiffOutput (TextOutput):
                 detached = True,
                 passthrough_mode = True,
                 stderr = open(os.devnull))
+            
+            self._original_write = self.write
+            self.write = self._kompare_write
+    
+    
+    # Fix parse error when the diff header has a trailing tab character after
+    # file names.
+    def _kompare_write(self, *data):
+        TextOutput.write(self, *data[0].split(b'\t', 2))
+        TextOutput.write(self, *data[1:])
+        
+        # Restore original implementation for performance.
+        self.write = self._original_write
 
 
 class Pager (Output):
@@ -476,26 +494,20 @@ class Pager (Output):
                 if self._options.show_line_nrs:
                     for line in self._options.input.stream:
                         line_nr += 1
-                        self._output.stream.write(
-                            str(line_nr).rjust(width) + b' ')
-                        
-                        self._output.stream.write(line)
+                        self._output.write(str(line_nr).rjust(width) + b' ', line)
                 else:
                     for line in self._options.input.stream:
-                        self._output.stream.write(line)
+                        self._output.write(line)
             elif self._output.passthrough_mode:
                 if self._options.show_line_nrs:
                     for line in self._options.input.stream:
                         line_nr += 1
-                        self._output.stream.write(
-                            str(line_nr).rjust(width) + b' ')
-                        
-                        self._output.stream.write(
+                        self._output.write(
+                            str(line_nr).rjust(width) + b' ',
                             self._ansi_color_re.sub(b'', line))
                 else:
                     for line in self._options.input.stream:
-                        self._output.stream.write(
-                            self._ansi_color_re.sub(b'', line))
+                        self._output.write(self._ansi_color_re.sub(b'', line))
             else:
                 from pygments import highlight as pygments_highlight
                 encoding = self._options.input.encoding
@@ -506,16 +518,15 @@ class Pager (Output):
                 if self._options.show_line_nrs:
                     for line in self._options.input.stream:
                         line_nr += 1
-                        self._output.stream.write(
-                            str(line_nr).rjust(width) + b' ')
+                        self._output.write(str(line_nr).rjust(width) + b' ')
                         
-                        self._output.stream.write(pygments_highlight(
+                        self._output.write(pygments_highlight(
                             self._ansi_color_re.sub(b'', line).decode(encoding),
                             self._lexer,
                             self._output.formatter).encode(self._output_encoding))
                 else:
                     for line in self._options.input.stream:
-                        self._output.stream.write(pygments_highlight(
+                        self._output.write(pygments_highlight(
                             self._ansi_color_re.sub(b'', line).decode(encoding),
                             self._lexer,
                             self._output.formatter).encode(self._output_encoding))
@@ -534,7 +545,7 @@ class Pager (Output):
             if self._options.show_line_nrs:
                 self._flush_buffer_line_nrs(buffered_lines)
             else:
-                self._output.stream.write(b''.join(buffered_lines))
+                self._output.write(*buffered_lines)
             return
         
         text = b''.join(buffered_lines)
@@ -579,7 +590,7 @@ class Pager (Output):
                     if self._options.show_line_nrs:
                         self._flush_buffer_line_nrs(buffered_lines)
                     else:
-                        self._output.stream.write(text)
+                        self._output.write(text)
                     return
             
             # isinstance() isn't used for performance.
@@ -601,7 +612,7 @@ class Pager (Output):
                 self._flush_buffer_line_nrs(
                     [self._ansi_color_re.sub(b'', l) for l in buffered_lines])
             else:
-                self._output.stream.write(text)
+                self._output.write(text)
             return
         
         import locale
@@ -629,7 +640,7 @@ class Pager (Output):
             
             self._flush_buffer_line_nrs(lines)
         else:
-            self._output.stream.write(pygments_highlight(
+            self._output.write(pygments_highlight(
                 text.decode(self._options.input.encoding),
                 self._lexer,
                 self._output.formatter).encode(self._output_encoding))
@@ -639,7 +650,7 @@ class Pager (Output):
         width = self._options.line_nr_field_width - 1
         
         for line_nr, line in enumerate(buffered_lines, start = 1):
-            self._output.stream.write(str(line_nr).rjust(width) + b' ' + line)
+            self._output.write(str(line_nr).rjust(width) + b' ' + line)
     
     
     # Used instead of pygments.lexers.guess_lexer() to get a count of ambiguous
