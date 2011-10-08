@@ -424,18 +424,32 @@ class DiffOutput (TextOutput):
                 passthrough_mode = True,
                 stderr = open(os.devnull))
             
-            self._original_write = self.write
             self.write = self._kompare_write
+            self._last_string = b''
     
     
     # Fix parse error when the diff header has a trailing tab character after
     # file names (e.g. Git built-in diff output).
     def _kompare_write(self, *data):
-        TextOutput.write(self, *data[0].split(b'\t', 2))
-        TextOutput.write(self, *data[1:])
-        
-        # Restore original implementation for performance.
-        self.write = self._original_write
+        for string in data:
+            strings = string.split(b'\n')
+            
+            for string in strings:
+                if string == b'':
+                    continue
+                
+                is_header = \
+                    (self._last_string.startswith(b'index ') \
+                        and string.startswith(b'--- a/')) \
+                    or (self._last_string.startswith(b'--- a/') \
+                        and string.startswith(b'+++ b/'))
+                
+                if is_header:
+                    TextOutput.write(self, string.rstrip(b'\t') + b'\n')
+                else:
+                    TextOutput.write(self, string + b'\n')
+                
+                self._last_string = string
 
 
 class Pager (Output):
