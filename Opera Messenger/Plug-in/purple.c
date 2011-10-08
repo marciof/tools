@@ -1,5 +1,5 @@
 /*
-gcc $(pkg-config --libs --cflags purple) -ansi -Wall hello.c
+gcc -o purple $(pkg-config --libs --cflags purple) -ansi -Wall purple.c
 */
 
 /*
