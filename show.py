@@ -83,8 +83,8 @@ class SconsDbInput (StreamInput):
         import pkg_resources
         
         [scons_package] = pkg_resources.require('SCons')
-        scons_path = scons_package.location + '/scons-' + scons_package.version
-        sys.path.append(scons_path)
+        sys.path.append(os.path.join(
+            scons_package.location, 'scons-' + scons_package.version))
         
         import SCons.dblite, pickle, pprint, cStringIO
         
