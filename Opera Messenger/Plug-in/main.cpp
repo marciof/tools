@@ -69,7 +69,7 @@ public:
     }
     
     
-    static Plugin* initialize();
+    static Plugin* allocate_instance();
     
     
     static void initialize_host(NPNetscapeFuncs* new_host) {
@@ -95,7 +95,7 @@ private:
         UNUSED NPP instance,
         UNUSED NPClass* class_implementation)
     {
-        return initialize();
+        return allocate_instance();
     }
     
     
@@ -315,7 +315,7 @@ public:
 };
 
 
-Plugin* Plugin::initialize() {
+Plugin* Plugin::allocate_instance() {
     return new Purple();
 }
 
