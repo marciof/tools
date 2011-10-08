@@ -6,7 +6,6 @@
   http://developer.pidgin.im/wiki/Development%20FAQ
 
 * Create an Example NPAPI plug-in.
-  * Improve logging.
   * Expose all exported functions/variables to JavaScript, then script it?
   * Use HTML5 (Webstorage to save logins, etc).
   * Use lesscss? http://lesscss.org/
