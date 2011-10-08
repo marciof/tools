@@ -15,164 +15,19 @@
 #include "main.h"
 
 
-class Plugin : public eon::library::Object {
+class Plugin : public eon::library::Object, public NPObject {
 public:
-    virtual bool get_property(NPIdentifier name, NPVariant* result) = 0;
-    virtual bool has_method(NPIdentifier name) = 0;
+    static NPNetscapeFuncs* host;
     
     
-    virtual bool has_property(UNUSED std::string name) {
-        return false;
-    }
-    
-    
-    virtual bool invoke(NPIdentifier name, const NPVariant* arguments, uint32_t nr_arguments, NPVariant* result) = 0;
-    virtual bool invoke_default(const NPVariant* arguments, uint32_t nr_arguments, NPVariant* result) = 0;
-    virtual bool remove_property(NPIdentifier name) = 0;
-    virtual bool set_property(NPIdentifier name, const NPVariant* value) = 0;
-};
-
-
-struct PluginObject : public NPObject {
-public:
-    static NPNetscapeFuncs* browser;
-    static NPClass class_implementation;
+private:
+    static NPClass _class_implementation;
     
     
 public:
-    static void finalize() {
-        std::cout << "Finalize; browser=" << browser << std::endl;
-        browser = NULL;
-    }
-    
-    
-    static void finalize_instance(NPObject* plugin_object) {
-        delete reinterpret_cast<PluginObject*>(plugin_object);
-    }
-    
-    
-    static bool get_property(
-        NPObject* plugin_object,
-        NPIdentifier name,
-        NPVariant* result)
-    {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->get_property(name, result);
-    }
-    
-    
-    static bool has_method(NPObject* plugin_object, NPIdentifier name) {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->has_method(name);
-    }
-    
-    
-    static bool has_property(NPObject* plugin_object, NPIdentifier name) {
-        char* cname = browser->utf8fromidentifier(name);
-        
-        bool result = reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->has_property(cname);
-        
-        browser->memfree(cname);
-        return result;
-    }
-    
-    
-    static void initialize(NPNetscapeFuncs* browser_instance) {
-        std::cout << "Initialize; browser=" << browser << std::endl;
-        browser = browser_instance;
-    }
-    
-    
-    static NPObject* initialize_instance(
-        NPP instance,
-        UNUSED NPClass* class_impl)
-    {
-        return new PluginObject(reinterpret_cast<Plugin*>(instance->pdata));
-    }
-    
-    
-    static bool invoke(
-        NPObject* plugin_object,
-        NPIdentifier name,
-        const NPVariant* arguments,
-        uint32_t nr_arguments,
-        NPVariant* result)
-    {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->invoke(name, arguments, nr_arguments, result);
-    }
-    
-    
-    static bool invoke_default(
-        NPObject* plugin_object,
-        const NPVariant* arguments,
-        uint32_t nr_arguments,
-        NPVariant* result)
-    {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->invoke_default(arguments, nr_arguments, result);
-    }
-    
-    
-    static bool remove_property(NPObject* plugin_object, NPIdentifier name) {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->remove_property(name);
-    }
-    
-    
-    static bool set_property(
-        NPObject* plugin_object,
-        NPIdentifier name,
-        const NPVariant* value)
-    {
-        return reinterpret_cast<PluginObject*>(plugin_object)
-            ->_plugin->set_property(name, value);
-    }
-    
-    
-    Plugin* _plugin;
-    
-    
-    PluginObject(Plugin* plugin) : _plugin(plugin) {
-    }
-};
-
-
-NPNetscapeFuncs* PluginObject::browser;
-
-NPClass PluginObject::class_implementation = {
-    NP_CLASS_STRUCT_VERSION,
-    initialize_instance,
-    finalize_instance,
-    NULL,
-    has_method,
-    invoke,
-    invoke_default,
-    has_property,
-    get_property,
-    set_property,
-    remove_property,
-    NULL,
-    NULL,
-};
-
-
-class Purple : public Plugin {
-public:
-    static NPError finalize_instance(NPP instance, NPSavedData** data) {
-        Purple* purple = reinterpret_cast<Purple*>(instance->pdata);
-        
-        std::cout << "Finalize instance"
-            << "; plugin=" << purple
-            << "; data=" << data
-            << std::endl;
-        
-        PluginObject::browser->releaseobject(purple->_plugin);
-        instance->pdata = NULL;
-        delete purple;
-        
-        return NPERR_NO_ERROR;
+    static void finalize_host() {
+        std::cout << "Finalize; host=" << host << std::endl;
+        host = NULL;
     }
     
     
@@ -192,21 +47,19 @@ public:
         }
         
         if (what == NPPVpluginNameString) {
-            *reinterpret_cast<const char**>(value) = PLUGIN_NAME;
+            *static_cast<const char**>(value) = PLUGIN_NAME;
         }
         else if (what == NPPVpluginDescriptionString) {
-            *reinterpret_cast<const char**>(value) = PLUGIN_DESCRIPTION;
+            *static_cast<const char**>(value) = PLUGIN_DESCRIPTION;
         }
         else if (what == NPPVpluginScriptableNPObject) {
-            Purple* purple = reinterpret_cast<Purple*>(instance->pdata);
-            
-            if (purple->_plugin == NULL) {
-                purple->_plugin = PluginObject::browser->createobject(
-                    instance, &PluginObject::class_implementation);
+            if (instance->pdata == NULL) {
+                instance->pdata = host->createobject(
+                    instance, &Plugin::_class_implementation);
             }
             
-            PluginObject::browser->retainobject(purple->_plugin);
-            *reinterpret_cast<NPObject**>(value) = purple->_plugin;
+            host->retainobject(static_cast<NPObject*>(instance->pdata));
+            *static_cast<void**>(value) = instance->pdata;
         }
         else {
             return NPERR_GENERIC_ERROR;
@@ -216,7 +69,83 @@ public:
     }
     
     
-    static NPError initialize_instance(
+    static Plugin* initialize();
+    
+    
+    static void initialize_host(NPNetscapeFuncs* new_host) {
+        std::cout << "Initialize; host=" << host << std::endl;
+        host = new_host;
+    }
+    
+    
+    static void initialize_plugin(NPPluginFuncs* plugin) {
+        plugin->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
+        plugin->newp = initialize_plugin_instance;
+        plugin->destroy = finalize_plugin_instance;
+        plugin->getvalue = get_plugin_value;
+        plugin->event = handle_plugin_event;
+        plugin->setwindow = set_plugin_window;
+    }
+    
+    
+private:
+    static NPObject* allocate(
+        UNUSED NPP instance,
+        UNUSED NPClass* class_implementation)
+    {
+        return initialize();
+    }
+    
+    
+    static void deallocate(NPObject* plugin) {
+        delete static_cast<Plugin*>(plugin);
+    }
+    
+    
+    static NPError finalize_plugin_instance(NPP instance, NPSavedData** data) {
+        std::cout << "Finalize instance"
+            << "; plugin=" << instance->pdata
+            << "; data=" << data
+            << std::endl;
+        
+        host->releaseobject(static_cast<NPObject*>(instance->pdata));
+        return NPERR_NO_ERROR;
+    }
+    
+    
+    static bool get_property_wrapper(
+        NPObject* plugin,
+        NPIdentifier identifier,
+        NPVariant* result)
+    {
+        return static_cast<Plugin*>(plugin)->get_property(
+            identifier, result);
+    }
+    
+    
+    static NPError handle_plugin_event(UNUSED NPP instance, UNUSED void* event) {
+        return NPERR_NO_ERROR;
+    }
+    
+    
+    static bool has_method_wrapper(NPObject* plugin, NPIdentifier identifier) {
+        return static_cast<Plugin*>(plugin)->has_method(identifier);
+    }
+    
+    
+    static bool has_property_wrapper(
+        NPObject* plugin,
+        NPIdentifier identifier)
+    {
+        char* name = host->utf8fromidentifier(identifier);
+        bool result = static_cast<Plugin*>(plugin)->has_property(name);
+        
+        host->memfree(name);
+        return result;
+    }
+    
+    
+    static NPError initialize_plugin_instance(
         NPMIMEType type,
         NPP instance,
         UNUSED uint16_t mode,
@@ -225,7 +154,7 @@ public:
         UNUSED char* argv[],
         UNUSED NPSavedData* data)
     {
-        instance->pdata = new Purple();
+        instance->pdata = NULL;
         
         std::cout << "Initialize instance"
             << "; plugin=" << instance->pdata
@@ -236,24 +165,99 @@ public:
     }
     
     
-private:
-    NPObject* _plugin;
-    
-    
-public:
-    Purple() : _plugin(NULL) {
+    static bool invoke_wrapper(
+        NPObject* plugin,
+        NPIdentifier identifier,
+        const NPVariant* arguments,
+        uint32_t nr_arguments,
+        NPVariant* result)
+    {
+        return static_cast<Plugin*>(plugin)->invoke(
+            identifier, arguments, nr_arguments, result);
     }
     
     
+    static bool invoke_default_wrapper(
+        NPObject* plugin,
+        const NPVariant* arguments,
+        uint32_t nr_arguments,
+        NPVariant* result)
+    {
+        return static_cast<Plugin*>(plugin)->invoke_default(
+            arguments, nr_arguments, result);
+    }
+    
+    
+    static bool remove_property_wrapper(
+        NPObject* plugin,
+        NPIdentifier identifier)
+    {
+        return static_cast<Plugin*>(plugin)->remove_property(identifier);
+    }
+    
+    
+    static bool set_property_wrapper(
+        NPObject* plugin,
+        NPIdentifier identifier,
+        const NPVariant* value)
+    {
+        return static_cast<Plugin*>(plugin)->set_property(
+            identifier, value);
+    }
+    
+    
+    static NPError set_plugin_window(UNUSED NPP instance, UNUSED NPWindow* window) {
+        return NPERR_NO_ERROR;
+    }
+    
+    
+public:
+    virtual bool get_property(NPIdentifier name, NPVariant* result) = 0;
+    virtual bool has_method(NPIdentifier name) = 0;
+    
+    
+    virtual bool has_property(UNUSED std::string name) {
+        return false;
+    }
+    
+    
+    virtual bool invoke(NPIdentifier name, const NPVariant* arguments, uint32_t nr_arguments, NPVariant* result) = 0;
+    virtual bool invoke_default(const NPVariant* arguments, uint32_t nr_arguments, NPVariant* result) = 0;
+    virtual bool remove_property(NPIdentifier name) = 0;
+    virtual bool set_property(NPIdentifier name, const NPVariant* value) = 0;
+};
+
+
+NPNetscapeFuncs* Plugin::host = NULL;
+
+NPClass Plugin::_class_implementation = {
+    NP_CLASS_STRUCT_VERSION,
+    Plugin::allocate,
+    Plugin::deallocate,
+    NULL,
+    Plugin::has_method_wrapper,
+    Plugin::invoke_wrapper,
+    Plugin::invoke_default_wrapper,
+    Plugin::has_property_wrapper,
+    Plugin::get_property_wrapper,
+    Plugin::set_property_wrapper,
+    Plugin::remove_property_wrapper,
+    NULL,
+    NULL,
+};
+
+
+class Purple : public Plugin {
+public:
     bool get_property(NPIdentifier name, UNUSED NPVariant* result) {
-        std::string cname = PluginObject::browser->utf8fromidentifier(name);
+        std::string cname = host->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
     
     
     bool has_method(NPIdentifier name) {
-        std::string cname = PluginObject::browser->utf8fromidentifier(name);
+        std::string cname = host->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
@@ -271,15 +275,14 @@ public:
         uint32_t nr_arguments,
         UNUSED NPVariant* result)
     {
-        std::string cname = PluginObject::browser->utf8fromidentifier(name);
+        std::string cname = host->utf8fromidentifier(name);
         
         std::cout << FUNCTION_NAME
             << "; name=" << cname
             << "; #args=" << nr_arguments
             << std::endl;
         
-        PluginObject::browser->setexception(_plugin,
-            "Exception during invocation.");
+        host->setexception(this, "Exception during invocation.");
         return false;
     }
     
@@ -295,76 +298,60 @@ public:
     
     
     bool remove_property(NPIdentifier name) {
-        std::string cname = PluginObject::browser->utf8fromidentifier(name);
+        std::string cname = host->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
     
     
     bool set_property(NPIdentifier name, UNUSED const NPVariant* value) {
-        std::string cname = PluginObject::browser->utf8fromidentifier(name);
+        std::string cname = host->utf8fromidentifier(name);
         std::cout << FUNCTION_NAME << "; name=" << cname << std::endl;
         return false;
     }
-    
-    
-private:
-    Purple(const Purple&);
-    void operator=(const Purple&);
 };
 
 
-static NPError handle_event(UNUSED NPP instance, UNUSED void* event) {
-    return NPERR_NO_ERROR;
+Plugin* Plugin::initialize() {
+    return new Purple();
 }
 
 
-static NPError set_window(UNUSED NPP instance, UNUSED NPWindow* window) {
-    return NPERR_NO_ERROR;
-}
-
-
-PUBLIC NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin_functions) {
-    if (plugin_functions == NULL) {
+PUBLIC NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin) {
+    if (plugin == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
     
-    plugin_functions->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
-    plugin_functions->newp = Purple::initialize_instance;
-    plugin_functions->destroy = Purple::finalize_instance;
-    plugin_functions->getvalue = Purple::get_plugin_value;
-    plugin_functions->event = handle_event;
-    plugin_functions->setwindow = set_window;
-    
+    Plugin::initialize_plugin(plugin);
     return NPERR_NO_ERROR;
 }
 
 
 PUBLIC NPError OSCALL NP_Initialize(
-    NPNetscapeFuncs* browser_instance
+    NPNetscapeFuncs* host
 #ifndef _WINDOWS
-    , NPPluginFuncs* plugin_functions
+    , NPPluginFuncs* plugin
 #endif
 ) {
-    if (browser_instance == NULL) {
+    if (host == NULL) {
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
-    if ((browser_instance->version >> 8) > NP_VERSION_MAJOR) {
+    if ((host->version >> 8) > NP_VERSION_MAJOR) {
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
     }
     
-    PluginObject::initialize(browser_instance);
+    Plugin::initialize_host(host);
     
 #ifndef _WINDOWS
-    NP_GetEntryPoints(plugin_functions);
-#endif
-    
+    return NP_GetEntryPoints(plugin);
+#else
     return NPERR_NO_ERROR;
+#endif
 }
 
 
 PUBLIC NPError OSCALL NP_Shutdown() {
-    PluginObject::finalize();
+    Plugin::finalize_host();
     return NPERR_NO_ERROR;
 }
 
@@ -381,5 +368,5 @@ PUBLIC NPError OSCALL NP_GetValue(
     void* value)
 {
     return Purple::get_plugin_value(
-        reinterpret_cast<NPP>(instance), what, value);
+        static_cast<NPP>(instance), what, value);
 }
