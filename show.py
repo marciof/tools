@@ -13,7 +13,8 @@
 # TODO: Add option to follow file? (Automatically if it changes size?)
 # TODO: Print header for "less" to show the input's path?
 #       perl -MTerm::ANSIColor -we "print colored(sprintf('%-80s', 'test'), 'bright_white on_black')"
-# TODO: Convert to C++ for speed? Or re-use existing programs?
+# TODO: Convert to C++ for speed? http://www.cython.org/
+#       Or re-use existing programs?
 #       highlight -A source.c
 #           http://www.andre-simon.de/doku/highlight/en/highlight.html
 #       source-highlight -f esc -i source.c
