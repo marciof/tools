@@ -339,6 +339,20 @@ scroll to, if possible.
                 if path == self.self_repr:
                     return FileInput(self.self_path)
                 
+                # No re.VERBOSE option for performance.
+                import re
+                go_to_line = re.search(r'^(.+?):([+-]?(?:[1-9]|\d{2,}))$', path)
+                
+                if go_to_line is not None:
+                    (path, line) = go_to_line.groups()
+                    
+                    try:
+                        stream = self._open_input(path)
+                        stream.line = int(line)
+                        return stream
+                    except IOError:
+                        pass
+                
                 import httplib
                 
                 try:
@@ -354,20 +368,6 @@ scroll to, if possible.
                             return self._open_input(parts.path)
                         except IOError:
                             pass
-                
-                # No re.VERBOSE option for performance.
-                import re
-                go_to_line = re.search(r'^(.+?):([+-]?(?:[1-9]|\d{2,}))$', path)
-                
-                if go_to_line is not None:
-                    (path, line) = go_to_line.groups()
-                    
-                    try:
-                        stream = self._open_input(path)
-                        stream.line = int(line)
-                        return stream
-                    except IOError:
-                        pass
             
             sys.exit(str(error))
 
