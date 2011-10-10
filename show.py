@@ -52,7 +52,7 @@ class DiffInput (StreamInput):
     def __init__(self, input_left, input_right):
         import difflib, cStringIO
         
-        labels = [i.name.encode('UTF-8') for i in input_left, input_right]
+        labels = [i.name.encode('UTF-8') for i in (input_left, input_right)]
         header = b'diff -u %s %s' % tuple(labels)
         
         # TODO: Use the generator directly to stream by line instead of
@@ -277,7 +277,8 @@ scroll to, if possible.
                 self.default_protocol = value
             elif option == '-r':
                 try:
-                    self.paging_threshold_ratio = r = float(value)
+                    r = float(value)
+                    self.paging_threshold_ratio = r
                     import math
                     
                     if math.isinf(r) or math.isnan(r) or (r < 0) or (r > 1):
@@ -480,6 +481,16 @@ class DiffOutput (TextOutput):
 
 
 class Pager (Output):
+    @staticmethod
+    def start():
+        pager = Pager(Options())
+        
+        try:
+            pager.display()
+        finally:
+            pager.close()
+    
+    
     def __init__(self, options):
         self._ansi_color_re = None
         self._lexer = None
@@ -756,9 +767,4 @@ class Pager (Output):
 
 
 if __name__ == '__main__':
-    pager = Pager(Options())
-    
-    try:
-        pager.display()
-    finally:
-        pager.close()
+    Pager.start()
