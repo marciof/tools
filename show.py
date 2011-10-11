@@ -203,6 +203,9 @@ class UriInput (StreamInput):
             else:
                 uri = clean_uri
         
+        # It's slow to parse a message from a string, but it shouldn't make a
+        # big difference since headers will most likely be small anyway.
+        # <http://bugs.python.org/issue8009>
         from email import message_from_string as email_from_string
         
         stream = urllib.urlopen(uri)
