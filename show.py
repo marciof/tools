@@ -500,6 +500,10 @@ class Pager (Output):
         
         try:
             pager.display()
+        except UnicodeDecodeError as error:
+            pager.close()
+            sys.exit('Invalid %s data, binary file? (%s)' \
+                % (StreamInput.DEFAULT_ENCODING, error))
         finally:
             pager.close()
     
