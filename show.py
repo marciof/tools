@@ -274,6 +274,12 @@ class Options:
                 print '''
 Automatic pager with syntax highlighting and diff support.
 
+An input can be a path, an URI, a Perl module name, a tar archive, an object
+file, standard input or this script's (by their string representation).
+
+The input's name can also be suffixed with a colon followed by a line number to
+scroll to, if possible.
+
 Usage:
   pager     [options] [input [input]]
   ls        [options] input{3,}
@@ -295,12 +301,6 @@ Options:
   -u        ignored for diff compatibility
   -w        convert blank spaces to visible characters (slower)
   -z        option for "unzip", when viewing ZIP files
-
-An input can be a path, an URI, a Perl module name, a tar archive, an object
-file, standard input or this script's (by their string representation).
-
-The input's name can also be suffixed with a colon followed by a line number to
-scroll to, if possible.
 '''.strip() % (
     self.stdin_repr, self.line_nr_field_width, self.default_protocol,
     self.paging_threshold_ratio, self.self_repr)
