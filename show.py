@@ -152,7 +152,8 @@ class ObjectFileInput (SubProcessInput):
     
     
     def __init__(self, path, options):
-        SubProcessInput.__init__(self, ['nm', '-C', path],
+        SubProcessInput.__init__(self,
+            args = ['nm', '-C'] + options.nm_arguments + [path],
             name = path,
             passthrough_mode = True)
 
@@ -219,7 +220,7 @@ class ZipFileInput (SubProcessInput):
     
     def __init__(self, path, options):
         SubProcessInput.__init__(self,
-            args = ['unzip', '-l'] + options.zip_arguments + [path],
+            args = ['unzip', '-l'] + options.unzip_arguments + [path],
             name = path,
             passthrough_mode = True)
 
@@ -242,7 +243,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'a:df:hi:j:l:L:m:np:r:s:tuwz:')
+                'a:df:hi:j:l:L:m:no:p:r:s:tuwz:')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -250,6 +251,7 @@ class Options:
         self.diff_mode = False
         self.line_nr_field_width = 4
         self.ls_arguments = []
+        self.nm_arguments = []
         self.paging_threshold_ratio = 0.4
         self.passthrough_mode = False
         self.self_path = sys.argv[0]
@@ -260,8 +262,8 @@ class Options:
         self.stdout_stream = sys.stdout
         self.tar_arguments = []
         self.terminal_only = False
+        self.unzip_arguments = []
         self.visible_white_space = False
-        self.zip_arguments = []
         
         for option, value in options:
             if option == '-a':
@@ -285,6 +287,7 @@ Options:
   -l        option for "ls", when listing directories
   -L        ignored for Subversion compatibility
   -n        show line numbers (slower)
+  -o        option for "nm", when viewing object files
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -r        paging ratio of input lines / terminal height, defaults to %s (%%)
   -s        this script's path string representation, defaults to "%s"
@@ -311,10 +314,12 @@ scroll to, if possible.
                         raise ValueError()
                 except ValueError:
                     sys.exit('invalid line number field width: ' + value)
-            if option == '-l':
+            elif option == '-l':
                 self.ls_arguments.append(value)
-            if option == '-n':
+            elif option == '-n':
                 self.show_line_nrs = True
+            elif option == '-o':
+                self.nm_arguments.append(value)
             elif option == '-p':
                 self.default_protocol = value
             elif option == '-r':
@@ -334,7 +339,7 @@ scroll to, if possible.
             elif option == '-w':
                 self.visible_white_space = True
             elif option == '-z':
-                self.zip_arguments.append(value)
+                self.unzip_arguments.append(value)
         
         if len(arguments) > 2:
             self.input = DirectoryInput(self.ls_arguments, *arguments)
