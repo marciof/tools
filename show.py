@@ -3,8 +3,6 @@
 
 
 # TODO: Implement file/text search.
-# TODO: Fix diff encoding (use None as the input default?)
-#       ./show.py -t my.opera.com www.google.com
 # TODO: Display contents of zip files.
 # TODO: Fix line length counting when the input contains ANSI color codes?
 # TODO: Allow special glob input?
@@ -29,8 +27,11 @@ import errno, os, sys
 
 # Not an abstract base class for performance.
 class StreamInput:
+    DEFAULT_ENCODING = 'UTF-8'
+    
+    
     def __init__(self, stream, name,
-            encoding = 'UTF-8',
+            encoding = DEFAULT_ENCODING,
             line = 1,
             passthrough_mode = False):
         
@@ -52,21 +53,33 @@ class DiffInput (StreamInput):
     def __init__(self, input_left, input_right):
         import difflib, cStringIO
         
-        labels = [i.name.encode('UTF-8') for i in (input_left, input_right)]
+        labels = [input.name.encode(StreamInput.DEFAULT_ENCODING)
+            for input in (input_left, input_right)]
         header = b'diff -u %s %s' % tuple(labels)
         
         # TODO: Use the generator directly to stream by line instead of
         # concatenating into a StringIO object, to improve performance?
         diff = cStringIO.StringIO(
             header + b'\n' + b''.join(difflib.unified_diff(
-                input_left.stream.readlines(),
-                input_right.stream.readlines(),
+                self._read_lines(input_left),
+                self._read_lines(input_right),
                 *labels)))
         
-        for input in input_left, input_right:
-            input.close()
-        
         StreamInput.__init__(self, diff, name = header)
+    
+    
+    def _read_lines(self, input):
+        lines = input.stream.readlines()
+        encoding = input.encoding
+        
+        from codecs import lookup as codecs_lookup
+        input.close()
+        
+        if codecs_lookup(encoding).name == 'utf-8':
+            return lines
+        else:
+            input.encoding = StreamInput.DEFAULT_ENCODING
+            return [l.decode(encoding).encode(input.encoding) for l in lines]
 
 
 class FileInput (StreamInput):
