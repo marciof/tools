@@ -237,13 +237,13 @@ class Options:
     
     
     # TODO: Too long, refactor.
-    def __init__(self):
+    def __init__(self, argv):
         # argparse isn't used for performance.
         import getopt
         
         try:
             # No long options available for performance.
-            (options, arguments) = getopt.getopt(sys.argv[1:],
+            (options, arguments) = getopt.getopt(argv,
                 'a:dhi:j:l:L:m:no:p:r:s:tuwz:')
         except getopt.GetoptError as error:
             sys.exit(str(error))
@@ -534,9 +534,9 @@ class DiffOutput (TextOutput):
 
 class Pager (Output):
     @staticmethod
-    def start():
+    def start(argv = sys.argv[1:]):
         try:
-            pager = Pager(Options())
+            pager = Pager(Options(argv))
         except IOError:
             return
         
