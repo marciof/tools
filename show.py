@@ -161,7 +161,9 @@ class ObjectFileInput (SubProcessInput):
 
 class PerlDocInput (SubProcessInput):
     def __init__(self, module):
-        SubProcessInput.__init__(self, ['perldoc', '-t', module], name = module)
+        SubProcessInput.__init__(self,
+            args = ['perldoc', '-t', module],
+            name = module)
 
 
 class TarFileInput (SubProcessInput):
