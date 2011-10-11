@@ -218,7 +218,8 @@ class ZipFileInput (SubProcessInput):
     
     
     def __init__(self, path, options):
-        SubProcessInput.__init__(self, ['unzip', '-l', path],
+        SubProcessInput.__init__(self,
+            args = ['unzip', '-l'] + options.zip_arguments + [path],
             name = path,
             passthrough_mode = True)
 
@@ -241,7 +242,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'a:df:hi:j:l:L:m:np:r:s:tuw')
+                'a:df:hi:j:l:L:m:np:r:s:tuwz:')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -260,6 +261,7 @@ class Options:
         self.tar_arguments = []
         self.terminal_only = False
         self.visible_white_space = False
+        self.zip_arguments = []
         
         for option, value in options:
             if option == '-a':
@@ -289,6 +291,7 @@ Options:
   -t        use terminal only, no graphical interfaces
   -u        ignored for diff compatibility
   -w        convert blank spaces to visible characters (slower)
+  -z        option for "unzip", when viewing ZIP files
 
 An input can be a path, an URI, a Perl module name, a tar archive, an object
 file, standard input or this script's (by their string representation).
@@ -330,6 +333,8 @@ scroll to, if possible.
                 self.terminal_only = True
             elif option == '-w':
                 self.visible_white_space = True
+            elif option == '-z':
+                self.zip_arguments.append(value)
         
         if len(arguments) > 2:
             self.input = DirectoryInput(self.ls_arguments, *arguments)
