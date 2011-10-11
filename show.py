@@ -244,7 +244,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'a:dhi:j:l:L:m:np:r:s:tuwz:')
+                'a:dhi:j:l:L:m:no:p:r:s:tuwz:')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -253,6 +253,7 @@ class Options:
         self.line_nr_field_width = 4
         self.ls_arguments = []
         self.nm_arguments = []
+        self.output_stream = sys.stdout
         self.paging_threshold_ratio = 0.4
         self.passthrough_mode = False
         self.self_path = sys.argv[0]
@@ -260,7 +261,6 @@ class Options:
         self.show_line_nrs = False
         self.stdin_stream = sys.stdin
         self.stdin_repr = '-'
-        self.stdout_stream = sys.stdout
         self.tar_arguments = []
         self.terminal_only = False
         self.unzip_arguments = []
@@ -295,6 +295,7 @@ Options:
   -L        ignored for Subversion compatibility
   -m        option for "nm", when viewing object files
   -n        show line numbers (slower)
+  -o        output file, defaults to %s
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -r        paging ratio of input lines / terminal height, defaults to %s (%%)
   -s        this script's path string representation, defaults to "%s"
@@ -303,8 +304,8 @@ Options:
   -w        convert blank spaces to visible characters (slower)
   -z        option for "unzip", when viewing ZIP files
 '''.strip() % (
-    self.stdin_repr, self.line_nr_field_width, self.default_protocol,
-    self.paging_threshold_ratio, self.self_repr)
+    self.stdin_repr, self.line_nr_field_width, self.output_stream.name,
+    self.default_protocol, self.paging_threshold_ratio, self.self_repr)
                 sys.exit()
             elif option == '-i':
                 self.stdin_repr = value
@@ -321,6 +322,8 @@ Options:
                 self.nm_arguments.append(value)
             elif option == '-n':
                 self.show_line_nrs = True
+            elif option == '-o':
+                self.output_stream = open(value, mode = 'a')
             elif option == '-p':
                 self.default_protocol = value
             elif option == '-r':
@@ -555,7 +558,7 @@ class Pager (Output):
         self._output_encoding = None
         
         # TODO: Use None when unavailable for performance?
-        if options.stdout_stream.isatty():
+        if options.output_stream.isatty():
             (rows, self._terminal_width) = self._guess_terminal_size()
             self._max_inline_lines = int(round(
                 rows * options.paging_threshold_ratio))
@@ -589,8 +592,8 @@ class Pager (Output):
             else:
                 if len(buffered_lines) > 0:
                     self._flush_buffer(buffered_lines,
-                        lambda options: StreamOutput(options.stdout_stream),
-                        lambda options: StreamOutput(options.stdout_stream))
+                        lambda options: StreamOutput(options.output_stream),
+                        lambda options: StreamOutput(options.output_stream))
                 
                 return
             
@@ -642,7 +645,7 @@ class Pager (Output):
             if error.errno != errno.EPIPE:
                 raise
         except KeyboardInterrupt:
-            self._options.stdout_stream.write('\n')
+            self._options.output_stream.write('\n')
     
     
     # TODO: Too long, refactor.
@@ -796,7 +799,7 @@ class Pager (Output):
         
         for stream in [
                 self._options.stdin_stream,
-                self._options.stdout_stream,
+                self._options.output_stream,
                 sys.stderr]:
             try:
                 return ioctl_GWINSZ(stream.fileno())
