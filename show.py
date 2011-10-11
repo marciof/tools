@@ -178,7 +178,7 @@ class TarFileInput (SubProcessInput):
     
     
     def __init__(self, path):
-        SubProcessInput.__init__(self, ['tar', 'tf', path],
+        SubProcessInput.__init__(self, ['tar', 'tvf', path],
             name = path,
             passthrough_mode = True)
 
@@ -210,7 +210,29 @@ class UriInput (StreamInput):
             StreamInput.__init__(self, stream, name = uri, encoding = charset)
 
 
+class ZipFileInput (SubProcessInput):
+    @staticmethod
+    def handles(path):
+        # No regular expression used for performance.
+        return path.lower().endswith('.zip')
+    
+    
+    def __init__(self, path):
+        SubProcessInput.__init__(self, ['unzip', '-l', path],
+            name = path,
+            passthrough_mode = True)
+
+
 class Options:
+    # Check common cases first for performance.
+    INPUT_HANDLERS = [
+        TarFileInput,
+        ZipFileInput,
+        ObjectFileInput,
+        SconsDbInput,
+    ]
+    
+    
     # TODO: Too long, refactor.
     def __init__(self):
         # argparse isn't used for performance.
@@ -326,15 +348,14 @@ scroll to, if possible.
     
     # TODO: Too long, refactor.
     def _open_input(self, path):
-        # Check common and fail-fast cases first for performance.
-        
-        for input_handler in (TarFileInput, ObjectFileInput, SconsDbInput):
+        for input_handler in self.INPUT_HANDLERS:
             if input_handler.handles(path):
                 try:
                     return input_handler(path)
                 except IOError:
                     pass
         
+        # Check common and fail-fast cases first for performance.
         try:
             return FileInput(path)
         except IOError as error:
