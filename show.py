@@ -244,7 +244,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'a:df:hi:j:l:L:m:no:p:r:s:tuwz:')
+                'a:dhi:j:l:L:m:np:r:s:tuwz:')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -293,8 +293,8 @@ Options:
   -j        line number right-justified field width, defaults to %s
   -l        option for "ls", when listing directories
   -L        ignored for Subversion compatibility
+  -m        option for "nm", when viewing object files
   -n        show line numbers (slower)
-  -o        option for "nm", when viewing object files
   -p        protocol for URI's with missing scheme, defaults to "%s"
   -r        paging ratio of input lines / terminal height, defaults to %s (%%)
   -s        this script's path string representation, defaults to "%s"
@@ -317,10 +317,10 @@ Options:
                     sys.exit('invalid line number field width: ' + value)
             elif option == '-l':
                 self.ls_arguments.append(value)
+            elif option == '-m':
+                self.nm_arguments.append(value)
             elif option == '-n':
                 self.show_line_nrs = True
-            elif option == '-o':
-                self.nm_arguments.append(value)
             elif option == '-p':
                 self.default_protocol = value
             elif option == '-r':
