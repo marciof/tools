@@ -92,7 +92,7 @@ class SconsDbInput (StreamInput):
         return path.endswith('.sconsign.dblite')
     
     
-    def __init__(self, path):
+    def __init__(self, path, options):
         import pkg_resources
         
         [scons_package] = pkg_resources.require('SCons')
@@ -151,7 +151,7 @@ class ObjectFileInput (SubProcessInput):
             or path.endswith('.so')
     
     
-    def __init__(self, path):
+    def __init__(self, path, options):
         SubProcessInput.__init__(self, ['nm', '-C', path],
             name = path,
             passthrough_mode = True)
@@ -176,8 +176,9 @@ class TarFileInput (SubProcessInput):
             or path.endswith('.tar')
     
     
-    def __init__(self, path):
-        SubProcessInput.__init__(self, ['tar', 'tvf', path],
+    def __init__(self, path, options):
+        SubProcessInput.__init__(self,
+            args = ['tar', '-t'] + options.tar_arguments + ['-f', path],
             name = path,
             passthrough_mode = True)
 
@@ -216,7 +217,7 @@ class ZipFileInput (SubProcessInput):
         return path.lower().endswith('.zip')
     
     
-    def __init__(self, path):
+    def __init__(self, path, options):
         SubProcessInput.__init__(self, ['unzip', '-l', path],
             name = path,
             passthrough_mode = True)
@@ -240,7 +241,7 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(sys.argv[1:],
-                'df:hi:j:l:L:m:np:r:s:tuw')
+                'a:df:hi:j:l:L:m:np:r:s:tuw')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
@@ -256,11 +257,14 @@ class Options:
         self.stdin_stream = sys.stdin
         self.stdin_repr = '-'
         self.stdout_stream = sys.stdout
+        self.tar_arguments = []
         self.terminal_only = False
         self.visible_white_space = False
         
         for option, value in options:
-            if option == '-d':
+            if option == '-a':
+                self.tar_arguments.append(value)
+            elif option == '-d':
                 self.passthrough_mode = True
             elif option == '-h':
                 print '''
@@ -271,6 +275,7 @@ Usage:
   ls        [options] input{3,}
 
 Options:
+  -a        option for "tar", when viewing tar files
   -d        passthrough mode, don't attempt to syntax highlight input (faster)
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
@@ -350,7 +355,7 @@ scroll to, if possible.
         for input_handler in self.INPUT_HANDLERS:
             if input_handler.handles(path):
                 try:
-                    return input_handler(path)
+                    return input_handler(path, self)
                 except IOError:
                     pass
         
