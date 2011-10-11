@@ -230,12 +230,12 @@ class ZipFileInput (SubProcessInput):
 
 class Options:
     # Check common cases first for performance.
-    INPUT_HANDLERS = [
+    INPUT_HANDLERS = (
         TarFileInput,
         ZipFileInput,
         ObjectFileInput,
         SconsDbInput,
-    ]
+    )
     
     
     # TODO: Too long, refactor.
