@@ -113,11 +113,11 @@ class SconsDbInput (StreamInput):
 
 
 class SubProcessInput (StreamInput):
-    def __init__(self, args, **kargs):
+    def __init__(self, args, stderr = False, **kargs):
         import subprocess
         
         process = subprocess.Popen(args,
-            stderr = open(os.devnull),
+            stderr = None if stderr else open(os.devnull),
             stdout = subprocess.PIPE)
         
         if process.wait() != 0:
@@ -137,7 +137,8 @@ class DirectoryInput (SubProcessInput):
     def __init__(self, ls_args, *paths):
         SubProcessInput.__init__(self, ['ls'] + ls_args + list(paths),
             name = os.path.abspath(paths[0]) if len(paths) == 1 else os.getcwd(),
-            passthrough_mode = True)
+            passthrough_mode = True,
+            stderr = True)
 
 
 class ObjectFileInput (SubProcessInput):
@@ -531,7 +532,10 @@ class DiffOutput (TextOutput):
 class Pager (Output):
     @staticmethod
     def start():
-        pager = Pager(Options())
+        try:
+            pager = Pager(Options())
+        except IOError:
+            return
         
         try:
             pager.display()
