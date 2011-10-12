@@ -4,8 +4,6 @@
 
 # TODO: Implement file/text search.
 # TODO: Fix line length counting when the input contains ANSI color codes?
-# TODO: Allow special glob input?
-#       ./show.py .py # '*.py'
 # TODO: Add filter to highlight trailing white-space?
 # TODO: Add option to follow file? (Automatically if it changes size?)
 # TODO: Print header for "less" to show the input's path?
