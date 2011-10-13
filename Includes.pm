@@ -44,13 +44,13 @@ do {
     
     use defaults;
     use PPI::Document ();
-    use Set::Scalar ();
+    use Set::Object ();
     
     
     sub analyze {
         my ($class, $input, $handler) = @ARG;
         my $document = PPI::Document->new($input);
-        my $included_modules = Set::Scalar->new;
+        my $included_modules = Set::Object->new;
         my @tokens = $class->list_tokens($document);
         my @defects;
         
