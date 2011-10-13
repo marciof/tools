@@ -136,21 +136,21 @@ if _have cpan; then
     export FTP_PASSIVE=1
     export PERL_AUTOINSTALL=1
     export PERL_MM_USE_DEFAULT=1
-    cpan_config=~/.cpan/CPAN/MyConfig.pm
+    cpan_setup=~/.cpan_setup
     
-    if [ ! -e "$cpan_config" ]; then
-        mkdir -p $(dirname $cpan_config)
-        cat << 'TEXT' >> "$cpan_config"
-$CPAN::Config = {
-    halt_on_failure => 1,
-    inhibit_startup_message => 1,
-    make_install_make_command => 'sudo make',
-    mbuild_install_build_command => 'sudo ./Build',
-};
+    if [ ! -e "$cpan_setup" ]; then
+        touch $cpan_setup
+        cat << 'TEXT' | tee "$cpan_setup" | cpan
+o conf init
+o conf halt_on_failure 1
+o conf inhibit_startup_message 1
+o conf make_install_make_command "sudo make"
+o conf mbuild_install_build_command "sudo ./Build"
+o conf commit
 TEXT
     fi
     
-    unset cpan_config
+    unset cpan_setup
 fi
 
 if _have git; then
