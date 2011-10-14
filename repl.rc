@@ -91,7 +91,7 @@ use String::Escape ();
 has to_string_length =>
     is => 'ro',
     isa => 'Str',
-    default => 2000;
+    default => 1000;
 
 around format_result => sub {
     my ($super, $self) = splice @ARG, 0, 2;
