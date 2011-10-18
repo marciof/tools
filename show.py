@@ -115,9 +115,15 @@ class SubProcessInput (StreamInput):
     def __init__(self, args, stderr = False, **kargs):
         import subprocess
         
-        process = subprocess.Popen(args,
-            stderr = None if stderr else open(os.devnull),
-            stdout = subprocess.PIPE)
+        try:
+            process = subprocess.Popen(args,
+                stderr = None if stderr else open(os.devnull),
+                stdout = subprocess.PIPE)
+        except OSError as error:
+            if error.errno == errno.ENOENT:
+                raise NotImplementedError('No such executable: ' + args[0])
+            else:
+                raise
         
         if process.wait() != 0:
             # No error message for performance, since it isn't shown anyway.
@@ -402,6 +408,8 @@ Options:
             if input_handler.handles(path):
                 try:
                     return input_handler(path, self)
+                except NotImplementedError as error:
+                    print >> sys.stderr, error
                 except IOError:
                     pass
         
