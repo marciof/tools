@@ -3,6 +3,7 @@
 
 
 # TODO: Implement file/text search.
+# TODO: Use PIL for ImageFileInput?
 # TODO: Fix line length counting when the input contains ANSI color codes?
 # TODO: Add filter to highlight trailing white-space?
 # TODO: Add option to follow file? (Automatically if it changes size?)
@@ -139,15 +140,42 @@ class DirectoryInput (SubProcessInput):
             stderr = True)
 
 
+class ImageFileInput (SubProcessInput):
+    @staticmethod
+    def handles(path):
+        path = path.lower()
+        
+        suffixes = (
+            '.gif', '.jpeg', '.jpg', '.pcd',
+            '.png', '.tga', '.tiff', '.tif')
+        
+        # No regular expression used for performance. List of extensions taken
+        # from "lesspipe".
+        for suffix in suffixes:
+            if path.endswith(suffix):
+                return True
+        
+        return False
+    
+    
+    def __init__(self, path, options):
+        SubProcessInput.__init__(self,
+            args = ['identify', path],
+            name = path,
+            passthrough_mode = True)
+
+
 class ObjectFileInput (SubProcessInput):
     @staticmethod
     def handles(path):
         path = path.lower()
         
         # No regular expression used for performance.
-        return path.endswith('.o') \
-            or path.endswith('.os') \
-            or path.endswith('.so')
+        for suffix in ('.o', '.os', '.so'):
+            if path.endswith(suffix):
+                return True
+        
+        return False
     
     
     def __init__(self, path, options):
@@ -171,11 +199,11 @@ class TarFileInput (SubProcessInput):
         
         # No regular expression used for performance. List of extensions taken
         # from "lesspipe".
-        return path.endswith('.tar.gz') \
-            or path.endswith('.tgz') \
-            or path.endswith('.tar.z') \
-            or path.endswith('.tar.dz') \
-            or path.endswith('.tar')
+        for suffix in ('.tar.gz', '.tgz', '.tar.z', '.tar.dz', '.tar'):
+            if path.endswith(suffix):
+                return True
+        
+        return False
     
     
     def __init__(self, path, options):
@@ -235,6 +263,7 @@ class Options:
         TarFileInput,
         ZipFileInput,
         ObjectFileInput,
+        ImageFileInput,
         SconsDbInput,
     )
     
