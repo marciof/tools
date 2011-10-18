@@ -19,6 +19,10 @@ has last_read_line =>
     is => 'rw',
     isa => 'Maybe[Str]';
 
+has updated_history =>
+    is => 'rw',
+    isa => 'Bool';
+
 sub new {
     my $class = shift @ARG;
     my $self = bless
@@ -37,11 +41,14 @@ sub new {
 
 around addhistory => sub {
     my ($super, $self) = splice @ARG, 0, 2;
+    $self->updated_history(1);
     return $self->_add_history_implementation($super, @ARG);
 };
 
 sub add_history {
-    return shift->_add_history_implementation('SUPER::add_history', @ARG);
+    my $self = shift @ARG;
+    $self->updated_history(1);
+    return $self->_add_history_implementation('SUPER::add_history', @ARG);
 }
 
 sub _add_history_implementation {
@@ -56,7 +63,7 @@ sub _add_history_implementation {
     elsif ($self->isa('Term::ReadLine::Gnu')) {
         # Move existing lines to the top of the history stack.
         foreach my $line (@lines) {
-            my $position = $self->history_search_pos($line, 0, 0);
+            my $position = $self->history_search_pos($line);
             
             if ($self->history_get($position + 1) eq $line) {
                 $self->remove_history($position);
@@ -73,7 +80,13 @@ sub _add_history_implementation {
 
 around readline => sub {
     my ($super, $self) = splice @ARG, 0, 2;
+    $self->updated_history(0);
     my $line = $self->$super(@ARG);
+    
+    # Force history update to reorder it.
+    if (!$self->updated_history && defined($line)) {
+        $self->add_history($line);
+    }
     
     $self->last_read_line($line);
     return $line;
