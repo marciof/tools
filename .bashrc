@@ -57,6 +57,8 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c=cd
+complete -F _cd -o nospace c
+
 alias e='$VISUAL'
 alias j=jobs
 alias l='ls -CFXh --color=auto --group-directories-first'
@@ -155,6 +157,7 @@ fi
 
 if _have git; then
     alias g=$NAME
+    complete -o bashdefault -o default -o nospace -F _git g
     
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
