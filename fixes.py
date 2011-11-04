@@ -9,7 +9,7 @@
 
 # Standard library:
 from __future__ import division, print_function, unicode_literals
-import ConfigParser, email.feedparser, email.parser, imaplib, urllib2
+import email.feedparser, email.parser, imaplib
 
 
 __author__ = 'Marcio Faustino'
@@ -47,35 +47,45 @@ def parsestr(self, text, headersonly = False):
     return feed_parser.close()
 
 
-@fix(urllib2.URLError, 0x20604F0, '__unicode__')
-def urlerror_to_unicode(self):
-    return unicode(str(self))
+try:
+    import urllib2
+    
+    @fix(urllib2.URLError, 0x20604F0, '__unicode__')
+    def urlerror_to_unicode(self):
+        return unicode(str(self))
+except ImportError:
+    pass
 
 
-@fix(ConfigParser.SafeConfigParser, 0x20602F0, '_badpercent_re', call = True)
-class CheckBadPercent (object):
-    '''
-    Fixes the regular expression that checks for invalid percent interpolations.
-    <http://bugs.python.org/issue5741>
-    '''
+try:
+    import ConfigParser
     
-    
-    class Result:
-        def __init__(self, index):
-            self._index = index
+    @fix(ConfigParser.SafeConfigParser, 0x20602F0, '_badpercent_re', call = True)
+    class CheckBadPercent (object):
+        '''
+        Fixes the regular expression that checks for invalid percent interpolations.
+        <http://bugs.python.org/issue5741>
+        '''
         
         
-        def start(self, *args, **kargs):
-            return self._index
-    
-    
-    def __init__(self, safe_config_parser_type):
-        self._interpvar_re = safe_config_parser_type._interpvar_re
-    
-    
-    def search(self, value, *args, **kargs):
-        index = self._interpvar_re.sub('', value).find('%')
-        return False if index < 0 else CheckBadPercent.Result(index)
+        class Result:
+            def __init__(self, index):
+                self._index = index
+            
+            
+            def start(self, *args, **kargs):
+                return self._index
+        
+        
+        def __init__(self, safe_config_parser_type):
+            self._interpvar_re = safe_config_parser_type._interpvar_re
+        
+        
+        def search(self, value, *args, **kargs):
+            index = self._interpvar_re.sub('', value).find('%')
+            return False if index < 0 else CheckBadPercent.Result(index)
+except ImportError:
+    pass
 
 
 @fix(imaplib, 0x20604F0)
@@ -122,21 +132,26 @@ class IMAP4_SSL (imaplib.IMAP4_SSL):
             data_buffer.close()
 
 
-@fix(ConfigParser.SafeConfigParser, 0x20602F0, '_interpvar_re', call = True)
-class RemoveDoublePercents (object):
-    '''
-    Fixes the regular expression that removes double percent signs.
-    <http://bugs.python.org/issue5741>
-    '''
+try:
+    import ConfigParser
     
-    
-    def __init__(self, safe_config_parser_type):
-        self._interpvar_re = safe_config_parser_type._interpvar_re
-    
-    
-    def match(self, *args, **kargs):
-        return self._interpvar_re.match(*args, **kargs)
-    
-    
-    def sub(self, replacement, value, *args, **kargs):
-        return value.replace('%%', '')
+    @fix(ConfigParser.SafeConfigParser, 0x20602F0, '_interpvar_re', call = True)
+    class RemoveDoublePercents (object):
+        '''
+        Fixes the regular expression that removes double percent signs.
+        <http://bugs.python.org/issue5741>
+        '''
+        
+        
+        def __init__(self, safe_config_parser_type):
+            self._interpvar_re = safe_config_parser_type._interpvar_re
+        
+        
+        def match(self, *args, **kargs):
+            return self._interpvar_re.match(*args, **kargs)
+        
+        
+        def sub(self, replacement, value, *args, **kargs):
+            return value.replace('%%', '')
+except ImportError:
+    pass
