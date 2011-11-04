@@ -43,15 +43,20 @@ do {
     package Includes;
     
     use defaults;
+    use Package::Stash ();
     use PPI::Document ();
     use Set::Object ();
+    use Symbol ();
+    
+    
+    my %exported_symbols_per_package;
     
     
     sub analyze {
         my ($class, $input, $handler) = @ARG;
         my $document = PPI::Document->new($input);
         my $included_modules = Set::Object->new;
-        my @tokens = $class->list_tokens($document);
+        my @tokens = $class->_list_tokens($document);
         my @defects;
         
         $handler //= sub {
@@ -60,7 +65,7 @@ do {
         };
         
         INCLUDE:
-        foreach my $include ($class->list_includes($document)) {
+        foreach my $include ($class->_list_includes($document)) {
             my $module = $include->module;
             
             if ($included_modules->has($module)) {
@@ -78,7 +83,21 @@ do {
     }
     
     
-    sub list_includes {
+    sub _create_symbol {
+        return substr ${Symbol::gensym()}, 1;
+    }
+    
+    
+    sub _create_package {
+        my ($class, $source_code) = @ARG;
+        my $package_name = $class->_create_symbol;
+        
+        eval "package $package_name;\n$source_code\n1;" or die $EVAL_ERROR;
+        return $package_name;
+    }
+    
+    
+    sub _list_includes {
         my ($class, $document) = @ARG;
         
         my $includes = $document->find(sub {
@@ -94,7 +113,19 @@ do {
     }
     
     
-    sub list_tokens {
+    sub _list_package_exports {
+        my ($class, $package_name) = @ARG;
+        
+        return $exported_symbols_per_package{$package_name} // do {
+            my $stash = Package::Stash->new(
+                $class->_create_package("use $package_name;"));
+            
+            Set::Object->new($stash->list_all_symbols);
+        };
+    }
+    
+    
+    sub _list_tokens {
         my ($class, $document) = @ARG;
         
         my $tokens = $document->find(sub {
@@ -161,7 +192,8 @@ use Carp 'confess';
     
     
     sub use_module_scalar : Test(1) {
-        my ($doc, @defects) = Includes->analyze(\'use Carp (); $Carp::Verbose = 1;');
+        my ($doc, @defects) = Includes->analyze(
+            \'use Carp (); $Carp::Verbose = 1;');
         is(scalar(@defects), 0);
     }
 };
