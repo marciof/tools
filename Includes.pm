@@ -98,9 +98,16 @@ do {
         return $true if $include->type eq 'require';
         
         my ($type, $module, @list) = $include->schildren;
-        my $list = PPI::Statement::Expression->new;
         
+        pop @list
+            if $list[-1]->isa('PPI::Token::Structure')
+            && ($list[-1] eq ';');
+        
+        return $false if @list == 0;
+        
+        my $list = PPI::Statement::Expression->new;
         $list->add_element($ARG->clone) foreach @list;
+        
         my @value = eval $list->content;
         die $EVAL_ERROR if $EVAL_ERROR;
         
