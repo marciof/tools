@@ -4,7 +4,6 @@
 # TODO: Add tests.
 # TODO: String interpolation.
 # TODO: Multiple packages in a single file.
-# TODO: Warn for absolute imports only, e.g. "use A ()"
 # TODO: Transitive imports, e.g. XML::DOM::XPath implies XML::DOM::Parser.
 # TODO: Treat "namespace::autoclean" as a pragma?
 
@@ -45,6 +44,7 @@ do {
     use defaults;
     use Package::Stash ();
     use PPI::Document ();
+    use PPI::Statement::Expression ();
     use Set::Object ();
     use Symbol ();
     
@@ -67,6 +67,16 @@ do {
         INCLUDE:
         foreach my $include ($class->_list_includes($document)) {
             my $module = $include->module;
+            my $is_absolute = eval {$class->_is_absolute_import($include)};
+            
+            if (!defined $is_absolute) {
+                $handler->('unable to inspect' => $include);
+                next;
+            }
+            elsif (!$is_absolute) {
+                $handler->('non-absolute import' => $include);
+                next;
+            }
             
             if ($included_modules->has($module)) {
                 $handler->(duplicate => $include);
@@ -80,6 +90,21 @@ do {
         }
         
         return ($document, @defects);
+    }
+    
+    
+    sub _is_absolute_import {
+        my ($class, $include) = @ARG;
+        return $true if $include->type eq 'require';
+        
+        my ($type, $module, @list) = $include->schildren;
+        my $list = PPI::Statement::Expression->new;
+        
+        $list->add_element($ARG->clone) foreach @list;
+        my @value = eval $list->content;
+        die $EVAL_ERROR if $EVAL_ERROR;
+        
+        return @value == 0;
     }
     
     
@@ -207,7 +232,7 @@ unless (caller) {
     Includes->analyze($ARGV[0], sub {
         my ($defect, $include) = @ARG;
         
-        printf "%s %s at line %d.\n",
+        printf "%s: %s at line %d.\n",
             ucfirst($defect), $include->module, $include->line_number;
     });
 }
