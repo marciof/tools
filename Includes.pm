@@ -120,7 +120,7 @@ do {
             my $stash = Package::Stash->new(
                 $class->_create_package("use $package_name;"));
             
-            Set::Object->new($stash->list_all_symbols);
+            Set::Object->new(grep {$ARG ne 'BEGIN'} $stash->list_all_symbols);
         };
     }
     
