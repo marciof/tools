@@ -1,8 +1,10 @@
 /**
  * @fileOverview Ensures E262-3 conformance.
  * @author Márcio Faustino
- * @version 2011-04-20
+ * @version 2011-11-09
  * @see http://www.mozilla.org/js/language/E262-3.pdf
+ * @todo Implement the ToUInt16 function?
+ * @todo Implement the URI handling function properties?
  */
 
 
