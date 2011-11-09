@@ -1,8 +1,8 @@
 /**
- * @fileOverview Ensures E262-3 conformance.
+ * @fileOverview Ensures conformance to ECMA-262 3rd edition.
  * @author Márcio Faustino
  * @version 2011-11-09
- * @see http://www.mozilla.org/js/language/E262-3.pdf
+ * @see http://www.ecma-international.org/publications/standards/Ecma-262.htm
  * @todo Implement the ToUInt16 function?
  * @todo Implement the URI handling function properties?
  */
