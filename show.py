@@ -247,9 +247,13 @@ class UriInput (StreamInput):
         charset = email_from_string(str(stream.headers)).get_content_charset()
         
         if charset is None:
-            StreamInput.__init__(self, stream, name = uri)
-        else:
-            StreamInput.__init__(self, stream, name = uri, encoding = charset)
+            import chardet, cStringIO
+            
+            content = stream.read()
+            charset = chardet.detect(content)['encoding']
+            stream = cStringIO.StringIO(content)
+        
+        StreamInput.__init__(self, stream, name = uri, encoding = charset)
 
 
 class ZipFileInput (SubProcessInput):
