@@ -117,7 +117,7 @@ if [ -z "$CYGWIN_ENV" ]; then
     fi
     
     if pgrep metacity > /dev/null; then
-        gconftool-2 -s -t bool \
+        _have gconftool-2 && $NAME -s -t bool \
             /apps/metacity/general/resize_with_right_button true
     fi
 else
