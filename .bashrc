@@ -22,7 +22,7 @@ fi
 if dpkg -p bash-completion > /dev/null 2>&1; then
     source /etc/bash_completion
 else
-    echo "* Missing: bash-completion" >&2
+    [ -n "$INTERACTIVE" ] && echo "* Missing: bash-completion" >&2
 fi
 
 # Disable tilde expansion only.
