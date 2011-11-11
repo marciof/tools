@@ -18,7 +18,12 @@ if [ -n "$WINDIR" -a -z "$INTERACTIVE" ]; then
 fi
 
 [ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
-source /etc/bash_completion 2> /dev/null
+
+if dpkg -p bash-completion > /dev/null 2>&1; then
+    source /etc/bash_completion
+else
+    echo "* Missing: bash-completion" >&2
+fi
 
 # Disable tilde expansion only.
 _expand() {
