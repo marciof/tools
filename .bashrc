@@ -94,7 +94,15 @@ export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 ps1_user_host='\u@\h'
 
 if locale -a | grep '^en_DK' -q; then
-    export LC_TIME=en_DK.UTF-8                      # ISO 8601
+    # Dates in ISO 8601 format.
+    locale=en_DK.UTF-8
+    
+    if [ -z "$LC_TIME" ]; then
+        [ -n "$INTERACTIVE" ] && echo "* dpkg-reconfigure locales: $locale" >&2
+    fi
+    
+    export LC_TIME=$locale
+    unset locale
 fi
 
 if [ -z "$CYGWIN_ENV" ]; then
