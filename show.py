@@ -240,7 +240,10 @@ class UriInput (StreamInput):
         # <http://bugs.python.org/issue8009>
         from email import message_from_string as email_from_string
         
-        stream = urllib.urlopen(uri)
+        class UriOpener (urllib.FancyURLopener):
+            version = 'Mozilla/5.0'
+        
+        stream = UriOpener().open(uri)
         charset = email_from_string(str(stream.headers)).get_content_charset()
         
         if charset is None:
