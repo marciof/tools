@@ -25,7 +25,8 @@ import errno, os, sys
 
 # Not an abstract base class for performance.
 class StreamInput:
-    DEFAULT_ENCODING = 'UTF-8'
+    # From the codecs module, to remove the byte-order-mark.
+    DEFAULT_ENCODING = 'utf_8_sig'
     
     
     def __init__(self, stream, name,
@@ -252,6 +253,9 @@ class UriInput (StreamInput):
             content = stream.read()
             charset = chardet.detect(content)['encoding']
             stream = cStringIO.StringIO(content)
+            
+            if charset == 'UTF-8':
+                charset = self.DEFAULT_ENCODING
         
         StreamInput.__init__(self, stream, name = uri, encoding = charset)
 
