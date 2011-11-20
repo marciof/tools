@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 
+# TODO: Auto-detect encoding of files.
 # TODO: Implement file/text search.
 # TODO: Use PIL for ImageFileInput?
 # TODO: Fix line length counting when the input contains ANSI color codes?
