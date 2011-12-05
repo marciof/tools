@@ -336,7 +336,7 @@ sdi() {
 
 sl() {
     if _in_git; then
-        git log --follow "$@"
+        git log "$@"
     elif _in_svn; then
         svn log "$@"
     else
