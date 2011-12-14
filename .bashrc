@@ -44,6 +44,24 @@ _have() {
     return 1
 }
 
+_add_to_auto_start() {
+    local script="$HOME/.kde/Autostart/$1"
+    
+    if [ -z "$KDE_FULL_SESSION" -o ! -e "$script" ]; then
+        local temp_script="$(mktemp)"
+        
+        chmod +x "$temp_script"
+        cat > "$temp_script"
+        "$temp_script" || return 1
+        
+        if  [ -n "$KDE_FULL_SESSION" ]; then
+            mv "$temp_script" "$script"
+        fi
+    fi
+    
+    return 0
+}
+
 if [ -n "$INTERACTIVE" ]; then
     bind 'set completion-ignore-case On'
     bind 'set expand-tilde Off'
@@ -237,20 +255,12 @@ TEXT
 fi
 
 unset nano_rc
-kde_start_ssh_add=~/.kde/Autostart/ssh-add.sh
 
-if [ -z "$KDE_FULL_SESSION" -o ! -e "$kde_start_ssh_add" ]; then
-    ssh-add < /dev/null 2> /dev/null
-    
-    if  [ -n "$KDE_FULL_SESSION" ]; then
-        cat << 'TEXT' > "$kde_start_ssh_add" && chmod +x "$kde_start_ssh_add"
+_add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
 #!/bin/sh
-ssh-add
-TEXT
-    fi
-fi
+ssh-add < /dev/null 2> /dev/null
+SCRIPT
 
-unset kde_start_ssh_add
 show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
 if [ -e "$show_py" ]; then
