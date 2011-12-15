@@ -304,6 +304,14 @@ ff() {
     find "$@" -a ! -name '*.svn-base'
 }
 
+iwait() {
+    for PID in "$@"; do
+        while kill -0 "$PID"; do
+            sleep 0.5
+        done
+    done
+}
+
 reload() {
     exec $SHELL
 }
