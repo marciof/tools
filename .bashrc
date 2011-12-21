@@ -109,19 +109,14 @@ export PYTHONDONTWRITEBYTECODE=x
 # Remove bright colors.
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
-ps1_user_host='\u@\h'
-
-if locale -a | grep '^en_DK' -q; then
-    # Dates in ISO 8601 format.
-    locale=en_DK.UTF-8
-    
-    if [ -z "$LC_TIME" ]; then
-        [ -n "$INTERACTIVE" ] && echo "* dpkg-reconfigure locales: $locale" >&2
-    fi
-    
-    export LC_TIME=$locale
-    unset locale
+# Dates in ISO 8601 format.
+if locale -a 2> /dev/null | grep '^en_DK' -q; then
+    export LC_TIME=en_DK.UTF-8
+else
+    [ -n "$INTERACTIVE" ] && echo "* dpkg-reconfigure locales # en_DK.UTF-8" >&2
 fi
+
+ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
