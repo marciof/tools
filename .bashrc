@@ -19,7 +19,7 @@ fi
 
 [ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
 
-if dpkg -p bash-completion > /dev/null 2>&1; then
+if dpkg -p bash-completion > /dev/null 2>&1 || [ -e /etc/bash_completion ]; then
     source /etc/bash_completion
 else
     [ -n "$INTERACTIVE" ] && echo "* Missing: bash-completion" >&2
