@@ -122,8 +122,13 @@ ps1_user_host='\u@\h'
 if [ -z "$CYGWIN_ENV" ]; then
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
     _have lesspipe && eval "$($NAME)"
-    _have setxkbmap && $NAME -option 'nbsp:none'    # Allow e.g. AltGr + Space.
     [ -z "$DISPLAY" ] && export DISPLAY=:0.0
+    
+    # Allow AltGr + Space to be interpreted as a regular blank space.
+    if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
+        [ -n "$INTERACTIVE" ] \
+            && echo '* Install XKB data: $ apt-get install xkb-data' >&2
+    fi
     
     if [ "$TERM" = "xterm" ]; then
         # Save history session to file and set terminal title.
