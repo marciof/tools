@@ -215,14 +215,14 @@ if _have git; then
     _set_git_config push.default tracking
     _set_git_config alias.co checkout
     _set_git_config alias.br 'branch -vv'
+    
     _set_git_config alias.hist 'log --graph --date=short
         --pretty=format:"%C(yellow)%h %C(green)%ad %C(reset)%s%C(yellow)%d %C(reset)(%C(blue)%aN%C(reset))"'
+    
     _set_git_config alias.pub '!bash -c '"'"'\
         COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
         && echo $COMMAND \
         && $COMMAND'"'"
-    _set_git_config core.editor 'bash -c "
-        if pgrep kompare > /dev/null; then $EDITOR $@; else $VISUAL $@; fi"'
     
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
