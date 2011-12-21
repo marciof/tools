@@ -113,7 +113,8 @@ export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 if locale -a 2> /dev/null | grep '^en_DK' -q; then
     export LC_TIME=en_DK.UTF-8
 else
-    [ -n "$INTERACTIVE" ] && echo "* dpkg-reconfigure locales # en_DK.UTF-8" >&2
+    [ -n "$INTERACTIVE" ] \
+        && echo '* Select "en_DK.UTF-8": $ dpkg-reconfigure locales' >&2
 fi
 
 ps1_user_host='\u@\h'
