@@ -122,6 +122,10 @@ ul > li > a.TogglePlugins:before {
 ul > li > a.Translate:before {
     content: -o-skin("Mail Thread");
 }
+
+ul > li > a.ValidateDocument:before {
+    content: -o-skin("Expand Enabled");
+}
     </style>
   </head>
   
@@ -139,6 +143,7 @@ ul > li > a.Translate:before {
       <li><a class="ReadFeeds Small" href="opera:/button/Read Mail,%22rss%22,,%22Read feeds%22, %22RSS%22">Read feeds</a></li>
       <li><a class="TogglePlugins Small" href="opera:/button/Enable plugins,,,,Mail Attachments|Disable plugins,,,,">Toggle plug-ins</a></li>
       <li><a class="Translate Small" href="opera:/button/Go to page,%22javascript:(function() {var s = window.getSelection().toString().replace(/^[\s]+\n/gm, ''); window.open('http://translate.google.com/' + (s.length == 0 ? 'translate?sl=auto&amp;tl=en&amp;u=' + encodeURIComponent(location) : '#auto|en|' + encodeURIComponent(s)))})()%22,,Translate,Mail Thread">Translate</a></li>
+      <li><a class="ValidateDocument Small" href="opera:/button/Validate document source,,,,Expand Enabled">Validate document</a></li>
       <li><a class="Go Medium" href="opera:/button/Go + Show popup menu, %22Internal Bookmark Folder%22,,,,Group">Go + Bookmarks</a></li>
       <li><a class="ReadMail Medium" href="opera:/button/Read Mail &amp; Get mail + Show popup menu, %22Internal Access Points%22, Mail">Read mail</a></li>
     </ul>
