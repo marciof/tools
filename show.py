@@ -592,6 +592,9 @@ class Pager (Output):
             pager = Pager(Options(argv))
         except IOError:
             return
+        except KeyboardInterrupt:
+            print
+            return
         
         try:
             pager.display()
