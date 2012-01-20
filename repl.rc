@@ -63,12 +63,13 @@ sub _add_history_implementation {
     elsif ($self->isa('Term::ReadLine::Gnu')) {
         # Move existing lines to the top of the history stack.
         foreach my $line (@lines) {
-            my $position = $self->history_search_pos($line);
+            my $pos = $self->history_search_pos($line);
             
-            if ($self->history_get($position + 1) eq $line) {
-                $self->remove_history($position);
-                $self->$super($line);
+            if (($pos != -1) && (($self->history_get($pos + 1) eq $line))) {
+                $self->remove_history($pos);
             }
+            
+            $self->$super($line);
         }
     }
     else {
