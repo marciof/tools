@@ -129,6 +129,25 @@ ul > li > a.ValidateDocument:before {
     </style>
   </head>
   
+<!--
+// http://closure-compiler.appspot.com/
+
+(function() {
+    var translate = 'http://translate.google.com/';
+    
+    if (location.protocol == 'javascript:') {
+        location.replace(translate);
+    }
+    else {
+        var text = window.getSelection().toString().replace(/^[\s]+\n/gm, '');
+        
+        window.open(translate + (text.length == 0
+            ? 'translate?sl=auto&tl=en&u=' + encodeURIComponent(location)
+            : '#auto|en|' + encodeURIComponent(text)));
+    }
+})()
+-->
+  
   <body>
     <p>Buttons:</p>
     <ul class="Buttons">
@@ -142,7 +161,7 @@ ul > li > a.ValidateDocument:before {
       <li><a class="MailAddress Small" href="opera:/button/Send document address in mail,,,Mail address,View Mail">Mail address</a></li>
       <li><a class="ReadFeeds Small" href="opera:/button/Read Mail,%22rss%22,,%22Read feeds%22, %22RSS%22">Read feeds</a></li>
       <li><a class="TogglePlugins Small" href="opera:/button/Enable plugins,,,,Mail Attachments|Disable plugins,,,,">Toggle plug-ins</a></li>
-      <li><a class="Translate Small" href="opera:/button/Go to page,%22javascript:(function() {var s = window.getSelection().toString().replace(/^[\s]+\n/gm, ''); window.open('http://translate.google.com/' + (s.length == 0 ? 'translate?sl=auto&amp;tl=en&amp;u=' + encodeURIComponent(location) : '#auto|en|' + encodeURIComponent(s)))})()%22,,Translate,Mail Thread">Translate</a></li>
+      <li><a class="Translate Small" href="opera:/button/Go to page,%22javascript:(function()%7Bif('javascript%3A'%3D%3Dlocation.protocol)location.replace('http%3A%2F%2Ftranslate.google.com%2F')%3Belse%7Bvar%20a%3Dwindow.getSelection().toString().replace(%2F%5E%5Bs%5D%2B%0A%2Fgm%2C'')%3Bwindow.open('http%3A%2F%2Ftranslate.google.com%2F'%2B(0%3D%3Da.length%3F'translate%3Fsl%3Dauto%26tl%3Den%26u%3D'%2BencodeURIComponent(location)%3A'%23auto%7Cen%7C'%2BencodeURIComponent(a)))%7D%7D)()%22,,Translate,Mail Thread">Translate</a></li>
       <li><a class="ValidateDocument Small" href="opera:/button/Validate document source,,,,Expand Enabled">Validate document</a></li>
       <li><a class="Go Medium" href="opera:/button/Go + Show popup menu, %22Internal Bookmark Folder%22,,,,Group">Go + Bookmarks</a></li>
       <li><a class="ReadMail Medium" href="opera:/button/Read Mail &amp; Get mail + Show popup menu, %22Internal Access Points%22, Mail">Read mail</a></li>
