@@ -268,7 +268,7 @@ show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 if [ -e "$show_py" ]; then
     alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
     alias ss='s -l-l'
-    alias sss='s -l-lA'
+    alias sss='ss -l-A'
     export ACK_PAGER="\"$show_py\" -d"
     export GIT_PAGER=$show_py
 else
