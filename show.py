@@ -543,7 +543,8 @@ class TextOutput (SubProcessOutput):
             
             SubProcessOutput.__init__(self,
                 args = ['less', '+%dg' % options.input.line],
-                formatter = Terminal256Formatter())
+                formatter = Terminal256Formatter(),
+                **kargs)
 
 
 class DiffOutput (TextOutput):
