@@ -560,6 +560,56 @@ class DiffOutput (TextOutput):
             
             self.write = self._kompare_write
             self._last_string = b''
+        #else:
+            ## if in_git_directory and inside_chroot:
+            #TextOutput.__init__(self, options, passthrough_mode = True)
+            
+            #self._file_names = []
+            #self._file_blobs = []
+            
+            #self.close = self._diffuse_close
+            #self.write = self._diffuse_write
+    
+    
+    def _diffuse_close(self):
+        import git
+        
+        repo = git.Repo(os.getcwd())
+        cmd_args = ['diffuse', '-s']
+        
+        for file_name, file_blob in zip(self._file_names, self._file_blobs):
+            directory = os.path.dirname(file_name)
+            file_blob = repo.rev_parse(file_blob)
+            last_commit = None
+            
+            for commit in repo.head.commit.iter_parents(paths = directory):
+                if last_commit is not None:
+                    break
+                
+                for item in commit.tree.traverse():
+                    if item == file_blob:
+                        last_commit = commit
+                        break
+            
+            cmd_args.extend(['-r', last_commit.hexsha, file_name])
+        
+        TextOutput.write(self, '%s\n' % cmd_args)
+        TextOutput.close(self)
+    
+    
+    def _diffuse_write(self, *data):
+        import re
+        
+        for string in data:
+            strings = string.split(b'\n')
+            
+            for string in strings:
+                if string.startswith(b'diff '):
+                    self._file_names.extend(
+                        re.findall(br'^diff --git a/(.+) b/.+$', string))
+                elif string.startswith(b'index '):
+                    self._file_blobs.extend(
+                        re.findall(br'([^ ]+)\.\.[^ ]+', string))
     
     
     # Fix parse error when the diff header has a trailing tab character after
