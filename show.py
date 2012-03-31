@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 
+# TODO: Clean-up, refactor.
 # TODO: Auto-detect encoding of files.
 # TODO: Implement file/text search.
 # TODO: Use PIL for ImageFileInput?
