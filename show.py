@@ -487,24 +487,43 @@ class Output:
 
 
 class StreamOutput (Output):
-    def __init__(self, formatter = None, passthrough_mode = False):
-        self.formatter = formatter
+    def __init__(self, passthrough_mode = False):
+        self.formatter = None
         self.passthrough_mode = passthrough_mode
-        self.stream = None
+        self._stream = None
     
     
     def close(self):
-        if self.stream is not sys.stdout:
-            self.stream.close()
+        if self._stream is not sys.stdout:
+            self._stream.close()
+    
+    
+    def open(self, stream):
+        self._stream = stream
+        return self
     
     
     def write(self, *data):
         for string in data:
-            self.stream.write(string)
+            self._stream.write(string)
 
 
 class SubProcessOutput (StreamOutput):
-    def __init__(self, args, detached = False, stderr = None, **kargs):
+    def __init__(self, detached = False, **kargs):
+        StreamOutput.__init__(self, **kargs)
+        
+        self._detached = detached
+        self._process = None
+    
+    
+    def close(self):
+        if not self._detached:
+            self._process.communicate()
+        
+        StreamOutput.close(self)
+    
+    
+    def open(self, args, stderr = None):
         import subprocess
         
         try:
@@ -524,40 +543,31 @@ class SubProcessOutput (StreamOutput):
         signal.signal(signal.SIGINT,
             lambda sig_int, frame: self._process.send_signal(sig_int))
         
-        StreamOutput.__init__(self, **kargs)
-        self.stream = self._process.stdin
-        self._detached = detached
-    
-    
-    def close(self):
-        if not self._detached:
-            self._process.communicate()
-        
-        StreamOutput.close(self)
+        return StreamOutput.open(self, self._process.stdin)
 
 
 class TextOutput (SubProcessOutput):
-    def __init__(self, options, **kargs):
-        if 'args' in kargs:
-            SubProcessOutput.__init__(self, **kargs)
-        else:
-            from pygments.formatters.terminal256 import Terminal256Formatter
+    def open(self, args, options, **kargs):
+        if args is None:
+            args = ['less', '+%dg' % options.input.line]
             
-            SubProcessOutput.__init__(self,
-                args = ['less', '+%dg' % options.input.line],
-                formatter = Terminal256Formatter(),
-                **kargs)
+            from pygments.formatters.terminal256 import Terminal256Formatter
+            self.formatter = Terminal256Formatter()
+        
+        return SubProcessOutput.open(self, args, **kargs)
 
 
 class DiffOutput (TextOutput):
     def __init__(self, options):
         if options.terminal_only:
-            TextOutput.__init__(self, options)
+            TextOutput.__init__(self)
+            self.open(None, options)
         else:
-            TextOutput.__init__(self, options,
-                args = ['kompare', '-o', '-'],
+            TextOutput.__init__(self,
                 detached = True,
-                passthrough_mode = True,
+                passthrough_mode = True)
+            
+            self.open(['kompare', '-o', '-'], options,
                 stderr = open(os.devnull))
             
             self.write = self._kompare_write
@@ -696,13 +706,15 @@ class Pager (Output):
                     (len(line) - 1.0) / self._terminal_width))
                 
                 if (len(buffered_lines) + wrapped_lines) > self._max_inline_lines:
-                    self._flush_buffer(buffered_lines, TextOutput, DiffOutput)
+                    self._flush_buffer(buffered_lines,
+                        lambda options: TextOutput().open(None, options),
+                        DiffOutput)
                     break
             else:
                 if len(buffered_lines) > 0:
                     self._flush_buffer(buffered_lines,
-                        lambda options: StreamOutput(options.output_stream),
-                        lambda options: StreamOutput(options.output_stream))
+                        lambda opts: StreamOutput().open(opts.output_stream),
+                        lambda opts: StreamOutput().open(opts.output_stream))
                 
                 return
             
