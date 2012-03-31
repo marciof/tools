@@ -487,20 +487,20 @@ class Output:
 
 
 class StreamOutput (Output):
-    def __init__(self, stream, formatter = None, passthrough_mode = False):
+    def __init__(self, formatter = None, passthrough_mode = False):
         self.formatter = formatter
         self.passthrough_mode = passthrough_mode
-        self._stream = stream
+        self.stream = None
     
     
     def close(self):
-        if self._stream is not sys.stdout:
-            self._stream.close()
+        if self.stream is not sys.stdout:
+            self.stream.close()
     
     
     def write(self, *data):
         for string in data:
-            self._stream.write(string)
+            self.stream.write(string)
 
 
 class SubProcessOutput (StreamOutput):
@@ -524,7 +524,8 @@ class SubProcessOutput (StreamOutput):
         signal.signal(signal.SIGINT,
             lambda sig_int, frame: self._process.send_signal(sig_int))
         
-        StreamOutput.__init__(self, self._process.stdin, **kargs)
+        StreamOutput.__init__(self, **kargs)
+        self.stream = self._process.stdin
         self._detached = detached
     
     
