@@ -574,7 +574,9 @@ class DiffOutput (TextOutput):
             self._last_string = b''
         #else:
             ## if in_git_directory and inside_chroot:
-            #TextOutput.__init__(self, options, passthrough_mode = True)
+            #TextOutput.__init__(self,
+                #detached = True,
+                #passthrough_mode = True)
             
             #self._file_names = []
             #self._file_blobs = []
@@ -603,9 +605,12 @@ class DiffOutput (TextOutput):
                         last_commit = commit
                         break
             
-            cmd_args.extend(['-r', last_commit.hexsha, file_name])
+            if last_commit is not None:
+                cmd_args.extend(['-r', last_commit.hexsha])
+            
+            cmd_args.append(file_name)
         
-        TextOutput.write(self, '%s\n' % cmd_args)
+        self.open(cmd_args, None)
         TextOutput.close(self)
     
     
