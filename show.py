@@ -295,10 +295,11 @@ class Options:
         try:
             # No long options available for performance.
             (options, arguments) = getopt.getopt(argv,
-                'a:dhi:j:l:L:m:no:p:r:s:tuwz:')
+                'a:dhi:j:kl:L:m:no:p:r:s:tuwz:')
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
+        self.allow_kde = False
         self.default_protocol = 'http://'
         self.diff_mode = False
         self.line_nr_field_width = 4
@@ -343,6 +344,7 @@ Options:
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
   -j        line number right-justified field width, defaults to %s
+  -k        allow usage of KDE applications inside chroot
   -l        option for "ls", when listing directories
   -L        ignored for Subversion compatibility
   -m        option for "nm", when viewing object files
@@ -368,6 +370,8 @@ Options:
                         raise ValueError()
                 except ValueError:
                     sys.exit('invalid line number field width: ' + value)
+            elif option == '-k':
+                self.allow_kde = True
             elif option == '-l':
                 self.ls_arguments.append(value)
             elif option == '-m':
@@ -562,7 +566,19 @@ class DiffOutput (TextOutput):
         if options.terminal_only:
             TextOutput.__init__(self)
             self.open(None, options)
-        else:
+            return
+        
+        try:
+            if options.allow_kde or not self._is_chroot():
+                raise EnvironmentError()
+            
+            import git
+            
+            try:
+                repo = git.Repo(os.getcwd())
+            except git.exc.InvalidGitRepositoryError:
+                raise EnvironmentError()
+        except EnvironmentError:
             TextOutput.__init__(self,
                 detached = True,
                 passthrough_mode = True)
@@ -572,31 +588,28 @@ class DiffOutput (TextOutput):
             
             self.write = self._kompare_write
             self._last_string = b''
-        #else:
-            ## if in_git_directory and inside_chroot:
-            #TextOutput.__init__(self,
-                #detached = True,
-                #passthrough_mode = True)
+        else:
+            TextOutput.__init__(self,
+                detached = True,
+                passthrough_mode = True)
             
-            #self._file_names = []
-            #self._file_blobs = []
+            self._file_names = []
+            self._file_blobs = []
+            self._repo = repo
             
-            #self.close = self._diffuse_close
-            #self.write = self._diffuse_write
+            self.close = self._diffuse_close
+            self.write = self._diffuse_write
     
     
     def _diffuse_close(self):
-        import git
-        
-        repo = git.Repo(os.getcwd())
         cmd_args = ['diffuse', '-s']
         
         for file_name, file_blob in zip(self._file_names, self._file_blobs):
-            directory = os.path.dirname(file_name)
-            file_blob = repo.rev_parse(file_blob)
+            folder = os.path.dirname(file_name)
+            file_blob = self._repo.rev_parse(file_blob)
             last_commit = None
             
-            for commit in repo.head.commit.iter_parents(paths = directory):
+            for commit in self._repo.head.commit.iter_parents(paths = folder):
                 if last_commit is not None:
                     break
                 
@@ -627,6 +640,10 @@ class DiffOutput (TextOutput):
                 elif string.startswith(b'index '):
                     self._file_blobs.extend(
                         re.findall(br'([^ ]+)\.\.[^ ]+', string))
+    
+    
+    def _is_chroot(self):
+        return os.stat(os.path.sep).st_ino != 2
     
     
     # Fix parse error when the diff header has a trailing tab character after
