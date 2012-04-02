@@ -614,7 +614,9 @@ class DiffOutput (TextOutput):
                     break
                 
                 for item in commit.tree.traverse():
-                    if item == file_blob:
+                    # The default comparison uses the name attribute, which
+                    # might not always be set for submodules.
+                    if item.binsha == file_blob.binsha:
                         last_commit = commit
                         break
             
