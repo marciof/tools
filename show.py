@@ -3,6 +3,7 @@
 
 
 # TODO: Clean-up, refactor.
+# TODO: Detect and support non-256-color terminals.
 # TODO: Auto-detect encoding of files.
 # TODO: Implement file/text search.
 # TODO: Use PIL for ImageFileInput?
