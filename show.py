@@ -300,7 +300,7 @@ class Options:
         except getopt.GetoptError as error:
             sys.exit(str(error))
         
-        self.allow_kde = False
+        self.disallow_kde = False
         self.default_protocol = 'http://'
         self.diff_mode = False
         self.line_nr_field_width = 4
@@ -345,7 +345,7 @@ Options:
   -h        show usage help
   -i        standard input string representation, defaults to "%s"
   -j        line number right-justified field width, defaults to %s
-  -k        allow usage of KDE applications inside chroot
+  -k        disallow usage of KDE applications inside chroot
   -l        option for "ls", when listing directories
   -L        ignored for Subversion compatibility
   -m        option for "nm", when viewing object files
@@ -372,7 +372,7 @@ Options:
                 except ValueError:
                     sys.exit('invalid line number field width: ' + value)
             elif option == '-k':
-                self.allow_kde = True
+                self.disallow_kde = True
             elif option == '-l':
                 self.ls_arguments.append(value)
             elif option == '-m':
@@ -570,7 +570,7 @@ class DiffOutput (TextOutput):
             return
         
         try:
-            if options.allow_kde or not self._is_chroot():
+            if not options.disallow_kde or not self._is_chroot():
                 raise EnvironmentError()
             
             import git
