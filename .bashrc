@@ -101,6 +101,7 @@ _have nano && export EDITOR=$LOCATION
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
+export BUSTER_TEST_OPT='-C dim'
 export HARNESS_COLOR=1
 export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
