@@ -1,2 +1,3 @@
 - Automate testing: JSHint, split test cases.
 - Generate documentation.
+- Add `isUndefined`?
