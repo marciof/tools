@@ -1,6 +1,6 @@
 var config = module.exports;
 
-config['Node tests'] = {
+config['Node based tests'] = {
     environment: 'node',
     sources: ['*.js'],
     tests: ['*.test.js']
