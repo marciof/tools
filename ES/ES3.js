@@ -284,8 +284,8 @@ var ES3 = new function () {
         search = self.toString(search);
         position = self.toInteger(position);
         
-        var string = self.toString(this);
-        var start = Math.min(Math.max(position, 0), string.length);
+        var string = self.toString(this),
+            start = Math.min(Math.max(position, 0), string.length);
         
         SEARCH:
         for (var i = start; (i + search.length) <= string.length; ++i) {
@@ -306,9 +306,9 @@ var ES3 = new function () {
         search = self.toString(search);
         position = self.toNumber(position);
         
-        var string = self.toString(this);
-        var begin = isNaN(position) ? +Infinity : self.toInteger(position);
-        var start = Math.min(Math.max(begin, 0), string.length) - search.length;
+        var string = self.toString(this),
+            begin = isNaN(position) ? +Infinity : self.toInteger(position),
+            start = Math.min(Math.max(begin, 0), string.length) - search.length;
         
         SEARCH:
         for (var i = start; (i >= 0) && (i <= string.length); --i) {
