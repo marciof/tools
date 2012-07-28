@@ -1,17 +1,17 @@
 /**
- * @fileOverview Ensures conformance to ECMA-262 3rd edition.
+ * @fileOverview Ensures host environment conformance to ECMA-262 3rd edition.
  * @author Márcio Faustino
- * @version 2011-11-09
+ * @version 2012-07-28
  * @see http://www.ecma-international.org/publications/standards/Ecma-262.htm
- * @todo Implement the ToUInt16 function?
- * @todo Implement the URI handling function properties?
+ * @todo Implement ToUInt16?
+ * @todo Implement URI handling function properties?
  */
 
 
 /**
  * @namespace E262-3 support.
  */
-var E262_3 = new function() {
+var ES3 = new function () {
     var self = this;
     
     
@@ -42,7 +42,7 @@ var E262_3 = new function() {
      * @throws {SyntaxError} The object has no properties.
      * @throws {TypeError} The object has no default value.
      */
-    this.getDefaultValue = function(object, hint) {
+    this.getDefaultValue = function (object, hint) {
         if (object == undefined) {
             throw new SyntaxError('Object has no properties');
         }
@@ -81,9 +81,9 @@ var E262_3 = new function() {
      *
      * @returns {Object} default global object
      */
-    this.getGlobalObject = function() {
+    this.getGlobalObject = function () {
         // Nested functions have the global object as the receiver.
-        return (function() {
+        return (function () {
             return this;
         })();
     };
@@ -99,7 +99,7 @@ var E262_3 = new function() {
      * @returns {boolean} true if the given value is a primitive value or false
      *          otherwise
      */
-    this.isPrimitive = function(value) {
+    this.isPrimitive = function (value) {
         return (value === null)
             || (value === undefined)
             || (typeof value == 'boolean')
@@ -114,7 +114,7 @@ var E262_3 = new function() {
      * @param value value to convert
      * @returns {boolean} corresponding boolean value
      */
-    this.toBoolean = function(value) {
+    this.toBoolean = function (value) {
         return !!value;
     };
     
@@ -125,7 +125,7 @@ var E262_3 = new function() {
      * @param value value to convert
      * @returns {number} corresponding signed 32 bit integer value
      */
-    this.toInt32 = function(value) {
+    this.toInt32 = function (value) {
         return self.toInteger(value) | 0;
     };
     
@@ -136,7 +136,7 @@ var E262_3 = new function() {
      * @param value value to convert
      * @returns {number} corresponding integer value
      */
-    this.toInteger = function(value) {
+    this.toInteger = function (value) {
         var number = self.toNumber(value);
         
         if (isNaN(number)) {
@@ -158,7 +158,7 @@ var E262_3 = new function() {
      * @param value value to convert
      * @returns {number} corresponding number value
      */
-    this.toNumber = function(value) {
+    this.toNumber = function (value) {
         if (value === null) {
             return 0;
         }
@@ -185,7 +185,7 @@ var E262_3 = new function() {
      * @returns {Object} corresponding Object value
      * @throws {TypeError} The value to convert is null or undefined.
      */
-    this.toObject = function(value) {
+    this.toObject = function (value) {
         if ((value === null) || (value === undefined)) {
             throw new TypeError(value + "can't be converted to an Object");
         }
@@ -213,7 +213,7 @@ var E262_3 = new function() {
      * @returns {Undefined|Null|Boolean|String|Number} primitive value of the
      *          given value
      */
-    this.toPrimitive = function(value, preferredType) {
+    this.toPrimitive = function (value, preferredType) {
         if (self.isPrimitive(value)) {
             return value;
         }
@@ -232,7 +232,7 @@ var E262_3 = new function() {
      * @param value value to convert
      * @returns {string} corresponding string value
      */
-    this.toString = function(value) {
+    this.toString = function (value) {
         return value + '';
     };
     
@@ -243,7 +243,7 @@ var E262_3 = new function() {
      * @param value value to convert
      * @returns {number} corresponding unsigned 32 bit integer value
      */
-    this.toUInt32 = function(value) {
+    this.toUInt32 = function (value) {
         var uint32 = self.toInt32(value) >>> 0;
         
         if (uint32 < 0) {
@@ -255,7 +255,7 @@ var E262_3 = new function() {
     };
     
     
-    this._apply = function(thisArg, argArray) {
+    this._apply = function (thisArg, argArray) {
         var name = 'Function.prototype.apply';
         
         if (typeof this != 'function') {
@@ -277,7 +277,7 @@ var E262_3 = new function() {
     };
     
     
-    this._indexOf = function(search, position) {
+    this._indexOf = function (search, position) {
         search = self.toString(search);
         position = self.toInteger(position);
         
@@ -299,7 +299,7 @@ var E262_3 = new function() {
     };
     
     
-    this._lastIndexOf = function(search, position) {
+    this._lastIndexOf = function (search, position) {
         search = self.toString(search);
         position = self.toNumber(position);
         
@@ -322,19 +322,19 @@ var E262_3 = new function() {
     };
     
     
-    this._parseFloat = function(string) {
+    this._parseFloat = function (string) {
         var s = self.toString(string).replace(self._leftWhiteSpace, '');
         return (s === '') ? NaN : self.__parseFloat(s);
     };
     
     
-    this._parseInt = function(string, radix) {
+    this._parseInt = function (string, radix) {
         var s = self.toString(string).replace(self._leftWhiteSpace, '');
         return (s === '') ? NaN : self.__parseInt(s, self.toInt32(radix));
     };
     
     
-    this._unshift = function(/* ... */) {
+    this._unshift = function (/* ... */) {
         var length = this.length;
         
         this._unshift.apply(this, arguments);
@@ -347,7 +347,7 @@ var E262_3 = new function() {
     var fixApply = false;
     
     try {
-        (function() {}).apply(null, {});
+        (function () {}).apply(null, {});
         fixApply = true;
     }
     catch (exception) {
@@ -395,7 +395,7 @@ var E262_3 = new function() {
     var globalObject = self.getGlobalObject();
     
     if ((globalObject + '') !== globalObject.toString()) {
-        globalObject.toString = function() {
+        globalObject.toString = function () {
             return globalObject + '';
         };
     }
