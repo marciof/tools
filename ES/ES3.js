@@ -14,6 +14,9 @@
 var ES3 = new function () {
     var self = this;
     
+    // Export as a Node module.
+    try {module.exports = this;} catch (_) {}
+    
     
     /**
      * List of white space characters.
@@ -27,7 +30,7 @@ var ES3 = new function () {
         '\u2029', '\u202F', '\u205F', '\u3000'
     ];
     
-    this._leftWhiteSpace = new RegExp('^[' + self.whiteSpace.join('') + ']+');
+    this._leftWhiteSpace = new RegExp('^[' + this.whiteSpace.join('') + ']+');
     
     
     /**
@@ -358,41 +361,41 @@ var ES3 = new function () {
     
     if (fixApply) {
         Function.prototype._apply = Function.prototype.apply;
-        Function.prototype.apply = self._apply;
+        Function.prototype.apply = this._apply;
     }
     
     if ((''.indexOf('', 1) != 0) || ('x'.indexOf('', 2) != 1)) {
         String.prototype._indexOf = String.prototype.indexOf;
-        String.prototype.indexOf = self._indexOf;
+        String.prototype.indexOf = this._indexOf;
     }
     
     if (('x'.lastIndexOf('x', -1) != -1) || (''.lastIndexOf('', -1) != 0)) {
         String.prototype._lastIndexOf = String.prototype.lastIndexOf;
-        String.prototype.lastIndexOf = self._lastIndexOf;
+        String.prototype.lastIndexOf = this._lastIndexOf;
     }
     
-    for (var i = 0; i < self.whiteSpace.length; ++i) {
-        if (parseFloat(self.whiteSpace[i] + '0') !== 0) {
+    for (var i = 0; i < this.whiteSpace.length; ++i) {
+        if (parseFloat(this.whiteSpace[i] + '0') !== 0) {
             this.__parseFloat = parseFloat;
-            parseFloat = self._parseFloat;
+            parseFloat = this._parseFloat;
             break;
         }
     }
     
-    for (var i = 0; i < self.whiteSpace.length; ++i) {
-        if (parseInt(self.whiteSpace[i] + '0') !== 0) {
+    for (var i = 0; i < this.whiteSpace.length; ++i) {
+        if (parseInt(this.whiteSpace[i] + '0') !== 0) {
             this.__parseInt = parseInt;
-            parseInt = self._parseInt;
+            parseInt = this._parseInt;
             break;
         }
     }
     
     if ([].unshift() !== 0) {
         Array.prototype._unshift = Array.prototype.unshift;
-        Array.prototype.unshift = self._unshift;
+        Array.prototype.unshift = this._unshift;
     }
     
-    var globalObject = self.getGlobalObject();
+    var globalObject = this.getGlobalObject();
     
     if ((globalObject + '') !== globalObject.toString()) {
         globalObject.toString = function () {
