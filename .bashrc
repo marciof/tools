@@ -98,6 +98,7 @@ _have ack-grep ack && alias f="$NAME --all --sort-files"
 _have dircolors && eval "$($NAME -b)"
 _have kwrite gedit nano && export VISUAL=$LOCATION
 _have nano && export EDITOR=$LOCATION
+_have nodejs && export NODE_PATH=/usr/lib/node_modules
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
