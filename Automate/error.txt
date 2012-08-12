@@ -1,0 +1,23 @@
+Exception in thread HD Trailers (Task):
+Traceback (most recent call last):
+  File "C:\Python32\lib\threading.py", line 740, in _bootstrap_inner
+    self.run()
+  File "C:\Python32\lib\threading.py", line 693, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\My Dropbox\Projects\Automate\automate\task\__init__.py", line 122, in __process_task
+    task.process()
+  File "D:\My Dropbox\Projects\Automate\automate\task\__init__.py", line 68, in process
+    for url in self._list_urls():
+  File "D:\My Dropbox\Projects\Automate\automate\task\video.py", line 123, in _list_urls
+    yield self.__get_video_url(item)
+  File "D:\My Dropbox\Projects\Automate\automate\task\video.py", line 192, in __get_video_url
+    genres = config.skip_genres & self.__imdb_api.get_genres(title)
+  File "D:\My Dropbox\Projects\Automate\automate\util\web.py", line 368, in get_genres
+    genres = self.__api_the.get_genres(title)
+  File "D:\My Dropbox\Projects\Automate\automate\util\web.py", line 260, in get_genres
+    + self.__cached_query(title)['ID'])
+  File "D:\My Dropbox\Projects\Automate\automate\util\web.py", line 289, in __cached_query
+    details = self.__details_by_title[title] = self.__query(title)
+  File "D:\My Dropbox\Projects\Automate\automate\util\web.py", line 319, in __query
+    year_delta = abs(current_year - int(details['Year']))
+ValueError: invalid literal for int() with base 10: '<!DO'
