@@ -1,3 +1,4 @@
 - Automate testing: JSHint, split test cases.
 - Generate documentation.
 - Add `isUndefined`?
+- Git ignore node_modules: local installation + package.json + shrinkwrap.
