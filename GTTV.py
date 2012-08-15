@@ -4,7 +4,7 @@
 # TODO: Use flvstreamer?
 # TODO: Use DLL library.
 # TODO: Miro extension?
-# TODO: Opera extension?
+# TODO: Join video parts (must remain frame smooth).
 # TODO: Don't hardcode the media XML namespace.
 
 
