@@ -17,8 +17,14 @@ import chardet, fixes, lxml.etree, lxml.html, unipath
 
 class Url:
     __PARSERS_BY_TYPE = {
-        'html': lxml.html.fromstring,
-        'xml': lxml.etree.fromstring,
+        'html': {
+            'parse': lxml.html.fromstring,
+            'decode': True,
+        },
+        'xml': {
+            'parse': lxml.etree.fromstring,
+            'decode': False,
+        },
     }
     
     
@@ -96,11 +102,16 @@ class Url:
         self.__components = urllib.parse.ParseResult(**components)
     
     
-    def read(self, parser = None, decode = True):
+    def read(self, parser = None):
         response = self.open()
         content = response.read()
         
-        if decode:
+        if not parser:
+            return content
+        
+        parser = self.__PARSERS_BY_TYPE[parser]
+        
+        if parser['decode']:
             headers = email.message_from_string(str(response.headers))
             
             charset = headers.get_content_charset() \
@@ -108,10 +119,7 @@ class Url:
             
             content = content.decode(charset)
         
-        if parser:
-            return self.__PARSERS_BY_TYPE[parser](content)
-        else:
-            return content
+        return parser['parse'](content)
     
     
     def resolve(self):
@@ -158,20 +166,20 @@ og_video_url = Url(page_html.xpath('//meta[@property = "og:video"]/@content')[0]
 config_url = Url(og_video_url.query['CONFIG_URL'][0])
 
 video_uri = config_url.query['uri'][0]
-config_xml = config_url.read(parser = 'xml', decode = False)
+config_xml = config_url.read(parser = 'xml')
 
 feed_url = Url(config_xml.xpath('/configuration/player/feed/text()')[0] \
     .strip().format(uri = video_uri))
 
-feed_xml = feed_url.read(parser = 'xml', decode = False)
+feed_xml = feed_url.read(parser = 'xml')
 
 media_urls = map(Url, feed_xml.xpath('//media:content/@url',
     namespaces= {'media': 'http://search.yahoo.com/mrss/'}))
 
-processes = []
+commands = []
 
 for media_url in media_urls:
-    media_xml = media_url.read(parser = 'xml', decode = False)
+    media_xml = media_url.read(parser = 'xml')
     
     def total_resolution(rendition):
         [height] = rendition.xpath('@height')
@@ -185,15 +193,10 @@ for media_url in media_urls:
     rtmp_url = Url(highest_rendition.xpath('src/text()')[0].strip())
     file_name = rtmp_url.path.components()[-1]
     
-    print('DUMP', rtmp_url)
-    
-    rtmpdump = subprocess.Popen(['rtmpdump',
-        '--quiet',
+    commands.append(['rtmpdump',
         '--resume',
         '--flv', str(file_name),
         '--rtmp', str(rtmp_url)])
-    
-    processes.append(rtmpdump)
 
-for process in processes:
-    process.communicate()
+for command in commands:
+    subprocess.Popen(command).communicate()
