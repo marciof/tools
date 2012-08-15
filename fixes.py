@@ -7,7 +7,7 @@
 # TODO: Use final fix for issue 1441530.
 
 
-# Standard library:
+# Standard:
 from __future__ import division, print_function, unicode_literals
 import email.feedparser, email.parser, imaplib
 

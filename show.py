@@ -21,7 +21,7 @@
 # TODO: Add documentation and tests.
 
 
-# Standard library:
+# Standard:
 from __future__ import unicode_literals
 import errno, os, sys
 
