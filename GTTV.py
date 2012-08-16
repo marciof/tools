@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 
-# TODO: Use flvstreamer?
-# TODO: Use DLL library.
+# TODO: Check rtmpdump return status code, and resume when that's the case.
 # TODO: Miro extension?
 # TODO: Join video parts (must remain frame smooth).
 # TODO: Don't hardcode the media XML namespace.
