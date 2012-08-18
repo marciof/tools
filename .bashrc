@@ -29,8 +29,6 @@ if [ -z "$CYGWIN_ENV" ]; then
     else
         _warn 'Missing: bash-completion'
     fi
-else
-    _warn 'Disabled: bash-completion'
 fi
 
 # Disable tilde expansion only.
@@ -111,7 +109,6 @@ alias .....='c ../../../..'
 _have ack-grep ack && alias f="$NAME --all --sort-files"
 _have dircolors && eval "$($NAME -b)"
 _have nano && export EDITOR=$LOCATION
-[ -z "$CYGWIN_ENV" ] && _have kwrite gedit nano && export VISUAL=$LOCATION
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
@@ -134,9 +131,16 @@ fi
 ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
+    _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
     _have lesspipe && eval "$($NAME)"
+    
     [ -z "$DISPLAY" ] && export DISPLAY=:0.0
+    
+    _add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
+#!/bin/sh
+ssh-add < /dev/null 2> /dev/null
+SCRIPT
     
     # Allow AltGr + Space to be interpreted as a regular blank space.
     if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
@@ -160,6 +164,20 @@ if [ -z "$CYGWIN_ENV" ]; then
         _have gconftool-2 && $NAME -s -t bool \
             /apps/metacity/general/resize_with_right_button true
     fi
+    
+    show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
+    
+    if [ -e "$show_py" ]; then
+        alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
+        alias ss='s -l-l'
+        alias sss='ss -l-A'
+        export ACK_PAGER="\"$show_py\" -d"
+        export GIT_PAGER=$show_py
+    else
+        _have colordiff && alias diff=$NAME
+    fi
+
+    unset show_py
 else
     export CYGWIN=nodosfilewarning
     export TERM=cygwin
@@ -270,32 +288,6 @@ TEXT
 fi
 
 unset nano_rc
-
-_add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
-#!/bin/sh
-ssh-add < /dev/null 2> /dev/null
-SCRIPT
-
-show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
-
-if [ -e "$show_py" ]; then
-    alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
-    alias ss='s -l-l'
-    alias sss='ss -l-A'
-    export ACK_PAGER="\"$show_py\" -d"
-    export GIT_PAGER=$show_py
-else
-    _have colordiff && alias diff=$NAME
-fi
-
-unset show_py
-
-for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-    source "$bashrc_child"
-    _warn "Loaded: $bashrc_child"
-done
-
-unset bashrc_child
 
 _in_git() {
     git rev-parse --is-inside-work-tree > /dev/null 2>&1
@@ -409,3 +401,12 @@ sup() {
         _in_scm
     fi
 }
+
+if [ -z "$CYGWIN_ENV" ]; then
+    for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
+        source "$bashrc_child"
+        _warn "Loaded: $bashrc_child"
+    done
+    
+    unset bashrc_child
+fi
