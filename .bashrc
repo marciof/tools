@@ -190,12 +190,16 @@ else
     fi
 fi
 
-_jobs_nr_ps1() {
-    local jobs=$(jobs | wc -l)
-    [ $jobs -gt 0 ] && echo -e ":\e[0;31m$jobs\e[00m"
-}
+ps1_user_host="\[\e[4;30;32m\]$ps1_user_host\[\e[00m\]"
 
-ps1_user_host="\[\e[4;30;32m\]$ps1_user_host\[\e[00m\]\$(_jobs_nr_ps1)"
+if [ -z "$CYGWIN_ENV" ]; then
+    _jobs_nr_ps1() {
+        local jobs=$(jobs | wc -l)
+        [ $jobs -gt 0 ] && echo -e ":\e[0;31m$jobs\e[00m"
+    }
+    
+    ps1_user_host="$ps1_user_host\$(_jobs_nr_ps1)"
+fi
 
 if _have cpan; then
     export FTP_PASSIVE=1
