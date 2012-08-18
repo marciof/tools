@@ -119,13 +119,6 @@ export PYTHONDONTWRITEBYTECODE=x
 # Remove bright colors.
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
-# Dates in ISO 8601 format.
-if locale -a 2> /dev/null | grep '^en_DK' -q; then
-    export LC_TIME=en_DK.UTF-8
-else
-    _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
-fi
-
 ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
@@ -141,6 +134,13 @@ if [ -z "$CYGWIN_ENV" ]; then
 #!/bin/sh
 ssh-add < /dev/null 2> /dev/null
 SCRIPT
+    
+    # Dates in ISO 8601 format.
+    if locale -a 2> /dev/null | grep '^en_DK' -q; then
+        export LC_TIME=en_DK.UTF-8
+    else
+        _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
+    fi
     
     # Allow AltGr + Space to be interpreted as a regular blank space.
     if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
