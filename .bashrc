@@ -106,8 +106,6 @@ alias ...='c ../..'
 alias ....='c ../../..'
 alias .....='c ../../../..'
 
-_have ack-grep ack && alias f="$NAME --all --sort-files"
-_have dircolors && eval "$($NAME -b)"
 _have nano && export EDITOR=$LOCATION
 
 export ACK_COLOR_FILENAME='dark blue'
@@ -131,6 +129,8 @@ fi
 ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
+    _have ack-grep ack && alias f="$NAME --all --sort-files"
+    _have dircolors && eval "$($NAME -b)"
     _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
     _have lesspipe && eval "$($NAME)"
