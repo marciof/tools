@@ -63,19 +63,24 @@ _add_to_auto_start() {
 }
 
 if [ -n "$INTERACTIVE" ]; then
+    # Let the shell handle these.
+    stty erase undef
+    stty werase undef
+    
+    # Disable XON/XOFF flow control to allow: bind -q forward-search-history
+    stty -ixon
+    
     bind 'set bind-tty-special-chars Off'
     bind 'set completion-ignore-case On'
     bind 'set expand-tilde Off'
     bind 'set mark-symlinked-directories On'
     bind 'set visible-stats On'
+    
     bind '"\e[1;5C": forward-word'                  # Ctrl + Right
     bind '"\e[1;5D": backward-word'                 # Ctrl + Left
     bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
     bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
     bind '"\e[2~": backward-kill-word'              # Insert
-    
-    # Disable XON/XOFF flow control to allow: bind -q forward-search-history
-    stty -ixon
 fi
 
 shopt -s cdspell checkwinsize histappend
