@@ -17,12 +17,20 @@ if [ -n "$WINDIR" -a -z "$INTERACTIVE" ]; then
     fi
 fi
 
+_warn() {
+    [ -n "$INTERACTIVE" ] && echo "* $@" >&2
+}
+
 [ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
 
-if dpkg -p bash-completion > /dev/null 2>&1 || [ -e /etc/bash_completion ]; then
-    source /etc/bash_completion
+if [ -z "$CYGWIN_ENV" ]; then
+    if dpkg -p bash-completion > /dev/null 2>&1 || [ -e /etc/bash_completion ]; then
+        source /etc/bash_completion
+    else
+        _warn 'Missing: bash-completion'
+    fi
 else
-    [ -n "$INTERACTIVE" ] && echo "* Missing: bash-completion" >&2
+    _warn 'Disabled: bash-completion'
 fi
 
 # Disable tilde expansion only.
@@ -96,9 +104,8 @@ alias .....='c ../../../..'
 
 _have ack-grep ack && alias f="$NAME --all --sort-files"
 _have dircolors && eval "$($NAME -b)"
-_have kwrite gedit nano && export VISUAL=$LOCATION
 _have nano && export EDITOR=$LOCATION
-_have nodejs && export NODE_PATH=/usr/lib/node_modules
+[ -z "$CYGWIN_ENV" ] && _have kwrite gedit nano && export VISUAL=$LOCATION
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
