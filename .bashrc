@@ -63,6 +63,7 @@ _add_to_auto_start() {
 }
 
 if [ -n "$INTERACTIVE" ]; then
+    bind 'set bind-tty-special-chars Off'
     bind 'set completion-ignore-case On'
     bind 'set expand-tilde Off'
     bind 'set mark-symlinked-directories On'
@@ -71,7 +72,7 @@ if [ -n "$INTERACTIVE" ]; then
     bind '"\e[1;5D": backward-word'                 # Ctrl + Left
     bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
     bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
-    bind '"\e[2~": unix-word-rubout'                # Insert
+    bind '"\e[2~": backward-kill-word'              # Insert
     
     # Disable XON/XOFF flow control to allow: bind -q forward-search-history
     stty -ixon
