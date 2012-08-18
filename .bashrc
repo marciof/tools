@@ -254,6 +254,11 @@ if _have git; then
     
     _set_git_config push.default tracking
     
+    _set_git_config alias.pub '!bash -c '"'"'\
+        COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
+        && echo $COMMAND \
+        && $COMMAND'"'"
+    
     export GIT_EDITOR="$EDITOR"
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
