@@ -69,10 +69,6 @@ _add_to_auto_start() {
 }
 
 if [ -n "$INTERACTIVE" ]; then
-    # Let the shell handle these.
-    stty erase undef
-    stty werase undef
-    
     # Disable XON/XOFF flow control to allow: bind -q forward-search-history
     stty -ixon
     
