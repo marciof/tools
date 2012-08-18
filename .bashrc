@@ -48,7 +48,7 @@ _have() {
         fi
     done
     
-    [ -n "$INTERACTIVE" ] && echo "* Missing: $@" >&2
+    _warn "Missing: $@"
     return 1
 }
 
@@ -128,8 +128,7 @@ export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 if locale -a 2> /dev/null | grep '^en_DK' -q; then
     export LC_TIME=en_DK.UTF-8
 else
-    [ -n "$INTERACTIVE" ] \
-        && echo '* Select "en_DK.UTF-8": $ dpkg-reconfigure locales' >&2
+    _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
 fi
 
 ps1_user_host='\u@\h'
@@ -141,8 +140,7 @@ if [ -z "$CYGWIN_ENV" ]; then
     
     # Allow AltGr + Space to be interpreted as a regular blank space.
     if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
-        [ -n "$INTERACTIVE" ] \
-            && echo '* Install XKB data: $ apt-get install xkb-data' >&2
+        _warn 'Install XKB data: $ apt-get install xkb-data'
     fi
     
     if [ "$TERM" = "xterm" ]; then
@@ -155,7 +153,7 @@ if [ -z "$CYGWIN_ENV" ]; then
     if [ "$(stat --format=%i /)" != '2' ]; then
         ps1_user_host="($ps1_user_host)"
         export CHROOT=x
-        [ -n "$INTERACTIVE" ] && echo "* chroot: $(uname -srmo)"
+        _warn "chroot: $(uname -srmo)"
     fi
     
     if pgrep metacity > /dev/null; then
@@ -217,7 +215,7 @@ if _have git; then
         
         if ! git config --global "$option" > /dev/null; then
             if [ -z "$value" ]; then
-                [ -n "$INTERACTIVE" ] && echo "* Missing Git config: $option" >&2
+                _warn "Missing Git config: $option"
             else
                 git config --global "$option" "$value"
             fi
@@ -294,7 +292,7 @@ unset show_py
 
 for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
     source "$bashrc_child"
-    [ -n "$INTERACTIVE" ] && echo "* Loaded: $bashrc_child"
+    _warn "Loaded: $bashrc_child"
 done
 
 unset bashrc_child
