@@ -192,6 +192,8 @@ for media_url in media_urls:
     rtmp_url = Url(highest_rendition.xpath('src/text()')[0].strip())
     file_name = rtmp_url.path.components()[-1]
     
+    print('DUMP', rtmp_url)
+    
     commands.append(['rtmpdump',
         '--resume',
         '--flv', str(file_name),
