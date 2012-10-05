@@ -24,7 +24,7 @@ _warn() {
 [ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
 
 if [ -z "$CYGWIN_ENV" ]; then
-    if dpkg -p bash-completion > /dev/null 2>&1 || [ -e /etc/bash_completion ]; then
+    if [ -e /etc/bash_completion ]; then
         source /etc/bash_completion
     else
         _warn 'Missing: bash-completion'
