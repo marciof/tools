@@ -239,16 +239,16 @@ use Data::Printer {
     },
 };
 
-sub e {
+sub explain {
     Data::Printer::p($ARG[0]);
     return;
 }
 
-sub i {
+sub inspect {
     print Data::Dumper::Concise::Dumper(@ARG);
     return;
 }
 
-*explain = \&e;
-*inspect = \&i;
+*e = \&explain;
+*i = \&inspect;
 *set = \&Set::Object::set;
