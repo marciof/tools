@@ -26,6 +26,7 @@ _warn() {
 if [ -z "$CYGWIN_ENV" ]; then
     if [ -e /etc/bash_completion ]; then
         source /etc/bash_completion
+        complete -F _cd -o nospace c
     else
         _warn 'Missing: bash-completion'
     fi
@@ -88,7 +89,6 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c=cd
-complete -F _cd -o nospace c
 
 alias e='$VISUAL'
 alias j=jobs
