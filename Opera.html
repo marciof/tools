@@ -52,9 +52,10 @@ ul > li > a[class] {
 ul > li > a[class]:before {
     position: relative;
     margin-right: 8px;
+    top: 3px;
     
     background-color: ThreeDFace;
-    padding: 0 4px 0 4px;
+    padding: 6px 6px 0 4px;
     
     border-width: 1px;
     border-style: solid;
@@ -65,18 +66,8 @@ ul > li > a[class]:before {
     border-right-color: ThreeDShadow;
 }
 
-ul > li > a.Medium:before {
-    top: 6px;
-    padding-top: 12px;
-}
-
-ul > li > a.Small:before {
-    top: 3px;
-    padding-top: 6px;
-}
-
 ul > li > a.BypassLogin:before {
-    content: -o-skin("Mail Redirected");
+    content: -o-skin("Extender Right Arrow");
 }
 
 ul > li > a.ClosePage:before {
@@ -92,7 +83,7 @@ ul > li > a.EmptyCache:before {
 }
 
 ul > li > a.FakeEmail:before {
-    content: -o-skin("Mail Accounts Online");
+    content: -o-skin("Change nickname");
 }
 
 ul > li > a.Go:before {
@@ -104,7 +95,7 @@ ul > li > a.GoUp:before {
 }
 
 ul > li > a.MailAddress:before {
-    content: -o-skin("View Mail");
+    content: -o-skin("Account IMAP");
 }
 
 ul > li > a.ReadFeeds:before {
@@ -120,7 +111,7 @@ ul > li > a.TogglePlugins:before {
 }
 
 ul > li > a.Translate:before {
-    content: -o-skin("Mail Thread");
+    content: -o-skin("Account IRC");
 }
 
 ul > li > a.ValidateDocument:before {
@@ -151,20 +142,20 @@ ul > li > a.ValidateDocument:before {
   <body>
     <p>Buttons:</p>
     <ul class="Buttons">
-      <li><a class="BypassLogin Small" href="opera:/button/Go to page,%22javascript:void(window.open('http://bugmenot.com/view/' + encodeURI(location)))%22,,Bypass login,Mail Redirected">Bypass login</a></li>
-      <li><a class="ClosePage Small" href="opera:/button/Close page,,,,Pagebar Close Button Skin">Close page</a></li>
+      <li><a class="BypassLogin" href="opera:/button/Go to page,%22javascript:void(window.open('http://bugmenot.com/view/' + encodeURI(location)))%22,,Bypass login,Extender Right Arrow">Bypass login</a></li>
+      <li><a class="ClosePage" href="opera:/button/Close page,,,,Pagebar Close Button Skin">Close page</a></li>
       <!-- http://dev.opera.com/articles/view/opera-developer-tools#domsnapshot -->
-      <li><a class="DomSnapshot Small" href="opera:/button/Go%20to%20page,%22javascript%3A(function()%7Bvar%20ele%3Ddocument.documentElement.appendChild(document.createElementNS(%27http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%27%2C%27script%27))%3Bele.onload%20%3D%20function()%7Bthis.parentNode.removeChild(this)%3BliveSource.open()%3B%7D%3Bele.src%3D%27http%3A%2F%2Fdevfiles.myopera.com%2Farticles%2F59%2FliveSource.js%27%3B%7D)()%22,,,Window Document Unread Icon">DOM Snapshot</a></li>
-      <li><a class="EmptyCache Small" href="opera:/button/Clear disk cache,,,Empty cache,Show Trash">Empty cache</a></li>
-      <li><a class="FakeEmail Small" href="opera:/button/Go to page,%22javascript:(function() {var c = 'abcdefghijklmnopqrstuvwxyz', l = 14, u = ''; while (l-- >= 0) u += c[Math.floor(Math.random() * (c.length - 1))]; window.open('http://www.mailinator.com/maildir.jsp?email=' + u)})()%22,,Fake e-mail,Mail Accounts Online">Fake e-mail</a></li>
-      <li><a class="GoUp Small" href="opera:/button/Go to parent directory,,,Go up,Parent folder">Go up</a></li>
-      <li><a class="MailAddress Small" href="opera:/button/Send document address in mail,,,Mail address,View Mail">Mail address</a></li>
-      <li><a class="ReadFeeds Small" href="opera:/button/Read Mail,%22rss%22,,%22Read feeds%22, %22RSS%22">Read feeds</a></li>
-      <li><a class="TogglePlugins Small" href="opera:/button/Enable plugins,,,,Mail Attachments|Disable plugins,,,,">Toggle plug-ins</a></li>
-      <li><a class="Translate Small" href="opera:/button/Go to page,%22javascript:(function()%7Bif('javascript%3A'%3D%3Dlocation.protocol)location.replace('http%3A%2F%2Ftranslate.google.com%2F')%3Belse%7Bvar%20a%3Dwindow.getSelection().toString().replace(%2F%5E%5B%5Cs%5D%2B%5Cn%2Fgm%2C'')%3Bwindow.open('http%3A%2F%2Ftranslate.google.com%2F'%2B(0%3D%3Da.length%3F'translate%3Fsl%3Dauto%26tl%3Den%26u%3D'%2BencodeURIComponent(location)%3A'%23auto%7Cen%7C'%2BencodeURIComponent(a)))%7D%7D)()%22,,Translate,Mail Thread">Translate</a></li>
-      <li><a class="ValidateDocument Small" href="opera:/button/Validate document source,,,,Expand Enabled">Validate document</a></li>
-      <li><a class="Go Medium" href="opera:/button/Go + Show popup menu, %22Internal Bookmark Folder%22,,,,Group">Go + Bookmarks</a></li>
-      <li><a class="ReadMail Medium" href="opera:/button/Read Mail &amp; Get mail + Show popup menu, %22Internal Access Points%22, Mail">Read mail</a></li>
+      <li><a class="DomSnapshot" href="opera:/button/Go%20to%20page,%22javascript%3A(function()%7Bvar%20ele%3Ddocument.documentElement.appendChild(document.createElementNS(%27http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%27%2C%27script%27))%3Bele.onload%20%3D%20function()%7Bthis.parentNode.removeChild(this)%3BliveSource.open()%3B%7D%3Bele.src%3D%27http%3A%2F%2Fdevfiles.myopera.com%2Farticles%2F59%2FliveSource.js%27%3B%7D)()%22,,,Window Document Unread Icon">DOM Snapshot</a></li>
+      <li><a class="EmptyCache" href="opera:/button/Clear disk cache,,,Empty cache,Show Trash">Empty cache</a></li>
+      <li><a class="FakeEmail" href="opera:/button/Go to page,%22javascript:(function() {var c = 'abcdefghijklmnopqrstuvwxyz', l = 14, u = ''; while (l-- >= 0) u += c[Math.floor(Math.random() * (c.length - 1))]; window.open('http://www.mailinator.com/maildir.jsp?email=' + u)})()%22,,Fake e-mail,Change nickname">Fake e-mail</a></li>
+      <li><a class="GoUp" href="opera:/button/Go to parent directory,,,Go up,Parent folder">Go up</a></li>
+      <li><a class="MailAddress" href="opera:/button/Send document address in mail,,,Mail address,Account IMAP">Mail address</a></li>
+      <li><a class="ReadFeeds" href="opera:/button/Read Mail,%22rss%22,,%22Read feeds%22, %22RSS%22">Read feeds</a></li>
+      <li><a class="TogglePlugins" href="opera:/button/Enable plugins,,,,Mail Attachments|Disable plugins,,,,">Toggle plug-ins</a></li>
+      <li><a class="Translate" href="opera:/button/Go to page,%22javascript:(function()%7Bif('javascript%3A'%3D%3Dlocation.protocol)location.replace('http%3A%2F%2Ftranslate.google.com%2F')%3Belse%7Bvar%20a%3Dwindow.getSelection().toString().replace(%2F%5E%5B%5Cs%5D%2B%5Cn%2Fgm%2C'')%3Bwindow.open('http%3A%2F%2Ftranslate.google.com%2F'%2B(0%3D%3Da.length%3F'translate%3Fsl%3Dauto%26tl%3Den%26u%3D'%2BencodeURIComponent(location)%3A'%23auto%7Cen%7C'%2BencodeURIComponent(a)))%7D%7D)()%22,,Translate,Account IRC">Translate</a></li>
+      <li><a class="ValidateDocument" href="opera:/button/Validate document source,,,,Expand Enabled">Validate document</a></li>
+      <li><a class="Go" href="opera:/button/Go + Show popup menu, %22Internal Bookmark Folder%22,,,,Group">Go + Bookmarks</a></li>
+      <li><a class="ReadMail" href="opera:/button/Read Mail &amp; Get mail + Show popup menu, %22Internal Access Points%22, Mail">Read mail</a></li>
     </ul>
     
     <p>Preferences:</p>
