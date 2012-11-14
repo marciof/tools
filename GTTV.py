@@ -8,7 +8,7 @@
 
 
 # Standard:
-import email, subprocess, sys, urllib.parse, urllib.request
+import email, subprocess, re, sys, urllib.parse, urllib.request
 
 # External:
 import chardet, fixes, lxml.etree, lxml.html, unipath
@@ -157,6 +157,20 @@ class Url:
     def __str__(self):
         return urllib.parse.urlunparse(self.__components)
 
+
+help = subprocess.check_output(['rtmpdump', '--help'],
+    stderr = subprocess.STDOUT,
+    universal_newlines = True)
+
+version = re.search(r'v(\d).(\d)', help)
+
+if not version:
+    sys.exit('Unknown RTMPDump version.')
+
+version = tuple(map(int, version.group(1, 2)))
+
+if version < (2, 4):
+    sys.exit('Outdated RTMPDump version: 2.4 or greater required')
 
 page_url = Url(sys.argv[1])
 page_html = page_url.read(parser = 'html')
