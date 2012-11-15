@@ -103,6 +103,7 @@ alias ....='c ../../..'
 alias .....='c ../../../..'
 
 _have nano && export EDITOR=$LOCATION
+_have node && export PATH="$PATH:node_modules/.bin"
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
