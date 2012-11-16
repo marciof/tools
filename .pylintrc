@@ -2,7 +2,7 @@
 disable=
 
 [REPORTS]
-output-format=colorized
+output-format=text
 include-ids=yes
 reports=no
 
