@@ -4,11 +4,12 @@
 
 # TODO: Set default source code file encoding to UTF-8.
 # TODO: Import default __future__ features.
-# TODO: Use final fix for issue 1441530.
+# TODO: Use final fix for issue nr 1441530.
 
 
-# Standard:
-from __future__ import division, print_function, unicode_literals
+from __future__ \
+    import absolute_import, division, print_function, unicode_literals
+
 import email.feedparser, email.parser, imaplib
 
 
