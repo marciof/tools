@@ -18,14 +18,14 @@ __doc__ = 'Sets some defaults and implements important fixes.'
 __version__ = '2011-07-21'
 
 
-def fix(object, version, name = None, call = False):
+def fix(obj, version, name = None, call = False):
     def apply_fix(value):
         import sys
         
         if sys.hexversion <= version:
-            setattr(object,
+            setattr(obj,
                 value.__name__ if name is None else name,
-                value(object) if call else value)
+                value(obj) if call else value)
         
         return value
     
@@ -61,7 +61,7 @@ except ImportError:
 try:
     import ConfigParser
     
-    @fix(ConfigParser.SafeConfigParser, 0x20602F0, '_badpercent_re', call = True)
+    @fix(ConfigParser.SafeConfigParser, 0x20602F0, '_badpercent_re', call=True)
     class CheckBadPercent (object):
         '''
         Fixes the regular expression that checks for invalid percent interpolations.
@@ -121,7 +121,7 @@ class IMAP4_SSL (imaplib.IMAP4_SSL):
     def readline(self):
         import cStringIO
         data_buffer = cStringIO.StringIO()
-        char = '\0'
+        char = r'\0'
         
         while (char != '\n') and (char != ''):
             char = self.ssl().read(1)
