@@ -1,0 +1,20 @@
+Features:
+- pager: terminal size detection
+- view files: encoding detection, binary files (archives, images), URL's, syntax highlighting, syntax formatting
+- compare files: Git support
+- file monitoring: `tail`, Linux inotify
+- list directories: `ls`
+- find files: `find`
+- search files: `ack-grep`
+- view documentation: man pages, Perl, Python
+- good defaults + optional commands
+
+Requirements:
+- Linux support + Windows support (optional)
+- fast: 0 sec startup time, native like when replacing compiled code tools
+
+Plan:
+- library abstraction
+- tests
+- checks (Pylint, PEP8)
+- profiling
