@@ -12,6 +12,7 @@ Features:
 Requirements:
 - Linux support + Windows support (optional)
 - fast: 0 sec startup time, native like when replacing compiled code tools
+- compilable with Cython or another tool for performance
 
 Plan:
 - library abstraction
