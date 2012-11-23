@@ -19,4 +19,9 @@ Plan:
 - tests
 - checks (Pylint, PEP8)
 - profiling
-- packaging
+- packaging: note down dependencies
+
+Dependencies:
+- Run-time:
+  - perl-doc: to view Perl documentation
+  - pydoc: to view Python documentation
