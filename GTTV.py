@@ -11,7 +11,7 @@
 import email, subprocess, re, sys, urllib.parse, urllib.request
 
 # External:
-import chardet, fixes, lxml.etree, lxml.html, unipath
+import chardet, lxml.etree, lxml.html, unipath
 
 
 class Url:
