@@ -12,7 +12,6 @@ class Options:
         # argparse isn't used for performance.
         import getopt
         
-        # No long options available for performance.
         (options, arguments) = getopt.getopt(argv[1:], 'h')
         
         for option, value in options:

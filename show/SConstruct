@@ -1,3 +1,7 @@
-env = Environment(tools = ['default', 'pep8'])
+env = Environment(tools = ['default', 'pep8', 'pylint'])
 env.Default(None)
-env.Alias('check', env.Pep8(source = env.Glob('*.py')))
+
+env.Pep8('pep8', env.Glob('*.py'))
+env.Pylint('pylint', env.Glob('*.py'))
+
+env.Alias('check', ['pep8', 'pylint'])
