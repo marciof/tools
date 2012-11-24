@@ -38,3 +38,4 @@ Dependencies:
 
 To do:
 - Extract python-config to a SCons tool
+- Correct Windows errors
