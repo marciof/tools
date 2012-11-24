@@ -2,6 +2,11 @@
 # -*- coding: UTF-8 -*-
 
 
+"""
+Universal viewer.
+"""
+
+
 # Standard:
 from __future__ import unicode_literals
 import sys
@@ -16,7 +21,7 @@ class Options:
         
         for option, value in options:
             if option == '-h':
-                print 'Pager'
+                print 'Universal viewer.'
                 return False
 
 
