@@ -17,7 +17,6 @@ Requirements:
 Plan:
 - library abstraction
 - tests
-- checks (Pylint, PEP8)
 - profiling
 - packaging: note down dependencies
 - documentation

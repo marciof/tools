@@ -1,12 +1,12 @@
 # -*- coding: UTF-8 -*-
 
 
-PROGRAM_NAME = 'pep8'
+PROGRAM = 'pep8'
 
 
 def exists(env):
-    return env.Detect(PROGRAM_NAME)
+    return env.Detect(PROGRAM)
 
 
 def generate(env):
-    env.Append(BUILDERS = {'Pep8': env.Builder(action = [[PROGRAM_NAME, '$SOURCES']])})
+    env.Append(BUILDERS = {PROGRAM.title(): env.Builder(action = [[PROGRAM, '$SOURCES']])})
