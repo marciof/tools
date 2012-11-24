@@ -20,6 +20,7 @@ Plan:
 - checks (Pylint, PEP8)
 - profiling
 - packaging: note down dependencies
+- documentation
 
 Dependencies:
 - Run-time:
