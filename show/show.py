@@ -14,13 +14,14 @@ import sys
 
 class Options:
     def parse(self, argv):
-        # argparse isn't used for performance.
+        # argparse is slower.
         import getopt
         
         (options, arguments) = getopt.getopt(argv[1:], 'h')
         
         for option, value in options:
             if option == '-h':
+                # Cython doesn't support docstrings: sys.modules[__name__].__doc__.strip()
                 print 'Universal viewer.'
                 return False
 
