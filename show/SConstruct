@@ -1,0 +1,3 @@
+env = Environment(tools = ['default', 'pep8'])
+env.Default(None)
+env.Alias('check', env.Pep8(source = env.Glob('*.py')))
