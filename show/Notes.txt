@@ -35,3 +35,6 @@ Dependencies:
 - Development:
   - pep8
   - pylint
+
+To do:
+- Extract python-config to a SCons tool

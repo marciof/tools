@@ -4,9 +4,11 @@
 PROGRAM = 'pylint'
 
 
-def build(env, target, source, config = ''):
-    command = [PROGRAM, '--rcfile=' + config] + map(str, source)
-    return env.AlwaysBuild(env.Alias(target, action = env.Action([command])))
+def build(env, target, source, config_file = ''):
+    command = [PROGRAM, '--rcfile=' + config_file] + map(str, source)
+    
+    return env.AlwaysBuild(env.Alias(target,
+        action = env.Action([command], source = source)))
 
 
 def exists(env):
