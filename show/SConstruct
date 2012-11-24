@@ -1,7 +1,7 @@
-env = Environment(tools = ['default', 'pep8', 'pylint'])
-env.Default(None)
+env = Environment(tools = ['default', 'cython', 'pep8', 'pylint'])
 
 env.Pep8('pep8', env.Glob('*.py'))
 env.Pylint('pylint', env.Glob('*.py'), '.pylintrc')
-
 env.Alias('check', ['pep8', 'pylint'])
+
+env.Cython('show.c', env.Glob('*.py'), is_standalone = True)

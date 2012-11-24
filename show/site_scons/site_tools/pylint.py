@@ -6,7 +6,7 @@ PROGRAM = 'pylint'
 
 def build(env, target, source, config = ''):
     command = [PROGRAM, '--rcfile=' + config] + map(str, source)
-    return [env.AlwaysBuild(env.Alias(target, action = env.Action([command])))]
+    return env.AlwaysBuild(env.Alias(target, action = env.Action([command])))
 
 
 def exists(env):
