@@ -24,5 +24,11 @@ Plan:
 
 Dependencies:
 - Run-time:
+  - Python: >= 2.7, < 3
   - perl-doc: to view Perl documentation
   - pydoc: to view Python documentation
+- Build:
+  - SCons
+- Development:
+  - pep8
+  - pylint

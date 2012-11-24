@@ -7,7 +7,7 @@ include-ids=yes
 reports=no
 
 [TYPECHECK]
-generated-members=REQUEST,acl_users,aq_parent,objects
+generated-members=REQUEST,acl_users,aq_parent
 
 [MISCELLANEOUS]
 notes=FIXME,XXX
