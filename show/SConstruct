@@ -1,11 +1,21 @@
+# -*- coding: UTF-8 -*-
+
+
+# Standard:
+import os.path
+
+
 env = Environment(tools = ['default', 'cython', 'pep8', 'pylint'])
 src_files = env.Glob('*.py')
 
 env.Alias('check', [
     env.Pep8('pep8', src_files),
-    env.Pylint('pylint', src_files, config_file = '.pylintrc')])
+    env.Pylint('pylint', src_files,
+        config_file = os.path.join('config', '.pylintrc'))])
 
 env.Alias('compile',
-    env.Cython('show.c', src_files, is_standalone = True, do_compile = True))
+    env.Cython('show.c', src_files,
+        is_standalone = True,
+        do_compilation = True))
 
 env.Default('compile')
