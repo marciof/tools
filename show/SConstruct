@@ -11,9 +11,9 @@ src_files = env.Glob('*.py')
 
 env.Alias('check', [
     env.Pep8('pep8', src_files,
-        config_file = os.path.join(conf_dir, '.pep8')),
+        config_file = os.path.join(conf_dir, 'pep8')),
     env.Pylint('pylint', src_files,
-        config_file = os.path.join(conf_dir, '.pylintrc'))])
+        config_file = os.path.join(conf_dir, 'pylint'))])
 
 env.Alias('compile',
     env.Cython('show.c', src_files,

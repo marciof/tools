@@ -4,7 +4,7 @@
 PROGRAM = 'cython'
 
 
-def build(env, target, source, is_standalone = True, do_compilation = False):
+def build(env, target, source, is_standalone = False, do_compilation = False):
     embed = ['--embed'] if is_standalone else []
     
     command = env.Command(target, source,
