@@ -6,6 +6,6 @@ env.Alias('check', [
     env.Pylint('pylint', src_files, config_file = '.pylintrc')])
 
 env.Alias('compile',
-    env.Cython('show.c', src_files, is_standalone = True, do_compilation = True))
+    env.Cython('show.c', src_files, is_standalone = True, do_compile = True))
 
 env.Default('compile')

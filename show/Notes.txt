@@ -1,6 +1,6 @@
 Features:
 - pager: terminal size detection
-- view files: plug-in based (Git commits), encoding detection, binary files (archives, images), URL's, output transformation (syntax highlighting, syntax formatting, stop-if-slow, etc)
+- view files: plug-in based (Git commits), encoding detection, binary files (archives, images), URL's, output transformation (syntax highlighting, syntax formatting, stop-if-slow, etc), case insensitive if not ambiguous
 - compare files: Git support
 - file monitoring: `tail`, Linux inotify
 - list directories: `ls`

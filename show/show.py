@@ -21,7 +21,8 @@ class Options:
         
         for option, value in options:
             if option == '-h':
-                # Cython doesn't support docstrings: sys.modules[__name__].__doc__.strip()
+                # Cython doesn't support docstrings.
+                # sys.modules[__name__].__doc__.strip()
                 print 'Universal viewer.'
                 return False
 

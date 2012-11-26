@@ -4,13 +4,13 @@
 PROGRAM = 'cython'
 
 
-def build(env, target, source, is_standalone = True, do_compilation = False):
-    embed_option = ['--embed'] if is_standalone else []
+def build(env, target, source, is_standalone = True, do_compile = False):
+    embed = ['--embed'] if is_standalone else []
     
     command = env.Command(target, source,
-        [[PROGRAM, '--output-file', str(target)] + embed_option + map(str, source)])
+        [[PROGRAM, '--output-file', str(target)] + embed + map(str, source)])
     
-    if do_compilation:
+    if do_compile:
         env.ParseConfig(['python-config', '--cflags', '--libs'])
         return env.Program(target)
     else:

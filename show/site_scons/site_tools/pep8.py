@@ -9,4 +9,6 @@ def exists(env):
 
 
 def generate(env):
-    env.Append(BUILDERS = {PROGRAM.title(): env.Builder(action = [[PROGRAM, '$SOURCES']])})
+    env.Append(BUILDERS = {
+        PROGRAM.title(): env.Builder(action = [[PROGRAM, '$SOURCES']])
+    })
