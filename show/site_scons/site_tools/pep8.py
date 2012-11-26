@@ -4,11 +4,16 @@
 PROGRAM = 'pep8'
 
 
+def build(env, target, source, config_file = ''):
+    command = [PROGRAM, '--config=' + config_file] + map(str, source)
+
+    return env.AlwaysBuild(env.Alias(target,
+        action = env.Action([command], source = source)))
+
+
 def exists(env):
     return env.Detect(PROGRAM)
 
 
 def generate(env):
-    env.Append(BUILDERS = {
-        PROGRAM.title(): env.Builder(action = [[PROGRAM, '$SOURCES']])
-    })
+    env.AddMethod(build, PROGRAM.title())
