@@ -19,7 +19,8 @@ Plan:
 - tests
 - profiling
 - packaging: note down dependencies
-- documentation
+- documentation: sphinx-build -c config/ -b html . Documentation
+- continuous integration: https://travis-ci.org/
 
 Dependencies:
 - Run-time:
@@ -27,11 +28,13 @@ Dependencies:
   - perl-doc: to view Perl documentation
   - pydoc: to view Python documentation
 - Build:
-  - SCons
-  - Cython
-    - python-dev
-    - python-config
-    - compiler (gcc)
+  - all: SCons
+  - documentation: Sphinx
+  - executable:
+    - Cython
+      - python-dev
+      - python-config
+      - compiler (gcc)
 - Development:
   - pep8
   - pylint
