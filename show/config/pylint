@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=W0232
+disable=W0232,R0904
 
 [REPORTS]
 output-format=text
