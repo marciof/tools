@@ -7,26 +7,29 @@ Universal viewer.
 """
 
 
-# Standard:
-from __future__ import unicode_literals
-import sys
+# No imports here, modules are loaded as needed for performance.
 
 
 class Options:
-    def parse(self, argv):
+    @classmethod
+    def from_argv(cls, argv):
         # argparse is slower.
-        import getopt
+        import getopt # standard
         
-        (options, arguments) = getopt.getopt(argv[1:], 'h')
+        (options, _) = getopt.getopt(argv[1:], 'h')
         
-        for option, value in options:
+        for option, _ in options:
             if option == '-h':
-                # Cython doesn't support docstrings.
+                # Cython doesn't support docstrings:
                 # sys.modules[__name__].__doc__.strip()
                 print 'Universal viewer.'
-                return False
+                return None
+        
+        return None
 
 
 if __name__ == '__main__':
-    if not Options().parse(sys.argv):
+    import sys # standard
+    
+    if not Options.from_argv(sys.argv):
         sys.exit()
