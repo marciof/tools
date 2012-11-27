@@ -7,6 +7,9 @@ PROGRAM = 'cython'
 def build(env, target, source, is_standalone = False, do_compilation = False):
     embed = ['--embed'] if is_standalone else []
     
+    if not isinstance(source, list):
+        source = [source]
+    
     command = env.Command(target, source,
         [[PROGRAM, '--output-file', str(target)] + embed + map(str, source)])
     

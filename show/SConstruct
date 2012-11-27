@@ -16,7 +16,7 @@ env.Alias('check', [
         config_file = os.path.join(conf_dir, 'pylint'))])
 
 env.Alias('compile',
-    env.Cython('show.c', src_files,
+    env.Cython('show.c', 'show.py',
         is_standalone = True,
         do_compilation = True))
 
