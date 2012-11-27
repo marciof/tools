@@ -18,7 +18,7 @@ Plan:
 - library abstraction
 - tests
 - profiling
-- coverage
+- coverage: code, documentation
 - packaging
 - documentation 
 - continuous integration
@@ -40,7 +40,6 @@ Dependencies:
   - pylint
 
 To do:
-- unittest SCons tool: python -m unittest discover
 - Sphinx SCons tool: sphinx-build -c config/ -b html . Documentation
 - python-config SCons tool
 - Correct Windows errors

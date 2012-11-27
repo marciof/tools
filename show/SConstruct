@@ -5,7 +5,7 @@
 import os.path
 
 
-env = Environment(tools = ['default', 'cython', 'pep8', 'pylint'])
+env = Environment(tools = ['default', 'cython', 'pep8', 'pylint', 'unittest'])
 conf_dir = 'config'
 src_files = env.Glob('*.py')
 
@@ -19,5 +19,7 @@ env.Alias('compile',
     env.Cython('show.c', 'show.py',
         is_standalone = True,
         do_compilation = True))
+
+env.Alias('test', env.UnitTest('unit-test', env.Glob('test*.py')))
 
 env.Default('compile')
