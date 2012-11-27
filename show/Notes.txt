@@ -10,17 +10,18 @@ Features:
 - good defaults + optional commands
 
 Requirements:
-- Linux support + Windows support (optional)
-- fast: 0 sec startup time, native fast when replacing compiled code tools, native tools fallback (source-highlight vs Pygments)
-- compilable with Cython or another tool for performance
+- Linux/Windows support
+- fast: ~0 sec startup time, native-like fast
+- extensible
 
 Plan:
 - library abstraction
 - tests
 - profiling
-- packaging: note down dependencies
-- documentation: sphinx-build -c config/ -b html . Documentation
-- continuous integration: https://travis-ci.org/
+- coverage
+- packaging
+- documentation 
+- continuous integration
 
 Dependencies:
 - Run-time:
@@ -33,12 +34,15 @@ Dependencies:
   - executable:
     - Cython
       - python-dev
-      - python-config
       - compiler (gcc)
 - Development:
   - pep8
   - pylint
 
 To do:
-- Extract python-config to a SCons tool
+- unittest SCons tool: python -m unittest discover
+- Sphinx SCons tool: sphinx-build -c config/ -b html . Documentation
+- python-config SCons tool
 - Correct Windows errors
+- Setup CI https://travis-ci.org/
+- Replace hardcoded config path with unambiguous file find
