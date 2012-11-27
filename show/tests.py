@@ -4,7 +4,8 @@
 
 # Standard:
 from __future__ import division, print_function, unicode_literals
-import getopt, unittest
+import getopt
+import unittest
 
 # Internal:
 import show as lib
