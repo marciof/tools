@@ -89,7 +89,6 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c=cd
-
 alias e='$VISUAL'
 alias j=jobs
 alias l='ls -CFXh --color=auto --group-directories-first'
@@ -103,7 +102,6 @@ alias ....='c ../../..'
 alias .....='c ../../../..'
 
 _have nano && export EDITOR=$LOCATION
-_have node && export PATH="$PATH:node_modules/.bin"
 
 export ACK_COLOR_FILENAME='dark blue'
 export ACK_COLOR_LINENO='dark yellow'
@@ -111,6 +109,7 @@ export BUSTER_TEST_OPT='-C dim'
 export HARNESS_COLOR=1
 export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
+export PATH="$PATH:node_modules/.bin"
 export PYTHONDONTWRITEBYTECODE=x
 
 # Remove bright colors.
