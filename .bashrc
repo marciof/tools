@@ -231,9 +231,12 @@ if _have git; then
     alias g=$NAME
     complete -o bashdefault -o default -o nospace -F _git g
     
-    _git_ps1() {
+    _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo -e ":$Yellow$ps1$Color_Off"
+        
+        if [ -n "$ps1" ]; then
+            echo -e ":$Yellow$(echo "$ps1" | sed 's/^master( |$)//')$Color_Off"
+        fi
     }
     
     _set_git_config() {
@@ -270,7 +273,7 @@ if _have git; then
     export GIT_PS1_SHOWUNTRACKEDFILES=x
     
     if [ -z "$CYGWIN_ENV" -a "$(type -t __git_ps1)" = 'function' ]; then
-        ps1_user_host="$ps1_user_host\$(_git_ps1)"
+        ps1_user_host="$ps1_user_host\$(_color_git_ps1)"
     fi
 fi
 
