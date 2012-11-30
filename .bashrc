@@ -195,7 +195,7 @@ else
     fi
 fi
 
-ps1_user_host="$UGreen$ps1_user_host$Color_Off"
+ps1_user_host="\[$UGreen\]$ps1_user_host\[$Color_Off\]"
 
 if [ -z "$CYGWIN_ENV" ]; then
     _jobs_nr_ps1() {
@@ -285,7 +285,7 @@ if [ -z "$CYGWIN_ENV" ]; then
     ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
 fi
 
-export PS1="$ps1_user_host:$BBlue\w\n\\$ $Color_Off"
+export PS1="$ps1_user_host:\[$BBlue\]\w\n\\$\[$Color_Off\] "
 unset ps1_user_host
 
 nano_rc=~/.nanorc
