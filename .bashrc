@@ -111,9 +111,18 @@ export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
 export PATH="$PATH:node_modules/.bin"
 export PYTHONDONTWRITEBYTECODE=x
+export VIRTUAL_ENV_DISABLE_PROMPT=x
 
 # Remove bright colors.
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
+
+# https://wiki.archlinux.org/index.php/Color_Bash_Prompt
+Color_Off='\e[0m'
+Yellow='\e[0;33m'
+Purple='\e[0;35m'
+BRed='\e[1;31m'
+BBlue='\e[1;34m'
+UGreen='\e[4;32m'
 
 ps1_user_host='\u@\h'
 
@@ -186,12 +195,12 @@ else
     fi
 fi
 
-ps1_user_host="\[\e[4;30;32m\]$ps1_user_host\[\e[00m\]"
+ps1_user_host="$UGreen$ps1_user_host$Color_Off"
 
 if [ -z "$CYGWIN_ENV" ]; then
     _jobs_nr_ps1() {
         local jobs=$(jobs | wc -l)
-        [ $jobs -gt 0 ] && echo -e ":\e[0;31m$jobs\e[00m"
+        [ $jobs -gt 0 ] && echo -e ":$BRed$jobs$Color_Off"
     }
     
     ps1_user_host="$ps1_user_host\$(_jobs_nr_ps1)"
@@ -222,9 +231,9 @@ if _have git; then
     alias g=$NAME
     complete -o bashdefault -o default -o nospace -F _git g
     
-    _color_git_ps1() {
+    _git_ps1() {
         local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo -e ":\e[0;33m$ps1\e[00m"
+        [ -n "$ps1" ] && echo -e ":$Yellow$ps1$Color_Off"
     }
     
     _set_git_config() {
@@ -261,11 +270,19 @@ if _have git; then
     export GIT_PS1_SHOWUNTRACKEDFILES=x
     
     if [ -z "$CYGWIN_ENV" -a "$(type -t __git_ps1)" = 'function' ]; then
-        ps1_user_host="$ps1_user_host\$(_color_git_ps1)"
+        ps1_user_host="$ps1_user_host\$(_git_ps1)"
     fi
 fi
 
-export PS1="$ps1_user_host:\[\e[01;34m\]\w\n\\$\[\e[00m\] "
+if [ -z "$CYGWIN_ENV" ]; then
+    _virtual_env_ps1() {
+        [ -n "$VIRTUAL_ENV" ] && echo -e ":$Purple$(basename $VIRTUAL_ENV)$Color_Off"
+    }
+    
+    ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
+fi
+
+export PS1="$ps1_user_host:$BBlue\w\n\\$ $Color_Off"
 unset ps1_user_host
 
 nano_rc=~/.nanorc
