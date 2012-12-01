@@ -170,7 +170,7 @@ if not version:
 version = tuple(map(int, version.group(1, 2)))
 
 if version < (2, 4):
-    sys.exit('Outdated RTMPDump version: 2.4 or greater required')
+    sys.exit('Outdated RTMPDump: version 2.4 or greater required')
 
 page_url = Url(sys.argv[1])
 page_html = page_url.read(parser = 'html')
