@@ -3,6 +3,7 @@
 
 
 # Standard:
+import socket
 import Tkinter
 import tkMessageBox
 from urllib import urlencode
@@ -16,18 +17,23 @@ ADMIN_PASSWORD = 'admin'
 
 Tkinter.Tk().wm_withdraw()
 
-if tkMessageBox.askyesno(TITLE, 'Start rescan?'):
-    try:
-        urlopen(ADMIN_URL + '/cgi-bin/login.cgi', data = urlencode({
-            'AdPassword': ADMIN_PASSWORD,
-        }))
-        
-        urlopen(ADMIN_URL + '/cgi-bin/usb_modem.cgi', data = urlencode({
-            'rescan': '1',
-        }))
-    except BaseException:
-        tkMessageBox.showerror(TITLE, 'Rescan error.')
-    else:
-        tkMessageBox.showinfo(TITLE, 'Rescan started.')
-    finally:
-        urlopen(ADMIN_URL + '/cgi-bin/logout.cgi', data = urlencode({}))
+try:
+    socket.gethostbyname('www.vodafone.com')
+except socket.error:
+    if tkMessageBox.askyesno(TITLE, 'Start rescan?'):
+        try:
+            urlopen(ADMIN_URL + '/cgi-bin/login.cgi', data = urlencode({
+                'AdPassword': ADMIN_PASSWORD,
+            }))
+            
+            urlopen(ADMIN_URL + '/cgi-bin/usb_modem.cgi', data = urlencode({
+                'rescan': '1',
+            }))
+        except BaseException:
+            tkMessageBox.showerror(TITLE, 'Rescan error.')
+        else:
+            tkMessageBox.showinfo(TITLE, 'Rescan started.')
+        finally:
+            urlopen(ADMIN_URL + '/cgi-bin/logout.cgi', data = urlencode({}))
+else:
+    tkMessageBox.showinfo(TITLE, 'Status ok.')
