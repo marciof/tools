@@ -135,6 +135,12 @@ if [ -z "$CYGWIN_ENV" ]; then
     
     [ -z "$DISPLAY" ] && export DISPLAY=:0.0
     
+    [ -z "$JAVA_HOME" ] && _have javac && \
+        export JAVA_HOME=$(dirname $(dirname $(readlink -e $(which javac))))
+    
+    [ -z "$JRE_HOME" ] && _have java && \
+        export JRE_HOME=$(dirname $(dirname $(readlink -e $(which java))))
+    
     _add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
 #!/bin/sh
 ssh-add < /dev/null 2> /dev/null
