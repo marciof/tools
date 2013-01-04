@@ -147,7 +147,7 @@ ssh-add < /dev/null 2> /dev/null
 SCRIPT
     
     # Dates in ISO 8601 format.
-    if locale -a 2> /dev/null | grep '^en_DK' -q; then
+    if locale -a 2> /dev/null | grep -q '^en_DK'; then
         export LC_TIME=en_DK.UTF-8
     else
         _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
@@ -156,6 +156,12 @@ SCRIPT
     # Allow AltGr + Space to be interpreted as a regular blank space.
     if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
         _warn 'Install XKB data: $ apt-get install xkb-data'
+    fi
+    
+    if _have mysql && grep -q '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
+        _warn 'Non-strict MySQL: $ $EDITOR /etc/mysql/conf.d/strict-mode.cnf'
+        _warn '    [mysqld]'
+        _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
     fi
     
     if [ "$TERM" = "xterm" ]; then
