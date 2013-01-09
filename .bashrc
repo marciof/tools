@@ -158,7 +158,7 @@ SCRIPT
         _warn 'Install XKB data: $ apt-get install xkb-data'
     fi
     
-    if _have mysql && grep -q '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
+    if _have mysql && grep -s -q '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
         _warn 'Non-strict MySQL: $ $EDITOR /etc/mysql/conf.d/strict-mode.cnf'
         _warn '    [mysqld]'
         _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
