@@ -158,7 +158,7 @@ SCRIPT
         _warn 'Install XKB data: $ apt-get install xkb-data'
     fi
     
-    if _have mysql && grep -s -q '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
+    if _have mysql && grep -q -s '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
         _warn 'Non-strict MySQL: $ $EDITOR /etc/mysql/conf.d/strict-mode.cnf'
         _warn '    [mysqld]'
         _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
@@ -332,6 +332,49 @@ _in_scm() {
 
 _in_svn() {
     svn info > /dev/null 2>&1
+}
+
+mkchroot() {
+    local dist=squeeze
+    local chroot_dir="/var/chroot/$dist"
+    local debian_sys_url=http://ftp.debian.org/debian/
+
+    local sudoers_file=/etc/sudoers
+    local no_pwd_entry="$(whoami) ALL=NOPASSWD: $(which chroot)"
+
+    local fs_file=/etc/fstab
+    local home_mount="/home $chroot_dir/home none bind,auto 0 0"
+    local tmp_mount="/tmp $chroot_dir/tmp none bind,auto 0 0"
+    local devpts_mount="devpts $chroot_dir/dev/pts devpts defaults 0 0"
+
+    if ! sudo fgrep -q "$no_pwd_entry" "$sudoers_file"; then
+        echo '* Adding sudoers entry for password-less chroot.'
+        sudo su -c "echo -e '\n$no_pwd_entry' >> '$sudoers_file'"
+    fi
+
+    sudo apt-get install -y debootstrap
+    sudo mkdir -p -v "$chroot_dir"
+
+    if [ ! -d "$chroot_dir/debootstrap" ]; then
+        sudo debootstrap --keep-debootstrap-dir \
+            "$dist" "$chroot_dir" "$debian_sys_url"
+    fi
+
+    for mount in "$home_mount" "$tmp_mount" "$devpts_mount"; do
+        if ! fgrep -q "$mount" "$fs_file"; then
+            echo "* Adding fstab entry for mount point: $mount"
+            sudo su -c "echo -e '\n$mount' >> '$fs_file'"
+        fi
+    done
+
+    sudo mount -a -v
+
+    for path in /etc/{passwd,shadow,group,gshadow,sudoers,hosts,resolv.conf}; do
+        sudo ln -b -v {,$chroot_dir}$path
+    done
+
+    echo "* Ready: $ chroot '$chroot_dir'"
+    return 0
 }
 
 cleanup() {
