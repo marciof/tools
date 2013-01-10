@@ -373,7 +373,7 @@ mkchroot() {
         sudo ln -b -v {,$chroot_dir}$path
     done
 
-    echo "* Ready: $ chroot '$chroot_dir'"
+    echo "* Ready: $ chroot '$chroot_dir' \$SHELL -c \"su \$USER\""
     return 0
 }
 
