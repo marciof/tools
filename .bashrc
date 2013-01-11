@@ -375,7 +375,9 @@ mkchroot() {
         sudo ln -b -v "$(readlink -e "$path")" "$chroot_dir/$path"
     done
 
-    sudo chroot "$chroot_dir" "$SHELL" -c 'apt-get install -y --force-yes sudo'
+    sudo chroot "$chroot_dir" "$SHELL" -c \
+        'apt-get update; apt-get install -y --force-yes sudo locales'
+    
     echo "* Ready: $ sudo chroot '$chroot_dir' \$SHELL -c \"su \$(whoami)\""
     return 0
 }
