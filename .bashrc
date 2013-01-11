@@ -372,7 +372,7 @@ mkchroot() {
     sudo cp -b -v {,$chroot_dir}/etc/resolv.conf
 
     for path in /etc/{passwd,shadow,group,gshadow,sudoers,hosts}; do
-        sudo ln -b -v "$(realpath "$path")" "$chroot_dir/$path"
+        sudo ln -b -v "$(readlink -e "$path")" "$chroot_dir/$path"
     done
 
     sudo chroot "$chroot_dir" "$SHELL" -c 'apt-get install -y --force-yes sudo'
