@@ -369,9 +369,10 @@ mkchroot() {
     done
 
     sudo mount -a -v
+    sudo cp -b -v {,$chroot_dir}/etc/resolv.conf
 
-    for path in /etc/{passwd,shadow,group,gshadow,sudoers,hosts,resolv.conf}; do
-        sudo ln -b -v {,$chroot_dir}$path
+    for path in /etc/{passwd,shadow,group,gshadow,sudoers,hosts}; do
+        sudo ln -b -v "$(realpath "$path")" "$chroot_dir/$path"
     done
 
     echo "* Ready: $ chroot '$chroot_dir' \$SHELL -c \"su \$USER\""
