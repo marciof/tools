@@ -346,6 +346,7 @@ mkchroot() {
     local home_mount="/home $chroot_dir/home none bind,auto 0 0"
     local tmp_mount="/tmp $chroot_dir/tmp none bind,auto 0 0"
     local devpts_mount="devpts $chroot_dir/dev/pts devpts defaults 0 0"
+    local proc_mount="proc $chroot_dir/proc proc defaults 0 0"
 
     if ! sudo fgrep -q "$no_pwd_entry" "$sudoers_file"; then
         echo '* Adding sudoers entry for password-less chroot.'
@@ -360,7 +361,7 @@ mkchroot() {
             "$dist" "$chroot_dir" "$debian_sys_url"
     fi
 
-    for mount in "$home_mount" "$tmp_mount" "$devpts_mount"; do
+    for mount in "$home_mount" "$tmp_mount" "$devpts_mount" "$proc_mount"; do
         if ! fgrep -q "$mount" "$fs_file"; then
             echo "* Adding fstab entry for mount point: $mount"
             sudo su -c "echo -e '\n$mount' >> '$fs_file'"
