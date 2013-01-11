@@ -375,7 +375,8 @@ mkchroot() {
         sudo ln -b -v "$(realpath "$path")" "$chroot_dir/$path"
     done
 
-    echo "* Ready: $ chroot '$chroot_dir' \$SHELL -c \"su \$USER\""
+    sudo chroot "$chroot_dir" "$SHELL" -c 'apt-get install -y --force-yes sudo'
+    echo "* Ready: $ sudo chroot '$chroot_dir' \$SHELL -c \"su \$(whoami)\""
     return 0
 }
 
