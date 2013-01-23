@@ -113,9 +113,6 @@ export PATH="$PATH:node_modules/.bin"
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
 
-# Remove bright colors.
-export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
-
 # https://wiki.archlinux.org/index.php/Color_Bash_Prompt
 Color_Off='\e[0m'
 Yellow='\e[0;33m'
@@ -132,7 +129,10 @@ if [ -z "$CYGWIN_ENV" ]; then
     _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
     _have lesspipe && eval "$($NAME)"
-    
+
+    # Remove bright colors (has to come after `dircolors`).
+    export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
+
     [ -z "$DISPLAY" ] && export DISPLAY=:0.0
     
     [ -z "$JAVA_HOME" ] && _have javac && \
