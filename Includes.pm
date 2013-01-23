@@ -6,6 +6,8 @@
 # TODO: Multiple packages in a single file.
 # TODO: Transitive imports, e.g. XML::DOM::XPath implies XML::DOM::Parser.
 # TODO: Treat "namespace::autoclean" as a pragma?
+# TODO: Selectively disable checks.
+# TODO: Detect packages used for their side effects, e.g. IO::Handle.
 
 
 do {
