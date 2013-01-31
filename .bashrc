@@ -398,7 +398,7 @@ ff() {
 
 iwait() {
     for PID in "$@"; do
-        while kill -0 "$PID"; do
+        while kill -0 "$PID" 2> /dev/null; do
             sleep 0.5
         done
     done
