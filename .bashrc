@@ -477,9 +477,6 @@ sst() {
 sup() {
     if _in_git; then
         git pull "$@"
-        for REMOTE in $(git remote); do
-            git remote prune $REMOTE
-        done
     elif _in_svn; then
         svn update "$@"
     else
