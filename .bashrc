@@ -484,6 +484,16 @@ sup() {
     fi
 }
 
+sur() {
+    if _in_git; then
+        git pull --rebase "$@"
+    elif _in_svn; then
+        svn update "$@"
+    else
+        _in_scm
+    fi
+}
+
 if [ -z "$CYGWIN_ENV" ]; then
     for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
         source "$bashrc_child"
