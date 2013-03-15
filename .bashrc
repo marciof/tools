@@ -283,8 +283,14 @@ if _have git; then
         COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
         && echo $COMMAND \
         && $COMMAND'"'"
-    
-    export GIT_EDITOR="$EDITOR"
+
+    if _have nano; then
+        # Go to the end of the first line in commit message templates.
+        export GIT_EDITOR="$EDITOR +,9999"
+    else
+        export GIT_EDITOR="$EDITOR"
+    fi;
+
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
