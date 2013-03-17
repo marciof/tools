@@ -8,10 +8,18 @@
 
 
 # Standard:
-import email, subprocess, re, sys, urllib.parse, urllib.request
+import email
+import os.path
+import subprocess
+import re
+import sys
+import urllib.parse
+import urllib.request
 
 # External:
-import chardet, lxml.etree, lxml.html, unipath
+import chardet
+import lxml.etree
+import lxml.html
 
 
 class Url:
@@ -74,7 +82,7 @@ class Url:
     
     @property
     def path(self):
-        return unipath.Path(self.__components.path)
+        return self.__components.path
     
     
     @path.setter
@@ -204,7 +212,7 @@ for media_url in media_urls:
         reverse = True)[0]
     
     rtmp_url = Url(highest_rendition.xpath('src/text()')[0].strip())
-    file_name = rtmp_url.path.components()[-1]
+    (_, file_name) = os.path.split(rtmp_url.path)
     
     print('DUMP', rtmp_url)
     
