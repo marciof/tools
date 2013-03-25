@@ -344,54 +344,6 @@ _in_svn() {
     svn info > /dev/null 2>&1
 }
 
-mkchroot() {
-    local dist=squeeze
-    local chroot_dir="/var/chroot/$dist"
-    local debian_sys_url=http://ftp.debian.org/debian/
-
-    local sudoers_file=/etc/sudoers
-    local no_pwd_entry="$(whoami) ALL=NOPASSWD: $(which chroot)"
-
-    local fs_file=/etc/fstab
-    local home_mount="/home $chroot_dir/home none bind,auto 0 0"
-    local tmp_mount="/tmp $chroot_dir/tmp none bind,auto 0 0"
-    local devpts_mount="devpts $chroot_dir/dev/pts devpts defaults 0 0"
-    local proc_mount="proc $chroot_dir/proc proc defaults 0 0"
-
-    if ! sudo fgrep -q "$no_pwd_entry" "$sudoers_file"; then
-        echo '* Adding sudoers entry for password-less chroot.'
-        sudo su -c "echo -e '\n$no_pwd_entry' >> '$sudoers_file'"
-    fi
-
-    sudo apt-get install -y debootstrap
-    sudo mkdir -p -v "$chroot_dir"
-
-    if [ ! -d "$chroot_dir/debootstrap" ]; then
-        sudo debootstrap --keep-debootstrap-dir \
-            "$dist" "$chroot_dir" "$debian_sys_url"
-    fi
-
-    for mount in "$home_mount" "$tmp_mount" "$devpts_mount" "$proc_mount"; do
-        if ! fgrep -q "$mount" "$fs_file"; then
-            echo "* Adding fstab entry for mount point: $mount"
-            sudo su -c "echo -e '\n$mount' >> '$fs_file'"
-        fi
-    done
-
-    sudo mount -a -v
-    sudo cp -b -v {,$chroot_dir}/etc/resolv.conf
-
-    for path in /etc/{passwd,shadow,group,gshadow,sudoers,hosts}; do
-        sudo ln -b -v "$(readlink -e "$path")" "$chroot_dir/$path"
-    done
-
-    sudo chroot "$chroot_dir" "$SHELL" -c \
-        'apt-get update; apt-get install -y --force-yes sudo locales'
-    
-    echo "* Ready: $ sudo chroot '$chroot_dir' \$SHELL -c \"su \$(whoami)\""
-    return 0
-}
-
 cleanup() {
     _have apt-get && (sudo $NAME -qq autoremove; sudo $NAME -qq clean)
     perl -i -ne 'print unless $seen{$_}++' $HISTFILE
