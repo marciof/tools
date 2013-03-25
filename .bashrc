@@ -452,7 +452,7 @@ sdi() {
 
 sl() {
     if _in_git; then
-        git log "$@"
+        git log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d"
     elif _in_svn; then
         svn log "$@"
     else
