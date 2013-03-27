@@ -2,7 +2,6 @@
 
 
 # TODO: Check rtmpdump return status code, and resume when that's the case.
-# TODO: Miro extension?
 # TODO: Join video parts (must remain frame smooth).
 # TODO: Don't hardcode the media XML namespace.
 
