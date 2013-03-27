@@ -1,5 +1,0 @@
-- Automate testing: JSHint, split test cases.
-- Generate documentation.
-- Add `isUndefined` and `throws`?
-- Add 'use strict' for ES5 only?
-- Git ignore node_modules: local installation + package.json + shrinkwrap.

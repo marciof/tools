@@ -1,2 +1,0 @@
-env = Environment(tools = ['default', 'busterjs'])
-env.Buster('test')
