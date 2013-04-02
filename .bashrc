@@ -129,6 +129,7 @@ if [ -z "$CYGWIN_ENV" ]; then
     _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
     _have lesspipe && eval "$($NAME)"
+    _have trash-put && alias del="$NAME"
 
     # Remove bright colors (has to come after `dircolors`).
     export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
