@@ -537,7 +537,7 @@ class SubProcessOutput (StreamOutput):
                 stdin = subprocess.PIPE)
         except OSError as error:
             if error.errno == errno.ENOENT:
-                raise NotImplementedError
+                raise NotImplementedError('No such executable: ' + args[0])
             else:
                 raise
         
