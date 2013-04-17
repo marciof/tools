@@ -26,9 +26,10 @@ sub add_ticket_number {
     } // return;
     
     if (my ($ticket) = ($branch =~ m/(\w+-\d+)/)) {
-        print $commit_message "[\U$ticket\E] \n";
+        print $commit_message "[\U$ticket\E] ";
     }
-    
+
+    print $commit_message "\n";
     return;
 }
 
