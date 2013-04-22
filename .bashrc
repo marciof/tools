@@ -94,7 +94,6 @@ alias j=jobs
 alias l='ls -CFXh --color=auto --group-directories-first'
 alias ll='l -l'
 alias dir='l -lA'
-alias sed='sed -r'
 alias -- -='c -'
 alias ..='c ..'
 alias ...='c ../..'
