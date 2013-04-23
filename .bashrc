@@ -245,10 +245,7 @@ if _have git; then
     
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
-        
-        if [ -n "$ps1" ]; then
-            echo -e ":$Yellow$(echo "$ps1" | sed 's/^master( |$)/./')$Color_Off"
-        fi
+        [ -n "$ps1" ] && echo -e ":$Yellow$ps1$Color_Off"
     }
     
     _set_git_config() {
