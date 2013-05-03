@@ -18,17 +18,21 @@ const my $GIT_OPTION = 'git';
 
 sub add_ticket_number {
     my ($self, $git, $commit_message) = @ARG;
+    my $local_branch = eval {$git->command_oneline(qw(symbolic-ref HEAD))};
     
-    my $branch = eval {
+    my $remote_branch = eval {
         $git->command_oneline(
             qw{for-each-ref --format=%(upstream:short)},
-                $git->command(qw(symbolic-ref HEAD)));
-    } // return;
+            $local_branch);
+    };
     
-    if (my ($ticket) = ($branch =~ m/(\w+-\d+)/)) {
-        print $commit_message "[\U$ticket\E] ";
+    for my $branch ($remote_branch, $local_branch) {
+        if (my ($ticket) = (($branch // '') =~ m/(\w+-\d+)/)) {
+            print $commit_message "[\U$ticket\E] ";
+            last;
+        }
     }
-
+    
     print $commit_message "\n";
     return;
 }
