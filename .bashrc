@@ -262,13 +262,9 @@ if _have git; then
     }
     
     if [ -z "$CYGWIN_ENV" ]; then
-        new_line_commit_template='~/.git-commit-template'
-        echo > "$(eval echo "$new_line_commit_template")"
-        
         _set_git_config alias.br 'branch -vv'
         _set_git_config alias.co checkout
         _set_git_config color.ui auto
-        _set_git_config commit.template "$new_line_commit_template"
         _set_git_config core.whitespace -trailing-space
         _set_git_config user.email
         _set_git_config user.name
