@@ -66,10 +66,6 @@ ul > li > a[class]:before {
     border-right-color: ThreeDShadow;
 }
 
-ul > li > a.ComposeGmail:before {
-    content: -o-skin("Compose mail");
-}
-
 ul > li > a.DomSnapshot:before {
     content: -o-skin("DOM Console");
 }
@@ -125,7 +121,6 @@ ul > li > a.ValidateDocument:before {
       <li><a class="ToggleJavaScript" href="opera:/button/Enable javascript,,,,Extension icon|Disable javascript,,,,">Toggle JavaScript</a></li>
       <!-- http://dev.opera.com/articles/view/opera-developer-tools#domsnapshot -->
       <li><a class="DomSnapshot" href="opera:/button/Go to page,%22javascript%3A(function()%7Bvar%20ele%3Ddocument.documentElement.appendChild(document.createElementNS(%27http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%27%2C%27script%27))%3Bele.onload%20%3D%20function()%7Bthis.parentNode.removeChild(this)%3BliveSource.open()%3B%7D%3Bele.src%3D%27http%3A%2F%2Fdevfiles.myopera.com%2Farticles%2F59%2FliveSource.js%27%3B%7D)()%22,,,DOM Console">DOM Snapshot</a></li>
-      <li><a class="ComposeGmail" href="opera:/button/Go to page,%22javascript:(function(){open('https://mail.google.com/mail/?view=cm&amp;fs=1&amp;tf=1')})()%22,,Compose Gmail,Compose mail">Compose Gmail</a></li>
       <li><a class="Go" href="opera:/button/Go + Show popup menu, %22Internal Bookmark Folder%22,,,,Group">Go + Bookmarks</a></li>
     </ul>
     
