@@ -62,10 +62,10 @@ def get_video_size(path):
         return reversed(list(map(int, size[0])))
 
 
-videos = sys.argv[1:]
+if len(sys.argv) <= 2:
+    sys.exit('Usage: audio|smil <video> ...')
 
-if len(videos) == 0:
-    sys.exit('Usage: <video> ...')
+(action, videos) = (sys.argv[1], sys.argv[2:])
 
 if shutil.which('ffmpeg') is None:
     sys.exit('FFmpeg not in path. Install it from <http://www.ffmpeg.org/>.')
@@ -73,14 +73,26 @@ if shutil.which('ffmpeg') is None:
 if os.name == 'nt':
     videos = itertools.chain.from_iterable(map(glob.glob, videos))
 
-for video in videos:
-    try:
-        smil = get_smil(video)
-    except UnsupportedVideoException:
-        print('Error:', video, file = sys.stderr)
-        continue
-    else:
-        print('Ok:', video)
-    
-    with open(os.path.splitext(video)[0] + '.smil', 'w') as smil_file:
-        smil_file.write(smil + '\n')
+if action == 'audio':
+    for video in videos:
+        audio = os.path.splitext(video)[0] + '.m4a'
+        
+        try:
+            subprocess.check_output(
+                args = ['ffmpeg', '-i', video, '-vn', '-acodec', 'copy', audio],
+                stderr = subprocess.STDOUT)
+        except subprocess.CalledProcessError as error:
+            print('Error:', video, file = sys.stderr)
+        else:
+            print('Ok:', video)
+elif action == 'smil':
+    for video in videos:
+        try:
+            smil = get_smil(video)
+        except UnsupportedVideoException:
+            print('Error:', video, file = sys.stderr)
+        else:
+            print('Ok:', video)
+            
+            with open(os.path.splitext(video)[0] + '.smil', 'w') as smil_file:
+                smil_file.write(smil + '\n')
