@@ -31,3 +31,7 @@ $ sudo puppet apply --modulepath "$(puppet apply --configprint modulepath):$HOME
 To Do:
 - Check other tools, e.g. Chef, CF Engine.
 - KDE QML?
+- Solr
+- Graphite + statsd (sudo update-rc.d NAME defaults)
+- SSH conf !SendEnv
+- Memcache
