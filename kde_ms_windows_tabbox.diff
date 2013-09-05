@@ -1,0 +1,21 @@
+--- /usr/share/kde4/apps/kwin/tabbox/big_icons/contents/ui/main.qml	2013-09-05 09:55:24.051130458 +0200
++++ /usr/share/kde4/apps/kwin/tabbox/big_icons/contents/ui/main.qml	2013-09-05 10:29:54.770682775 +0200
+@@ -56,3 +56,3 @@ Item {
+         id: icons
+-        iconSize: 128
++        iconSize: 64
+         height: iconSize + background.topMargin + icons.margins.top + icons.margins.bottom
+@@ -92,6 +92,6 @@ Item {
+             text: icons.currentItem ? icons.currentItem.data.caption : ""
+-            horizontalAlignment: Text.AlignHCenter
++            horizontalAlignment: Text.AlignLeft
+             verticalAlignment: Text.AlignVCenter
+             color: theme.textColor
+-            elide: Text.ElideMiddle
++            elide: Text.ElideRight
+             font {
+@@ -101,3 +101,3 @@ Item {
+                 verticalCenter: parent.verticalCenter
+-                horizontalCenter: parent.horizontalCenter
++                left: parent.left
+             }
