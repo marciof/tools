@@ -240,6 +240,10 @@ TEXT
 fi
 
 if _have git; then
+    if ! type -t _git > /dev/null; then
+        _completion_loader git
+    fi
+    
     alias g=$NAME
     complete -o bashdefault -o default -o nospace -F _git g
     
