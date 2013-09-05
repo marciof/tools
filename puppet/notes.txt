@@ -1,0 +1,33 @@
+Puppet:
+* Resource: user account, file, a software package, running service, scheduled
+  cron job, single invocation of a shell command.
+  * Has a Resource Type (written in lower-case).
+  * Is identified by a Title.
+  * Has Attributes.
+  * Has Metaparameters.
+* Resource Type: group of similar Resources.
+* Resource Reference: Resource Type['title']
+* Class: a singleton Resource collection that Puppet can apply as a unit.
+  * Defining makes it available by name.
+  * Declaring evaluates the code in the class, and applies all of its resources.
+* Defined Resource Type: models repeatable chunks of configuration.
+* Title: an identifying string, unique per resource type.
+* Metaparameters: attributes that can be used on any Resource, but don't
+  describe its features, only how Puppet should act.
+* Provider: platform-specific implementation.
+* Manifest: Puppet program using the .pp file extension.
+* Fact: a piece of system information.
+* Module: a re-usable bundle of code and data.
+* Name/Namevar: a special attribute that identifies a resource, unique per
+  resource type. Its value will default to the title if it isn’t specified.
+
+* -> chain resource references (represent time flow)
+* ~> chain resource refreshes (represent time flow)
+
+$ puppet describe user
+$ puppet resource user
+$ sudo puppet apply --modulepath "$(puppet apply --configprint modulepath):$HOME/Documents/opera-tools/puppet/" -e 'include java'
+
+To Do:
+- Check other tools, e.g. Chef, CF Engine.
+- KDE QML?
