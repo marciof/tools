@@ -1,0 +1,83 @@
+(1) Install Graphite dependencies.
+    (1) $ apt-get install -y python python-dev python-pip
+    (2) $ pip install carbon django django-tagging graphite-web python-memcached whisper
+        As of v2.0.1 python-statsd doesn't work with Django >= 1.5, if using it install v1.4.x instead.
+
+(2) Install `pycairo` manually, not via `pip` [1]. Download [2] and follow instructions.
+    (o) Some dependencies:
+        $ apt-get install -y bzip2 gcc libcairo2-dev pkg-config
+    (o) For Debian Squeeze use v1.8.10. [3]
+    (o) For virtual env do instead:
+        $ ./waf configure --prefix=$VIRTUAL_ENV
+    (o) Check if Python can find the `cairo` module (check `sys.path` too).
+
+(3) Configure Graphite installation.
+    (1) For development, it only needs these two config files: [4]
+        (1) $ cp /opt/graphite/conf/carbon.conf{.example,}
+        (2) $ cp /opt/graphite/conf/storage-schemas.conf{.example,}
+    (2) Configure Django app settings.
+        (1) $ cp /opt/graphite/webapp/graphite/local_settings.py{.example,}
+        (2) Set `TIME_ZONE`. [5]
+        (3) Set database. [6]
+        (4) Set `SECRET_KEY` in "app_settings.py" if Django >= 1.5. [7]
+        (5) Set `ALLOWED_HOSTS` in "local_settings.py" if Django >= 1.5. [8]
+    (3) Setup database. [9]
+        $ python /opt/graphite/webapp/graphite/manage.py syncdb
+
+(4) Start Graphite and check it's up and running.
+    (1) Data collection daemon:
+        $ python /opt/graphite/bin/carbon-cache.py --debug start
+    (2) Web interface:
+        $ python /opt/graphite/bin/run-graphite-devel-server.py /opt/graphite
+
+(5) Install statsd. [10]
+    (1) Install node.js. [11]
+    (2) Ensure `flushInterval` is related to Graphite's retention periods. [12]
+
+(6) Install pystatsd. [13]
+    $ pip install statsd
+    (1) Quick test:
+        $ python -c 'from statsd import *; StatsClient().incr("test")'
+    (2) Optionally remove the quick test data from Graphite.
+        $ rm -rf /opt/graphite/storage/whisper/*
+
+(7) Optionally run the web interface within Apache.
+    (1) Stop running the web interface (started previously).
+    (2) Install dependencies.
+        $ apt-get install -y apache2 libapache2-mod-python
+    (3) Create an Apache site configuration. [14]
+        $ $EDITOR /etc/apache2/sites-available/graphite
+    (4) Correct Django's path for the "/media" `Alias`.
+        $ echo $(python -c 'import django; print django.__path__[0]')/contrib/admin/media/
+    (5) Ensure that there's an entry for `ServerName`'s value in "/etc/hosts".
+    (6) Enable site configuration.
+        $ ln -s /etc/apache2/{sites-available/graphite,sites-enabled/001-graphite}
+    (7) Correct storage permissions.
+        $ chown -R www-data:www-data /opt/graphite/storage/
+    (8) Restart Apache.
+        $ service apache2 restart
+
+(8) Optional real-time stats (per second resolution). [15]
+    (1) Decrease statsd `flushInterval` down to 1s.
+    (2) Ensure that Graphite is storing data at 1s resolution.
+        $ $EDITOR /opt/graphite/conf/carbon.conf
+    (3) Disable Memchace with Graphite or decrease the caching down to 1s, `MEMCACHE_DURATION`.
+        $ $EDITOR /opt/graphite/webapp/graphite/local_settings.py
+    (4) Decrease the web interface auto-refresh period down to 1s, `toggleAutoRefresh`.
+        $ $EDITOR /opt/graphite/webapp/content/js/composer_widgets.js
+
+[1] http://stackoverflow.com/a/13279739/753501
+[2] http://cairographics.org/pycairo/
+[3] http://cairographics.org/releases/py2cairo-1.8.10.tar.gz
+[4] http://graphite.readthedocs.org/en/latest/install.html#initial-configuration
+[5] https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TIME_ZONE
+[6] http://stackoverflow.com/a/12456878/753501
+[7] https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
+[8] https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
+[9] http://graphite.wikidot.com/installation
+[10] https://github.com/etsy/statsd/#installation-and-configuration
+[11] https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager
+[12] https://github.com/etsy/statsd/blob/master/docs/graphite.md#correlation-with-statsds-flush-interval
+[13] https://pypi.python.org/pypi/statsd
+[14] http://agiletesting.blogspot.no/2011/04/installing-and-configuring-graphite.html
+[15] http://blog.stuartherbert.com/php/2011/09/21/real-time-graphing-with-graphite/
