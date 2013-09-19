@@ -9,6 +9,7 @@ use File::Spec ();
 use Git ();
 use Path::Class ();
 use POSIX ();
+use Try::Tiny ();
 
 
 const my $COMMIT_TEMPLATE_FILE = 'COMMIT_TEMPLATEMSG';
@@ -138,8 +139,17 @@ sub get_template_file {
 sub list_git_repos {
     my ($self) = @ARG;
     my @paths = @{$self->{git_repos} // []};
-    my @git = map {Git->repository($ARG)} @paths > 0 ? @paths : Path::Class::dir;
-    
+    my @git;
+
+    foreach my $path (@paths > 0 ? @paths : Path::Class::dir) {
+        try {
+            push @git, Git->repository($path);
+        }
+        catch {
+            warn $ARG;
+        };
+    }
+
     foreach my $git (@git) {
         my $sub_modules = eval {
             $git->command('config',
