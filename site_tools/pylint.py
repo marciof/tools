@@ -19,14 +19,29 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(_execute, _PROGRAM_NAME.title())
+    """
+    Adds a *Pylint* method to the SCons environment.
+    """
+
+    env.AddMethod(Pylint)
 
 
-def _execute(env,
+def Pylint(env,
         target = _PROGRAM_NAME,
         source = None,
         root = os.path.curdir,
         config = ''):
+    """
+    :param target: target name
+    :type target: unicode
+    :param source: source files to be check, otherwise all sources
+    :type source: list
+    :param root: search starting point path when *source* is unspecified
+    :type root: unicode
+    :param config: tool configuration file path, otherwise use default
+    :type config: unicode
+    :return: SCons target
+    """
 
     if source is None:
         env.Tool('globr')

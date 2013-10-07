@@ -19,6 +19,10 @@ def exists(env):
 
 
 def generate(env):
+    """
+    Adds a *TravisLint* method to the SCons environment.
+    """
+
     env_var = 'GEM_PATH'
     
     if env_var in os.environ:
@@ -26,9 +30,15 @@ def generate(env):
             lambda path: os.path.join(path, 'bin'),
             os.environ[env_var].split(os.pathsep)))
     
-    env.AddMethod(_execute, _PROGRAM_NAME.title().replace('-', ''))
+    env.AddMethod(TravisLint)
 
 
-def _execute(env, target = _PROGRAM_NAME):
+def TravisLint(env, target = _PROGRAM_NAME):
+    """
+    :param target: target name
+    :type target: unicode
+    :return: SCons target
+    """
+
     return env.AlwaysBuild(env.Alias(target,
         action = env.Action([_PROGRAM_NAME])))

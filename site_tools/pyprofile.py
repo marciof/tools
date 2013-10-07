@@ -24,11 +24,23 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(_execute, 'Profile')
+    """
+    Adds a *Profile* method to the SCons environment.
+    """
+
+    env.AddMethod(Profile)
 
 
-def _execute(env, target = 'profile', source = None):
-    # The given function parameter will become unavailable.
+def Profile(env, target = 'profile', source = None):
+    """
+    :param target: target name
+    :type target: unicode
+    :param source: function to profile
+    :type source: callable
+    :return: SCons target
+    """
+
+    # Store argument for inner function scope.
     actual_source = source
 
     def execute_profiler(env, target, source):

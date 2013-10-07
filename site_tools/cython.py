@@ -18,10 +18,24 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(_execute, _PROGRAM_NAME.title())
+    """
+    Adds a *Cython* method to the SCons environment.
+    """
+
+    env.AddMethod(Cython)
 
 
-def _execute(env, target, source, is_embedded = True, do_compilation = False):
+def Cython(env, target, source, is_embedded = True, do_compilation = False):
+    """
+    :param target: compiled file
+    :param source: Python source file
+    :param is_embedded: if true passes ``--embed`` to Cython
+    :type is_embedded: bool
+    :param do_compilation: if true builds an executable via SCons's *Program*
+    :type do_compilation: bool
+    :return: SCons target
+    """
+
     embed = ['--embed'] if is_embedded else []
 
     if not isinstance(source, list):

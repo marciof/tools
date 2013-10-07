@@ -16,6 +16,10 @@ def exists(env):
 
 
 def generate(env):
+    """
+    Appends the currently active virtualenv binary path to the system's path.
+    """
+
     env_var = 'VIRTUAL_ENV'
     
     if env_var in os.environ:

@@ -9,27 +9,34 @@ Python's built-in unit tester.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import os
-
-
-_BUILDER_NAME = 'PyUnit'
+import unittest
 
 
 def exists(env):
-    try:
-        import unittest
-        return hasattr(unittest.TestLoader, 'discover')
-    except ImportError:
-        return False
+    return hasattr(unittest.TestLoader, 'discover')
 
 
 def generate(env):
-    env.AddMethod(_execute, _BUILDER_NAME)
+    """
+    Adds a *PyUnit* method to the SCons environment.
+    """
+
+    env.AddMethod(PyUnit)
 
 
-def _execute(env,
-        target = _BUILDER_NAME.lower(),
+def PyUnit(env,
+        target = 'pyunit',
         source = None,
         root = os.path.curdir):
+    """
+    :param target: target name
+    :type target: unicode
+    :param source: source files to be test, otherwise all test sources
+    :type source: list
+    :param root: search starting point path when *source* is unspecified
+    :type root: unicode
+    :return: SCons target
+    """
 
     if source is None:
         env.Tool('globr')

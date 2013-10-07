@@ -17,10 +17,25 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(_execute, 'Globr')
+    """
+    Adds a *Globr* method to the SCons environment.
+    """
+
+    env.AddMethod(Globr)
 
 
-def _execute(env, pattern, root = os.path.curdir, exclude_root = False):
+def Globr(env, pattern, root = os.path.curdir, exclude_root = False):
+    """
+    :param pattern: glob pattern
+    :type pattern: unicode
+    :param root: search starting point path
+    :type root: unicode
+    :param exclude_root: if true makes paths relative to *root*
+    :type exclude_root: bool
+    :return: matching files
+    :rtype: list<unicode>
+    """
+
     paths = env.Glob(os.path.join(root, pattern))
 
     for path, dirs, files in os.walk(root):

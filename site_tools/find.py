@@ -2,7 +2,7 @@
 
 
 """
-Single file finder.
+File finder.
 """
 
 
@@ -16,10 +16,24 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(_execute, 'Find')
+    """
+    Adds a *Find* method to the SCons environment.
+    """
+
+    env.AddMethod(Find)
 
 
-def _execute(env, target, root = os.path.curdir):
+def Find(env, target, root = os.path.curdir):
+    """
+    :param target: file name
+    :type target: unicode
+    :param root: search starting point path
+    :type root: unicode
+    :return: file path
+    :rtype: unicode
+    :raise Exception: file name isn't unique or doesn't exist
+    """
+
     has_found_path = None
 
     for path, dirs, files in os.walk(root):
