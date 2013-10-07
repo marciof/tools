@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 
 
+"""
+Virtualenv support.
+"""
+
+
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import os

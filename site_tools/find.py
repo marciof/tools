@@ -1,25 +1,14 @@
 # -*- coding: UTF-8 -*-
 
 
+"""
+Single file finder.
+"""
+
+
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import os
-
-
-def execute(env, target, root = os.path.curdir):
-    found_path = None
-    
-    for path, dirs, files in os.walk(root):
-        if target in (dirs + files):
-            if found_path is None:
-                found_path = path
-            else:
-                raise Exception('Non-unique file name: ' + target)
-    
-    if found_path is None:
-        raise Exception('File not found: ' + target)
-    else:
-        return os.path.join(found_path, target)
 
 
 def exists(env):
@@ -27,4 +16,20 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(execute, 'Find')
+    env.AddMethod(_execute, 'Find')
+
+
+def _execute(env, target, root = os.path.curdir):
+    has_found_path = None
+
+    for path, dirs, files in os.walk(root):
+        if target in (dirs + files):
+            if has_found_path is None:
+                has_found_path = path
+            else:
+                raise Exception('Non-unique file name: ' + target)
+
+    if has_found_path is None:
+        raise Exception('File not found: ' + target)
+    else:
+        return os.path.join(has_found_path, target)

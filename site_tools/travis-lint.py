@@ -1,20 +1,21 @@
 # -*- coding: UTF-8 -*-
 
 
+"""
+Travis lint support.
+"""
+
+
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import os
 
 
-PROGRAM = 'travis-lint'
-
-
-def execute(env, target = PROGRAM):
-    return env.AlwaysBuild(env.Alias(target, action = env.Action([PROGRAM])))
+_PROGRAM_NAME = 'travis-lint'
 
 
 def exists(env):
-    return env.Detect(PROGRAM)
+    return env.Detect(_PROGRAM_NAME)
 
 
 def generate(env):
@@ -25,4 +26,9 @@ def generate(env):
             lambda path: os.path.join(path, 'bin'),
             os.environ[env_var].split(os.pathsep)))
     
-    env.AddMethod(execute, PROGRAM.title().replace('-', ''))
+    env.AddMethod(_execute, _PROGRAM_NAME.title().replace('-', ''))
+
+
+def _execute(env, target = _PROGRAM_NAME):
+    return env.AlwaysBuild(env.Alias(target,
+        action = env.Action([_PROGRAM_NAME])))
