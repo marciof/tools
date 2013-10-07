@@ -1,3 +1,3 @@
 # Editors.
 /.idea
-/site_scons.iml
+/*.iml
