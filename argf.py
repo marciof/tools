@@ -3,12 +3,12 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import argparse
 import inspect
 import re
 import xml.etree.ElementTree
 
 # External:
+import argparse
 import docutils.core
 
 
@@ -95,6 +95,7 @@ def get_type_by_name(name):
         raise Error('No such data type: ' + name)
 
 
+# TODO: Leverage Sphinx to parse docstrings in the Python domain.
 def parse_docstring(function, arguments):
     arguments = dict((param.name, param) for param in arguments)
     has_description = set()
@@ -104,8 +105,8 @@ def parse_docstring(function, arguments):
         docutils.core.publish_doctree(
             inspect.getdoc(function)).asdom().toxml())
 
-    for fields in docstring.iterfind('field_list'):
-        for field in fields.iterfind('field'):
+    for fields in docstring.findall('field_list'):
+        for field in fields.findall('field'):
             field_name = field.findtext('field_name')
             directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
 
@@ -138,6 +139,7 @@ def parse_docstring(function, arguments):
     return docstring.findtext('paragraph')
 
 
+# TODO: Allow user defined arg parser (and update reserved names).
 def start(main):
     arg_parser = argparse.ArgumentParser(
         formatter_class = argparse.ArgumentDefaultsHelpFormatter)
