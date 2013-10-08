@@ -1,28 +1,26 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import unittest
 
-# External:
+# Internal:
 import argf
 
 
-def main(path, cache = False, timeout = 123):
-    """
-    Lists a directory.
+class TestParameters (unittest.TestCase):
+    def test_no_parameters(self):
+        def main():
+            """"""
+            return 123
 
-    :param path: Path to be listed.
-    :type path: unicode
-    :param cache: Whether or not to cache the list.
-    :type cache: bool
-    :param timeout: Timeout in seconds.
-    :type timeout: int
-    """
-
-    print repr([path, cache, timeout])
+        self.assertEqual(argf.start(main, args = []), 123)
 
 
-if __name__ == '__main__':
-    argf.start(main)
+class TestDocstring (unittest.TestCase):
+    def test_no_docstring(self):
+        def main(length = 123):
+            return length
+
+        self.assertEqual(argf.start(main, args = []), 123)

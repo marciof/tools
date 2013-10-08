@@ -54,6 +54,16 @@ class Argument (object):
         return self._default_value is not self._NO_DEFAULT_VALUE
 
 
+    def guess_data_type(self):
+        if self.data_type is not None:
+            return self.data_type
+
+        if self.has_default_value:
+            return type(self.default_value)
+
+        return str
+
+
 def extract_arguments(function, reserved_names):
     arg_spec = inspect.getargspec(function)
     reserved_names = set(reserved_names)
@@ -61,13 +71,11 @@ def extract_arguments(function, reserved_names):
     if (arg_spec.varargs is not None) or (arg_spec.keywords is not None):
         raise Error('Varargs and kwargs are not supported.')
 
-    kwarg_offset = len(arg_spec.args) - len(arg_spec.defaults)
+    nr_kwargs = 0 if arg_spec.defaults is None else len(arg_spec.defaults)
+    kwargs_offset = len(arg_spec.args) - nr_kwargs
     arguments = []
 
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
-        kwarg_i = arg_i - kwarg_offset
-        has_default = (0 <= kwarg_i < len(arg_spec.defaults))
-
         if name in reserved_names:
             raise Error('Argument name is reserved: ' + name)
 
@@ -79,6 +87,9 @@ def extract_arguments(function, reserved_names):
                 reserved_names.add(c)
                 argument.short_name = c
                 break
+
+        kwarg_i = arg_i - kwargs_offset
+        has_default = (0 <= kwarg_i < nr_kwargs)
 
         if has_default:
             argument.default_value = arg_spec.defaults[kwarg_i]
@@ -97,13 +108,17 @@ def get_type_by_name(name):
 
 # TODO: Leverage Sphinx to parse docstrings in the Python domain.
 def parse_docstring(function, arguments):
+    docstring = inspect.getdoc(function)
+
+    if docstring is None:
+        return None
+
     arguments = dict((param.name, param) for param in arguments)
     has_description = set()
     has_data_type = set()
 
     docstring = xml.etree.ElementTree.fromstring(
-        docutils.core.publish_doctree(
-            inspect.getdoc(function)).asdom().toxml())
+        docutils.core.publish_doctree(docstring).asdom().toxml())
 
     for fields in docstring.findall('field_list'):
         for field in fields.findall('field'):
@@ -140,7 +155,7 @@ def parse_docstring(function, arguments):
 
 
 # TODO: Allow user defined arg parser (and update reserved names).
-def start(main):
+def start(main, args = None):
     arg_parser = argparse.ArgumentParser(
         formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
@@ -165,15 +180,16 @@ def start(main):
 
             names.append('--' + argument.name)
             options['default'] = argument.default_value
+            data_type = argument.guess_data_type()
 
-            if issubclass(argument.data_type, bool):
+            if issubclass(data_type, bool):
                 options['const'] = not argument.default_value
                 options['action'] = 'store_const'
-            elif argument.data_type is not None:
-                options['type'] = argument.data_type
+            else:
+                options['type'] = data_type
         else:
             names.append(argument.name)
 
         arg_parser.add_argument(*names, **options)
 
-    main(**arg_parser.parse_args().__dict__)
+    return main(**arg_parser.parse_args(args = args).__dict__)
