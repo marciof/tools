@@ -9,7 +9,6 @@ PEP8 tool support.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import os
-import sys
 
 
 _PROGRAM_NAME = 'pep8'
@@ -24,10 +23,8 @@ def generate(env):
     Adds a *Pep8* method to the SCons environment.
     """
 
+    env.Tool('python')
     env.AddMethod(Pep8)
-
-    # Make sure it can be found, even when not in path.
-    env.AppendENVPath('PATH', os.path.join(sys.exec_prefix, 'Scripts'))
 
 
 def Pep8(env,

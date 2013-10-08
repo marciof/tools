@@ -21,6 +21,7 @@ def generate(env):
     Adds a *PyUnit* method to the SCons environment.
     """
 
+    env.Tool('python')
     env.AddMethod(PyUnit)
 
 
