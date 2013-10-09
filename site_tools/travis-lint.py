@@ -23,13 +23,19 @@ def generate(env):
     Adds a *TravisLint* method to the SCons environment.
     """
 
-    env_var = 'GEM_PATH'
-    
-    if env_var in os.environ:
-        env.AppendENVPath('PATH', map(
-            lambda path: os.path.join(path, 'bin'),
-            os.environ[env_var].split(os.pathsep)))
-    
+    # FIXME: Why isn't `exists` called?
+    for paths in (None, 'GEM_PATH', 'PATH'):
+        if paths is not None:
+            paths = os.environ.get(paths)
+
+            if paths is None:
+                continue
+
+        path = env.WhereIs(_PROGRAM_NAME, path = paths)
+
+        if path is not None:
+            env.AppendENVPath('PATH', os.path.dirname(path))
+
     env.AddMethod(TravisLint)
 
 
