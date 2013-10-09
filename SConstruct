@@ -5,13 +5,14 @@
 from __future__ import absolute_import, division, unicode_literals
 
 
-env = Environment(
-    tools = ['default', 'find', 'pep8', 'pylint', 'pyunit', 'virtualenv'])
+env = Environment(tools = [
+    'default', 'find', 'pep8', 'pylint', 'pyunit', 'travis-lint', 'virtualenv'])
 
 src = env.Find('sources')
 
 env.Alias('verify', [
     env.Alias('check', [
+        env.TravisLint(),
         env.Pep8(root = src, config = env.Find('pep8.ini')),
         env.Pylint(root = src, config = env.Find('pylint.ini')),
     ]),
