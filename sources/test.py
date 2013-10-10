@@ -3,13 +3,13 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import unittest
+import unittest2
 
 # Internal:
 import argf
 
 
-class TestParameters (unittest.TestCase):
+class TestParameters (unittest2.TestCase):
     def test_no_parameters(self):
         # pylint: disable=C0112
 
@@ -20,7 +20,7 @@ class TestParameters (unittest.TestCase):
         self.assertEqual(argf.start(main, args = []), 123)
 
 
-class TestDocstring (unittest.TestCase):
+class TestDocstring (unittest2.TestCase):
     def test_no_docstring(self):
         def main(length = 123):
             return length
