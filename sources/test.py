@@ -11,6 +11,8 @@ import argf
 
 class TestParameters (unittest.TestCase):
     def test_no_parameters(self):
+        # pylint: disable=C0112
+
         def main():
             """"""
             return 123

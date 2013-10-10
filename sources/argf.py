@@ -82,10 +82,10 @@ def extract_arguments(function, reserved_names):
         reserved_names.add(name)
         argument = Argument(name)
 
-        for c in name:
-            if c not in reserved_names:
-                reserved_names.add(c)
-                argument.short_name = c
+        for char in name:
+            if char not in reserved_names:
+                reserved_names.add(char)
+                argument.short_name = char
                 break
 
         kwarg_i = arg_i - kwargs_offset
