@@ -9,6 +9,7 @@ Python's built-in unit tester.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import os
+import sys
 
 
 # Not called, but required.
@@ -21,7 +22,6 @@ def generate(env):
     Adds a *PyUnit* method to the SCons environment.
     """
 
-    env.Tool('python')
     env.AddMethod(PyUnit)
 
 
@@ -45,5 +45,5 @@ def PyUnit(env,
 
     return env.AlwaysBuild(env.Alias(target,
         action = env.Action(
-            [[env['PYTHON'], '-B', '-m', 'unittest', 'discover', '-s', root]],
+            [[sys.executable, '-B', '-m', 'unittest', 'discover', '-s', root]],
             source = source)))
