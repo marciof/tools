@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
 
-# FIXME
 """
 Virtualenv support.
 """
@@ -12,8 +11,9 @@ from __future__ import absolute_import, division, unicode_literals
 import os
 
 
+# Not called, but required.
 def exists(env):
-    return env.Detect('virtualenv')
+    raise NotImplementedError()
 
 
 def generate(env):
