@@ -2,7 +2,7 @@
 
 
 """
-Python's built-in unit tester.
+Unit testing support.
 """
 
 
@@ -10,6 +10,9 @@ Python's built-in unit tester.
 from __future__ import absolute_import, division, unicode_literals
 import os
 import sys
+
+# External:
+import unittest2
 
 
 # Not called, but required.
@@ -45,5 +48,5 @@ def PyUnit(env,
 
     return env.AlwaysBuild(env.Alias(target,
         action = env.Action(
-            [[sys.executable, '-B', '-m', 'unittest', 'discover', '-s', root]],
+            [[sys.executable, '-B', '-m', 'unittest2', 'discover', '-s', root]],
             source = source)))
