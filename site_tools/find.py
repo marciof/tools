@@ -11,8 +11,9 @@ from __future__ import absolute_import, division, unicode_literals
 import os
 
 
+# Not called, but required.
 def exists(env):
-    return True
+    raise NotImplementedError()
 
 
 def generate(env):

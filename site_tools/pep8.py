@@ -12,10 +12,12 @@ import os
 
 
 _PROGRAM_NAME = 'pep8'
+_ENV_NAME = _PROGRAM_NAME.upper()
 
 
+# Not called, but required.
 def exists(env):
-    return env.Detect(_PROGRAM_NAME)
+    raise NotImplementedError()
 
 
 def generate(env):
@@ -23,7 +25,8 @@ def generate(env):
     Adds a *Pep8* method to the SCons environment.
     """
 
-    env.Tool('python')
+    env.Tool('which')
+    env[_ENV_NAME] = env.Which(_PROGRAM_NAME)
     env.AddMethod(Pep8)
 
 
@@ -48,7 +51,7 @@ def Pep8(env,
         env.Tool('globr')
         source = env.Globr('*.py', root = root)
 
-    command = [_PROGRAM_NAME, '--config=' + config] + map(str, source)
+    command = [env[_ENV_NAME], '--config=' + config] + map(str, source)
 
     return env.AlwaysBuild(env.Alias(target,
         action = env.Action([command], source = source)))

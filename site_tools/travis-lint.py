@@ -12,10 +12,14 @@ import os
 
 
 _PROGRAM_NAME = 'travis-lint'
+_ENV_NAME = _PROGRAM_NAME.upper().replace('-', '_')
+_RUBY_ENV_NAME = 'RUBY'
+_TRAVIS_CI_ENV_NAME = 'TRAVIS_CI'
 
 
+# Not called, but required.
 def exists(env):
-    return env.Detect(_PROGRAM_NAME)
+    raise NotImplementedError()
 
 
 def generate(env):
@@ -23,18 +27,15 @@ def generate(env):
     Adds a *TravisLint* method to the SCons environment.
     """
 
-    # FIXME: Why isn't `exists` called?
-    for paths in (None, 'GEM_PATH', 'PATH'):
-        if paths is not None:
-            paths = os.environ.get(paths)
+    env[_TRAVIS_CI_ENV_NAME] = ((os.environ.get('CI') == 'true')
+        and (os.environ.get('TRAVIS') == 'true'))
 
-            if paths is None:
-                continue
+    if not env[_TRAVIS_CI_ENV_NAME]:
+        env.Tool('which')
+        env[_RUBY_ENV_NAME] = env.Which('ruby')
 
-        path = env.WhereIs(_PROGRAM_NAME, path = paths)
-
-        if path is not None:
-            env.AppendENVPath('PATH', os.path.dirname(path))
+        # Force native tool (e.g. remove ".bat" on Windows).
+        (env[_ENV_NAME], _) = os.path.splitext(env.Which(_PROGRAM_NAME))
 
     env.AddMethod(TravisLint)
 
@@ -46,5 +47,10 @@ def TravisLint(env, target = _PROGRAM_NAME):
     :return: SCons target
     """
 
-    return env.AlwaysBuild(env.Alias(target,
-        action = env.Action([_PROGRAM_NAME])))
+    if env[_TRAVIS_CI_ENV_NAME]:
+        def action(*args, **kwargs):
+            pass
+    else:
+        action = [[env[_RUBY_ENV_NAME], env[_ENV_NAME]]]
+
+    return env.AlwaysBuild(env.Alias(target, action = env.Action(action)))

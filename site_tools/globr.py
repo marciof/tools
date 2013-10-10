@@ -12,8 +12,9 @@ import itertools
 import os
 
 
+# Not called, but required.
 def exists(env):
-    return True
+    raise NotImplementedError()
 
 
 def generate(env):
