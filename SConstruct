@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, unicode_literals
 
 
 env = Environment(tools = [
-    'default', 'find', 'pep8', 'pylint', 'pyunit', 'travis-lint'])
+    'default', 'find', 'pep8', 'pylint', 'pyunit', 'travis-lint', 'virtualenv'])
 
 src = env.Find('sources')
 
