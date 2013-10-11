@@ -63,7 +63,7 @@ class TestParameters (unittest2.TestCase):
             start(main, args = ['--verbose', 'False'])
 
 
-    def test_default(self):
+    def test_default_parameters(self):
         def main():
             return 123
 
@@ -97,6 +97,15 @@ class TestParameters (unittest2.TestCase):
 
         with self.assertRaisesRegexp(Error, UNK_ARGS_ERR_RE):
             start(main, args = ['123'])
+
+
+    def test_none_type_option(self):
+        def main(user = None):
+            return user
+
+        self.assertEqual(start(main), None)
+        self.assertEqual(start(main, args = ['-u', 'guest']), 'guest')
+        self.assertEqual(start(main, args = ['--user', 'test']), 'test')
 
 
     def test_custom_prefix_chars(self):
@@ -219,6 +228,16 @@ class TestDocstring (unittest2.TestCase):
 
         with self.assertRaisesRegexp(argf.UnknownDocParam, 'name'):
             start(main_type, args = ['guest'])
+
+
+    def test_none_type_option(self):
+        def main(length = None):
+            """:type length: int"""
+            return length
+
+        self.assertEqual(start(main), None)
+        self.assertEqual(start(main, args = ['-l', '123']), 123)
+        self.assertEqual(start(main, args = ['--length', '321']), 321)
 
 
     def test_parameter_description(self):

@@ -94,7 +94,7 @@ class Argument (object):
     def guess_data_type(self):
         data_type = self.data_type
 
-        if self.has_default_value:
+        if self.has_default_value and (self.default_value is not None):
             inferred_data_type = type(self.default_value)
 
             if data_type is None:
