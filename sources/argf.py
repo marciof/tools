@@ -222,11 +222,12 @@ def parse_docstring(function, arguments):
 
 def start(main,
         args = None,
-        arg_parser_class = argparse.ArgumentParser,
+        arg_parser = None,
         soft_errors = True):
 
-    arg_parser = arg_parser_class(
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    if arg_parser is None:
+        arg_parser = argparse.ArgumentParser(
+            formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
     if arg_parser.add_help:
         reserved_names = set(['h', 'help'])

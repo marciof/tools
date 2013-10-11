@@ -4,7 +4,6 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import unittest2
-import functools
 import StringIO
 
 # External:
@@ -39,10 +38,12 @@ FEW_ARGS_ERR_RE = 'few arguments'
 OPT_ARGS_RE = 'optional arguments:'
 UNK_ARGS_ERR_RE = 'unrecognized arguments'
 
-# pylint: disable=C0103
-start = functools.partial(argf.start,
-    arg_parser_class = ArgumentParser,
-    soft_errors = False)
+
+def start(*args, **kwargs):
+    return argf.start(*args,
+        arg_parser = ArgumentParser(),
+        soft_errors = False,
+        **kwargs)
 
 
 class TestParameters (unittest2.TestCase):
