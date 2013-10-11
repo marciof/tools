@@ -170,7 +170,7 @@ class TestDocstring (unittest2.TestCase):
             """
             return user
 
-        with self.assertRaisesRegexp(argf.AmbiguousDocParamDesc, 'user'):
+        with self.assertRaisesRegexp(argf.AmbiguousParamDesc, 'user'):
             start(main, args = ['guest'])
 
 
@@ -182,7 +182,7 @@ class TestDocstring (unittest2.TestCase):
             """
             return user
 
-        with self.assertRaisesRegexp(argf.AmbiguousDocParamType, 'user'):
+        with self.assertRaisesRegexp(argf.AmbiguousParamType, 'user'):
             start(main, args = ['guest'])
 
 
@@ -191,7 +191,7 @@ class TestDocstring (unittest2.TestCase):
             """:type user: int"""
             return user
 
-        with self.assertRaisesRegexp(argf.IncompatibleParamDocTypes, 'user'):
+        with self.assertRaisesRegexp(argf.IncompatibleTypes, 'user'):
             start(main)
 
 
@@ -200,7 +200,7 @@ class TestDocstring (unittest2.TestCase):
             """:type user: string"""
             return user
 
-        with self.assertRaisesRegexp(argf.UnknownDocType, 'string'):
+        with self.assertRaisesRegexp(argf.UnknownParamType, 'string'):
             start(main, args = ['guest'])
 
 
@@ -213,10 +213,10 @@ class TestDocstring (unittest2.TestCase):
             """:type name: unicode"""
             return user
 
-        with self.assertRaisesRegexp(argf.UnknownDocParam, 'name'):
+        with self.assertRaisesRegexp(argf.UnknownParam, 'name'):
             start(main_param, args = ['guest'])
 
-        with self.assertRaisesRegexp(argf.UnknownDocParam, 'name'):
+        with self.assertRaisesRegexp(argf.UnknownParam, 'name'):
             start(main_type, args = ['guest'])
 
 
@@ -250,7 +250,7 @@ class TestDocstring (unittest2.TestCase):
         with self.assertRaisesRegexp(HelpPrinted, 'does nothing'):
             start(main, args = ['-h'])
 
-        with self.assertRaises(argf.AmbiguousDocDescription):
+        with self.assertRaises(argf.AmbiguousDesc):
             start(main, arg_parser = ArgumentParser(description = 'duplicate'))
 
         with self.assertRaisesRegexp(HelpPrinted, 'alternate'):

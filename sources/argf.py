@@ -16,18 +16,18 @@ class Error (Exception):
     pass
 
 
-class AmbiguousDocDescription (Error):
+class AmbiguousDesc (Error):
     def __str__(self):
         return 'custom arg parser instance already defines a description'
 
 
-class AmbiguousDocParamDesc (Error):
+class AmbiguousParamDesc (Error):
     def __str__(self):
         return 'multiple descriptions for same parameter in docstring: %s' \
             % self.args
 
 
-class AmbiguousDocParamType (Error):
+class AmbiguousParamType (Error):
     def __str__(self):
         return 'multiple types for same parameter in docstring: %s' % self.args
 
@@ -37,18 +37,18 @@ class DynamicArgs (Error):
         return 'varargs and kwargs are not supported'
 
 
-class IncompatibleParamDocTypes (Error):
+class IncompatibleTypes (Error):
     def __str__(self):
         return 'default value and docstring types are not compatible: %s' \
             % self.args
 
 
-class UnknownDocParam (Error):
+class UnknownParam (Error):
     def __str__(self):
         return 'unknown parameter in docstring: %s' % self.args
 
 
-class UnknownDocType (Error):
+class UnknownParamType (Error):
     def __str__(self):
         return 'unknown parameter type in docstring: %s' % self.args
 
@@ -100,7 +100,7 @@ class Argument (object):
             if data_type is None:
                 data_type = inferred_data_type
             elif not issubclass(inferred_data_type, data_type):
-                raise IncompatibleParamDocTypes(self.name)
+                raise IncompatibleTypes(self.name)
         elif data_type is None:
             data_type = str
 
@@ -168,7 +168,7 @@ def get_type_by_name(name):
     try:
         return __builtins__[name]
     except KeyError:
-        raise UnknownDocType(name)
+        raise UnknownParamType(name)
 
 
 def parse_docstring(function, arguments):
@@ -195,19 +195,19 @@ def parse_docstring(function, arguments):
         argument = arguments.get(name)
 
         if argument is None:
-            raise UnknownDocParam(name)
+            raise UnknownParam(name)
 
         field_body = field.findtext('field_body/paragraph')
 
         if kind == 'param':
             if argument in has_description:
-                raise AmbiguousDocParamDesc(name)
+                raise AmbiguousParamDesc(name)
 
             argument.description = field_body
             has_description.add(argument)
         elif kind == 'type':
             if argument in has_data_type:
-                raise AmbiguousDocParamType(name)
+                raise AmbiguousParamType(name)
 
             argument.data_type = get_type_by_name(field_body)
             has_data_type.add(argument)
@@ -232,7 +232,7 @@ def start(main,
             if arg_parser.description is None:
                 arg_parser.description = description
             else:
-                raise AmbiguousDocDescription()
+                raise AmbiguousDesc()
 
         add_options(arg_parser, arguments)
     except Error as error:
