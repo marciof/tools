@@ -63,7 +63,7 @@ class TestParameters (unittest2.TestCase):
             start(main, args = ['--verbose', 'False'])
 
 
-    def test_default_parameters(self):
+    def test_default_options(self):
         def main():
             return 123
 
@@ -72,6 +72,11 @@ class TestParameters (unittest2.TestCase):
 
         with self.assertRaisesRegexp(HelpPrinted, OPT_ARGS_RE):
             start(main, args = ['--help'])
+
+        with self.assertRaisesRegexp(Error, UNK_ARGS_ERR_RE):
+            start(main,
+                args = ['-h'],
+                arg_parser = ArgumentParser(add_help = False))
 
 
     def test_integer_option(self):
