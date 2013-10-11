@@ -23,6 +23,18 @@ import unipath
 # robots.txt ?
 # <link> next rel index ?
 
+# detect soft errors: http://sphinx-doc.org/rss
+# <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+# <html><head>
+# <title>404 Not Found</title>
+# </head><body>
+# <h1>Not Found</h1>
+# <p>The requested URL /rss was not found on this server.</p>
+# <hr>
+# <address>Apache/2.2.14 (Ubuntu) Server at sphinx-doc.org Port 80</address>
+# </body></html>
+
+
 _handler = logging.StreamHandler()
 _handler.setFormatter(logging.Formatter(logging.BASIC_FORMAT))
 
@@ -160,7 +172,8 @@ def find_from_url_words(url):
     for component in reversed(unipath.Path(parts.path).components()):
         print component
     
-    raise StopIteration()
+    #raise StopIteration()
+    return []
 
 
 args = sys.argv[1:]
