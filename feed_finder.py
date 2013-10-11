@@ -20,7 +20,8 @@ import unipath
 # - Atom auto-discovery
 # - Paths auto-discovery
 # - www.sitemaps.org
-
+# robots.txt ?
+# <link> next rel index ?
 
 _handler = logging.StreamHandler()
 _handler.setFormatter(logging.Formatter(logging.BASIC_FORMAT))
