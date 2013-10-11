@@ -18,7 +18,7 @@ class Error (Exception):
 
 class AmbiguousDesc (Error):
     def __str__(self):
-        return 'custom arg parser instance already defines a description'
+        return 'custom arg parser instance has a description already'
 
 
 class AmbiguousParamDesc (Error):
@@ -45,12 +45,12 @@ class IncompatibleTypes (Error):
 
 class UnknownParam (Error):
     def __str__(self):
-        return 'unknown parameter in docstring: %s' % self.args
+        return 'unknown docstring parameter: %s' % self.args
 
 
 class UnknownParamType (Error):
     def __str__(self):
-        return 'unknown parameter type in docstring: %s' % self.args
+        return 'unknown docstring parameter type: %s' % self.args
 
 
 class Argument (object):
