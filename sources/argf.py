@@ -91,7 +91,7 @@ class Argument (object):
         return self._default_value is not self._NO_DEFAULT_VALUE
 
 
-    def guess_data_type(self):
+    def extract_data_type(self):
         data_type = self.data_type
 
         if self.has_default_value and (self.default_value is not None):
@@ -119,7 +119,7 @@ def add_options(arg_parser, arguments):
             if argument.short_name is not None:
                 names.append(arg_parser.prefix_chars + argument.short_name)
 
-            data_type = argument.guess_data_type()
+            data_type = argument.extract_data_type()
             names.append((2 * arg_parser.prefix_chars) + argument.name)
             options['default'] = argument.default_value
 
