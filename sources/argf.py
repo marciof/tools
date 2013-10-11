@@ -16,6 +16,11 @@ class Error (Exception):
     pass
 
 
+class AmbiguousDocDescription (Error):
+    def __str__(self):
+        return 'custom arg parser instance already defines a description'
+
+
 class AmbiguousDocParamDesc (Error):
     def __str__(self):
         return 'multiple descriptions for same parameter in docstring: %s' \
@@ -236,7 +241,14 @@ def start(main,
 
     try:
         arguments = extract_arguments(main, reserved_names)
-        arg_parser.description = parse_docstring(main, arguments)
+        description = parse_docstring(main, arguments)
+
+        if description is not None:
+            if arg_parser.description is None:
+                arg_parser.description = description
+            else:
+                raise AmbiguousDocDescription()
+
         add_options(arg_parser, arguments)
     except Error as error:
         if soft_errors:

@@ -116,7 +116,7 @@ class TestParameters (unittest2.TestCase):
             self.assertEqual(
                 start(main,
                     args = [option, 'test'],
-                    arg_parser = argparse.ArgumentParser(prefix_chars = '/')),
+                    arg_parser = ArgumentParser(prefix_chars = '/')),
                 'test')
 
 
@@ -254,5 +254,16 @@ class TestDocstring (unittest2.TestCase):
             """does nothing"""
             return 123
 
+        def main_none():
+            return 321
+
         with self.assertRaisesRegexp(HelpPrinted, 'does nothing'):
             start(main, args = ['-h'])
+
+        with self.assertRaises(argf.AmbiguousDocDescription):
+            start(main, arg_parser = ArgumentParser(description = 'duplicate'))
+
+        with self.assertRaisesRegexp(HelpPrinted, 'alternate'):
+            start(main_none,
+                args = ['-h'],
+                arg_parser = ArgumentParser(description = 'alternate'))
