@@ -170,6 +170,15 @@ class TestDocstring (unittest2.TestCase):
             start(main, args = ['guest'])
 
 
+    def test_incompatible_types(self):
+        def main(user = 'guest'):
+            """:type user: int"""
+            return user
+
+        with self.assertRaisesRegexp(argf.IncompatibleParamDocTypes, 'user'):
+            start(main, args = [])
+
+
     def test_invalid_type(self):
         def main(user):
             """:type user: string"""
@@ -211,12 +220,3 @@ class TestDocstring (unittest2.TestCase):
 
         with self.assertRaisesRegexp(HelpPrinted, 'does nothing'):
             start(main, args = ['-h'])
-
-
-    def test_type_mismatch(self):
-        def main(user = 'guest'):
-            """:type user: int"""
-            return user
-
-        with self.assertRaisesRegexp(argf.ParamVsDocTypeMismatch, 'user'):
-            start(main, args = [])

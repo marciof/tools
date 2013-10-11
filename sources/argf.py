@@ -32,9 +32,9 @@ class DynamicArgs (Error):
         return 'varargs and kwargs are not supported'
 
 
-class ParamVsDocTypeMismatch (Error):
+class IncompatibleParamDocTypes (Error):
     def __str__(self):
-        return 'type of default value does not match docstring type: %s' \
+        return 'default value and docstring types are not compatible: %s' \
             % self.args
 
 
@@ -100,7 +100,7 @@ class Argument (object):
             if data_type is None:
                 data_type = inferred_data_type
             elif not issubclass(inferred_data_type, data_type):
-                raise ParamVsDocTypeMismatch(self.name)
+                raise IncompatibleParamDocTypes(self.name)
         elif data_type is None:
             data_type = str
 
