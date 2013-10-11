@@ -46,7 +46,14 @@ def PyUnit(env,
         env.Tool('globr')
         source = env.Globr('test*.py', root = root)
 
+    # Not using a package as the entry point to support Python 2.6.
     return env.AlwaysBuild(env.Alias(target,
         action = env.Action(
-            [[sys.executable, '-B', '-m', 'unittest2', 'discover', '-s', root]],
+            [[sys.executable,
+              '-B',
+              '-m',
+              'unittest2.__main__',
+              'discover',
+              '-s',
+              root]],
             source = source)))
