@@ -16,6 +16,43 @@ class Error (Exception):
     pass
 
 
+class AmbiguousDocParamDesc (Error):
+    def __str__(self):
+        return 'multiple descriptions for same parameter in docstring: %s' \
+            % self.args
+
+
+class AmbiguousDocParamType (Error):
+    def __str__(self):
+        return 'multiple types for same parameter in docstring: %s' % self.args
+
+
+class DynamicArgs (Error):
+    def __str__(self):
+        return 'varargs and kwargs are not supported'
+
+
+class ParamVsDocTypeMismatch (Error):
+    def __str__(self):
+        return 'type of default value does not match docstring type: %s' \
+            % self.args
+
+
+class ReservedParamName (Error):
+    def __str__(self):
+        return 'parameter name is reserved: %s' % self.args
+
+
+class UnknownDocParam (Error):
+    def __str__(self):
+        return 'unknown parameter in docstring: %s' % self.args
+
+
+class UnknownDocType (Error):
+    def __str__(self):
+        return 'unknown parameter type in docstring: %s' % self.args
+
+
 class Argument (object):
     _NO_DEFAULT_VALUE = object()
 
@@ -39,7 +76,7 @@ class Argument (object):
     @property
     def default_value(self):
         if not self.has_default_value:
-            raise Error('Argument has no default value.')
+            raise Error('argument has no default value')
         else:
             return self._default_value
 
@@ -55,13 +92,46 @@ class Argument (object):
 
 
     def guess_data_type(self):
-        if self.data_type is not None:
-            return self.data_type
+        data_type = self.data_type
 
         if self.has_default_value:
-            return type(self.default_value)
+            inferred_data_type = type(self.default_value)
 
-        return str
+            if data_type is None:
+                data_type = inferred_data_type
+            elif not issubclass(inferred_data_type, data_type):
+                raise ParamVsDocTypeMismatch(self.name)
+        elif data_type is None:
+            data_type = str
+
+        return data_type
+
+
+def add_options(arg_parser, arguments):
+    for argument in arguments:
+        names = []
+        options = {}
+
+        if argument.description is not None:
+            options['help'] = argument.description
+
+        if argument.has_default_value:
+            if argument.short_name is not None:
+                names.append(arg_parser.prefix_chars + argument.short_name)
+
+            data_type = argument.guess_data_type()
+            names.append((2 * arg_parser.prefix_chars) + argument.name)
+            options['default'] = argument.default_value
+
+            if issubclass(data_type, bool):
+                options['const'] = not argument.default_value
+                options['action'] = 'store_const'
+            else:
+                options['type'] = data_type
+        else:
+            names.append(argument.name)
+
+        arg_parser.add_argument(*names, **options)
 
 
 def extract_arguments(function, reserved_names):
@@ -69,15 +139,18 @@ def extract_arguments(function, reserved_names):
     reserved_names = set(reserved_names)
 
     if (arg_spec.varargs is not None) or (arg_spec.keywords is not None):
-        raise Error('Varargs and kwargs are not supported.')
+        raise DynamicArgs()
 
     nr_kwargs = 0 if arg_spec.defaults is None else len(arg_spec.defaults)
     kwargs_offset = len(arg_spec.args) - nr_kwargs
     arguments = []
 
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
-        if name in reserved_names:
-            raise Error('Argument name is reserved: ' + name)
+        kwarg_i = arg_i - kwargs_offset
+        is_optional = (0 <= kwarg_i < nr_kwargs)
+
+        if is_optional and (name in reserved_names):
+            raise ReservedParamName(name)
 
         reserved_names.add(name)
         argument = Argument(name)
@@ -88,10 +161,7 @@ def extract_arguments(function, reserved_names):
                 argument.short_name = char
                 break
 
-        kwarg_i = arg_i - kwargs_offset
-        has_default = (0 <= kwarg_i < nr_kwargs)
-
-        if has_default:
+        if is_optional:
             argument.default_value = arg_spec.defaults[kwarg_i]
 
         arguments.append(argument)
@@ -103,10 +173,9 @@ def get_type_by_name(name):
     try:
         return __builtins__[name]
     except KeyError:
-        raise Error('No such data type: ' + name)
+        raise UnknownDocType(name)
 
 
-# TODO: Leverage Sphinx to parse docstrings in the Python domain.
 def parse_docstring(function, arguments):
     docstring = inspect.getdoc(function)
 
@@ -120,43 +189,43 @@ def parse_docstring(function, arguments):
     docstring = xml.etree.ElementTree.fromstring(
         docutils.core.publish_doctree(docstring).asdom().toxml())
 
-    for fields in docstring.findall('field_list'):
-        for field in fields.findall('field'):
-            field_name = field.findtext('field_name')
-            directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
+    for field in docstring.findall('.//field'):
+        field_name = field.findtext('field_name')
+        directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
 
-            if directive is None:
-                raise Error('Invalid field: ' + field_name)
+        if directive is None:
+            continue
 
-            (kind, name) = directive.groups()
-            argument = arguments.get(name)
+        (kind, name) = directive.groups()
+        argument = arguments.get(name)
 
-            if argument is None:
-                raise Error('Unknown parameter: ' + name)
+        if argument is None:
+            raise UnknownDocParam(name)
 
-            field_body = field.findtext('field_body/paragraph')
+        field_body = field.findtext('field_body/paragraph')
 
-            if kind == 'param':
-                if argument in has_description:
-                    raise Error('Ambiguous parameter description: ' + name)
+        if kind == 'param':
+            if argument in has_description:
+                raise AmbiguousDocParamDesc(name)
 
-                argument.description = field_body
-                has_description.add(argument)
-            elif kind == 'type':
-                if argument in has_data_type:
-                    raise Error('Ambiguous parameter data type: ' + name)
+            argument.description = field_body
+            has_description.add(argument)
+        elif kind == 'type':
+            if argument in has_data_type:
+                raise AmbiguousDocParamType(name)
 
-                argument.data_type = get_type_by_name(field_body)
-                has_data_type.add(argument)
-            else:
-                raise Error('Unknown field: ' + field_name)
+            argument.data_type = get_type_by_name(field_body)
+            has_data_type.add(argument)
 
     return docstring.findtext('paragraph')
 
 
-# TODO: Allow user defined arg parser (and update reserved names).
-def start(main, args = None):
-    arg_parser = argparse.ArgumentParser(
+def start(main,
+        args = None,
+        arg_parser_class = argparse.ArgumentParser,
+        soft_errors = True):
+
+    arg_parser = arg_parser_class(
         formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
     if arg_parser.add_help:
@@ -164,32 +233,14 @@ def start(main, args = None):
     else:
         reserved_names = set()
 
-    arguments = extract_arguments(main, reserved_names)
-    arg_parser.description = parse_docstring(main, arguments)
-
-    for argument in arguments:
-        names = []
-        options = {}
-
-        if argument.description is not None:
-            options['help'] = argument.description
-
-        if argument.has_default_value:
-            if argument.short_name is not None:
-                names.append('-' + argument.short_name)
-
-            names.append('--' + argument.name)
-            options['default'] = argument.default_value
-            data_type = argument.guess_data_type()
-
-            if issubclass(data_type, bool):
-                options['const'] = not argument.default_value
-                options['action'] = 'store_const'
-            else:
-                options['type'] = data_type
+    try:
+        arguments = extract_arguments(main, reserved_names)
+        arg_parser.description = parse_docstring(main, arguments)
+        add_options(arg_parser, arguments)
+    except Error as error:
+        if soft_errors:
+            arg_parser.error(error)
         else:
-            names.append(argument.name)
-
-        arg_parser.add_argument(*names, **options)
-
-    return main(**arg_parser.parse_args(args = args).__dict__)
+            raise
+    else:
+        return main(**arg_parser.parse_args(args = args).__dict__)
