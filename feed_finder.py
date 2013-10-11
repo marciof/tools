@@ -22,6 +22,8 @@ import unipath
 # - www.sitemaps.org
 # robots.txt ?
 # <link> next rel index ?
+# http://www.sorejominbarta.com/section/অর্থনীতি/feed
+# http://www.sorejominbarta.com/section/অর্থনীতি-ব্যবসায়/feed
 
 # detect soft errors: http://sphinx-doc.org/rss
 # <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
