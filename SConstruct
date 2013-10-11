@@ -10,13 +10,9 @@ env = Environment(tools = [
 
 src = env.Find('sources')
 
-env.Alias('verify', [
-    env.Alias('check', [
-        env.TravisLint(),
-        env.Pep8(root = src, config = env.Find('pep8.ini')),
-        env.Pylint(root = src, config = env.Find('pylint.ini')),
-    ]),
+env.Default(env.Alias('check', [
+    env.TravisLint(),
+    env.Pep8(root = src, config = env.Find('pep8.ini')),
+    env.Pylint(root = src, config = env.Find('pylint.ini')),
     env.PyUnit('test', root = src),
-])
-
-env.Default('verify')
+]))
