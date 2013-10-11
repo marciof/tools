@@ -43,11 +43,6 @@ class IncompatibleParamDocTypes (Error):
             % self.args
 
 
-class ReservedParamName (Error):
-    def __str__(self):
-        return 'parameter name is reserved: %s' % self.args
-
-
 class UnknownDocParam (Error):
     def __str__(self):
         return 'unknown parameter in docstring: %s' % self.args
@@ -139,9 +134,9 @@ def add_options(arg_parser, arguments):
         arg_parser.add_argument(*names, **options)
 
 
-def extract_arguments(function, reserved_names):
+def extract_arguments(function):
     arg_spec = inspect.getargspec(function)
-    reserved_names = set(reserved_names)
+    reserved_names = set()
 
     if (arg_spec.varargs is not None) or (arg_spec.keywords is not None):
         raise DynamicArgs()
@@ -153,11 +148,6 @@ def extract_arguments(function, reserved_names):
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
         kwarg_i = arg_i - kwargs_offset
         is_optional = (0 <= kwarg_i < nr_kwargs)
-
-        if is_optional and (name in reserved_names):
-            raise ReservedParamName(name)
-
-        reserved_names.add(name)
         argument = Argument(name)
 
         for char in name:
@@ -234,13 +224,8 @@ def start(main,
         arg_parser = argparse.ArgumentParser(
             formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-    if arg_parser.add_help:
-        reserved_names = set(['h', 'help'])
-    else:
-        reserved_names = set()
-
     try:
-        arguments = extract_arguments(main, reserved_names)
+        arguments = extract_arguments(main)
         description = parse_docstring(main, arguments)
 
         if description is not None:

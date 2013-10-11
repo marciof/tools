@@ -125,21 +125,6 @@ class TestParameters (unittest2.TestCase):
                 'test')
 
 
-    def test_reserved(self):
-        # pylint: disable=W0622
-
-        def main_option(help = False):
-            return help
-
-        def main_argument(help):
-            return help
-
-        with self.assertRaisesRegexp(argf.ReservedParamName, 'help'):
-            start(main_option)
-
-        self.assertEqual(start(main_argument, args = ['test']), 'test')
-
-
     def test_single_argument(self):
         def main(user):
             return user
