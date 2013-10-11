@@ -40,8 +40,12 @@ UNK_ARGS_ERR_RE = 'unrecognized arguments'
 
 
 def start(*args, **kwargs):
+    kwargs.setdefault('args', [])
+
+    if 'arg_parser' not in kwargs:
+        kwargs['arg_parser'] = ArgumentParser()
+
     return argf.start(*args,
-        arg_parser = ArgumentParser(),
         soft_errors = False,
         **kwargs)
 
@@ -51,7 +55,7 @@ class TestParameters (unittest2.TestCase):
         def main(verbose = False):
             return verbose
 
-        self.assertEqual(start(main, args = []), False)
+        self.assertEqual(start(main), False)
         self.assertEqual(start(main, args = ['-v']), True)
         self.assertEqual(start(main, args = ['--verbose']), True)
 
@@ -74,7 +78,7 @@ class TestParameters (unittest2.TestCase):
         def main(length = 123):
             return length
 
-        self.assertEqual(start(main, args = []), 123)
+        self.assertEqual(start(main), 123)
         self.assertEqual(start(main, args = ['-l', '321']), 321)
         self.assertEqual(start(main, args = ['--length', '321']), 321)
 
@@ -89,10 +93,22 @@ class TestParameters (unittest2.TestCase):
         def main():
             return 123
 
-        self.assertEqual(start(main, args = []), 123)
+        self.assertEqual(start(main), 123)
 
         with self.assertRaisesRegexp(Error, UNK_ARGS_ERR_RE):
             start(main, args = ['123'])
+
+
+    def test_custom_prefix_chars(self):
+        def main(user = 'guest'):
+            return user
+
+        for option in ['/u', '//user']:
+            self.assertEqual(
+                start(main,
+                    args = [option, 'test'],
+                    arg_parser = argparse.ArgumentParser(prefix_chars = '/')),
+                'test')
 
 
     def test_reserved(self):
@@ -105,7 +121,7 @@ class TestParameters (unittest2.TestCase):
             return help
 
         with self.assertRaisesRegexp(argf.ReservedParamName, 'help'):
-            start(main_option, args = [])
+            start(main_option)
 
         self.assertEqual(start(main_argument, args = ['test']), 'test')
 
@@ -115,7 +131,7 @@ class TestParameters (unittest2.TestCase):
             return user
 
         with self.assertRaisesRegexp(Error, FEW_ARGS_ERR_RE):
-            start(main, args = [])
+            start(main)
 
         self.assertEqual(start(main, args = ['guest']), 'guest')
 
@@ -127,7 +143,7 @@ class TestParameters (unittest2.TestCase):
         def main(user = 'guest'):
             return user
 
-        self.assertEqual(start(main, args = []), 'guest')
+        self.assertEqual(start(main), 'guest')
         self.assertEqual(start(main, args = ['-u', 'test']), 'test')
         self.assertEqual(start(main, args = ['--user', 'test']), 'test')
 
@@ -140,10 +156,10 @@ class TestParameters (unittest2.TestCase):
             return kwargs
 
         with self.assertRaises(argf.DynamicArgs):
-            start(main_varargs, args = [])
+            start(main_varargs)
 
         with self.assertRaises(argf.DynamicArgs):
-            start(main_kwargs, args = [])
+            start(main_kwargs)
 
 
 class TestDocstring (unittest2.TestCase):
@@ -177,7 +193,7 @@ class TestDocstring (unittest2.TestCase):
             return user
 
         with self.assertRaisesRegexp(argf.IncompatibleParamDocTypes, 'user'):
-            start(main, args = [])
+            start(main)
 
 
     def test_invalid_type(self):
