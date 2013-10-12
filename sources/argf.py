@@ -12,6 +12,9 @@ import argparse
 import docutils.core
 
 
+__all__ = ['start']
+
+
 class Error (Exception):
     pass
 
@@ -108,6 +111,13 @@ class Argument (object):
 
 
 def add_options(arg_parser, arguments):
+    """
+    Converts arguments to ``argparse`` options and adds them.
+
+    :type arg_parser: argparse.ArgumentParser
+    :type arguments: iterable<Argument>
+    """
+
     for argument in arguments:
         names = []
         options = {}
@@ -135,6 +145,13 @@ def add_options(arg_parser, arguments):
 
 
 def extract_arguments(function):
+    """
+    Parses a function's argument spec.
+
+    :type function: callable
+    :rtype: iterable<Argument>
+    """
+
     arg_spec = inspect.getargspec(function)
     reserved_names = set()
 
@@ -150,6 +167,7 @@ def extract_arguments(function):
         is_optional = (0 <= kwarg_i < nr_kwargs)
         argument = Argument(name)
 
+        # TODO: Improve creating a short option from a name.
         for char in name:
             if char not in reserved_names:
                 reserved_names.add(char)
@@ -165,6 +183,11 @@ def extract_arguments(function):
 
 
 def get_type_by_name(name):
+    """
+    :type name: unicode
+    :rtype: type
+    """
+
     try:
         return __builtins__[name]
     except KeyError:
@@ -172,6 +195,15 @@ def get_type_by_name(name):
 
 
 def parse_docstring(function, arguments):
+    """
+    Extracts additional argument information from a function's docstring.
+
+    :type function: callable
+    :type arguments: iterable<Argument>
+    :return: function's description or `None` if not defined
+    :rtype: unicode|None
+    """
+
     docstring = inspect.getdoc(function)
 
     if docstring is None:
@@ -219,6 +251,21 @@ def start(main,
         args = None,
         arg_parser = None,
         soft_errors = True):
+    """
+    Starts a function, passing to it program arguments parsed via ``argparse``.
+
+    :param main: entry point
+    :type main: callable
+    :param args: program arguments, otherwise leaves it for
+        ``argparse.ArgumentParser.parse_args()`` to define
+    :type args: list<basestring>
+    :param arg_parser: user defined argument parser
+    :type arg_parser: argparse.ArgumentParser
+    :param soft_errors: if true converts parsing exceptions to error messages
+        for ``argparse.ArgumentParser.error()``
+    :type soft_errors: bool
+    :return: entry point's return value
+    """
 
     if arg_parser is None:
         arg_parser = argparse.ArgumentParser(
