@@ -281,7 +281,7 @@ def start(main,
 
     :param main: entry point
     :type main: callable
-    :param args: program arguments, otherwise leaves it for
+    :param args: program arguments, otherwise leaves it up to
         ``argparse.ArgumentParser.parse_args()`` to define
     :type args: list<basestring>
     :param arg_parser: user defined argument parser
