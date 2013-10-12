@@ -1,6 +1,30 @@
 # -*- coding: UTF-8 -*-
 
 
+"""
+Declarative command line arguments parser.
+
+Builds an ``argparse.ArgumentParser`` from a function's parameters and
+docstring, and calls it with the program arguments already parsed:
+
+* Docstring text describes the program.
+* Docstring parameter descriptions describe program arguments.
+* A non-keyword parameter is converted to a positional argument.
+* A keyword parameter is converted to an optional argument.
+
+  * An argument type is taken from its parameter docstring type. If
+    unspecified, type is inferred from its default value. If its default
+    value is ``None``, type defaults to ``str``.
+  * A boolean parameter is converted to a flag argument. When present in
+    the command line its default value is negated via a logical ``not``.
+  * A short option is automatically created from the first available
+    character of its name.
+  * The parameter's docstring type and the default value's inferred type
+    don't need to match, but the latter is required to be a subclass of
+    the former.
+"""
+
+
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import inspect
