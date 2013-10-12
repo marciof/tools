@@ -128,7 +128,6 @@ if [ -z "$CYGWIN_ENV" ]; then
     _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
     _have lesspipe && eval "$($NAME)"
-    _have trash-put && alias del="$NAME"
 
     # Remove bright colors (has to come after `dircolors`).
     export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
@@ -311,7 +310,7 @@ unset ps1_user_host
 nano_rc=~/.nanorc
 
 if [ -n "$HAVE_NANO" -a -n "$INTERACTIVE" -a ! -e "$nano_rc" ]; then
-    ls -1 /usr/share/nano/*.nanorc | sed -e 's/(.+)/include "\1"/' > "$nano_rc"
+    ls -1 /usr/share/nano/*.nanorc | sed -r 's/(.+)/include "\1"/' > "$nano_rc"
     cat << 'TEXT' >> "$nano_rc"
 set autoindent
 set const
