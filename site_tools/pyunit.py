@@ -22,7 +22,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *PyUnit* method to the SCons environment.
+    Adds a ``PyUnit`` method to the SCons environment.
     """
 
     env.AddMethod(PyUnit)
@@ -37,7 +37,7 @@ def PyUnit(env,
     :type target: unicode
     :param source: source files to be test, otherwise all test sources
     :type source: list
-    :param root: search starting point path when *source* is unspecified
+    :param root: search starting point path when ``source`` is unspecified
     :type root: unicode
     :return: SCons target
     """

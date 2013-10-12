@@ -20,7 +20,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *Cython* method to the SCons environment.
+    Adds a ``Cython`` method to the SCons environment.
     """
 
     env.AddMethod(Cython)
@@ -30,9 +30,9 @@ def Cython(env, target, source, is_embedded = True, do_compilation = False):
     """
     :param target: compiled file
     :param source: Python source file
-    :param is_embedded: if true passes ``--embed`` to Cython
+    :param is_embedded: if true passes "--embed" to Cython
     :type is_embedded: bool
-    :param do_compilation: if true builds an executable via SCons's *Program*
+    :param do_compilation: if true builds an executable via SCons's ``Program``
     :type do_compilation: bool
     :return: SCons target
     """

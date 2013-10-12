@@ -24,7 +24,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *TravisLint* method to the SCons environment.
+    Adds a ``TravisLint`` method to the SCons environment.
     """
 
     env[_TRAVIS_CI_ENV_NAME] = ((os.environ.get('CI') == 'true')

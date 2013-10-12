@@ -22,7 +22,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *Pylint* method to the SCons environment.
+    Adds a ``Pylint`` method to the SCons environment.
     """
 
     env.Tool('which')
@@ -40,7 +40,7 @@ def Pylint(env,
     :type target: unicode
     :param source: source files to be check, otherwise all sources
     :type source: list
-    :param root: search starting point path when *source* is unspecified
+    :param root: search starting point path when ``source`` is unspecified
     :type root: unicode
     :param config: tool configuration file path, otherwise use default
     :type config: unicode

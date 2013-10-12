@@ -13,7 +13,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *Which* method to the SCons environment.
+    Adds a ``Which`` method to the SCons environment.
     """
 
     env.AddMethod(Which)

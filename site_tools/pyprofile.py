@@ -26,7 +26,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *Profile* method to the SCons environment.
+    Adds a ``Profile`` method to the SCons environment.
     """
 
     env.AddMethod(Profile)

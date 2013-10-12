@@ -18,7 +18,7 @@ def exists(env):
 
 def generate(env):
     """
-    Adds a *Find* method to the SCons environment.
+    Adds a ``Find`` method to the SCons environment.
     """
 
     env.AddMethod(Find)
