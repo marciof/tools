@@ -237,6 +237,7 @@ def parse_docstring(function, arguments):
     has_description = set()
     has_data_type = set()
 
+    # TODO: Leverage Sphinx for parsing, but provide a fallback.
     docstring = xml.etree.ElementTree.fromstring(
         docutils.core.publish_doctree(docstring).asdom().toxml())
 
