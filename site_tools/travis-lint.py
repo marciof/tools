@@ -13,7 +13,6 @@ import os
 
 _PROGRAM_NAME = 'travis-lint'
 _ENV_NAME = _PROGRAM_NAME.upper().replace('-', '_')
-_RUBY_ENV_NAME = 'RUBY'
 _TRAVIS_CI_ENV_NAME = 'TRAVIS_CI'
 
 
@@ -32,10 +31,7 @@ def generate(env):
 
     if not env[_TRAVIS_CI_ENV_NAME]:
         env.Tool('which')
-        env[_RUBY_ENV_NAME] = env.Which('ruby')
-
-        # Force native tool (e.g. remove ".bat" on Windows).
-        (env[_ENV_NAME], _) = os.path.splitext(env.Which(_PROGRAM_NAME))
+        env[_ENV_NAME] = env.Which(_PROGRAM_NAME)
 
     env.AddMethod(TravisLint)
 
@@ -51,6 +47,6 @@ def TravisLint(env, target = _PROGRAM_NAME):
         def action(*args, **kwargs):
             pass
     else:
-        action = [[env[_RUBY_ENV_NAME], env[_ENV_NAME]]]
+        action = [[env[_ENV_NAME]]]
 
     return env.AlwaysBuild(env.Alias(target, action = env.Action(action)))
