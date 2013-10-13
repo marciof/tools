@@ -14,7 +14,7 @@ install: |
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
   then
-    python -B -m unittest2 discover -s sources
+    python -B -m unittest2 discover
   else
     scons
   fi
