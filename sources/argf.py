@@ -7,14 +7,16 @@ Declarative command line arguments parser.
 Builds an ``argparse.ArgumentParser`` from a function's parameters and
 docstring, and calls it with the program arguments already parsed:
 
-* Docstring text describes the program.
+* The docstring text describes the program.
 * Docstring parameter descriptions describe program arguments.
 * A non-keyword parameter is converted to a positional argument.
 * A keyword parameter is converted to an optional argument.
 
-  * An argument type is taken from its parameter docstring type. If
-    unspecified, type is inferred from its default value. If its default
-    value is ``None``, type defaults to ``str``.
+  * An argument type is taken from its parameter docstring type. If it looks
+    like a fully qualified path then the module/package is imported first,
+    otherwise the builtins module is used. If unspecified the type is inferred
+    from its default value. If its default value is ``None`` then it defaults
+    to ``six.text_type``.
   * A boolean parameter is converted to a flag argument. When present in
     the command line its default value is negated via a logical ``not``.
   * A short option is automatically created from the first available
@@ -34,6 +36,8 @@ import xml.etree.ElementTree
 # External:
 import argparse
 import docutils.core
+import six
+import six.moves
 
 
 __all__ = ['start']
@@ -68,6 +72,11 @@ class IncompatibleTypes (Error):
     def __str__(self):
         return 'default value and docstring types are not compatible: %s' \
             % self.args
+
+
+class ParamTypeImportError (Error):
+    def __str__(self):
+        return 'failed to import docstring parameter type: %s: %s' % self.args
 
 
 class UnknownParam (Error):
@@ -129,7 +138,7 @@ class Argument (object):
             elif not issubclass(inferred_data_type, data_type):
                 raise IncompatibleTypes(self.name)
         elif data_type is None:
-            data_type = str
+            data_type = six.text_type
 
         return data_type
 
@@ -208,13 +217,24 @@ def extract_arguments(function):
 
 def get_type_by_name(name):
     """
-    :type name: unicode
+    :type name: six.text_type
     :rtype: type
     """
 
+    if '.' in name:
+        (module, type_name) = name.rsplit('.', 1)
+
+        try:
+            # Not using `importlib` because it's not available in Python 2.6.
+            module = __import__(module)
+        except ImportError as error:
+            raise ParamTypeImportError(name, error)
+    else:
+        (module, type_name) = (six.moves.builtins, name)
+
     try:
-        return __builtins__[name]
-    except KeyError:
+        return getattr(module, type_name)
+    except AttributeError:
         raise UnknownParamType(name)
 
 
@@ -225,7 +245,7 @@ def parse_docstring(function, arguments):
     :type function: callable
     :type arguments: iterable<Argument>
     :return: function's description or `None` if not defined
-    :rtype: unicode|None
+    :rtype: six.text_type|None
     """
 
     docstring = inspect.getdoc(function)
@@ -283,7 +303,7 @@ def start(main,
     :type main: callable
     :param args: program arguments, otherwise leaves it up to
         ``argparse.ArgumentParser.parse_args()`` to define
-    :type args: list<basestring>
+    :type args: list<six.string_types>
     :param arg_parser: user defined argument parser
     :type arg_parser: argparse.ArgumentParser
     :param soft_errors: if true converts parsing exceptions to error messages

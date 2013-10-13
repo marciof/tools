@@ -4,10 +4,10 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import unittest2
-import StringIO
 
 # External:
 import argparse
+import six
 
 # Internal:
 import argf
@@ -26,15 +26,14 @@ class ArgumentParser (argparse.ArgumentParser):
         raise Error(message)
 
 
-    # pylint: disable=W0622
     def print_help(self, file = None):
-        text = StringIO.StringIO()
+        text = six.StringIO()
 
         argparse.ArgumentParser.print_help(self, text)
         raise HelpPrinted(text.getvalue())
 
 
-FEW_ARGS_ERR_RE = 'few arguments'
+FEW_ARGS_ERR_RE = 'few arguments' if six.PY2 else 'arguments are required:'
 OPT_ARGS_RE = 'optional arguments:'
 UNK_ARGS_ERR_RE = 'unrecognized arguments'
 
@@ -177,8 +176,8 @@ class TestDocstring (unittest2.TestCase):
     def test_ambiguous_parameter_type(self):
         def main(user):
             """
-            :type user: str
-            :type user: unicode
+            :type user: six.binary_type
+            :type user: six.text_type
             """
             return user
 
@@ -196,12 +195,19 @@ class TestDocstring (unittest2.TestCase):
 
 
     def test_invalid_type(self):
-        def main(user):
+        def main_global(user):
             """:type user: string"""
             return user
 
+        def main_package(user):
+            """:type user: x.y"""
+            return user
+
         with self.assertRaisesRegexp(argf.UnknownParamType, 'string'):
-            start(main, args = ['guest'])
+            start(main_global, args = ['guest'])
+
+        with self.assertRaisesRegexp(argf.ParamTypeImportError, 'x.y'):
+            start(main_package, args = ['guest'])
 
 
     def test_name_mismatch(self):
@@ -210,7 +216,7 @@ class TestDocstring (unittest2.TestCase):
             return user
 
         def main_type(user):
-            """:type name: unicode"""
+            """:type name: six.text_type"""
             return user
 
         with self.assertRaisesRegexp(argf.UnknownParam, 'name'):
