@@ -5,7 +5,7 @@ python:
   - 3.2
   - 3.3
 install: |
-  pip install --use-mirrors argparse docutils
+  pip install --use-mirrors argparse docutils six
   if python -c "from sys import *; exit(version_info < (3,))"
   then
     pip install --use-mirrors unittest2py3k
