@@ -31,6 +31,11 @@ def generate(env):
 
     if not env[_TRAVIS_CI_ENV_NAME]:
         env.Tool('which')
+
+        # Currently, only Windows needs this as the batch file won't find the
+        # Ruby interpreter otherwise.
+        env.AppendENVPath('PATH', os.path.dirname(env.Which('ruby')))
+
         env[_ENV_NAME] = env.Which(_PROGRAM_NAME)
 
     env.AddMethod(TravisLint)
