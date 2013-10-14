@@ -1,0 +1,80 @@
+_PATHS_DISCOVERY = set(['/feed', '/rss'])
+_PATHS_DISCOVERY_TRAILING_SLASH = True
+
+_FIND_FROM_HTML = True
+_FIND_FROM_URL_PATHS = True
+_FIND_FROM_URL_WORDS = True
+
+#if FIND_FROM_URL_PATHS:
+    #    finders.append(find_from_url_paths)
+    #
+    #if FIND_FROM_URL_WORDS:
+    #    finders.append(find_from_url_words)
+
+# What is searched for:
+# - Atom auto-discovery
+# - Paths auto-discovery
+# - www.sitemaps.org
+# robots.txt ? sitemap from within?
+# <link> next rel index ?
+# http://www.sorejominbarta.com/section/অর্থনীতি/feed
+# http://www.sorejominbarta.com/section/অর্থনীতি-ব্যবসায়/feed
+
+# detect soft errors: http://sphinx-doc.org/rss
+# <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+# <html><head>
+# <title>404 Not Found</title>
+# </head><body>
+# <h1>Not Found</h1>
+# <p>The requested URL /rss was not found on this server.</p>
+# <hr>
+# <address>Apache/2.2.14 (Ubuntu) Server at sphinx-doc.org Port 80</address>
+# </body></html>
+
+
+
+
+class Error (Exception):
+    pass
+
+
+def find_from_url_paths(url):
+    _logger.debug('Finding from URL paths: %s', url)
+
+    parts = urlparse.urlparse(url)
+    path = parts.path
+    paths_discovery = set(PATHS_DISCOVERY)
+
+    if PATHS_DISCOVERY_TRAILING_SLASH:
+        for extra_path in PATHS_DISCOVERY:
+            paths_discovery.add(extra_path + '/')
+
+    if path not in paths_discovery:
+        for extra_path in paths_discovery:
+            parts = list(parts)
+            parts[2] = extra_path
+
+            extra_url = urlparse.urlunparse(parts)
+            _logger.debug('Checking extra URL: %s', extra_url)
+
+            try:
+                # TODO: Ensure that the content looks like a feed.
+                requests.head(url).raise_for_status()
+            except requests.HTTPError:
+                continue
+
+            # TODO: Get MIME type (and other details?) from HTTP headers.
+            yield Feed(url = extra_url)
+
+
+# TODO: Reuse the other URL split.
+def find_from_url_words(url):
+    _logger.debug('Finding from URL words: %s', url)
+
+    parts = urlparse.urlparse(url)
+
+    for component in reversed(unipath.Path(parts.path).components()):
+        print component
+
+    #raise StopIteration()
+    return []
