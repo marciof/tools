@@ -3,15 +3,13 @@
 
 
 """
-What's currently searched for:
-
 * RSS auto-discovery <http://www.rssboard.org/rss-autodiscovery>.
 * robots.xt <http://www.robotstxt.org>, to auto-discover Sitemaps.
 * HTML anchors. [1]
 * Sitemaps <http://www.sitemaps.org>. [1]
-* Common URL paths: /feed, /rss
+* Common URL paths: "/feed", "/rss".
 
-[1] Looks for URL's with a path component equal to "rss" (case-insensitive).
+[1] URL's with a path component of "rss" (case-insensitive).
 """
 
 
@@ -27,13 +25,14 @@ What's currently searched for:
 from __future__ import absolute_import, division, unicode_literals
 import itertools
 import logging
-import re
-import sys
 import urlparse
 
 # External:
 import enum
 import lxml.html
+import purl
+import reppy.cache
+import requests
 
 
 class MimeType (enum.Enum):
@@ -71,19 +70,17 @@ class Finder (object):
         
         for anchor in html_doc.xpath('//a[@href]'):
             url = anchor.get('href')
-            path = urlparse.urlparse(url).path
+            segments = purl.URL(url.lower()).path_segments()
             
-            if not re.search(r'(?:^|/)rss(?:/|\?|$)', path, re.IGNORECASE):
-                continue
-            
-            title = anchor.get('title')
-            
-            if title is None:
-                title = anchor.text_content()
-            
-            yield Feed(
-                url = urlparse.urljoin(base_url, url),
-                title = title)
+            if 'rss' in segments:
+                title = anchor.get('title')
+
+                if title is None:
+                    title = anchor.text_content()
+
+                yield Feed(
+                    url = urlparse.urljoin(base_url, url),
+                    title = title)
     
     
     def find_in_auto_discovery(self, html_doc, base_url):
@@ -143,7 +140,31 @@ class Finder (object):
             self.find_in_anchor_links(html_doc, base_url))
 
 
+def find_from_robots_txt(url):
+    return reppy.cache.RobotsCache().fetch(url).sitemaps
+
+
+# TODO
+def find_from_indices(url):
+    url = purl.URL(url).add_path_segment('sitemap_index.xml')
+
+    while True:
+        try:
+            requests.head(unicode(url)).raise_for_status()
+        except requests.HTTPError:
+            pass
+
+        segments = list(url.path_segments())
+
+        if len(segments) > 1:
+            segments.pop(-2)
+            url = url.path_segments(segments)
+        else:
+            break
+
+
 if __name__ == '__main__':
+    import sys
     args = sys.argv[1:]
 
     if len(args) != 1:
@@ -154,6 +175,6 @@ if __name__ == '__main__':
     (url,) = args
     html_doc = lxml.html.parse(url).getroot()
     finder = Finder()
-    
+
     for feed in finder.find_in_html(html_doc, url):
         print unicode(feed)
