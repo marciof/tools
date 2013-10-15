@@ -1,6 +1,134 @@
 # -*- coding: UTF-8 -*-
 
 
+# Standard:
+from __future__ import absolute_import, division, unicode_literals
+import inspect
+import re
+import xml.etree.ElementTree
+
+# External:
+import docutils.core
+import six.moves
+
+
+class Error (Exception):
+    pass
+
+
+class AmbiguousParamDesc (Error):
+    def __str__(self):
+        return 'ambiguous parameter description: %s' % self.args
+
+
+class AmbiguousParamDataType (Error):
+    def __str__(self):
+        return 'ambiguous parameter data type: %s' % self.args
+
+
+class DynamicArgs (Error):
+    def __str__(self):
+        return 'varargs and kwargs are not supported'
+
+
+class ParamDataTypeImportError (Error):
+    def __str__(self):
+        return 'failed to import parameter data type: %s: %s' % self.args
+
+
+class UnknownParamDataType (Error):
+    def __str__(self):
+        return 'unknown parameter data type: %s' % self.args
+
+
+# TODO: Leverage Sphinx for parsing, but provide a fallback.
+def extract_documentation(function):
+    """
+    :type function: types.FunctionType
+    :rtype: tuple
+    :raise AmbiguousParamDesc:
+    :raise AmbiguousParamType:
+    """
+
+    data_types = {}
+    descriptions = {}
+    docstring = inspect.getdoc(function) or ''
+
+    doc = xml.etree.ElementTree.fromstring(
+        docutils.core.publish_doctree(docstring).asdom().toxml())
+
+    for field in doc.findall('.//field'):
+        field_name = field.findtext('field_name')
+        directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
+
+        if directive is None:
+            continue
+
+        (kind, name) = directive.groups()
+        field_body = field.findtext('field_body/paragraph')
+
+        if kind == 'param':
+            if name in descriptions:
+                raise AmbiguousParamDesc(name)
+            else:
+                descriptions[name] = field_body
+        elif kind == 'type':
+            if name in data_types:
+                raise AmbiguousParamDataType(name)
+            else:
+                data_types[name] = load_data_type(field_body)
+
+    return (doc.findtext('paragraph'), data_types, descriptions)
+
+
+def extract_parameters(function):
+    """
+    :type function: types.FunctionType
+    :rtype: collections.Iterable
+    :raise DynamicArgs:
+    """
+
+    arg_spec = inspect.getargspec(function)
+
+    if (arg_spec.varargs is not None) or (arg_spec.keywords is not None):
+        raise DynamicArgs()
+
+    nr_kwargs = 0 if arg_spec.defaults is None else len(arg_spec.defaults)
+    kwargs_offset = len(arg_spec.args) - nr_kwargs
+
+    for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
+        kwarg_i = arg_i - kwargs_offset
+        is_keyword = (0 <= kwarg_i < nr_kwargs)
+
+        if is_keyword:
+            yield (name, arg_spec.defaults[kwarg_i])
+        else:
+            yield name
+
+
+def load_data_type(name):
+    """
+    :type name: six.text_type
+    :rtype: six.class_types
+    """
+
+    if '.' not in name:
+        (module, type_name) = (six.moves.builtins, name)
+    else:
+        (module, type_name) = name.rsplit('.', 1)
+
+        try:
+            module = __import__(module)
+        except ImportError as error:
+            raise ParamDataTypeImportError(name, error)
+
+    try:
+        return getattr(module, type_name)
+    except AttributeError:
+        raise UnknownParamDataType(name)
+
+
+'''
 """
 Declarative command line arguments parser.
 
@@ -27,45 +155,17 @@ docstring, and calls it with the program arguments already parsed:
 """
 
 
-# Standard:
-from __future__ import absolute_import, division, unicode_literals
-import inspect
-import re
-import xml.etree.ElementTree
-
 # External:
 import argparse
-import docutils.core
 import six
-import six.moves
 
 
 __all__ = ['start']
 
 
-class Error (Exception):
-    pass
-
-
 class AmbiguousDesc (Error):
     def __str__(self):
         return 'custom arg parser instance has a description already'
-
-
-class AmbiguousParamDesc (Error):
-    def __str__(self):
-        return 'multiple descriptions for same parameter in docstring: %s' \
-            % self.args
-
-
-class AmbiguousParamType (Error):
-    def __str__(self):
-        return 'multiple types for same parameter in docstring: %s' % self.args
-
-
-class DynamicArgs (Error):
-    def __str__(self):
-        return 'varargs and kwargs are not supported'
 
 
 class IncompatibleTypes (Error):
@@ -74,19 +174,9 @@ class IncompatibleTypes (Error):
             % self.args
 
 
-class ParamTypeImportError (Error):
-    def __str__(self):
-        return 'failed to import docstring parameter type: %s: %s' % self.args
-
-
 class UnknownParam (Error):
     def __str__(self):
         return 'unknown docstring parameter: %s' % self.args
-
-
-class UnknownParamType (Error):
-    def __str__(self):
-        return 'unknown docstring parameter type: %s' % self.args
 
 
 class Argument (object):
@@ -177,121 +267,6 @@ def add_options(arg_parser, arguments):
         arg_parser.add_argument(*names, **options)
 
 
-def extract_arguments(function):
-    """
-    Parses a function's argument spec.
-
-    :type function: callable
-    :rtype: iterable<Argument>
-    """
-
-    arg_spec = inspect.getargspec(function)
-    reserved_names = set()
-
-    if (arg_spec.varargs is not None) or (arg_spec.keywords is not None):
-        raise DynamicArgs()
-
-    nr_kwargs = 0 if arg_spec.defaults is None else len(arg_spec.defaults)
-    kwargs_offset = len(arg_spec.args) - nr_kwargs
-    arguments = []
-
-    for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
-        kwarg_i = arg_i - kwargs_offset
-        is_optional = (0 <= kwarg_i < nr_kwargs)
-        argument = Argument(name)
-
-        # TODO: Improve creating a short option from a name.
-        for char in name:
-            if char not in reserved_names:
-                reserved_names.add(char)
-                argument.short_name = char
-                break
-
-        if is_optional:
-            argument.default_value = arg_spec.defaults[kwarg_i]
-
-        arguments.append(argument)
-
-    return arguments
-
-
-def get_type_by_name(name):
-    """
-    :type name: six.text_type
-    :rtype: type
-    """
-
-    if '.' in name:
-        (module, type_name) = name.rsplit('.', 1)
-
-        try:
-            # Not using `importlib` because it's not available in Python 2.6.
-            module = __import__(module)
-        except ImportError as error:
-            raise ParamTypeImportError(name, error)
-    else:
-        (module, type_name) = (six.moves.builtins, name)
-
-    try:
-        return getattr(module, type_name)
-    except AttributeError:
-        raise UnknownParamType(name)
-
-
-def parse_docstring(function, arguments):
-    """
-    Extracts additional argument information from a function's docstring.
-
-    :type function: callable
-    :type arguments: iterable<Argument>
-    :return: function's description or `None` if not defined
-    :rtype: six.text_type|None
-    """
-
-    docstring = inspect.getdoc(function)
-
-    if docstring is None:
-        return None
-
-    arguments = dict((param.name, param) for param in arguments)
-    has_description = set()
-    has_data_type = set()
-
-    # TODO: Leverage Sphinx for parsing, but provide a fallback.
-    docstring = xml.etree.ElementTree.fromstring(
-        docutils.core.publish_doctree(docstring).asdom().toxml())
-
-    for field in docstring.findall('.//field'):
-        field_name = field.findtext('field_name')
-        directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
-
-        if directive is None:
-            continue
-
-        (kind, name) = directive.groups()
-        argument = arguments.get(name)
-
-        if argument is None:
-            raise UnknownParam(name)
-
-        field_body = field.findtext('field_body/paragraph')
-
-        if kind == 'param':
-            if argument in has_description:
-                raise AmbiguousParamDesc(name)
-
-            argument.description = field_body
-            has_description.add(argument)
-        elif kind == 'type':
-            if argument in has_data_type:
-                raise AmbiguousParamType(name)
-
-            argument.data_type = get_type_by_name(field_body)
-            has_data_type.add(argument)
-
-    return docstring.findtext('paragraph')
-
-
 def start(main,
         args = None,
         arg_parser = None,
@@ -334,3 +309,4 @@ def start(main,
             raise
     else:
         return main(**arg_parser.parse_args(args = args).__dict__)
+'''

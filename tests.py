@@ -3,14 +3,40 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import collections
 import unittest2
-
-# External:
-import argparse
-import six
 
 # Internal:
 import argf
+
+
+class TestDataTypeLoading (unittest2.TestCase):
+    def test_builtin(self):
+        self.assertIs(
+            argf.load_data_type('int'),
+            int)
+
+
+    def test_from_module(self):
+        self.assertIs(
+            argf.load_data_type('collections.namedtuple'),
+            collections.namedtuple)
+
+
+    def test_from_unknown_module(self):
+        with self.assertRaises(argf.ParamDataTypeImportError):
+            argf.load_data_type('collection.namedtuple')
+
+
+    def test_unknown(self):
+        with self.assertRaises(argf.UnknownParamDataType):
+            argf.load_data_type('string')
+
+
+'''
+# External:
+import argparse
+import six
 
 
 class Error (Exception):
@@ -181,7 +207,7 @@ class TestDocstring (unittest2.TestCase):
             """
             return user
 
-        with self.assertRaisesRegexp(argf.AmbiguousParamType, 'user'):
+        with self.assertRaisesRegexp(argf.AmbiguousParamDataType, 'user'):
             start(main, args = ['guest'])
 
 
@@ -203,10 +229,10 @@ class TestDocstring (unittest2.TestCase):
             """:type user: x.y"""
             return user
 
-        with self.assertRaisesRegexp(argf.UnknownParamType, 'string'):
+        with self.assertRaisesRegexp(argf.UnknownParamDataType, 'string'):
             start(main_global, args = ['guest'])
 
-        with self.assertRaisesRegexp(argf.ParamTypeImportError, 'x.y'):
+        with self.assertRaisesRegexp(argf.ParamDataTypeImportError, 'x.y'):
             start(main_package, args = ['guest'])
 
 
@@ -263,3 +289,4 @@ class TestDocstring (unittest2.TestCase):
             start(main_none,
                 args = ['-h'],
                 arg_parser = ArgumentParser(description = 'alternate'))
+'''
