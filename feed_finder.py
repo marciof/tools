@@ -5,12 +5,22 @@
 """
 What's currently searched for:
 
-* RSS auto-discovery, <www.rssboard.org/rss-autodiscovery>.
+* RSS auto-discovery <http://www.rssboard.org/rss-autodiscovery>.
+* robots.xt <http://www.robotstxt.org>, to auto-discover Sitemaps.
 * HTML anchors. [1]
-* Sitemaps, <www.sitemaps.org>. [1]
+* Sitemaps <http://www.sitemaps.org>. [1]
+* Common URL paths: /feed, /rss
 
-[1] URL's with a path component equal to "rss" (case-insensitive).
+[1] Looks for URL's with a path component equal to "rss" (case-insensitive).
 """
+
+
+# TODO: Leverage `feedfinder2`?
+# TODO: Detect Atom feeds.
+# TODO: Convert all input to Unicode.
+# TODO: Verify URL's point to actual feeds? E.g. http://sphinx-doc.org/rss
+# TODO: Scrape HTML index pages? E.g. http://www.journaldequebec.com/rss
+# TODO: Check <LINK> elements?
 
 
 # Standard:
@@ -30,21 +40,12 @@ class MimeType (enum.Enum):
     RSS = 'application/rss+xml'
 
 
-# TODO: Document that title is not necessarily the actual feed title.
 class Feed (object):
     def __init__(self, url, mime_type = None, relation = None, title = None):
         self.url = url
         self.mime_type = mime_type
         self.relation = relation
         self.title = title
-
-
-    def __eq__(self, other):
-        return hash(self) == hash(other)
-
-
-    def __hash__(self):
-        return hash(self.url)
 
 
     def __unicode__(self):
@@ -55,11 +56,6 @@ class Feed (object):
             '?' if self.relation is None else repr(self.relation))
 
 
-# TODO: Leverage `feedfinder2`?
-# TODO: Detect Atom feeds.
-# TODO: Convert all input to Unicode.
-# TODO: Add option to verify that URL's point to actual feeds.
-# TODO: Scrape HTML pages that serve as an index of RSS feeds.
 class Finder (object):
     def __init__(self):
         self._logger = logging.getLogger(__name__)
@@ -158,9 +154,6 @@ if __name__ == '__main__':
     (url,) = args
     html_doc = lxml.html.parse(url).getroot()
     finder = Finder()
-    seen_feeds = set()
     
     for feed in finder.find_in_html(html_doc, url):
-        if feed not in seen_feeds:
-            print unicode(feed)
-            seen_feeds.add(feed)
+        print unicode(feed)
