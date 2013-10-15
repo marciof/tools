@@ -7,8 +7,10 @@ _PATHS_DISCOVERY_TRAILING_SLASH = True
     #if FIND_FROM_URL_WORDS:
     #    finders.append(find_from_url_words)
 
-# robots.txt ? sitemap from within?
 # <link> next rel index ?
+
+# Support RSS index HTML pages, e.g.:
+# http://www.journaldequebec.com/rss
 
 # detect soft errors: http://sphinx-doc.org/rss
 # <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">

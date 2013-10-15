@@ -5,8 +5,11 @@
 """
 What's currently searched for:
 
-* RSS auto-discovery, <http://www.rssboard.org/rss-autodiscovery>.
-* HTML anchors with an URL path component of "rss" (case-insensitive).
+* RSS auto-discovery, <www.rssboard.org/rss-autodiscovery>.
+* HTML anchors. [1]
+* Sitemaps, <www.sitemaps.org>. [1]
+
+[1] URL's with a path component equal to "rss" (case-insensitive).
 """
 
 
@@ -55,6 +58,8 @@ class Feed (object):
 # TODO: Leverage `feedfinder2`?
 # TODO: Detect Atom feeds.
 # TODO: Convert all input to Unicode.
+# TODO: Add option to verify that URL's point to actual feeds.
+# TODO: Scrape HTML pages that serve as an index of RSS feeds.
 class Finder (object):
     def __init__(self):
         self._logger = logging.getLogger(__name__)
