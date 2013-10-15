@@ -12,9 +12,7 @@ import argf
 
 class TestDataTypeLoading (unittest2.TestCase):
     def test_builtin(self):
-        self.assertIs(
-            argf.load_data_type('int'),
-            int)
+        self.assertIs(argf.load_data_type('int'), int)
 
 
     def test_from_module(self):
@@ -31,6 +29,53 @@ class TestDataTypeLoading (unittest2.TestCase):
     def test_unknown(self):
         with self.assertRaises(argf.UnknownParamDataType):
             argf.load_data_type('string')
+
+
+class TestParameterExtraction (unittest2.TestCase):
+    def test_dynamic(self):
+        def args(*args):
+            pass
+
+        def kwargs(**kwargs):
+            pass
+
+        with self.assertRaises(argf.DynamicArgs):
+            argf.extract_parameters(args)
+
+        with self.assertRaises(argf.DynamicArgs):
+            argf.extract_parameters(kwargs)
+
+
+    def test_empty(self):
+        def f():
+            pass
+
+        self.assertEqual(argf.extract_parameters(f), [])
+
+
+    def test_keyword(self):
+        def f(x = True, y = None):
+            pass
+
+        self.assertEqual(
+            argf.extract_parameters(f),
+            [('x', True), ('y', None)])
+
+
+    def test_positional(self):
+        def f(x, y):
+            pass
+
+        self.assertEqual(argf.extract_parameters(f), ['x', 'y'])
+
+
+    def test_mixed(self):
+        def f(x, y, z = False):
+            pass
+
+        self.assertEqual(
+            argf.extract_parameters(f),
+            ['x', 'y', ('z', False)])
 
 
 '''

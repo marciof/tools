@@ -95,15 +95,18 @@ def extract_parameters(function):
 
     nr_kwargs = 0 if arg_spec.defaults is None else len(arg_spec.defaults)
     kwargs_offset = len(arg_spec.args) - nr_kwargs
+    params = []
 
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
         kwarg_i = arg_i - kwargs_offset
         is_keyword = (0 <= kwarg_i < nr_kwargs)
 
         if is_keyword:
-            yield (name, arg_spec.defaults[kwarg_i])
+            params.append((name, arg_spec.defaults[kwarg_i]))
         else:
-            yield name
+            params.append(name)
+
+    return params
 
 
 def load_data_type(name):
