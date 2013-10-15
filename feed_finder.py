@@ -5,13 +5,16 @@
 """
 What's currently searched for:
 
-* RSS auto-discovery: http://www.rssboard.org/rss-autodiscovery
+* RSS auto-discovery, <http://www.rssboard.org/rss-autodiscovery>.
+* HTML anchors with an URL path component of "rss" (case-insensitive).
 """
 
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import itertools
 import logging
+import re
 import sys
 import urlparse
 
@@ -24,6 +27,7 @@ class MimeType (enum.Enum):
     RSS = 'application/rss+xml'
 
 
+# TODO: Document that title is not necessarily the actual feed title.
 class Feed (object):
     def __init__(self, url, mime_type = None, relation = None, title = None):
         self.url = url
@@ -50,7 +54,7 @@ class Feed (object):
 
 # TODO: Leverage `feedfinder2`?
 # TODO: Detect Atom feeds.
-# TODO: Convert links to absolute, even when <BASE> is missing.
+# TODO: Convert all input to Unicode.
 class Finder (object):
     def __init__(self):
         self._logger = logging.getLogger(__name__)
@@ -61,10 +65,28 @@ class Finder (object):
         self._strict_rss_rel = False
     
     
-    def find_in_html(self, html_doc):
-        self._logger.debug('Finding from HTML.')
+    def find_in_anchor_links(self, html_doc, base_url):
+        self._logger.debug('Finding in anchor links.')
         
-        base_url = html_doc.base_url
+        for anchor in html_doc.xpath('//a[@href]'):
+            url = anchor.get('href')
+            path = urlparse.urlparse(url).path
+            
+            if not re.search(r'(?:^|/)rss(?:/|\?|$)', path, re.IGNORECASE):
+                continue
+            
+            title = anchor.get('title')
+            
+            if title is None:
+                title = anchor.text_content()
+            
+            yield Feed(
+                url = urlparse.urljoin(base_url, url),
+                title = title)
+    
+    
+    def find_in_auto_discovery(self, html_doc, base_url):
+        self._logger.debug('Finding in auto-discovery.')
         link_xpath = 'link[@type]'
         
         if self._strict_link_el_location:
@@ -101,14 +123,23 @@ class Finder (object):
                     lxml.html.tostring(link))
                 continue
     
-            if base_url is not None:
-                url = urlparse.urljoin(base_url, url)
-    
             yield Feed(
-                url = url,
+                url = urlparse.urljoin(base_url, url),
                 mime_type = mime_type,
                 relation = rel,
                 title = link.get('title'))
+    
+    
+    def find_in_html(self, html_doc, url):
+        self._logger.debug('Finding in HTML.')
+        base_url = html_doc.base_url
+        
+        if base_url is None:
+            base_url = url
+        
+        return itertools.chain(
+            self.find_in_auto_discovery(html_doc, base_url),
+            self.find_in_anchor_links(html_doc, base_url))
 
 
 if __name__ == '__main__':
@@ -124,10 +155,7 @@ if __name__ == '__main__':
     finder = Finder()
     seen_feeds = set()
     
-    def log_feed(feed):
+    for feed in finder.find_in_html(html_doc, url):
         if feed not in seen_feeds:
             print unicode(feed)
             seen_feeds.add(feed)
-    
-    for feed in finder.find_in_html(html_doc):
-        log_feed(feed)
