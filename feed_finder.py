@@ -13,6 +13,7 @@
 """
 
 
+# TODO: Walk URL paths up to check each segment.
 # TODO: Find recursively? E.g. check every URL until verified to be a feed.
 # TODO: Leverage `feedfinder2`?
 # TODO: Detect Atom feeds.
@@ -30,10 +31,10 @@ import urlparse
 
 # External:
 import enum
+import lxml.etree
 import lxml.html
 import purl
 import reppy.cache
-import requests
 
 
 class MimeType (enum.Enum):
@@ -64,16 +65,15 @@ class Finder (object):
         self._strict_link_el_location = False
         self._strict_mime_types = False
         self._strict_rss_rel = False
-    
-    
-    def find_in_anchor_links(self, html_doc, base_url):
-        self._logger.debug('Finding in anchor links.')
+
+
+    def find_in_anchor_links(self, html, base_url):
+        self._logger.debug('Finding in HTML anchor links')
         
-        for anchor in html_doc.xpath('//a[@href]'):
+        for anchor in html.xpath('//a[@href]'):
             url = anchor.get('href')
-            segments = purl.URL(url.lower()).path_segments()
-            
-            if 'rss' in segments:
+
+            if self.is_feed_like_url(url):
                 title = anchor.get('title')
 
                 if title is None:
@@ -84,8 +84,8 @@ class Finder (object):
                     title = title)
     
     
-    def find_in_auto_discovery(self, html_doc, base_url):
-        self._logger.debug('Finding in auto-discovery.')
+    def find_in_auto_discovery(self, html, base_url):
+        self._logger.debug('Finding in auto-discovery')
         link_xpath = 'link[@type]'
         
         if self._strict_link_el_location:
@@ -93,7 +93,7 @@ class Finder (object):
         else:
             link_xpath = '//' + link_xpath
     
-        for link in html_doc.xpath(link_xpath):
+        for link in html.xpath(link_xpath):
             mime_type = link.get('type')
     
             if not self._strict_mime_types:
@@ -129,39 +129,62 @@ class Finder (object):
                 title = link.get('title'))
     
     
-    def find_in_html(self, html_doc, url):
-        self._logger.debug('Finding in HTML.')
-        base_url = html_doc.base_url
-        
+    def find_in_html(self, url):
+        html = lxml.html.parse(url).getroot()
+        base_url = html.base_url
+
         if base_url is None:
             base_url = url
         
         return itertools.chain(
-            self.find_in_auto_discovery(html_doc, base_url),
-            self.find_in_anchor_links(html_doc, base_url))
+            self.find_in_auto_discovery(html, base_url),
+            self.find_in_anchor_links(html, base_url))
 
 
-def find_from_robots_txt(url):
-    return reppy.cache.RobotsCache().fetch(url).sitemaps
+    def find_sitemaps(self, url):
+        return set(
+            self.find_sitemaps_in_robots_txt(url)
+            + self.find_sitemaps_in_indices(url))
 
 
-# TODO
-def find_from_indices(url):
-    url = purl.URL(url).add_path_segment('sitemap_index.xml')
+    def find_sitemaps_in_indices(self, url):
+        self._logger.debug('Finding sitemaps from sitemap index')
 
-    while True:
-        try:
-            requests.head(unicode(url)).raise_for_status()
-        except requests.HTTPError:
-            pass
+        url = purl.URL(url).add_path_segment('sitemap_index.xml')
+        urls = []
 
-        segments = list(url.path_segments())
+        # Ignore XML namespaces.
+        SITEMAP = '*[local-name() = "sitemap"]'
+        LOC = '*[local-name() = "loc"]'
 
-        if len(segments) > 1:
-            segments.pop(-2)
-            url = url.path_segments(segments)
-        else:
-            break
+        while True:
+            self._logger.debug('Checking for sitemap index: %s', url)
+
+            try:
+                index = lxml.etree.parse(unicode(url))
+                urls.extend(index.xpath('//%s/%s/text()' % (SITEMAP, LOC)))
+            except IOError:
+                pass
+
+            segments = list(url.path_segments())
+
+            if len(segments) > 1:
+                segments.pop(-2)
+                url = url.path_segments(segments)
+            else:
+                break
+
+        return urls
+
+
+    def find_sitemaps_in_robots_txt(self, url):
+        self._logger.debug('Finding sitemaps from robots.txt')
+        return reppy.cache.RobotsCache().fetch(url).sitemaps
+
+
+    def is_feed_like_url(self, url):
+        segments = set(purl.URL(url.lower()).path_segments())
+        return ('feed' in segments) or ('rss' in segments)
 
 
 if __name__ == '__main__':
@@ -172,10 +195,8 @@ if __name__ == '__main__':
         sys.exit('Usage: URL')
     
     logging.basicConfig(level = logging.DEBUG)
-    
     (url,) = args
-    html_doc = lxml.html.parse(url).getroot()
     finder = Finder()
 
-    for feed in finder.find_in_html(html_doc, url):
+    for feed in finder.find_in_html(url):
         print unicode(feed)
