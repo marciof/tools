@@ -43,6 +43,11 @@ class ParamDataTypeImportError (Error):
         return 'failed to import parameter data type: %s: %s' % self.args
 
 
+class UndefinedParamDesc (Error):
+    def __str__(self):
+        return 'undefined parameter description: %s' % self.args
+
+
 class UnknownParams (Error):
     def __str__(self):
         (names,) = self.args
@@ -106,7 +111,7 @@ def extract_arguments(function):
         args.append(arg)
 
     if (len(data_types) > 0) or (len(descriptions) > 0):
-        raise UnknownParams(set(data_types.keys() + descriptions.keys()))
+        raise UnknownParams(set(data_types.keys()).union(descriptions.keys()))
 
     return (main_desc, args)
 
@@ -121,6 +126,7 @@ def extract_documentation(function):
         dict<six.text_type, six.text_type>>
     :raise AmbiguousParamDesc:
     :raise AmbiguousParamType:
+    :raise UndefinedParamDesc:
     """
 
     data_types = {}
@@ -139,19 +145,27 @@ def extract_documentation(function):
 
         (kind, name) = directive.groups()
         field_body = field.findtext('field_body/paragraph')
+        name = six.text_type(name)
 
         if kind == 'param':
             if name in descriptions:
                 raise AmbiguousParamDesc(name)
+            elif field_body is None:
+                raise UndefinedParamDesc(name)
             else:
-                descriptions[name] = field_body
+                descriptions[name] = six.text_type(field_body)
         elif kind == 'type':
             if name in data_types:
                 raise AmbiguousParamDataType(name)
             else:
                 data_types[name] = load_data_type(field_body)
 
-    return (doc.findtext('paragraph'), data_types, descriptions)
+    main_desc = doc.findtext('paragraph')
+
+    if main_desc is not None:
+        main_desc = six.text_type(main_desc)
+
+    return (main_desc, data_types, descriptions)
 
 
 def extract_parameters(function):
@@ -171,6 +185,7 @@ def extract_parameters(function):
     params = []
 
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
+        name = six.text_type(name)
         kwarg_i = arg_i - kwargs_offset
         is_keyword = (0 <= kwarg_i < nr_kwargs)
 
@@ -184,7 +199,7 @@ def extract_parameters(function):
 
 def load_data_type(name):
     """
-    :type name: six.text_type
+    :type name: six.string_types
     :rtype: six.class_types
     """
 
@@ -202,121 +217,3 @@ def load_data_type(name):
         return getattr(module, type_name)
     except AttributeError:
         raise UnknownParamDataType(name)
-
-
-'''
-"""
-Declarative command line arguments parser.
-
-Builds an ``argparse.ArgumentParser`` from a function's parameters and
-docstring, and calls it with the program arguments already parsed:
-
-* The docstring text describes the program.
-* Docstring parameter descriptions describe program arguments.
-* A non-keyword parameter is converted to a positional argument.
-* A keyword parameter is converted to an optional argument.
-
-  * An argument type is taken from its parameter docstring type. If it looks
-    like a fully qualified path then the module/package is imported first,
-    otherwise the builtins module is used. If unspecified the type is inferred
-    from its default value. If its default value is ``None`` then it defaults
-    to ``six.text_type``.
-  * A boolean parameter is converted to a flag argument. When present in
-    the command line its default value is negated via a logical ``not``.
-  * A short option is automatically created from the first available
-    character of its name.
-  * The parameter's docstring type and the default value's inferred type
-    don't need to match, but the latter is required to be a subclass of
-    the former.
-"""
-
-
-# External:
-import argparse
-
-
-__all__ = ['start']
-
-
-class AmbiguousDesc (Error):
-    def __str__(self):
-        return 'custom arg parser instance has a description already'
-
-
-def add_options(arg_parser, arguments):
-    """
-    Converts arguments to ``argparse`` options and adds them.
-
-    :type arg_parser: argparse.ArgumentParser
-    :type arguments: iterable<Argument>
-    """
-
-    for argument in arguments:
-        names = []
-        options = {}
-
-        if argument.description is not None:
-            options['help'] = argument.description
-
-        if argument.has_default_value:
-            if argument.short_name is not None:
-                names.append(arg_parser.prefix_chars + argument.short_name)
-
-            data_type = argument.extract_data_type()
-            names.append((2 * arg_parser.prefix_chars) + argument.name)
-            options['default'] = argument.default_value
-
-            if issubclass(data_type, bool):
-                options['const'] = not argument.default_value
-                options['action'] = 'store_const'
-            else:
-                options['type'] = data_type
-        else:
-            names.append(argument.name)
-
-        arg_parser.add_argument(*names, **options)
-
-
-def start(main,
-        args = None,
-        arg_parser = None,
-        soft_errors = True):
-    """
-    Starts a function, passing to it program arguments parsed via ``argparse``.
-
-    :param main: entry point
-    :type main: callable
-    :param args: program arguments, otherwise leaves it up to
-        ``argparse.ArgumentParser.parse_args()`` to define
-    :type args: list<six.string_types>
-    :param arg_parser: user defined argument parser
-    :type arg_parser: argparse.ArgumentParser
-    :param soft_errors: if true converts parsing exceptions to error messages
-        for ``argparse.ArgumentParser.error()``
-    :type soft_errors: bool
-    :return: entry point's return value
-    """
-
-    if arg_parser is None:
-        arg_parser = argparse.ArgumentParser(
-            formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-
-    try:
-        arguments = extract_arguments(main)
-        description = parse_docstring(main, arguments)
-
-        if description is not None:
-            if arg_parser.description is None:
-                arg_parser.description = description
-            else:
-                raise AmbiguousDesc()
-
-        add_options(arg_parser, arguments)
-    except Error as error:
-        if soft_errors:
-            arg_parser.error(error)
-        else:
-            raise
-    else:
-        return main(**arg_parser.parse_args(args = args).__dict__)
-'''
