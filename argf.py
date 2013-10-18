@@ -9,6 +9,7 @@ import xml.etree.ElementTree
 
 # External:
 import docutils.core
+import six
 import six.moves
 
 
@@ -31,9 +32,21 @@ class DynamicArgs (Error):
         return 'varargs and kwargs are not supported'
 
 
+class IncompatibleParamDataTypes (Error):
+    def __str__(self):
+        return 'default value and docstring types are not compatible: %s' \
+            % self.args
+
+
 class ParamDataTypeImportError (Error):
     def __str__(self):
         return 'failed to import parameter data type: %s: %s' % self.args
+
+
+class UnknownParams (Error):
+    def __str__(self):
+        (names,) = self.args
+        return 'unknown parameter(s): %s' % ', '.join(sorted(names))
 
 
 class UnknownParamDataType (Error):
@@ -41,11 +54,71 @@ class UnknownParamDataType (Error):
         return 'unknown parameter data type: %s' % self.args
 
 
+class Argument (object):
+    def __init__(self, name, data_type = six.text_type, description = None):
+        self.name = name
+        self.data_type = data_type
+        self.description = description
+
+
+    def validate(self):
+        pass
+
+
+class OptionArgument (Argument):
+    def __init__(self, name, default_value, **kwargs):
+        Argument.__init__(self, name, **kwargs)
+        self.default_value = default_value
+
+
+    def validate(self):
+        value = self.default_value
+
+        if (value is not None) and not isinstance(value, self.data_type):
+            raise IncompatibleParamDataTypes(self.name)
+
+
+def extract_arguments(function):
+    """
+    :type function: types.FunctionType
+    :rtype: tuple<None | six.text_type, list<Argument>>
+    :raise UnknownParams:
+    """
+
+    (main_desc, data_types, descriptions) = extract_documentation(function)
+    args = []
+
+    for param in extract_parameters(function):
+        if isinstance(param, tuple):
+            (name, default_value) = param
+            arg = OptionArgument(name = name, default_value = default_value)
+        else:
+            (name,) = param
+            arg = Argument(name = name)
+
+        if arg.name in data_types:
+            arg.data_type = data_types.pop(arg.name)
+
+        if arg.name in descriptions:
+            arg.description = descriptions.pop(arg.name)
+
+        arg.validate()
+        args.append(arg)
+
+    if (len(data_types) > 0) or (len(descriptions) > 0):
+        raise UnknownParams(set(data_types.keys() + descriptions.keys()))
+
+    return (main_desc, args)
+
+
 # TODO: Leverage Sphinx for parsing, but provide a fallback.
 def extract_documentation(function):
     """
     :type function: types.FunctionType
-    :rtype: tuple<None | six.text_type, dict<six.text_type, six.class_types>, dict<six.text_type, six.text_type>>
+    :rtype: tuple<
+        None | six.text_type,
+        dict<six.text_type, six.class_types>,
+        dict<six.text_type, six.text_type>>
     :raise AmbiguousParamDesc:
     :raise AmbiguousParamType:
     """
@@ -160,7 +233,6 @@ docstring, and calls it with the program arguments already parsed:
 
 # External:
 import argparse
-import six
 
 
 __all__ = ['start']
@@ -169,71 +241,6 @@ __all__ = ['start']
 class AmbiguousDesc (Error):
     def __str__(self):
         return 'custom arg parser instance has a description already'
-
-
-class IncompatibleTypes (Error):
-    def __str__(self):
-        return 'default value and docstring types are not compatible: %s' \
-            % self.args
-
-
-class UnknownParam (Error):
-    def __str__(self):
-        return 'unknown docstring parameter: %s' % self.args
-
-
-class Argument (object):
-    _NO_DEFAULT_VALUE = object()
-
-
-    def __init__(self, name):
-        self.name = name
-        self.data_type = None
-        self.description = None
-        self.short_name = None
-        self._default_value = self._NO_DEFAULT_VALUE
-
-
-    def __eq__(self, other):
-        return hash(self) == hash(other)
-
-
-    def __hash__(self):
-        return hash(self.name)
-
-
-    @property
-    def default_value(self):
-        if not self.has_default_value:
-            raise Error('argument has no default value')
-        else:
-            return self._default_value
-
-
-    @default_value.setter
-    def default_value(self, value):
-        self._default_value = value
-
-
-    @property
-    def has_default_value(self):
-        return self._default_value is not self._NO_DEFAULT_VALUE
-
-
-    def extract_data_type(self):
-        data_type = self.data_type
-
-        if self.has_default_value and (self.default_value is not None):
-            inferred_data_type = type(self.default_value)
-
-            if data_type is None:
-                data_type = inferred_data_type
-            elif not issubclass(inferred_data_type, data_type):
-                raise IncompatibleTypes(self.name)
-        elif data_type is None:
-            data_type = six.text_type
-
-        return data_type
 
 
 def add_options(arg_parser, arguments):

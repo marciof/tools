@@ -9,6 +9,98 @@ import unittest2
 # Internal:
 import argf
 
+# External:
+import six
+
+
+class TestArgumentExtraction (unittest2.TestCase):
+    def test_argument(self):
+        def f(x):
+            """
+            :param x: sample description
+            :type x: int
+            """
+
+        (desc, [arg]) = argf.extract_arguments(f)
+
+        self.assertIsInstance(arg, argf.Argument)
+        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.data_type, int)
+        self.assertEqual(arg.description, 'sample description')
+
+
+    def test_option_argument(self):
+        def f(x = 123):
+            """
+            :param x: sample description
+            :type x: int
+            """
+
+        (desc, [arg]) = argf.extract_arguments(f)
+
+        self.assertIsInstance(arg, argf.OptionArgument)
+        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.data_type, int)
+        self.assertEqual(arg.description, 'sample description')
+        self.assertEqual(arg.default_value, 123)
+
+
+    def test_unknown(self):
+        def description(x):
+            """
+            :param y: sample description
+            """
+
+        def data_type(x):
+            """
+            :type z: int
+            """
+
+        with self.assertRaisesRegexp(argf.UnknownParams, r'\by\b'):
+            argf.extract_arguments(description)
+
+        with self.assertRaisesRegexp(argf.UnknownParams, r'\bz\b'):
+            argf.extract_arguments(data_type)
+
+
+class TestArgumentValidation (unittest2.TestCase):
+    def test_compatible_data_types(self):
+        def f(x = True):
+            """
+            :type x: int
+            """
+
+        (desc, [arg]) = argf.extract_arguments(f)
+        self.assertEqual(arg.data_type, int)
+
+
+    def test_default_data_type(self):
+        def f(x = 'text'):
+            pass
+
+        (desc, [arg]) = argf.extract_arguments(f)
+        self.assertEqual(arg.data_type, six.text_type)
+
+
+    def test_incompatible_data_types(self):
+        def f(x = 1):
+            """
+            :type x: bool
+            """
+
+        with self.assertRaisesRegexp(argf.IncompatibleParamDataTypes, r'\bx\b'):
+            argf.extract_arguments(f)
+
+
+    def test_none_as_default_value(self):
+        def f(x = None):
+            """
+            :type x: int
+            """
+
+        (desc, [arg]) = argf.extract_arguments(f)
+        self.assertEqual(arg.data_type, int)
+
 
 class TestDataTypeLoading (unittest2.TestCase):
     def test_builtin(self):
@@ -39,7 +131,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             :type x: dict
             """
 
-        with self.assertRaisesRegexp(argf.AmbiguousParamDataType, 'x'):
+        with self.assertRaisesRegexp(argf.AmbiguousParamDataType, r'\bx\b'):
             argf.extract_documentation(f)
 
 
@@ -50,7 +142,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             :param x: that
             """
 
-        with self.assertRaisesRegexp(argf.AmbiguousParamDesc, 'x'):
+        with self.assertRaisesRegexp(argf.AmbiguousParamDesc, r'\bx\b'):
             argf.extract_documentation(f)
 
 
@@ -168,7 +260,6 @@ class TestParameterExtraction (unittest2.TestCase):
 '''
 # External:
 import argparse
-import six
 
 
 class Error (Exception):
