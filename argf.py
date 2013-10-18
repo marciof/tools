@@ -45,7 +45,7 @@ class UnknownParamDataType (Error):
 def extract_documentation(function):
     """
     :type function: types.FunctionType
-    :rtype: tuple
+    :rtype: tuple<None | six.text_type, dict<six.text_type, six.class_types>, dict<six.text_type, six.text_type>>
     :raise AmbiguousParamDesc:
     :raise AmbiguousParamType:
     """
@@ -84,7 +84,7 @@ def extract_documentation(function):
 def extract_parameters(function):
     """
     :type function: types.FunctionType
-    :rtype: collections.Iterable
+    :rtype: list<six.text_type | tuple<six.text_type, object>>
     :raise DynamicArgs:
     """
 

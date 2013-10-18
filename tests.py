@@ -31,6 +31,93 @@ class TestDataTypeLoading (unittest2.TestCase):
             argf.load_data_type('string')
 
 
+class TestDocumentationExtraction (unittest2.TestCase):
+    def test_ambiguous_param_data_type(self):
+        def f():
+            """
+            :type x: list
+            :type x: dict
+            """
+
+        with self.assertRaisesRegexp(argf.AmbiguousParamDataType, 'x'):
+            argf.extract_documentation(f)
+
+
+    def test_ambiguous_param_description(self):
+        def f():
+            """
+            :param x: this
+            :param x: that
+            """
+
+        with self.assertRaisesRegexp(argf.AmbiguousParamDesc, 'x'):
+            argf.extract_documentation(f)
+
+
+    def test_description(self):
+        def f():
+            """
+            Example program.
+            """
+
+        self.assertEqual(
+            argf.extract_documentation(f),
+            ('Example program.', {}, {}))
+
+
+    def test_empty(self):
+        def f():
+            """
+            """
+
+        self.assertEqual(argf.extract_documentation(f), (None, {}, {}))
+
+
+    def test_full(self):
+        def f():
+            """
+            Program description.
+
+            :param x: param description
+            :type x: dict
+            """
+
+        self.assertEqual(
+            argf.extract_documentation(f),
+            ('Program description.', {'x': dict}, {'x': 'param description'}))
+
+
+    def test_none(self):
+        def f():
+            pass
+
+        self.assertEqual(argf.extract_documentation(f), (None, {}, {}))
+
+
+    def test_param_data_type(self):
+        def f():
+            """
+            :type x: list
+            :type y: dict
+            """
+
+        self.assertEqual(
+            argf.extract_documentation(f),
+            (None, {'x': list, 'y': dict}, {}))
+
+
+    def test_param_description(self):
+        def f():
+            """
+            :param x: this
+            :param y: that
+            """
+
+        self.assertEqual(
+            argf.extract_documentation(f),
+            (None, {}, {'x': 'this', 'y': 'that'}))
+
+
 class TestParameterExtraction (unittest2.TestCase):
     def test_dynamic(self):
         def args(*args):
