@@ -66,14 +66,14 @@ class Argument (object):
         self.description = None
 
 
-    def actual_data_type(self):
+    def get_actual_data_type(self):
         if self.data_type is None:
             return six.text_type
         else:
             return self.data_type
 
 
-    def actual_name(self):
+    def get_actual_name(self):
         return self.name.strip('_').replace('_', '-')
 
 
@@ -83,13 +83,13 @@ class OptionArgument (Argument):
         self.default_value = default_value
 
 
-    def actual_data_type(self):
+    def get_actual_data_type(self):
         """
         :raise IncompatibleParamDataTypes:
         """
 
         if self.default_value is None:
-            return Argument.actual_data_type(self)
+            return Argument.get_actual_data_type(self)
         elif self.data_type is None:
             return type(self.default_value)
         elif not isinstance(self.default_value, self.data_type):

@@ -23,7 +23,7 @@ class TestArgumentExtraction (unittest2.TestCase):
         (desc, [arg]) = argf.extract_arguments(f)
 
         self.assertIsInstance(arg, argf.OptionArgument)
-        self.assertIs(arg.actual_data_type(), int)
+        self.assertIs(arg.get_actual_data_type(), int)
 
         self.assertEqual(arg.name, 'length')
         self.assertIs(arg.data_type, int)
@@ -41,7 +41,7 @@ class TestArgumentExtraction (unittest2.TestCase):
         (desc, [arg]) = argf.extract_arguments(f)
 
         self.assertIsInstance(arg, argf.Argument)
-        self.assertIs(arg.actual_data_type(), six.text_type)
+        self.assertIs(arg.get_actual_data_type(), six.text_type)
 
         self.assertEqual(arg.name, 'name')
         self.assertIs(arg.data_type, None)
@@ -66,7 +66,7 @@ class TestArgumentExtraction (unittest2.TestCase):
                 argf.IncompatibleParamDataTypes,
                 r'\bverbose\b'):
 
-            self.assertIs(arg.actual_data_type(), int)
+            self.assertIs(arg.get_actual_data_type(), int)
 
 
     def test_inferred_data_type(self):
@@ -76,7 +76,7 @@ class TestArgumentExtraction (unittest2.TestCase):
         (desc, [arg]) = argf.extract_arguments(f)
 
         self.assertIsInstance(arg, argf.OptionArgument)
-        self.assertIs(arg.actual_data_type(), bool)
+        self.assertIs(arg.get_actual_data_type(), bool)
 
         self.assertEqual(arg.name, 'verbose')
         self.assertIs(arg.data_type, None)
@@ -90,8 +90,8 @@ class TestArgumentExtraction (unittest2.TestCase):
 
         (desc, [class_arg, def_name_arg]) = argf.extract_arguments(f)
 
-        self.assertEqual(class_arg.actual_name(), 'class')
-        self.assertEqual(def_name_arg.actual_name(), 'default-name')
+        self.assertEqual(class_arg.get_actual_name(), 'class')
+        self.assertEqual(def_name_arg.get_actual_name(), 'default-name')
 
 
     def test_none_as_default_value(self):
@@ -104,7 +104,7 @@ class TestArgumentExtraction (unittest2.TestCase):
         (desc, [arg]) = argf.extract_arguments(f)
 
         self.assertIsInstance(arg, argf.OptionArgument)
-        self.assertIs(arg.actual_data_type(), int)
+        self.assertIs(arg.get_actual_data_type(), int)
 
         self.assertEqual(arg.name, 'length')
         self.assertIs(arg.data_type, int)
@@ -258,7 +258,6 @@ class TestDocumentationExtraction (unittest2.TestCase):
             """
 
         (main_desc, data_types, descriptions) = argf.extract_documentation(f)
-
         self.assertIsInstance(main_desc, six.text_type)
 
         self.assertEqual(
