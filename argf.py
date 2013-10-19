@@ -79,7 +79,8 @@ class IncompatibleParamDataTypes (Error):
 
 class ParamDataTypeImportError (Error):
     def __str__(self):
-        return 'failed to import parameter data type: %s: %s' % self.args
+        (name, error) = self.args
+        return 'failed to import parameter data type: %s: %s' % (name, error)
 
 
 class UndefinedParamDesc (Error):
@@ -90,7 +91,7 @@ class UndefinedParamDesc (Error):
 class UnknownParams (Error):
     def __str__(self):
         (names,) = self.args
-        return 'unknown parameter(s): %s' % ', '.join(sorted(names))
+        return 'unknown parameter(s): ' + ', '.join(sorted(names))
 
 
 class UnknownParamDataType (Error):
