@@ -217,7 +217,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             ('Program description.', {'x': dict}, {'x': 'param description'}))
 
 
-    def test_none(self):
+    def test_no_documentation(self):
         def f():
             pass
 

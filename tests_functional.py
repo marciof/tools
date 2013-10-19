@@ -41,19 +41,57 @@ def start(*args, **kwargs):
     return argf.start(*args, soft_errors = False, **kwargs)
 
 
-class TestOptionalArguments (unittest2.TestCase):
+class TestArguments (unittest2.TestCase):
     def test_argument_help(self):
-        def main(user_name = 'guest'):
+        def main(length, user_name = 'guest'):
             """
+            :param length: number of elements
             :param user_name: full username
             """
             return user_name
+
+        with self.assertRaisesRegexp(Help, r'\bnumber of elements\b'):
+            start(main, args = ['-h'])
 
         with self.assertRaisesRegexp(Help, r'\bfull username\b'):
             start(main, args = ['-h'])
 
 
-    def test_boolean_type(self):
+    def test_no_arguments(self):
+        def main():
+            return 123
+
+        self.assertEqual(start(main), 123)
+
+        with self.assertRaises(Error):
+            start(main, args = ['123'])
+
+
+    def test_program_help(self):
+        def main_with():
+            """
+            Sample description.
+            """
+            return 123
+
+        def main_without():
+            return 321
+
+        with self.assertRaisesRegexp(Help, r'\bSample description\.'):
+            start(main_with, args = ['-h'])
+
+        with self.assertRaises(argf.AmbiguousDesc):
+            start(main_with,
+                arg_parser = ArgumentParser(description = 'Duplicate.'))
+
+        with self.assertRaisesRegexp(Help, r'\bAlternate\.'):
+            start(main_without,
+                args = ['-h'],
+                arg_parser = ArgumentParser(description = 'Alternate.'))
+
+
+class TestOptionalArguments (unittest2.TestCase):
+    def test_boolean_option(self):
         def main(verbose = False):
             return verbose
 
@@ -81,7 +119,7 @@ class TestOptionalArguments (unittest2.TestCase):
                 arg_parser = ArgumentParser(add_help = False))
 
 
-    def test_integer_type(self):
+    def test_integer_option(self):
         def main(length = 123):
             return length
 
@@ -93,7 +131,7 @@ class TestOptionalArguments (unittest2.TestCase):
             start(main, args = ['--length', 'text'])
 
 
-    def test_none_value(self):
+    def test_none_as_default_value(self):
         def main(user_name = None):
             """
             :type user_name: int
@@ -137,7 +175,7 @@ class TestOptionalArguments (unittest2.TestCase):
             ('guest', 'windows'))
 
 
-    def test_string_type(self):
+    def test_string_option(self):
         def main(user_name = 'guest'):
             return user_name
 

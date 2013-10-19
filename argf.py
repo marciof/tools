@@ -84,14 +84,14 @@ class Argument (object):
         """
 
         options = {
-            'dest': self.name,
+            'metavar': self.get_actual_name(),
             'type': self.get_actual_data_type(),
         }
 
         if self.description is not None:
             options['help'] = self.description
 
-        arg_parser.add_argument(self.get_actual_name(), **options)
+        arg_parser.add_argument(self.name, **options)
 
 
     def get_actual_data_type(self):
