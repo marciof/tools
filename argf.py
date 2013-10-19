@@ -73,6 +73,10 @@ class Argument (object):
             return self.data_type
 
 
+    def actual_name(self):
+        return self.name.strip('_').replace('_', '-')
+
+
 class OptionArgument (Argument):
     def __init__(self, name, default_value):
         Argument.__init__(self, name)
@@ -109,8 +113,7 @@ def extract_arguments(function):
             (name, default_value) = param
             arg = OptionArgument(name = name, default_value = default_value)
         else:
-            (name,) = param
-            arg = Argument(name = name)
+            arg = Argument(name = param)
 
         if arg.name in data_types:
             arg.data_type = data_types.pop(arg.name)

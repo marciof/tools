@@ -81,6 +81,16 @@ class TestArgumentExtraction (unittest2.TestCase):
         self.assertIs(arg.default_value, True)
 
 
+    def test_name_translation(self):
+        def f(class_, default_name):
+            pass
+
+        (desc, [class_arg, def_name_arg]) = argf.extract_arguments(f)
+
+        self.assertEqual(class_arg.actual_name(), 'class')
+        self.assertEqual(def_name_arg.actual_name(), 'default-name')
+
+
     def test_none_as_default_value(self):
         def f(x = None):
             """
