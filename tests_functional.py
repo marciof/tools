@@ -91,7 +91,7 @@ class TestArguments (unittest2.TestCase):
 
 
 class TestOptionalArguments (unittest2.TestCase):
-    def test_boolean_option(self):
+    def test_boolean_argument(self):
         def main(verbose = False):
             return verbose
 
@@ -103,7 +103,7 @@ class TestOptionalArguments (unittest2.TestCase):
             start(main, args = ['--verbose', 'False'])
 
 
-    def test_help_option(self):
+    def test_help_argument(self):
         def main():
             return 123
 
@@ -119,7 +119,7 @@ class TestOptionalArguments (unittest2.TestCase):
                 arg_parser = ArgumentParser(add_help = False))
 
 
-    def test_integer_option(self):
+    def test_integer_argument(self):
         def main(length = 123):
             return length
 
@@ -175,10 +175,52 @@ class TestOptionalArguments (unittest2.TestCase):
             ('guest', 'windows'))
 
 
-    def test_string_option(self):
+    def test_string_argument(self):
         def main(user_name = 'guest'):
             return user_name
 
         self.assertEqual(start(main), 'guest')
         self.assertEqual(start(main, args = ['-u', 'test']), 'test')
         self.assertEqual(start(main, args = ['--user-name', '123']), '123')
+
+
+class TestPositionalArguments (unittest2.TestCase):
+    def test_boolean_argument(self):
+        def main(debug):
+            """
+            :type debug: bool
+            """
+            return debug
+
+        self.assertEqual(start(main, args = ['x']), True)
+        self.assertEqual(start(main, args = ['']), False)
+
+        with self.assertRaises(Error):
+            start(main)
+
+
+    def test_integer_argument(self):
+        def main(length):
+            """
+            :type length: int
+            """
+            return length
+
+        self.assertEqual(start(main, args = ['321']), 321)
+
+        with self.assertRaises(Error):
+            start(main)
+
+        with self.assertRaises(Error):
+            start(main, args = ['text'])
+
+
+    def test_string_argument(self):
+        def main(user_name):
+            return user_name
+
+        self.assertEqual(start(main, args = ['test']), 'test')
+        self.assertEqual(start(main, args = ['123']), '123')
+
+        with self.assertRaises(Error):
+            start(main)
