@@ -14,35 +14,89 @@ import six
 
 
 class TestArgumentExtraction (unittest2.TestCase):
-    def test_argument(self):
-        def f(x):
+    def test_compatible_data_types(self):
+        def f(x = True):
             """
-            :param x: sample description
-            :type x: int
-            """
-
-        (desc, [arg]) = argf.extract_arguments(f)
-
-        self.assertIsInstance(arg, argf.Argument)
-        self.assertEqual(arg.name, 'x')
-        self.assertEqual(arg.data_type, int)
-        self.assertEqual(arg.description, 'sample description')
-
-
-    def test_option_argument(self):
-        def f(x = 123):
-            """
-            :param x: sample description
             :type x: int
             """
 
         (desc, [arg]) = argf.extract_arguments(f)
 
         self.assertIsInstance(arg, argf.OptionArgument)
+        self.assertIs(arg.actual_data_type(), int)
+
         self.assertEqual(arg.name, 'x')
-        self.assertEqual(arg.data_type, int)
-        self.assertEqual(arg.description, 'sample description')
-        self.assertEqual(arg.default_value, 123)
+        self.assertIs(arg.data_type, int)
+        self.assertIs(arg.description, None)
+        self.assertIs(arg.default_value, True)
+
+
+    def test_default_data_type(self):
+        def f(x):
+            """
+            :param x: description
+            """
+            pass
+
+        (desc, [arg]) = argf.extract_arguments(f)
+
+        self.assertIsInstance(arg, argf.Argument)
+        self.assertIs(arg.actual_data_type(), six.text_type)
+
+        self.assertEqual(arg.name, 'x')
+        self.assertIs(arg.data_type, None)
+        self.assertEqual(arg.description, 'description')
+
+
+    def test_incompatible_data_types(self):
+        def f(x = 1):
+            """
+            :type x: bool
+            """
+
+        (desc, [arg]) = argf.extract_arguments(f)
+
+        self.assertIsInstance(arg, argf.OptionArgument)
+        self.assertEqual(arg.name, 'x')
+        self.assertIs(arg.data_type, bool)
+        self.assertIs(arg.description, None)
+        self.assertIs(arg.default_value, 1)
+
+        with self.assertRaisesRegexp(argf.IncompatibleParamDataTypes, r'\bx\b'):
+            self.assertIs(arg.actual_data_type(), int)
+
+
+    def test_inferred_data_type(self):
+        def f(x = True):
+            pass
+
+        (desc, [arg]) = argf.extract_arguments(f)
+
+        self.assertIsInstance(arg, argf.OptionArgument)
+        self.assertIs(arg.actual_data_type(), bool)
+
+        self.assertEqual(arg.name, 'x')
+        self.assertIs(arg.data_type, None)
+        self.assertIs(arg.description, None)
+        self.assertIs(arg.default_value, True)
+
+
+    def test_none_as_default_value(self):
+        def f(x = None):
+            """
+            :type x: int
+            :param x: description
+            """
+
+        (desc, [arg]) = argf.extract_arguments(f)
+
+        self.assertIsInstance(arg, argf.OptionArgument)
+        self.assertIs(arg.actual_data_type(), int)
+
+        self.assertEqual(arg.name, 'x')
+        self.assertIs(arg.data_type, int)
+        self.assertEqual(arg.description, 'description')
+        self.assertIs(arg.default_value, None)
 
 
     def test_unknown(self):
@@ -61,45 +115,6 @@ class TestArgumentExtraction (unittest2.TestCase):
 
         with self.assertRaisesRegexp(argf.UnknownParams, r'\bz\b'):
             argf.extract_arguments(data_type)
-
-
-class TestArgumentValidation (unittest2.TestCase):
-    def test_compatible_data_types(self):
-        def f(x = True):
-            """
-            :type x: int
-            """
-
-        (desc, [arg]) = argf.extract_arguments(f)
-        self.assertEqual(arg.data_type, int)
-
-
-    def test_default_data_type(self):
-        def f(x = 'text'):
-            pass
-
-        (desc, [arg]) = argf.extract_arguments(f)
-        self.assertEqual(arg.data_type, six.text_type)
-
-
-    def test_incompatible_data_types(self):
-        def f(x = 1):
-            """
-            :type x: bool
-            """
-
-        with self.assertRaisesRegexp(argf.IncompatibleParamDataTypes, r'\bx\b'):
-            argf.extract_arguments(f)
-
-
-    def test_none_as_default_value(self):
-        def f(x = None):
-            """
-            :type x: int
-            """
-
-        (desc, [arg]) = argf.extract_arguments(f)
-        self.assertEqual(arg.data_type, int)
 
 
 class TestDataTypeLoading (unittest2.TestCase):

@@ -60,27 +60,38 @@ class UnknownParamDataType (Error):
 
 
 class Argument (object):
-    def __init__(self, name, data_type = six.text_type, description = None):
+    def __init__(self, name):
         self.name = name
-        self.data_type = data_type
-        self.description = description
+        self.data_type = None
+        self.description = None
 
 
-    def validate(self):
-        pass
+    def actual_data_type(self):
+        if self.data_type is None:
+            return six.text_type
+        else:
+            return self.data_type
 
 
 class OptionArgument (Argument):
-    def __init__(self, name, default_value, **kwargs):
-        Argument.__init__(self, name, **kwargs)
+    def __init__(self, name, default_value):
+        Argument.__init__(self, name)
         self.default_value = default_value
 
 
-    def validate(self):
-        value = self.default_value
+    def actual_data_type(self):
+        """
+        :raise IncompatibleParamDataTypes:
+        """
 
-        if (value is not None) and not isinstance(value, self.data_type):
+        if self.default_value is None:
+            return Argument.actual_data_type(self)
+        elif self.data_type is None:
+            return type(self.default_value)
+        elif not isinstance(self.default_value, self.data_type):
             raise IncompatibleParamDataTypes(self.name)
+        else:
+            return self.data_type
 
 
 def extract_arguments(function):
@@ -107,7 +118,6 @@ def extract_arguments(function):
         if arg.name in descriptions:
             arg.description = descriptions.pop(arg.name)
 
-        arg.validate()
         args.append(arg)
 
     if (len(data_types) > 0) or (len(descriptions) > 0):
@@ -199,7 +209,7 @@ def extract_parameters(function):
 
 def load_data_type(name):
     """
-    :type name: six.string_types
+    :type name: six.text_type
     :rtype: six.class_types
     """
 
