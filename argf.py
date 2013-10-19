@@ -38,11 +38,13 @@ import xml.etree.ElementTree
 # External:
 import argparse
 import docutils.core
+import semantic_version
 import six
 import six.moves
 
 
 __all__ = ['start']
+__version__ = semantic_version.Version('0.1.0')
 
 
 class Error (Exception):
@@ -275,6 +277,8 @@ def extract_documentation(function):
     return (main_desc, data_types, descriptions)
 
 
+# TODO: Support list options? Via type ``list``? Via varargs?
+# TODO: Support sub-commands via enum parameters?
 def extract_parameters(function):
     """
     :type function: types.FunctionType

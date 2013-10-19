@@ -4,7 +4,7 @@ python:
   - 2.7
   - 3.3
 install: |
-  pip install --use-mirrors argparse docutils six
+  pip install --use-mirrors argparse docutils semantic_version six
   if python -c "from sys import *; exit(version_info < (3,))"
   then
     pip install --use-mirrors unittest2py3k
