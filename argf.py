@@ -1,6 +1,34 @@
 # -*- coding: UTF-8 -*-
 
 
+"""
+Declarative command line arguments parser.
+
+Builds options for an ``argparse.ArgumentParser`` from a function's
+parameters and docstring, and calls it with the program arguments already
+parsed.
+
+* The docstring text describes the program.
+* Docstring parameter descriptions describe program arguments.
+* A non-keyword parameter is converted to a positional argument.
+* A keyword parameter is converted to an optional argument.
+
+Argument conversions:
+
+* An argument type is taken from its parameter docstring type. If it's a
+  fully qualified path then the module/package is imported first, otherwise
+  the builtins module is used. If unspecified, the type is inferred from
+  its default value (if it has one and if it's not ``None``), otherwise
+  defaults to ``six.text_type``.
+* A boolean keyword parameter is converted to a flag argument. When present
+  in the command line its default value is negated via a logical ``not``.
+* A short option is automatically created from the first character not
+  already in use of a keyword argument's name.
+* A keyword parameter's default value, if not ``None``, is required to be
+  an instance of the argument type.
+"""
+
+
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import inspect
@@ -303,7 +331,7 @@ def start(main,
         arg_parser = None,
         soft_errors = True):
     """
-    Starts a function, passing to it program arguments parsed via ``argparse``.
+    Starts a function with program arguments parsed via ``argparse``.
 
     :type main: types.FunctionType
     :param main: entry point
@@ -313,8 +341,8 @@ def start(main,
     :type arg_parser: argparse.ArgumentParser
     :param arg_parser: user defined argument parser
     :type soft_errors: bool
-    :param soft_errors: if true, catches parsing exceptions and converts them
-        to error messages for ``argparse.ArgumentParser.error()``
+    :param soft_errors: if true, catches parsing exceptions and converts
+        them to error messages for ``argparse.ArgumentParser.error()``
     :return: entry point's return value
     """
 

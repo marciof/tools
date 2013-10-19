@@ -6,11 +6,11 @@ from __future__ import absolute_import, division, unicode_literals
 import collections
 import unittest2
 
-# Internal:
-import argf
-
 # External:
 import six
+
+# Internal:
+import argf
 
 
 class TestArgumentExtraction (unittest2.TestCase):
