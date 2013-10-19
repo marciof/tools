@@ -8,13 +8,22 @@ import re
 import xml.etree.ElementTree
 
 # External:
+import argparse
 import docutils.core
 import six
 import six.moves
 
 
+__all__ = ['start']
+
+
 class Error (Exception):
     pass
+
+
+class AmbiguousDesc (Error):
+    def __str__(self):
+        return 'user defined arg parser instance already has a description'
 
 
 class AmbiguousParamDesc (Error):
@@ -60,10 +69,29 @@ class UnknownParamDataType (Error):
 
 
 class Argument (object):
+    _WORD_SEPARATOR = '-'
+
+
     def __init__(self, name):
         self.name = name
         self.data_type = None
         self.description = None
+
+
+    def add_to_parser(self, arg_parser):
+        """
+        :type arg_parser: argparse.ArgumentParser
+        """
+
+        options = {
+            'dest': self.name,
+            'type': self.get_actual_data_type(),
+        }
+
+        if self.description is not None:
+            options['help'] = self.description
+
+        arg_parser.add_argument(self.get_actual_name(), **options)
 
 
     def get_actual_data_type(self):
@@ -74,13 +102,51 @@ class Argument (object):
 
 
     def get_actual_name(self):
-        return self.name.strip('_').replace('_', '-')
+        return self.name.strip('_').replace('_', self._WORD_SEPARATOR)
 
 
 class OptionArgument (Argument):
     def __init__(self, name, default_value):
         Argument.__init__(self, name)
         self.default_value = default_value
+
+
+    def add_to_parser(self, arg_parser):
+        """
+        :type arg_parser: argparse.ArgumentParser
+        """
+
+        actual_name = self.get_actual_name()
+        data_type = self.get_actual_data_type()
+        names = [(2 * arg_parser.prefix_chars) + actual_name]
+
+        options = {
+            'default': self.default_value,
+            'dest': self.name,
+        }
+
+        if self.description is not None:
+            options['help'] = self.description
+
+        if issubclass(data_type, bool):
+            options['const'] = not self.default_value
+            options['action'] = 'store_const'
+        else:
+            options['type'] = data_type
+
+        reserved_chars = set([self._WORD_SEPARATOR])
+
+        for option in arg_parser._option_string_actions.keys():
+            if (len(option) == 2) and (option[0] == arg_parser.prefix_chars):
+                reserved_chars.add(option[1])
+
+        available_chars = actual_name.translate(
+            dict((ord(ch), '') for ch in reserved_chars))
+
+        if len(available_chars) > 0:
+            names.append(arg_parser.prefix_chars + available_chars[0])
+
+        arg_parser.add_argument(*names, **options)
 
 
     def get_actual_data_type(self):
@@ -230,3 +296,47 @@ def load_data_type(name):
         return getattr(module, type_name)
     except AttributeError:
         raise UnknownParamDataType(name)
+
+
+def start(main,
+        args = None,
+        arg_parser = None,
+        soft_errors = True):
+    """
+    Starts a function, passing to it program arguments parsed via ``argparse``.
+
+    :type main: types.FunctionType
+    :param main: entry point
+    :type args: list<six.text_type>
+    :param args: user defined program arguments, otherwise leaves it up to
+        ``argparse.ArgumentParser.parse_args()`` to define
+    :type arg_parser: argparse.ArgumentParser
+    :param arg_parser: user defined argument parser
+    :type soft_errors: bool
+    :param soft_errors: if true, catches parsing exceptions and converts them
+        to error messages for ``argparse.ArgumentParser.error()``
+    :return: entry point's return value
+    """
+
+    if arg_parser is None:
+        arg_parser = argparse.ArgumentParser(
+            formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+
+    try:
+        (description, arguments) = extract_arguments(main)
+
+        if description is not None:
+            if arg_parser.description is None:
+                arg_parser.description = description
+            else:
+                raise AmbiguousDesc()
+
+        for argument in arguments:
+            argument.add_to_parser(arg_parser)
+    except Error as error:
+        if soft_errors:
+            arg_parser.error(error)
+        else:
+            raise
+    else:
+        return main(**vars(arg_parser.parse_args(args = args)))
