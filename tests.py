@@ -15,9 +15,9 @@ import six
 
 class TestArgumentExtraction (unittest2.TestCase):
     def test_compatible_data_types(self):
-        def f(x = True):
+        def f(length = True):
             """
-            :type x: int
+            :type length: int
             """
 
         (desc, [arg]) = argf.extract_arguments(f)
@@ -25,16 +25,16 @@ class TestArgumentExtraction (unittest2.TestCase):
         self.assertIsInstance(arg, argf.OptionArgument)
         self.assertIs(arg.actual_data_type(), int)
 
-        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.name, 'length')
         self.assertIs(arg.data_type, int)
         self.assertIs(arg.description, None)
         self.assertIs(arg.default_value, True)
 
 
     def test_default_data_type(self):
-        def f(x):
+        def f(name):
             """
-            :param x: description
+            :param name: description
             """
             pass
 
@@ -43,31 +43,34 @@ class TestArgumentExtraction (unittest2.TestCase):
         self.assertIsInstance(arg, argf.Argument)
         self.assertIs(arg.actual_data_type(), six.text_type)
 
-        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.name, 'name')
         self.assertIs(arg.data_type, None)
         self.assertEqual(arg.description, 'description')
 
 
     def test_incompatible_data_types(self):
-        def f(x = 1):
+        def f(verbose = 1):
             """
-            :type x: bool
+            :type verbose: bool
             """
 
         (desc, [arg]) = argf.extract_arguments(f)
 
         self.assertIsInstance(arg, argf.OptionArgument)
-        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.name, 'verbose')
         self.assertIs(arg.data_type, bool)
         self.assertIs(arg.description, None)
         self.assertIs(arg.default_value, 1)
 
-        with self.assertRaisesRegexp(argf.IncompatibleParamDataTypes, r'\bx\b'):
+        with self.assertRaisesRegexp(
+                argf.IncompatibleParamDataTypes,
+                r'\bverbose\b'):
+
             self.assertIs(arg.actual_data_type(), int)
 
 
     def test_inferred_data_type(self):
-        def f(x = True):
+        def f(verbose = True):
             pass
 
         (desc, [arg]) = argf.extract_arguments(f)
@@ -75,7 +78,7 @@ class TestArgumentExtraction (unittest2.TestCase):
         self.assertIsInstance(arg, argf.OptionArgument)
         self.assertIs(arg.actual_data_type(), bool)
 
-        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.name, 'verbose')
         self.assertIs(arg.data_type, None)
         self.assertIs(arg.description, None)
         self.assertIs(arg.default_value, True)
@@ -92,10 +95,10 @@ class TestArgumentExtraction (unittest2.TestCase):
 
 
     def test_none_as_default_value(self):
-        def f(x = None):
+        def f(length = None):
             """
-            :type x: int
-            :param x: description
+            :type length: int
+            :param length: description
             """
 
         (desc, [arg]) = argf.extract_arguments(f)
@@ -103,27 +106,27 @@ class TestArgumentExtraction (unittest2.TestCase):
         self.assertIsInstance(arg, argf.OptionArgument)
         self.assertIs(arg.actual_data_type(), int)
 
-        self.assertEqual(arg.name, 'x')
+        self.assertEqual(arg.name, 'length')
         self.assertIs(arg.data_type, int)
         self.assertEqual(arg.description, 'description')
         self.assertIs(arg.default_value, None)
 
 
     def test_unknown(self):
-        def description(x):
+        def description(length):
             """
-            :param y: sample description
-            """
-
-        def data_type(x):
-            """
-            :type z: int
+            :param verbose: sample description
             """
 
-        with self.assertRaisesRegexp(argf.UnknownParams, r'\by\b'):
+        def data_type(name):
+            """
+            :type default: int
+            """
+
+        with self.assertRaisesRegexp(argf.UnknownParams, r'\bverbose\b'):
             argf.extract_arguments(description)
 
-        with self.assertRaisesRegexp(argf.UnknownParams, r'\bz\b'):
+        with self.assertRaisesRegexp(argf.UnknownParams, r'\bdefault\b'):
             argf.extract_arguments(data_type)
 
 
