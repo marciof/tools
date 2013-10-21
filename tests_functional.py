@@ -3,6 +3,8 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import contextlib
+import sys
 import unittest2
 
 # External:
@@ -55,6 +57,15 @@ class TestArguments (unittest2.TestCase):
 
         with self.assertRaisesRegexp(Help, r'\bfull username\b'):
             start(main, args = ['-h'])
+
+
+    def test_error_handling(self):
+        def main(user):
+            return user
+
+        with contextlib.closing(six.StringIO()) as sys.stderr:
+            with self.assertRaises(SystemExit):
+                argf.start(main, args = [])
 
 
     def test_no_arguments(self):
