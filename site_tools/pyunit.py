@@ -50,7 +50,6 @@ def PyUnit(env,
     return env.AlwaysBuild(env.Alias(target,
         action = env.Action(
             [[sys.executable,
-              '-B',
               '-m',
               'unittest2.__main__',
               'discover',
