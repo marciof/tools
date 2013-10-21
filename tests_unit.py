@@ -193,6 +193,16 @@ class TestDocumentationExtraction (unittest2.TestCase):
         self.assertEqual(argf.extract_documentation(f), (None, {}, {}))
 
 
+    def test_empty_param_data_type(self):
+        def f():
+            """
+            :type x:
+            """
+
+        with self.assertRaisesRegexp(argf.UndefinedParamDataType, r'\bx\b'):
+            argf.extract_documentation(f)
+
+
     def test_empty_param_description(self):
         def f():
             """

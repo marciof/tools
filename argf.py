@@ -83,6 +83,11 @@ class ParamDataTypeImportError (Error):
         return 'failed to import parameter data type: %s: %s' % (name, error)
 
 
+class UndefinedParamDataType (Error):
+    def __str__(self):
+        return 'undefined parameter data type: %s' % self.args
+
+
 class UndefinedParamDesc (Error):
     def __str__(self):
         return 'undefined parameter description: %s' % self.args
@@ -267,6 +272,8 @@ def extract_documentation(function):
         elif kind == 'type':
             if name in data_types:
                 raise AmbiguousParamDataType(name)
+            elif field_body is None:
+                raise UndefinedParamDataType(name)
             else:
                 data_types[name] = load_data_type(field_body)
 
