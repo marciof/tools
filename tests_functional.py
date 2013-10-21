@@ -60,11 +60,13 @@ class TestArguments (unittest2.TestCase):
 
 
     def test_error_handling(self):
-        def main(user):
-            return user
+        def main():
+            """
+            :param user: user name
+            """
 
-        with contextlib.closing(six.StringIO()) as sys.stderr:
-            with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit):
+            with contextlib.closing(six.StringIO()) as sys.stderr:
                 argf.start(main, args = [])
 
 
@@ -91,7 +93,7 @@ class TestArguments (unittest2.TestCase):
         with self.assertRaisesRegexp(Help, r'\bSample description\.'):
             start(main_with, args = ['-h'])
 
-        with self.assertRaises(argf.AmbiguousDesc):
+        with self.assertRaisesRegexp(argf.AmbiguousDesc, '.'):
             start(main_with,
                 arg_parser = ArgumentParser(description = 'Duplicate.'))
 
@@ -172,18 +174,22 @@ class TestOptionalArguments (unittest2.TestCase):
 
 
     def test_short_option_generation(self):
-        def main(user = 'guest', uname = 'linux'):
-            return (user, uname)
+        def main(user = 'guest', uname = 'linux', huh = True):
+            return (user, uname, huh)
 
-        self.assertEqual(start(main), ('guest', 'linux'))
+        self.assertEqual(start(main), ('guest', 'linux', True))
 
         self.assertEqual(
             start(main, args = ['-u', 'test']),
-            ('test', 'linux'))
+            ('test', 'linux', True))
 
         self.assertEqual(
             start(main, args = ['-n', 'windows']),
-            ('guest', 'windows'))
+            ('guest', 'windows', True))
+
+        self.assertEqual(
+            start(main, args = ['--huh']),
+            ('guest', 'linux', False))
 
 
     def test_string_argument(self):

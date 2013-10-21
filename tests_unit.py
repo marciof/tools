@@ -142,12 +142,12 @@ class TestDataTypeLoading (unittest2.TestCase):
 
 
     def test_from_unknown_module(self):
-        with self.assertRaises(argf.ParamDataTypeImportError):
+        with self.assertRaisesRegexp(argf.ParamDataTypeImportError, '.'):
             argf.load_data_type('collection.namedtuple')
 
 
     def test_unknown(self):
-        with self.assertRaises(argf.UnknownParamDataType):
+        with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
             argf.load_data_type('string')
 
 
@@ -284,13 +284,22 @@ class TestDocumentationExtraction (unittest2.TestCase):
 
 
     def test_unknown_directive(self):
-        def f():
+        def no_arg():
             """
             :unknown: xyz
             """
 
+        def single_arg():
+            """
+            :unknown abc: xyz
+            """
+
         self.assertEqual(
-            argf.extract_documentation(f),
+            argf.extract_documentation(no_arg),
+            (None, {}, {}))
+
+        self.assertEqual(
+            argf.extract_documentation(single_arg),
             (None, {}, {}))
 
 
@@ -302,10 +311,10 @@ class TestParameterExtraction (unittest2.TestCase):
         def kwargs(**kwargs):
             pass
 
-        with self.assertRaises(argf.DynamicArgs):
+        with self.assertRaisesRegexp(argf.DynamicArgs, '.'):
             argf.extract_parameters(args)
 
-        with self.assertRaises(argf.DynamicArgs):
+        with self.assertRaisesRegexp(argf.DynamicArgs, '.'):
             argf.extract_parameters(kwargs)
 
 
