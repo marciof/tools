@@ -283,6 +283,17 @@ class TestDocumentationExtraction (unittest2.TestCase):
             (six.text_type,))
 
 
+    def test_unknown_directive(self):
+        def f():
+            """
+            :unknown: xyz
+            """
+
+        self.assertEqual(
+            argf.extract_documentation(f),
+            (None, {}, {}))
+
+
 class TestParameterExtraction (unittest2.TestCase):
     def test_dynamic(self):
         def args(*args):
