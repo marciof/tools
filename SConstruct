@@ -14,7 +14,7 @@ test_coverage = env.PyUnitCoverage('test-coverage',
     sources = ['argf'],
     measure_branch = True)
 
-if 'TRAVIS_CI' in os.environ:
+if (os.environ.get('TRAVIS') == 'true') and (os.environ.get('CI') == 'true'):
     check_targets.append(test_coverage)
 else:
     env.Tool('travis-lint')
