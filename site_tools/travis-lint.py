@@ -13,7 +13,6 @@ import os
 
 _PROGRAM_NAME = 'travis-lint'
 _ENV_NAME = _PROGRAM_NAME.upper().replace('-', '_')
-_TRAVIS_CI_ENV_NAME = 'TRAVIS_CI'
 
 
 # Not called, but required.
@@ -26,9 +25,6 @@ def generate(env):
     Adds a ``TravisLint`` method and ``TRAVIS_CI`` variable to the SCons
     environment.
     """
-
-    env[_TRAVIS_CI_ENV_NAME] = ((os.environ.get('CI') == 'true')
-        and (os.environ.get('TRAVIS') == 'true'))
 
     env.Tool('which')
 
