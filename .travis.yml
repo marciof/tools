@@ -4,7 +4,7 @@ python:
   - 2.7
   - 3.3
 install: |
-  pip install --use-mirrors argparse docutils semantic_version six
+  pip install --use-mirrors argparse coverage docutils python-coveralls semantic_version six
   if python -c "from sys import *; exit(version_info < (3,))"
   then
     pip install --use-mirrors unittest2py3k
@@ -14,7 +14,8 @@ install: |
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
   then
-    python -B -m unittest2 discover
+    coverage --branch --module --source=argf unittest2 discover
   else
-    scons
+    scons check
   fi
+after_success: coveralls
