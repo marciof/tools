@@ -21,12 +21,12 @@ def generate(env):
 
 def Which(env, name, paths = None):
     """
-    :param name: program name
     :type name: unicode
-    :param paths: additional paths to search
+    :param name: program name
     :type paths: list<unicode>
-    :return: program path
+    :param paths: additional paths to search
     :rtype: unicode
+    :return: program path
     :raise Exception: program wasn't found
     """
 

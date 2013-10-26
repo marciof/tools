@@ -27,14 +27,14 @@ def generate(env):
 
 def Globr(env, pattern, root = os.path.curdir, exclude_root = False):
     """
-    :param pattern: glob pattern
     :type pattern: unicode
-    :param root: search starting point path
+    :param pattern: glob pattern
     :type root: unicode
-    :param exclude_root: if true makes paths relative to ``root``
+    :param root: search starting point path
     :type exclude_root: bool
-    :return: matching files
+    :param exclude_root: if true makes paths relative to ``root``
     :rtype: list<unicode>
+    :return: matching files
     """
 
     paths = env.Glob(os.path.join(root, pattern))

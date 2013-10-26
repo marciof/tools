@@ -30,10 +30,10 @@ def Cython(env, target, source, is_embedded = True, do_compilation = False):
     """
     :param target: compiled file
     :param source: Python source file
-    :param is_embedded: if true passes "--embed" to Cython
     :type is_embedded: bool
-    :param do_compilation: if true builds an executable via SCons's ``Program``
+    :param is_embedded: if true passes "--embed" to Cython
     :type do_compilation: bool
+    :param do_compilation: if true builds an executable via SCons's ``Program``
     :return: SCons target
     """
 

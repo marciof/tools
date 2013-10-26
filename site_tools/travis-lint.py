@@ -43,8 +43,8 @@ def generate(env):
 
 def TravisLint(env, target = _PROGRAM_NAME):
     """
-    :param target: target name
     :type target: unicode
+    :param target: target name
     :return: SCons target
     """
 

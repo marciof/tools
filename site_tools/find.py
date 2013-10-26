@@ -26,12 +26,12 @@ def generate(env):
 
 def Find(env, target, root = os.path.curdir):
     """
-    :param target: file name
     :type target: unicode
-    :param root: search starting point path
+    :param target: file name
     :type root: unicode
-    :return: file path
+    :param root: search starting point path
     :rtype: unicode
+    :return: file path
     :raise Exception: file name isn't unique or doesn't exist
     """
 

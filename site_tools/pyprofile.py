@@ -34,10 +34,10 @@ def generate(env):
 
 def Profile(env, target = 'profile', source = None):
     """
-    :param target: target name
     :type target: unicode
-    :param source: function to profile
+    :param target: target name
     :type source: callable
+    :param source: function to profile
     :return: SCons target
     """
 

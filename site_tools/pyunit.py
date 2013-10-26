@@ -33,12 +33,12 @@ def PyUnit(env,
         source = None,
         root = os.path.curdir):
     """
-    :param target: target name
     :type target: unicode
-    :param source: source files to be test, otherwise all test sources
+    :param target: target name
     :type source: list
-    :param root: search starting point path when ``source`` is unspecified
+    :param source: source files to be test, otherwise all test sources
     :type root: unicode
+    :param root: search starting point path when ``source`` is unspecified
     :return: SCons target
     """
 

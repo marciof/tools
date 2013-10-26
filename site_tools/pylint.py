@@ -36,14 +36,14 @@ def Pylint(env,
         root = os.path.curdir,
         config = ''):
     """
-    :param target: target name
     :type target: unicode
-    :param source: source files to be check, otherwise all sources
+    :param target: target name
     :type source: list
-    :param root: search starting point path when ``source`` is unspecified
+    :param source: source files to be check, otherwise all sources
     :type root: unicode
-    :param config: tool configuration file path, otherwise use default
+    :param root: search starting point path when ``source`` is unspecified
     :type config: unicode
+    :param config: tool configuration file path, otherwise use default
     :return: SCons target
     """
 
