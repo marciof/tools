@@ -14,7 +14,7 @@ install: |
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
   then
-    coverage --branch --module --source=argf unittest2 discover
+    coverage run --branch --module --source=argf unittest2 discover
   else
     scons check
   fi
