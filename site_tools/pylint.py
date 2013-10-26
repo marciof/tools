@@ -39,7 +39,7 @@ def Pylint(env,
     :type target: unicode
     :param target: target name
     :type source: list
-    :param source: source files to be check, otherwise all sources
+    :param source: source files to check, otherwise all sources
     :type root: unicode
     :param root: search starting point path when ``source`` is unspecified
     :type config: unicode
