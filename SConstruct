@@ -3,20 +3,22 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import os
 
 
-env = Environment(
-    tools = ['default', 'find', 'pep8', 'python', 'pyunit', 'travis-lint'])
+env = Environment(tools = ['default', 'find', 'pep8', 'python', 'pyunit'])
 
-travis_lint = env.TravisLint()
-pep8 = env.Pep8(config = env.Find('pep8.ini'))
+check_targets = [env.Pep8(config = env.Find('pep8.ini'))]
 test = env.PyUnit('test')
-
 test_coverage = env.PyUnitCoverage('test-coverage',
     sources = ['argf'],
     measure_branch = True)
 
-if env['TRAVIS_CI']:
-    env.Alias('check', [pep8, test_coverage])
+if 'TRAVIS_CI' in os.environ:
+    check_targets.append(test_coverage)
 else:
-    env.Alias('check', [travis_lint, pep8, test])
+    env.Tool('travis-lint')
+    check_targets.insert(0, env.TravisLint())
+    check_targets.append(test)
+
+env.Alias('check', check_targets)
