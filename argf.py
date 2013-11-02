@@ -349,6 +349,7 @@ def load_data_type(name):
         raise UnknownParamDataType(name)
 
 
+# TODO: Add a version argument from `__version__`?
 def start(main,
         args = None,
         arg_parser = None,
