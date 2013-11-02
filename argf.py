@@ -31,7 +31,7 @@ Argument conversions:
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import inspect
+inspect = None # lazy
 import re
 
 # TODO: Use ``future`` instead of ``six``? Too much magic?
@@ -254,13 +254,17 @@ def extract_documentation(function):
 
     data_types = {}
     descriptions = {}
+
+    global inspect
+    if inspect is None:
+        import inspect
+
     docstring = inspect.getdoc(function)
 
     if docstring is None:
         return (None, data_types, descriptions)
 
     global docutils__core
-
     if docutils__core is None:
         import docutils.core as docutils__core
 
@@ -327,6 +331,10 @@ def extract_parameters(function):
     :raise DynamicArgs:
     :raise TupleArg:
     """
+
+    global inspect
+    if inspect is None:
+        import inspect
 
     arg_spec = inspect.getargspec(function)
 
@@ -398,7 +406,6 @@ def start(main,
 
     if arg_parser is None:
         global argparse
-
         if argparse is None:
             import argparse
 
