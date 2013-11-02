@@ -358,9 +358,9 @@ class TestParameterExtraction (unittest2.TestCase):
         self.assertIsInstance(name, six.text_type)
 
 
-    def test_tuple(self):
-        def f((x, y)):
-            pass
+    if six.PY2:
+        def test_tuple(self):
+            f = eval('lambda (x, y): None')
 
-        with self.assertRaisesRegexp(argf.TupleArg, r'\(x, y\)'):
-            argf.extract_parameters(f)
+            with self.assertRaisesRegexp(argf.TupleArg, r'\(x, y\)'):
+                argf.extract_parameters(f)
