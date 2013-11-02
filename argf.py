@@ -37,7 +37,7 @@ import re
 # TODO: Use ``future`` instead of ``six``? Too much magic?
 # External:
 import argparse
-import docutils.core
+docutils__core = None # lazy
 import semantic_version
 import six
 import six.moves
@@ -254,8 +254,17 @@ def extract_documentation(function):
 
     data_types = {}
     descriptions = {}
-    docstring = inspect.getdoc(function) or ''
-    [doc] = docutils.core.publish_doctree(docstring).asdom().childNodes
+    docstring = inspect.getdoc(function)
+
+    if docstring is None:
+        return (None, data_types, descriptions)
+
+    global docutils__core
+
+    if docutils__core is None:
+        import docutils.core as docutils__core
+
+    [doc] = docutils__core.publish_doctree(docstring).asdom().childNodes
 
     for field in doc.getElementsByTagName('field'):
         [field_name] = field.getElementsByTagName('field_name')
