@@ -6,7 +6,8 @@ from __future__ import absolute_import, division, unicode_literals
 import os
 
 
-env = Environment(tools = ['default', 'find', 'pep8', 'python', 'pyunit'])
+env = Environment(
+    tools = ['default', 'find', 'pep8', 'pyprofile', 'python', 'pyunit'])
 
 check_targets = [env.Pep8(config = env.Find('pep8.ini'))]
 test = env.PyUnit('test')
@@ -22,3 +23,8 @@ else:
     check_targets.append(test)
 
 env.Alias('check', check_targets)
+
+env.Alias('profile', [
+    env.Profile('profile-import', source = 'argf.py', callers = False),
+    env.Profile('profile-run', source = 'profile_run.py'),
+])
