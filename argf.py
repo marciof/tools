@@ -34,7 +34,6 @@ from __future__ import absolute_import, division, unicode_literals
 inspect = None # lazy
 import re
 
-# TODO: Use ``future`` instead of ``six``? Too much magic?
 # External:
 argparse = None # lazy
 docutils__core = None # lazy
@@ -180,6 +179,7 @@ class OptionArgument (Argument):
 
         reserved_chars = set([self._WORD_SEPARATOR])
 
+        # TODO: Don't use undocumented functions.
         for option in arg_parser._option_string_actions.keys():
             if (len(option) == 2) and (option[0] == arg_parser.prefix_chars):
                 reserved_chars.add(option[1])
