@@ -33,7 +33,6 @@ Argument conversions:
 from __future__ import absolute_import, division, unicode_literals
 import inspect
 import re
-import xml.etree.ElementTree
 
 # TODO: Use ``future`` instead of ``six``? Too much magic?
 # External:
@@ -240,7 +239,7 @@ def extract_arguments(function):
     return (main_desc, args)
 
 
-# TODO: Leverage Sphinx for parsing, but provide a fallback.
+# TODO: Leverage Sphinx for parsing, but provide a fallback?
 def extract_documentation(function):
     """
     :type function: types.FunctionType
@@ -256,20 +255,30 @@ def extract_documentation(function):
     data_types = {}
     descriptions = {}
     docstring = inspect.getdoc(function) or ''
+    [doc] = docutils.core.publish_doctree(docstring).asdom().childNodes
 
-    doc = xml.etree.ElementTree.fromstring(
-        docutils.core.publish_doctree(docstring).asdom().toxml())
+    for field in doc.getElementsByTagName('field'):
+        [field_name] = field.getElementsByTagName('field_name')
+        [field_name] = field_name.childNodes
+        field_name = field_name.data
 
-    for field in doc.findall('.//field'):
-        field_name = field.findtext('field_name')
         directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
 
         if directive is None:
             continue
 
         (kind, name) = directive.groups()
-        field_body = field.findtext('field_body/paragraph')
         name = six.text_type(name)
+
+        [field_body] = field.getElementsByTagName('field_body')
+        field_body = field_body.getElementsByTagName('paragraph')
+
+        if len(field_body) == 0:
+            field_body = None
+        else:
+            [field_body] = field_body
+            [field_body] = field_body.childNodes
+            field_body = field_body.data
 
         if kind == 'param':
             if name in descriptions:
@@ -286,10 +295,16 @@ def extract_documentation(function):
             else:
                 data_types[name] = load_data_type(field_body)
 
-    main_desc = doc.findtext('paragraph')
+    main_desc = [n for n in doc.childNodes if n.localName == 'paragraph']
 
-    if main_desc is not None:
-        main_desc = six.text_type(main_desc)
+    if len(main_desc) == 0:
+        main_desc = None
+    else:
+        [main_desc] = main_desc
+        [main_desc] = main_desc.childNodes or [None]
+
+        if main_desc is not None:
+            main_desc = six.text_type(main_desc.data)
 
     return (main_desc, data_types, descriptions)
 
