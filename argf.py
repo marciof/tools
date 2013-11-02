@@ -104,6 +104,13 @@ class UnknownParamDataType (Error):
         return 'unknown parameter data type: %s' % self.args
 
 
+class TupleArg (Error):
+    def __str__(self):
+        (arg,) = self.args
+        return 'tuple argument (parameter unpacking) is not supported: (%s)' \
+            % ', '.join(arg)
+
+
 class Argument (object):
     _WORD_SEPARATOR = '-'
 
@@ -292,6 +299,7 @@ def extract_parameters(function):
     :type function: types.FunctionType
     :rtype: list<six.text_type | tuple<six.text_type, object>>
     :raise DynamicArgs:
+    :raise TupleArg:
     """
 
     arg_spec = inspect.getargspec(function)
@@ -304,6 +312,9 @@ def extract_parameters(function):
     params = []
 
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
+        if not isinstance(name, six.string_types):
+            raise TupleArg(name)
+
         name = six.text_type(name)
         kwarg_i = arg_i - kwargs_offset
         is_keyword = (0 <= kwarg_i < nr_kwargs)
