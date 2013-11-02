@@ -35,6 +35,7 @@ import inspect
 import re
 import xml.etree.ElementTree
 
+# TODO: Use ``future`` instead of ``six``? Too much magic?
 # External:
 import argparse
 import docutils.core
@@ -47,6 +48,7 @@ __all__ = ['start']
 __version__ = semantic_version.Version('0.1.0')
 
 
+# TODO: Use the ``python_2_unicode_compatible`` decorator for ``__unicode__``?
 class Error (Exception):
     pass
 
