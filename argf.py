@@ -36,7 +36,7 @@ import re
 
 # TODO: Use ``future`` instead of ``six``? Too much magic?
 # External:
-import argparse
+argparse = None # lazy
 docutils__core = None # lazy
 import semantic_version
 import six
@@ -397,6 +397,11 @@ def start(main,
     """
 
     if arg_parser is None:
+        global argparse
+
+        if argparse is None:
+            import argparse
+
         arg_parser = argparse.ArgumentParser(
             formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
