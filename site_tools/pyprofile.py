@@ -1,27 +1,22 @@
 # -*- coding: UTF-8 -*-
 
 
-# FIXME
 """
-Python's built-in profiler.
+Profiling support.
 """
 
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import os
 import pstats
-
-try:
-    import cProfile as profile
-except ImportError:
-    import profile
-
-# External:
-from SCons.Script import ARGLIST
+import sys
+import tempfile
 
 
+# Not called, but required.
 def exists(env):
-    return True
+    raise NotImplementedError()
 
 
 def generate(env):
@@ -32,26 +27,45 @@ def generate(env):
     env.AddMethod(Profile)
 
 
-def Profile(env, target = 'profile', source = None):
+def Profile(env,
+        target = 'pyprofile',
+        source = None,
+        callers = True,
+        max_entries = 15):
+
     """
     :type target: unicode
     :param target: target name
     :type source: callable
-    :param source: function to profile
+    :param source: code to profile
     :return: SCons target
     """
 
-    # Store argument for inner function scope.
-    actual_source = source
+    (results_fd, results_path) = tempfile.mkstemp()
 
-    def execute_profiler(env, target, source):
-        args = [value for name, value in ARGLIST if name == '']
+    run_profiler = env.Action([[
+        sys.executable,
+        '-m',
+        'cProfile',
+        '-o',
+        results_path,
+        source
+    ]])
 
-        prof = profile.Profile()
-        prof.runcall(actual_source, args)
+    def display_results(env, target, source):
+        try:
+            stats = pstats.Stats(results_path)
+            stats.strip_dirs().sort_stats('cumulative')
 
-        stats = pstats.Stats(prof)
-        stats.strip_dirs().sort_stats('cumulative').print_callers(15)
+            if callers:
+                stats.print_callers(max_entries)
+            else:
+                stats.print_stats(max_entries)
+        finally:
+            os.close(results_fd)
+            os.remove(results_path)
 
-    return env.AlwaysBuild(env.Alias(target,
-        action = env.Action(execute_profiler, source = source)))
+    return env.AlwaysBuild(env.Alias(target, action = [
+        run_profiler,
+        env.Action(display_results),
+    ]))

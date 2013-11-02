@@ -39,6 +39,7 @@ def Coverage(env,
         sources = None,
         measure_branch = False,
         is_module = False):
+
     """
     :type target: unicode
     :param target: target name
