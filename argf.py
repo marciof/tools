@@ -402,6 +402,7 @@ def start(main,
         args = None,
         arg_parser = None,
         soft_errors = True):
+    
     """
     Starts a function with program arguments parsed via ``argparse``.
 
