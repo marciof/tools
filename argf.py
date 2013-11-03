@@ -36,14 +36,12 @@ import re
 
 # External:
 argparse = None # lazy
-docutils__core = None # lazy
-import semantic_version
+docutils_core = None # lazy
 import six
-import six.moves
 
 
 __all__ = ['start']
-__version__ = semantic_version.Version('0.1.0')
+__version__ = (0, 1, 0) # semver
 
 
 # TODO: Use the ``python_2_unicode_compatible`` decorator for ``__unicode__``?
@@ -264,11 +262,11 @@ def extract_documentation(function):
     if docstring is None:
         return (None, data_types, descriptions)
 
-    global docutils__core
-    if docutils__core is None:
-        import docutils.core as docutils__core
+    global docutils_core
+    if docutils_core is None:
+        import docutils.core as docutils_core
 
-    [doc] = docutils__core.publish_doctree(docstring).asdom().childNodes
+    [doc] = docutils_core.publish_doctree(docstring).asdom().childNodes
 
     for field in doc.getElementsByTagName('field'):
         [field_name] = field.getElementsByTagName('field_name')

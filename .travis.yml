@@ -4,7 +4,7 @@ python:
   - 2.7
   - 3.3
 install: |
-  pip install --use-mirrors argparse coverage docutils pep8 python-coveralls semantic_version six
+  pip install --use-mirrors argparse coverage docutils pep8 python-coveralls six
   if python -c "from sys import *; exit(version_info < (3,))"
   then
     pip install --use-mirrors unittest2py3k
