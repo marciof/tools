@@ -37,7 +37,7 @@ import re
 # External:
 argparse = None # lazy
 docutils_core = None # lazy
-import six
+six = None # lazy
 
 
 __all__ = ['start']
@@ -136,6 +136,10 @@ class Argument (object):
 
 
     def get_actual_data_type(self):
+        global six
+        if six is None:
+            import six
+
         if self.data_type is None:
             return six.text_type
         else:
@@ -266,6 +270,10 @@ def extract_documentation(function):
     if docutils_core is None:
         import docutils.core as docutils_core
 
+    global six
+    if six is None:
+        import six
+
     [doc] = docutils_core.publish_doctree(docstring).asdom().childNodes
 
     for field in doc.getElementsByTagName('field'):
@@ -343,6 +351,10 @@ def extract_parameters(function):
     kwargs_offset = len(arg_spec.args) - nr_kwargs
     params = []
 
+    global six
+    if six is None:
+        import six
+
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
         if not isinstance(name, six.string_types):
             raise TupleArg(name)
@@ -366,6 +378,10 @@ def load_data_type(name):
     """
 
     if '.' not in name:
+        global six
+        if six is None:
+            import six
+
         (module, type_name) = (six.moves.builtins, name)
     else:
         (module, type_name) = name.rsplit('.', 1)
