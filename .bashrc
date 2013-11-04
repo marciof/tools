@@ -123,7 +123,16 @@ UGreen='\e[4;32m'
 ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
-    _have ack-grep ack && alias f="$NAME --all --sort-files"
+    if _have ack-grep ack; then
+        if $NAME --version | head -n 1 | grep -q -E ' 2\.'; then
+            ack_options=''
+        else
+            ack_options='--all'
+        fi
+        alias f="$NAME $ack_options --sort-files"
+        unset ack_options
+    fi
+    
     _have dircolors && eval "$($NAME -b)"
     _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
@@ -226,11 +235,12 @@ if _have cpan; then
     if [ ! -e "$cpan_setup" ]; then
         touch $cpan_setup
         cat << 'TEXT' | tee "$cpan_setup" | cpan
+o conf make_install_make_command "sudo make"
+o conf mbuild_install_build_command "sudo ./Build"
+install local::lib
 o conf init
 o conf halt_on_failure 1
 o conf inhibit_startup_message 1
-o conf make_install_make_command "sudo make"
-o conf mbuild_install_build_command "sudo ./Build"
 o conf commit
 TEXT
     fi
