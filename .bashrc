@@ -226,11 +226,12 @@ if _have cpan; then
     if [ ! -e "$cpan_setup" ]; then
         touch $cpan_setup
         cat << 'TEXT' | tee "$cpan_setup" | cpan
+o conf make_install_make_command "sudo make"
+o conf mbuild_install_build_command "sudo ./Build"
+install local::lib
 o conf init
 o conf halt_on_failure 1
 o conf inhibit_startup_message 1
-o conf make_install_make_command "sudo make"
-o conf mbuild_install_build_command "sudo ./Build"
 o conf commit
 TEXT
     fi
