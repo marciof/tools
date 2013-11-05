@@ -55,12 +55,12 @@ def Profile(env,
     def display_results(env, target, source):
         try:
             stats = pstats.Stats(results_path)
-            stats.strip_dirs().sort_stats('cumulative')
+            stats.strip_dirs()
 
             if callers:
-                stats.print_callers(max_entries)
+                stats.sort_stats('time').print_callers(max_entries)
             else:
-                stats.print_stats(max_entries)
+                stats.sort_stats('cumulative').print_stats(max_entries)
         finally:
             os.close(results_fd)
             os.remove(results_path)
