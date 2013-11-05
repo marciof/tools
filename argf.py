@@ -36,8 +36,7 @@ import re
 
 # External:
 argparse = None # lazy
-docutils_core = None # lazy
-docutils_nodes = None # lazy
+docutils = None # lazy
 six = None # lazy
 
 
@@ -255,34 +254,30 @@ def extract_documentation(function):
     :raise UndefinedParamDesc:
     """
 
-    data_types = {}
-    descriptions = {}
-
     global inspect
     if inspect is None: # pragma: no cover
         import inspect
 
+    data_types = {}
+    descriptions = {}
     docstring = inspect.getdoc(function)
 
     if docstring is None:
         return (None, data_types, descriptions)
 
-    global docutils_core
-    if docutils_core is None: # pragma: no cover
-        import docutils.core as docutils_core
+    global docutils
+    if docutils is None: # pragma: no cover
+        import docutils.core
+        import docutils.nodes
 
-    global docutils_nodes
-    if docutils_nodes is None: # pragma: no cover
-        import docutils.nodes as docutils_nodes
-    
     global six
     if six is None: # pragma: no cover
         import six
 
-    doc = docutils_core.publish_doctree(docstring)
+    doc = docutils.core.publish_doctree(docstring)
 
-    for field in doc.traverse(docutils_nodes.field):
-        [field_name] = field.traverse(docutils_nodes.field_name)
+    for field in doc.traverse(docutils.nodes.field):
+        [field_name] = field.traverse(docutils.nodes.field_name)
         directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name.astext())
 
         if directive is None:
@@ -291,7 +286,7 @@ def extract_documentation(function):
         (kind, name) = directive.groups()
         name = six.text_type(name)
 
-        field_body = field.traverse(docutils_nodes.paragraph)
+        field_body = field.traverse(docutils.nodes.paragraph)
 
         if len(field_body) == 0:
             field_body = None
@@ -315,7 +310,7 @@ def extract_documentation(function):
                 data_types[name] = load_data_type(field_body)
 
     main_desc = doc.traverse(lambda node:
-        isinstance(node, docutils_nodes.paragraph) and (node.parent is doc))
+        isinstance(node, docutils.nodes.paragraph) and (node.parent is doc))
     
     if len(main_desc) == 0:
         main_desc = None
