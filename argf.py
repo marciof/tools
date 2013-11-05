@@ -138,7 +138,7 @@ class Argument (object):
 
     def get_actual_data_type(self):
         global six
-        if six is None:
+        if six is None: # pragma: no cover
             import six
 
         if self.data_type is None:
@@ -259,7 +259,7 @@ def extract_documentation(function):
     descriptions = {}
 
     global inspect
-    if inspect is None:
+    if inspect is None: # pragma: no cover
         import inspect
 
     docstring = inspect.getdoc(function)
@@ -268,15 +268,15 @@ def extract_documentation(function):
         return (None, data_types, descriptions)
 
     global docutils_core
-    if docutils_core is None:
+    if docutils_core is None: # pragma: no cover
         import docutils.core as docutils_core
 
     global docutils_nodes
-    if docutils_nodes is None:
+    if docutils_nodes is None: # pragma: no cover
         import docutils.nodes as docutils_nodes
     
     global six
-    if six is None:
+    if six is None: # pragma: no cover
         import six
 
     doc = docutils_core.publish_doctree(docstring)
@@ -337,7 +337,7 @@ def extract_parameters(function):
     """
 
     global inspect
-    if inspect is None:
+    if inspect is None: # pragma: no cover
         import inspect
 
     arg_spec = inspect.getargspec(function)
@@ -350,7 +350,7 @@ def extract_parameters(function):
     params = []
 
     global six
-    if six is None:
+    if six is None: # pragma: no cover
         import six
 
     for name, arg_i in zip(arg_spec.args, range(len(arg_spec.args))):
@@ -377,7 +377,7 @@ def load_data_type(name):
 
     if '.' not in name:
         global six
-        if six is None:
+        if six is None: # pragma: no cover
             import six
 
         (module, type_name) = (six.moves.builtins, name)
@@ -419,7 +419,7 @@ def start(main,
 
     if arg_parser is None:
         global argparse
-        if argparse is None:
+        if argparse is None: # pragma: no cover
             import argparse
 
         arg_parser = argparse.ArgumentParser(
