@@ -37,6 +37,7 @@ import re
 # External:
 argparse = None # lazy
 docutils_core = None # lazy
+docutils_nodes = None # lazy
 six = None # lazy
 
 
@@ -270,18 +271,19 @@ def extract_documentation(function):
     if docutils_core is None:
         import docutils.core as docutils_core
 
+    global docutils_nodes
+    if docutils_nodes is None:
+        import docutils.nodes as docutils_nodes
+    
     global six
     if six is None:
         import six
 
-    [doc] = docutils_core.publish_doctree(docstring).asdom().childNodes
+    doc = docutils_core.publish_doctree(docstring)
 
-    for field in doc.getElementsByTagName('field'):
-        [field_name] = field.getElementsByTagName('field_name')
-        [field_name] = field_name.childNodes
-        field_name = field_name.data
-
-        directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name)
+    for field in doc.traverse(docutils_nodes.field):
+        [field_name] = field.traverse(docutils_nodes.field_name)
+        directive = re.match(r'^(\w+)\s+([^\s]*)$', field_name.astext())
 
         if directive is None:
             continue
@@ -289,15 +291,13 @@ def extract_documentation(function):
         (kind, name) = directive.groups()
         name = six.text_type(name)
 
-        [field_body] = field.getElementsByTagName('field_body')
-        field_body = field_body.getElementsByTagName('paragraph')
+        field_body = field.traverse(docutils_nodes.paragraph)
 
         if len(field_body) == 0:
             field_body = None
         else:
             [field_body] = field_body
-            [field_body] = field_body.childNodes
-            field_body = field_body.data
+            field_body = field_body.astext()
 
         if kind == 'param':
             if name in descriptions:
@@ -314,16 +314,14 @@ def extract_documentation(function):
             else:
                 data_types[name] = load_data_type(field_body)
 
-    main_desc = [n for n in doc.childNodes if n.localName == 'paragraph']
-
+    main_desc = doc.traverse(lambda node:
+        isinstance(node, docutils_nodes.paragraph) and (node.parent is doc))
+    
     if len(main_desc) == 0:
         main_desc = None
     else:
         [main_desc] = main_desc
-        [main_desc] = main_desc.childNodes or [None]
-
-        if main_desc is not None:
-            main_desc = six.text_type(main_desc.data)
+        main_desc = six.text_type(main_desc.astext())
 
     return (main_desc, data_types, descriptions)
 
