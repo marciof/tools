@@ -16,15 +16,17 @@
 #     (1) $ $EDITOR $SOLR_HOME/$SOLR_CORE/conf/schema.xml
 #     (2) Correct `dir` (and `regex if needed) for clustering libraries by replacing `...` with `$SOLR_INSTALL`.
 #         $ $EDITOR $SOLR_HOME/$SOLR_CORE/conf/solrconfig.xml
-#         (o) <lib dir=".../contrib/clustering/lib/" regex=".*\.jar" />
-#         (o) <lib dir=".../dist/" regex="solr-clustering-\d.*\.jar" />
-#     (3) Optionally change the default data directory in `<dataDir>` -- `$SOLR_DATA`.
-#     (4) Enable the clustering component.
+#         <lib dir=".../contrib/clustering/lib/" regex=".*\.jar" />
+#         <lib dir=".../dist/" regex="solr-clustering-\d.*\.jar" />
+#         Optionally change the default data directory in `<dataDir>` -- `$SOLR_DATA`.
+#     (3) Enable the clustering component.
 #         $ echo solr.clustering.enabled=true >> $SOLR_HOME/$SOLR_CORE/conf/solrcore.properties
-#     (5) Correct the data directory's permissions for the `tomcat7` user.
+#     (4) Correct the data directory's permissions for the `tomcat7` user.
 #         $ chown tomcat7:tomcat7 $SOLR_DATA
 #
-# (6) Create a configuration file to run Solr within Tomcat, `$SOLR_CTX`. [2]
+# (6) If Solr is recent enough, it might need to have logging configured. [2]
+#
+# (7) Create a configuration file to run Solr within Tomcat, `$SOLR_CTX`. [3]
 #     (1) Correct `docBase` to point where "solr.war" is.
 #         $ find $SOLR_INSTALL -iname 'solr-*.war'
 #     (2) Correct "solr/home" to point to `$SOLR_HOME`.
@@ -34,4 +36,5 @@
 #         $ service tomcat7 restart
 #
 # [1] http://lucene.apache.org/solr/
-# [2] http://wiki.apache.org/solr/SolrTomcat#Installing_Solr_instances_under_Tomcat
+# [2] http://wiki.apache.org/solr/SolrLogging
+# [3] http://wiki.apache.org/solr/SolrTomcat#Installing_Solr_instances_under_Tomcat
