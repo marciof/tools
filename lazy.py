@@ -20,7 +20,6 @@ Issues:
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import imp
-import inspect
 import sys
 import types
 
@@ -42,8 +41,6 @@ def find_top_level_module(name, path = None):
 
 # TODO: Remove recursion for performance?
 def fully_load_module((info, top_level, rest)):
-    print 'import', top_level, rest
-
     try:
         module = imp.load_module(top_level, *info)
     finally:
@@ -67,8 +64,6 @@ class Module (types.ModuleType):
 
     # TODO: Faster to copy `__dict__` or to proxy the real module?
     def __getattr__(self, name):
-        print '__getattr__', name
-
         try:
             module_info = mget(self, module_info_attr)
         except AttributeError:
@@ -86,33 +81,29 @@ class Module (types.ModuleType):
 # TODO: Compare performance <http://www.rfk.id.au/blog/entry/frozen-app-starting-faster/>.
 class Importer (object):
     def __init__(self):
-        self.frames = []
+        self._is_active = False
 
 
     def __enter__(self):
-        print '>' * 10
-        self.frames.append(id(inspect.currentframe().f_back))
+        if self._is_active:
+            raise Exception('Nested lazy import.')
+
+        self._is_active = True
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print '<' * 10
-        self.frames.pop()
+        self._is_active = False
 
 
     def find_module(self, fullname, path):
-        is_top_level = ((path is None)
-            and (len(self.frames) > 0)
-            and (self.frames[-1] == id(inspect.currentframe().f_back)))
+        is_top_level = ((path is None) and self._is_active)
 
-        # Skip sub-modules/packages and nested imports.
         if is_top_level:
-            print 'find_module', fullname, path
+            print fullname
             return self
 
 
     def load_module(self, fullname):
-        print 'load_module', fullname
-
         try:
             return sys.modules[fullname]
         except KeyError:
@@ -123,9 +114,12 @@ class Importer (object):
 imports = Importer()
 sys.meta_path.append(imports)
 
-with imports:
-    import flask
-    import feedparser
 
-print flask.Flask
-print feedparser.parse
+if __name__ == '__main__':
+    with imports:
+        import flask
+        import feedparser
+
+    print '---'
+    print flask.Flask
+    print feedparser.parse
