@@ -1,0 +1,3 @@
+- Fix dependencies and generated files so that SCons cleaning works.
+- Document.
+- Test.
