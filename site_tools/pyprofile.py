@@ -36,8 +36,12 @@ def Profile(env,
     """
     :type target: unicode
     :param target: target name
-    :type source: callable
-    :param source: code to profile
+    :type source: unicode
+    :param source: file to profile
+    :type callers: bool
+    :param callers: if true uses ``print_callers``, otherwise ``print_stats``
+    :type max_entries: int
+    :param max_entries: maximum number of reported entries
     :return: SCons target
     """
 
@@ -49,7 +53,7 @@ def Profile(env,
         'cProfile',
         '-o',
         results_path,
-        source
+        source,
     ]])
 
     def display_results(env, target, source):

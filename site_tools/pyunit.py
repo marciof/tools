@@ -50,7 +50,7 @@ def PyUnit(env,
         _UNITTEST_ENTRY_POINT,
         'discover',
         '-s',
-        root
+        root,
     ]])))
 
 
