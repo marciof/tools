@@ -6,11 +6,12 @@ from __future__ import absolute_import, division, unicode_literals
 import os
 
 
-env = Environment(
-    tools = ['default', 'find', 'pep8', 'pyprofile', 'python', 'pyunit'])
+env = Environment(tools = [
+    'default', 'find', 'pep8', 'pyprofile', 'python', 'pyunit', 'sphinx'])
 
 check_targets = [env.Pep8(config = env.Find('pep8.ini'))]
 test = env.PyUnit('test')
+
 test_coverage = env.PyUnitCoverage('test-coverage',
     sources = ['argf'],
     measure_branch = True)
@@ -25,6 +26,12 @@ else:
 env.Alias('check', check_targets)
 
 env.Alias('profile', [
-    env.Profile('profile-import', source = 'argf.py', callers = False),
-    env.Profile('profile-run', source = 'profile_run.py'),
+    env.Profile('profile-import',
+        source = env.Find('argf.py'),
+        callers = False),
+
+    env.Profile('profile-run',
+        source = env.Find('profile_run.py')),
 ])
+
+env.Sphinx('doc')
