@@ -358,7 +358,11 @@ class TestParameterExtraction (unittest2.TestCase):
         self.assertIsInstance(name, six.text_type)
 
 
-    if six.PY2:
+    try:
+        eval('lambda (x,): None')
+    except SyntaxError:
+        pass
+    else:
         def test_tuple(self):
             f = eval('lambda (x, y): None')
 
