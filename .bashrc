@@ -172,6 +172,11 @@ SCRIPT
         _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
     fi
     
+    if _have ssh && grep -F -q -s 'SendEnv LANG LC_*' /etc/ssh/ssh_config; then
+        _warn 'Locale will be SSH forwarded from client: $ $EDITOR /etc/ssh/ssh_config'
+        _warn '    # SendEnv LANG LC_*'
+    fi
+    
     if [ "$TERM" = "xterm" ]; then
         # Save history session to file and set terminal title.
         export PROMPT_COMMAND='
