@@ -172,6 +172,7 @@ class OptionArgument (Argument):
         if self.description is not None:
             options['help'] = self.description
 
+        # TODO: Add a "--no-[NAME]" counterpart option as well?
         if issubclass(data_type, bool):
             options['const'] = not self.default_value
             options['action'] = 'store_const'
