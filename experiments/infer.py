@@ -41,6 +41,7 @@ class OrderedDefaultDict (ordereddict.OrderedDict, collections.defaultdict):
 
 # TODO: Inner classes? Types defined within functions?
 # TODO: Type of old-style classes?
+# TODO: dict schemas?
 def calc_fq_name(value):
     module = _fq_name_module_override.get(value) or inspect.getmodule(value)
     parts = []
@@ -130,6 +131,7 @@ def find_common_type(type_set):
 
 
 # TODO: Check exception tracebacks for additional call sites.
+# TODO: Profile wrapped vs original function.
 def log_signature_to(log):
     if os.getenv('INFER_SIGNATURE_DISABLED') is not None:
         return lambda function: function
@@ -187,6 +189,7 @@ def log_signature_to(log):
 
 
 # TODO: Play nice with logrotate.
+# TODO: Faster to not use a CSV writer?
 class CsvLogger (object):
     def __init__(self, path):
         self.file = open(path, 'a', 0)
