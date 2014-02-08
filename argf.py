@@ -43,7 +43,7 @@ __all__ = ['start']
 __version__ = (0, 1, 0) # semver
 
 
-# TODO: Use the ``python_2_unicode_compatible`` decorator for ``__unicode__``?
+# TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?
 class Error (Exception):
     pass
 
@@ -72,12 +72,6 @@ class IncompatibleParamDataTypes (Error):
     def __str__(self):
         return 'default value and docstring types are not compatible: %s' \
             % self.args
-
-
-class ParamDataTypeImportError (Error):
-    def __str__(self):
-        (name, error) = self.args
-        return 'failed to import parameter data type: %s: %s' % (name, error)
 
 
 class UndefinedParamDataType (Error):
@@ -309,7 +303,9 @@ def extract_documentation(function):
             elif field_body is None:
                 raise UndefinedParamDataType(name)
             else:
-                data_types[name] = load_data_type(field_body)
+                data_types[name] = load_type(
+                    field_body,
+                    inspect.getmodule(function))
 
     main_desc = doc.traverse(lambda node:
         isinstance(node, docutils.nodes.paragraph) and (node.parent is doc))
@@ -323,7 +319,7 @@ def extract_documentation(function):
     return (main_desc, data_types, descriptions)
 
 
-# TODO: Support list options? Via type ``list``? Via varargs?
+# TODO: Support list options? Via type `list`? Via varargs?
 # TODO: Support sub-commands via enum parameters?
 def extract_parameters(function):
     """
@@ -366,30 +362,45 @@ def extract_parameters(function):
     return params
 
 
-def load_data_type(name):
+# TODO: Support parameterized types? E.g. list<str>
+def load_type(name, at_module):
     """
     :type name: six.text_type
+    :type at_module: types.ModuleType
     :rtype: six.class_types
     """
 
-    if '.' not in name:
-        global six
-        if six is None: # pragma: no cover
-            import six
+    global six
+    if six is None: # pragma: no cover
+        import six
 
-        (module, type_name) = (six.moves.builtins, name)
-    else:
-        (module, type_name) = name.rsplit('.', 1)
+    module = at_module
+    parts = name.split('.')
+    attributes = []
 
+    while len(parts) > 0:
         try:
-            module = __import__(module)
-        except ImportError as error:
-            raise ParamDataTypeImportError(name, error)
+            module = __import__('.'.join(parts))
+        except ImportError:
+            attributes.insert(0, parts.pop())
+        else:
+            break
 
-    try:
-        return getattr(module, type_name)
-    except AttributeError:
-        raise UnknownParamDataType(name)
+    for data_type in (module, six.moves.builtins):
+        for attribute in attributes:
+            try:
+                data_type = getattr(data_type, attribute)
+            except AttributeError:
+                break
+        else:
+            global inspect
+            if inspect is None: # pragma: no cover
+                import inspect
+
+            if inspect.isclass(data_type):
+                return data_type
+
+    raise UnknownParamDataType(name)
 
 
 # TODO: Add a version argument from `__version__`?

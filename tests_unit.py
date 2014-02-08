@@ -4,6 +4,7 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import collections
+import sys
 import unittest2
 
 # External:
@@ -11,6 +12,11 @@ import six
 
 # Internal:
 import argf
+
+
+class ClassForLoadingTest:
+    class Inner:
+        pass
 
 
 class TestArgumentExtraction (unittest2.TestCase):
@@ -131,24 +137,47 @@ class TestArgumentExtraction (unittest2.TestCase):
 
 
 class TestDataTypeLoading (unittest2.TestCase):
+    def setUp(self):
+        self.module = sys.modules[__name__]
+
+
     def test_builtin(self):
-        self.assertIs(argf.load_data_type('int'), int)
+        self.assertIs(
+            argf.load_type('int', self.module),
+            int)
 
 
     def test_from_module(self):
         self.assertIs(
-            argf.load_data_type('collections.namedtuple'),
-            collections.namedtuple)
+            argf.load_type('collections.defaultdict', self.module),
+            collections.defaultdict)
 
 
     def test_from_unknown_module(self):
-        with self.assertRaisesRegexp(argf.ParamDataTypeImportError, '.'):
-            argf.load_data_type('collection.namedtuple')
+        with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
+            argf.load_type('does_not_exist.defaultdict', self.module)
+
+
+    def test_global(self):
+        self.assertIs(
+            argf.load_type('ClassForLoadingTest', self.module),
+            ClassForLoadingTest)
+
+
+    def test_inner(self):
+        self.assertIs(
+            argf.load_type('ClassForLoadingTest.Inner', self.module),
+            ClassForLoadingTest.Inner)
+
+
+    def test_invalid(self):
+        with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
+            argf.load_type('string', self.module)
 
 
     def test_unknown(self):
         with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
-            argf.load_data_type('string')
+            argf.load_type('does_not_exist', self.module)
 
 
 class TestDocumentationExtraction (unittest2.TestCase):
