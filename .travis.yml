@@ -4,12 +4,12 @@ python:
   - 2.7
   - 3.3
 install: |
-  pip install --upgrade --use-mirrors argparse coverage docutils pep8 python-coveralls six sphinx
+  pip install --upgrade argparse coverage docutils pep8 python-coveralls six sphinx
   if python -c "from sys import *; exit(version_info < (3,))"
   then
-    pip install --upgrade --use-mirrors unittest2py3k
+    pip install --upgrade unittest2py3k
   else
-    pip install --upgrade --use-mirrors unittest2
+    pip install --upgrade unittest2
   fi
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
