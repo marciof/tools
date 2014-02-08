@@ -113,6 +113,8 @@ class Argument (object):
 
 
     def __init__(self, name):
+        super(Argument, self).__init__()
+
         self.name = name
         self.data_type = None
         self.description = None
@@ -151,7 +153,7 @@ class Argument (object):
 
 class OptionArgument (Argument):
     def __init__(self, name, default_value):
-        Argument.__init__(self, name)
+        super(OptionArgument, self).__init__(name)
         self.default_value = default_value
 
 
@@ -201,7 +203,7 @@ class OptionArgument (Argument):
         """
 
         if self.default_value is None:
-            return Argument.get_actual_data_type(self)
+            return super(OptionArgument, self).get_actual_data_type()
         elif self.data_type is None:
             return type(self.default_value)
         elif not isinstance(self.default_value, self.data_type):
