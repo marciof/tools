@@ -402,7 +402,7 @@ def start(main,
     Starts a function with program arguments parsed via :py:mod:`argparse`.
 
     :type main: types.FunctionType
-    :param main: entry point
+    :param main: entry point function
     :type args: list<six.text_type>
     :param args: user defined program arguments, otherwise leaves it up to
         :py:meth:`argparse.ArgumentParser.parse_args` to define
@@ -412,7 +412,7 @@ def start(main,
     :param soft_errors: if ``True``, catches conversion and parsing
         exceptions and passes them as error messages for
         :py:meth:`argparse.ArgumentParser.error`
-    :return: function's return value
+    :return: entry point's return value
     """
 
     if arg_parser is None:
