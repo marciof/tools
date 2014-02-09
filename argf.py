@@ -376,7 +376,7 @@ def load_type(name, at_module):
 
     module = at_module
     parts = name.split('.')
-    attributes = []
+    (parts, attributes) = (parts[:-1], parts[-1:])
 
     while len(parts) > 0:
         try:
