@@ -4,7 +4,7 @@ python:
   - 2.7
   - 3.3
 install: |
-  pip install --upgrade argparse coverage docutils pep8 python-coveralls six sphinx
+  pip install --upgrade 'argparse>=1.2.1' coverage docutils pep8 python-coveralls six sphinx
   if python -c "from sys import *; exit(version_info < (3,))"
   then
     pip install --upgrade unittest2py3k
