@@ -15,7 +15,8 @@ import sys
 import unittest2
 
 
-# Not using the package to support Python 2.6.
+# Not using the package to support Python 2.6. Could use the provided `unit2`
+# script instead, but it would require a version check.
 _UNITTEST_ENTRY_POINT = 'unittest2.__main__'
 
 
