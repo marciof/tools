@@ -10,7 +10,10 @@ env = Environment(tools = [
     'default', 'find', 'pep8', 'pyprofile', 'python', 'pyunit', 'sphinx'])
 
 check_targets = [env.Pep8(config = env.Find('pep8.ini'))]
-test = env.PyUnit('test')
+
+test = env.PyUnit('test',
+    root = env.Find('tests'),
+    pattern = '*.py')
 
 test_coverage = env.PyUnitCoverage('test-coverage',
     sources = ['argf'],
