@@ -33,7 +33,8 @@ def generate(env):
 def Sphinx(env,
         target = _PROGRAM_NAME,
         source = os.path.curdir,
-        output = '_build'):
+        output = '_build',
+        warning_as_error = True):
 
     """
     :type target: unicode
@@ -45,5 +46,10 @@ def Sphinx(env,
     :return: SCons target
     """
 
+    command = [source, output]
+
+    if warning_as_error:
+        command.insert(0, '-W')
+
     return env.AlwaysBuild(env.Alias(target,
-        action = env.Action([[env[_ENV_NAME], source, output]])))
+        action = env.Action([[env[_ENV_NAME]] + command])))
