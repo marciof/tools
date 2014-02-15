@@ -34,7 +34,7 @@ env.Alias('profile', [
         callers = False),
 
     env.Profile('profile-run',
-        source = env.Find('profile_run.py')),
+        source = env.Find('grep.py')),
 ])
 
 env.Sphinx('docs', source = env.Find('docs'))
