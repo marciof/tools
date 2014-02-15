@@ -43,7 +43,9 @@ def PyUnit(env,
     :type target: unicode
     :param target: target name
     :type root: unicode
-    :param root: search starting point path
+    :param root: *-s* command line option
+    :type pattern: unicode
+    :param pattern: *-p* command line option
     :return: SCons target
     """
 

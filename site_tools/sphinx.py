@@ -43,6 +43,8 @@ def Sphinx(env,
     :param source: source directory
     :type output: unicode
     :param output: output directory
+    :type warning_as_error: bool
+    :param warning_as_error: *-W* command line option
     :return: SCons target
     """
 
