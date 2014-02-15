@@ -11,6 +11,6 @@ Usage
 Example
 =======
 
-.. literalinclude:: profile_run.py
+.. literalinclude:: ../profile_run.py
   :pyobject: main
   :append: argf.start(main)

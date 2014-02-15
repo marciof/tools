@@ -37,4 +37,4 @@ env.Alias('profile', [
         source = env.Find('profile_run.py')),
 ])
 
-env.Sphinx('documentation')
+env.Sphinx('docs', source = env.Find('docs'))
