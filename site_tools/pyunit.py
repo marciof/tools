@@ -36,7 +36,9 @@ def generate(env):
 
 def PyUnit(env,
         target = 'pyunit',
-        root = os.path.curdir):
+        root = None,
+        pattern = None):
+
     """
     :type target: unicode
     :param target: target name
@@ -45,20 +47,22 @@ def PyUnit(env,
     :return: SCons target
     """
 
-    return env.AlwaysBuild(env.Alias(target, action = env.Action([[
-        sys.executable,
-        '-m',
-        _UNITTEST_ENTRY_POINT,
-        'discover',
-        '-s',
-        root,
-    ]])))
+    command = [sys.executable, '-m', _UNITTEST_ENTRY_POINT, 'discover']
+
+    if root is not None:
+        command.extend(['-s', root])
+
+    if pattern is not None:
+        command.extend(['-p', pattern])
+
+    return env.AlwaysBuild(env.Alias(target, action = env.Action([command])))
 
 
 def PyUnitCoverage(env,
         target = 'pyunit-coverage',
         root = os.path.curdir,
         **kwargs):
+
     """
     :type target: unicode
     :param target: target name
