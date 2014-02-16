@@ -11,13 +11,17 @@ env = Environment(tools = [
 
 check_targets = [env.Pep8(config = env.Find('pep8.ini'))]
 
-test = env.PyUnit('test',
-    root = env.Find('tests'),
-    pattern = '*.py')
+pyunit_options = {
+    'root': env.Find('tests'),
+    'pattern': '*.py',
+}
+
+test = env.PyUnit('test', **pyunit_options)
 
 test_coverage = env.PyUnitCoverage('test-coverage',
     sources = ['argf'],
-    measure_branch = True)
+    measure_branch = True,
+    **pyunit_options)
 
 if (os.environ.get('TRAVIS') == 'true') and (os.environ.get('CI') == 'true'):
     check_targets.append(test_coverage)
