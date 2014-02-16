@@ -172,7 +172,7 @@ class TestDataTypeLoading (unittest2.TestCase):
 
     def test_invalid(self):
         with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
-            argf.load_type('string', self.module)
+            argf.load_type('collections.namedtuple', self.module)
 
 
     def test_unknown(self):
