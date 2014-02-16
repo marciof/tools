@@ -38,7 +38,9 @@ def Coverage(env,
         args = None,
         sources = None,
         measure_branch = False,
-        is_module = False):
+        is_module = False,
+        html_report = None,
+        min_coverage = 0):
 
     """
     :type target: unicode
@@ -53,26 +55,40 @@ def Coverage(env,
     :param measure_branch: *--branch* command line option
     :type is_module: bool
     :param is_module: *--module* command line option
+    :type html_report: unicode
+    :param html_report: path where to store an HTML report
+    :type min_coverage: int
+    :param min_coverage: *--fail-under* command line option
     :return: SCons target
     """
 
-    command = [env[_ENV_NAME], 'run']
+    run_command = [env[_ENV_NAME], 'run']
     pyfile = script
 
     if measure_branch:
-        command.append('--branch')
+        run_command.append('--branch')
 
     if is_module:
-        command.append('--module')
+        run_command.append('--module')
         script = None
 
     if sources is not None:
-        command.append('--source=' + ','.join(sources))
+        run_command.append('--source=' + ','.join(sources))
 
-    command.append(pyfile)
+    run_command.append(pyfile)
 
     if args is not None:
-        command.extend(args)
+        run_command.extend(args)
 
-    return env.AlwaysBuild(env.Alias(target,
-        action = env.Action([command], source = script)))
+    actions = [env.Action([run_command], source = script)]
+
+    if html_report is not None:
+        actions.append(env.Action([[
+            env[_ENV_NAME],
+            'html',
+            '-d',
+            html_report,
+            '--fail-under=%d' % min_coverage,
+        ]]))
+
+    return env.AlwaysBuild(env.Alias(target, action = actions))
