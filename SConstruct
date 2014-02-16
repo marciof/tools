@@ -9,27 +9,29 @@ import os
 env = Environment(tools = [
     'default', 'find', 'pep8', 'pyprofile', 'python', 'pyunit', 'sphinx'])
 
-check_targets = [env.Pep8(config = env.Find('pep8.ini'))]
+in_continuous_integration = (os.environ.get('CI') == 'true')
 
 pyunit_options = {
     'root': env.Find('tests'),
     'pattern': '*.py',
 }
 
-test = env.PyUnit('test', **pyunit_options)
+check_targets = [
+    env.Pep8(config = env.Find('pep8.ini')),
 
-test_coverage = env.PyUnitCoverage('test-coverage',
-    sources = ['argf'],
-    measure_branch = True,
-    **pyunit_options)
+    env.PyUnitCoverage('test-coverage',
+        sources = ['argf'],
+        measure_branch = True,
+        html_report = (None if in_continuous_integration else '_coverage'),
+        min_coverage = 100,
+        **pyunit_options)
+]
 
-if (os.environ.get('TRAVIS') == 'true') and (os.environ.get('CI') == 'true'):
-    check_targets.append(test_coverage)
-else:
+if not in_continuous_integration:
     env.Tool('travis-lint')
     check_targets.insert(0, env.TravisLint())
-    check_targets.append(test)
 
+env.PyUnit('test', **pyunit_options)
 env.Alias('check', check_targets)
 
 env.Alias('profile', [
