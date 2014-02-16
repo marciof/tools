@@ -62,23 +62,34 @@ def PyUnit(env,
 
 def PyUnitCoverage(env,
         target = 'pyunit-coverage',
-        root = os.path.curdir,
+        root = None,
+        pattern = None,
         **kwargs):
 
     """
     :type target: unicode
     :param target: target name
     :type root: unicode
-    :param root: search starting point path
+    :param root: unittest2 *-s* command line option
+    :type pattern: unicode
+    :param pattern: unittest2 *-p* command line option
     :param kwargs: additional parameters for the ``Coverage`` tool
     :return: SCons target
     """
+
+    args = ['discover']
+
+    if root is not None:
+        args.extend(['-s', root])
+
+    if pattern is not None:
+        args.extend(['-p', pattern])
 
     env.Tool('coverage')
 
     return env.Coverage(
         target = target,
         script = _UNITTEST_ENTRY_POINT,
-        args = ['discover', '-s', root],
+        args = args,
         is_module = True,
         **kwargs)
