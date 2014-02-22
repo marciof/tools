@@ -1,3 +1,4 @@
+- Add sample command line output to the example in the main documentation.
 - Don't duplicate supported Python versions in the README.
 - Don't duplicate first line in the README.
 - Complete URL for PyPI in the README.
