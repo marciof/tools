@@ -26,7 +26,7 @@ Contributing
 
 To contribute simply submit a pull request via GitHub.
 
-All patches and pull requests *must* respect the following rules:
+All pull requests *must* respect the following rules:
 
 - Code *must* be readable, tested, documented and profiled.
 - Code (branch) coverage *must* be 100%.
