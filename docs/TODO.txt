@@ -1,0 +1,16 @@
+- Don't duplicate supported Python versions in the README.
+- Don't duplicate first line in the README.
+- Complete URL for PyPI in the README.
+- Add a CHANGES file? https://github.com/rbarrois/python-semanticversion/blob/master/ChangeLog
+- List alternative projects? E.g. argh, argfarce, argtools, argdeclare.
+- Add a requirements.txt file?
+- Use Sphinx Napoleon extensions for more readable documentation?
+- Use Attest for testing? Nose? Tox?
+- Review? http://thechangelog.com/top-ten-reasons-why-i-wont-use-your-open-source-project/
+- Mention that both Windows and Linux should be supported and tested.
+- Mention that a fast import is a key requirement. (Use a lazy import module?)
+- Somehow integrate profiling in tests? Fail if it goes over X seconds?
+- Setup line profiling?
+- Packaging.
+- Show off Travis CI and Coveralls badges?
+- Use more code check tools? flake8, pyflakes, pylint, pychecker?
