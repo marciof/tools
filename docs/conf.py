@@ -12,8 +12,7 @@ import codecs
 import os.path
 import sys
 
-root_dir = os.path.pardir
-sys.path.append(root_dir)
+sys.path.append(os.path.pardir)
 
 # Internal:
 import argf
@@ -27,10 +26,9 @@ extensions = [
 
 project = argf.__name__
 master_doc = 'index'
-license_path = os.path.join(root_dir, 'LICENSE.txt')
 
-with codecs.open(license_path, encoding = 'UTF-8') as license:
-    copyright = license.readline().replace('Copyright (c)', '').strip()
+with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license_file:
+    copyright = license_file.readline().replace('Copyright (c)', '').strip()
 
 version = '.'.join(map(str, argf.__version__))
 release = version
