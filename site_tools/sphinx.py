@@ -33,7 +33,7 @@ def generate(env):
 def Sphinx(env,
         target = _PROGRAM_NAME,
         source = os.path.curdir,
-        output = '_build',
+        output = os.path.curdir,
         warning_as_error = True):
 
     """
