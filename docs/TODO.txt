@@ -14,3 +14,5 @@
 - Packaging.
 - Show off Travis CI and Coveralls badges?
 - Use more code check tools? flake8, pyflakes, pylint, pychecker?
+- Include SConstruct in the PEP8 target?
+- Reformat docstrings for readability (e.g. blank line between each type/param group).
