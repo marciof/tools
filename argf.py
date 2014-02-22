@@ -40,7 +40,7 @@ six = None # lazy
 
 
 __all__ = ['start']
-__version__ = (0, 1, 0) # semver
+__version__ = (0, 1, 0) # SemVer
 
 
 # TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?

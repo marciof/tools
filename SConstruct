@@ -38,4 +38,6 @@ env.Alias('profile', [
         source = env.Find('grep.py')),
 ])
 
-env.Sphinx('docs', source = env.Find('docs'))
+env.Sphinx('docs',
+    source = env.Find('docs'),
+    output = '_docs')
