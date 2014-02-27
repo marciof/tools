@@ -9,8 +9,6 @@ Sphinx configuration.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import codecs
-import os.path
-import sys
 
 # Internal:
 import argf
