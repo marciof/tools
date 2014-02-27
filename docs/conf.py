@@ -12,8 +12,6 @@ import codecs
 import os.path
 import sys
 
-sys.path.append(os.path.pardir)
-
 # Internal:
 import argf
 
@@ -22,10 +20,12 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
     'sphinx.ext.intersphinx',
+    'sphinxcontrib.programoutput',
 ]
 
 project = argf.__name__
 master_doc = 'index'
+exclude_patterns = ['README.*']
 
 with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license_file:
     copyright = license_file.readline().replace('Copyright (c)', '').strip()

@@ -38,6 +38,8 @@ env.Alias('profile', [
         source = env.Find('grep.py')),
 ])
 
+env.AppendENVPath('PYTHONPATH', env.Dir('#'))
+
 env.Sphinx('docs',
     source = env.Find('docs'),
     output = '_docs')
