@@ -24,7 +24,7 @@ Links
 Contributing
 ============
 
-To contribute simply submit a pull request via GitHub.
+To contribute submit a pull request via GitHub.
 
 All pull requests *must* respect the following rules:
 
