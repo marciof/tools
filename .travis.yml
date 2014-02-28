@@ -9,7 +9,7 @@ install: |
   then
     pip install unittest2py3k
   else
-    pip install unittest2
+    pip install line_profiler unittest2
   fi
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
