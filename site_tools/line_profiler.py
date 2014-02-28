@@ -10,6 +10,9 @@ line_profiler tool support.
 from __future__ import absolute_import, division, unicode_literals
 import os
 
+# External:
+import line_profiler
+
 
 _PROGRAM_NAME = 'kernprof'
 _ENV_NAME = _PROGRAM_NAME.upper()
