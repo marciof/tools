@@ -7,9 +7,9 @@ install: |
   pip install --allow-all-external 'argparse>=1.2.1' coverage docutils pep8 python-coveralls six sphinx
   if python -c "from sys import *; exit(version_info < (3,))"
   then
-    pip install unittest2py3k
+    pip install --allow-all-external unittest2py3k
   else
-    pip install line_profiler unittest2
+    pip install --allow-all-external line_profiler unittest2
   fi
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
