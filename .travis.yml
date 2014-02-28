@@ -9,7 +9,8 @@ install: |
   then
     pip install --allow-all-external unittest2py3k
   else
-    pip install --allow-all-external line_profiler unittest2
+    pip install --allow-all-external unittest2
+    pip install --allow-all-external --pre line_profiler
   fi
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
