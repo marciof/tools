@@ -9,6 +9,12 @@ Sphinx configuration.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import codecs
+import os.path
+import sys
+
+# Read The Docs doesn't use SCons, which would set up the environment, so help
+# it find the module.
+sys.path.append(os.path.pardir)
 
 # Internal:
 import argf
