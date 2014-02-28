@@ -10,6 +10,7 @@ Recursive glob.
 from __future__ import absolute_import, division, unicode_literals
 import itertools
 import os
+import os.path
 
 
 # Not called, but required.

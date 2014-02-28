@@ -8,7 +8,7 @@ Travis lint support.
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import os
+import os.path
 
 
 _PROGRAM_NAME = 'travis-lint'
