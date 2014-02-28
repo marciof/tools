@@ -28,8 +28,9 @@ def generate(env):
     Adds a ``KernProf`` method to the SCons environment.
     """
 
+    ext = '.py'
     env.Tool('which')
-    env[_ENV_NAME] = env.Which(_PROGRAM_NAME, extensions = ['.py'])
+    env[_ENV_NAME] = env.Which(_PROGRAM_NAME + ext, extensions = [ext])
     env.AddMethod(KernProf)
 
 
