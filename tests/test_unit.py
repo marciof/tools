@@ -397,3 +397,10 @@ class TestParameterExtraction (unittest2.TestCase):
 
             with self.assertRaisesRegexp(argf.TupleArg, r'\(x, y\)'):
                 argf.extract_parameters(f)
+
+
+if __name__ == '__main__':
+    # Standard:
+    import os.path
+
+    unittest2.main(os.path.splitext(os.path.basename(__file__))[0])

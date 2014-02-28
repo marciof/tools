@@ -241,3 +241,10 @@ class TestPositionalArguments (unittest2.TestCase):
 
         with self.assertRaises(Error):
             start(main)
+
+
+if __name__ == '__main__':
+    # Standard:
+    import os.path
+
+    unittest2.main(os.path.splitext(os.path.basename(__file__))[0])
