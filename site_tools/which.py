@@ -19,12 +19,14 @@ def generate(env):
     env.AddMethod(Which)
 
 
-def Which(env, name, paths = None):
+def Which(env, name, paths = None, extensions = None):
     """
     :type name: unicode
     :param name: program name
     :type paths: list<unicode>
     :param paths: additional paths to search
+    :type extensions: list<unicode>
+    :param extensions: executable extensions to use when searching on Windows
     :rtype: unicode
     :return: program path
     :raise Exception: program wasn't found
@@ -44,7 +46,7 @@ def Which(env, name, paths = None):
         if path is not None:
             paths.extend(path.split(os.pathsep))
 
-    prog_path = env.WhereIs(name, path = paths)
+    prog_path = env.WhereIs(name, path = paths, pathext = extensions)
 
     if prog_path is not None:
         return prog_path
