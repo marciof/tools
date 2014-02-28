@@ -7,8 +7,11 @@ import os
 
 
 env = Environment(tools = [
-    'default', 'find', 'pep8', 'pyprofile', 'python', 'pyunit', 'sphinx'])
+    'default', 'find', 'line_profiler', 'pep8', 'pyprofile', 'python',
+    'pyunit', 'sphinx'
+])
 
+env.AppendENVPath('PYTHONPATH', env.Dir('#'))
 tests_path = env.Find('tests')
 
 check_targets = [
@@ -29,16 +32,15 @@ if os.environ.get('TRAVIS') != 'true':
 env.PyUnit('test', root = tests_path)
 env.Alias('check', check_targets)
 
-env.Alias('profile', [
-    env.Profile('profile-import',
-        source = env.Find('argf.py'),
-        callers = False),
+env.Profile('profile-import',
+    source = env.Find('argf.py'),
+    callers = False)
 
-    env.Profile('profile-run',
-        source = env.Find('grep.py')),
-])
+env.Profile('profile-run',
+    source = env.Find('grep.py'))
 
-env.AppendENVPath('PYTHONPATH', env.Dir('#'))
+env.KernProf('profile-line',
+    source = env.Find('test_unit.py'))
 
 env.Sphinx('docs',
     source = env.Find('docs'),
