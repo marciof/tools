@@ -1,3 +1,5 @@
+- Put documentation in http://pythonhosted.org/ instead? Or both? Confusing to have in two places?
+- Provide "setup.py" so it can be installed directly from source via pip?
 - Don't duplicate supported Python versions in the README.
 - Don't duplicate first line in the README.
 - Complete URL for PyPI in the README.
