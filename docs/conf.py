@@ -9,12 +9,24 @@ Sphinx configuration.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import codecs
+import os
 import os.path
 import sys
 
-# Read The Docs doesn't use SCons, which would set up the environment, so help
-# it find the module.
-sys.path.append(os.path.pardir)
+
+# Read The Docs doesn't use SCons, which would set up the environment otherwise,
+# so help it find the main module.
+root = os.path.join(os.path.dirname(__file__), os.path.pardir)
+
+# (For Sphinx configuration.)
+sys.path.append(root)
+
+# (For the `program-output` directive.)
+if 'PYTHONPATH' in os.environ:
+    os.environ['PYTHONPATH'] += os.pathsep + root
+else:
+    os.environ['PYTHONPATH'] = root
+
 
 # Internal:
 import argf
