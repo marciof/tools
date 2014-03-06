@@ -84,7 +84,7 @@ def PyUnitCoverage(env,
     if pattern is not None:
         args.extend(['-p', pattern])
 
-    env.Tool('coverage')
+    env.Tool('coverage_py')
 
     return env.Coverage(
         target = target,
