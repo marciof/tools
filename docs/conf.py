@@ -46,7 +46,7 @@ exclude_patterns = ['README.*']
 with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license_file:
     copyright = license_file.readline().replace('Copyright (c)', '').strip()
 
-version = '.'.join(map(str, argf.__version__))
+version = '.'.join(map(unicode, argf.__version__))
 release = version
 
 intersphinx_mapping = {
