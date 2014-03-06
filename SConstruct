@@ -7,8 +7,14 @@ import os
 
 
 env = Environment(tools = [
-    'default', 'find', 'line_profiler', 'pep8', 'pyprofile', 'python',
-    'pyunit', 'sphinx'
+    'default',
+    'find',
+    'line_profiler_py',
+    'pep8',
+    'profile_py',
+    'python',
+    'sphinx',
+    'unittest_py',
 ])
 
 env.AppendENVPath('PYTHONPATH', env.Dir('#'))
