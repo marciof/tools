@@ -1,8 +1,6 @@
-- Put documentation in http://pythonhosted.org/ and redirect to Read The Docs.
 - Provide "setup.py" so it can be installed directly from source via pip?
-- Don't duplicate supported Python versions in the README.
-- Don't duplicate first line in the README.
 - Complete URL for PyPI in the README.
+- Put documentation in http://pythonhosted.org/ and redirect to Read The Docs.
 - Add a CHANGES file? https://github.com/rbarrois/python-semanticversion/blob/master/ChangeLog
 - List alternative projects? E.g. argh, argfarce, argtools, argdeclare.
 - Add a requirements.txt file?

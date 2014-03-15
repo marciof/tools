@@ -3,11 +3,7 @@ Description
 
 Declarative command line arguments parser.
 
-Check the on-line documentation for help and examples.
-
 This library follows version 2.0.0 of Semantic Versioning (SemVer).
-
-Python versions 2.6, 2.7 and 3.3 are supported and actively tested.
 
 Licensed under the MIT License.
 
