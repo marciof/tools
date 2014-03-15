@@ -5,13 +5,13 @@
 from __future__ import absolute_import, division, unicode_literals
 import collections
 import sys
-import unittest2
 
 # External:
 import six
 
 # Internal:
 import argf
+from tests import unittest
 
 
 class ClassForLoadingTest:
@@ -19,7 +19,7 @@ class ClassForLoadingTest:
         pass
 
 
-class TestArgumentExtraction (unittest2.TestCase):
+class TestArgumentExtraction (unittest.TestCase):
     def test_compatible_data_types(self):
         def f(length = True):
             """
@@ -68,7 +68,7 @@ class TestArgumentExtraction (unittest2.TestCase):
         self.assertIs(arg.description, None)
         self.assertIs(arg.default_value, 1)
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 argf.IncompatibleParamDataTypes,
                 r'\bverbose\b'):
 
@@ -129,14 +129,14 @@ class TestArgumentExtraction (unittest2.TestCase):
             :type default: int
             """
 
-        with self.assertRaisesRegexp(argf.UnknownParams, r'\bverbose\b'):
+        with self.assertRaisesRegex(argf.UnknownParams, r'\bverbose\b'):
             argf.extract_arguments(description)
 
-        with self.assertRaisesRegexp(argf.UnknownParams, r'\bdefault\b'):
+        with self.assertRaisesRegex(argf.UnknownParams, r'\bdefault\b'):
             argf.extract_arguments(data_type)
 
 
-class TestDataTypeLoading (unittest2.TestCase):
+class TestDataTypeLoading (unittest.TestCase):
     def setUp(self):
         self.module = sys.modules[__name__]
 
@@ -154,7 +154,7 @@ class TestDataTypeLoading (unittest2.TestCase):
 
 
     def test_from_unknown_module(self):
-        with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
+        with self.assertRaisesRegex(argf.UnknownParamDataType, '.'):
             argf.load_type('does_not_exist.defaultdict', self.module)
 
 
@@ -171,16 +171,16 @@ class TestDataTypeLoading (unittest2.TestCase):
 
 
     def test_invalid(self):
-        with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
+        with self.assertRaisesRegex(argf.UnknownParamDataType, '.'):
             argf.load_type('collections.namedtuple', self.module)
 
 
     def test_unknown(self):
-        with self.assertRaisesRegexp(argf.UnknownParamDataType, '.'):
+        with self.assertRaisesRegex(argf.UnknownParamDataType, '.'):
             argf.load_type('does_not_exist', self.module)
 
 
-class TestDocumentationExtraction (unittest2.TestCase):
+class TestDocumentationExtraction (unittest.TestCase):
     def test_ambiguous_param_data_type(self):
         def f():
             """
@@ -188,7 +188,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             :type x: dict
             """
 
-        with self.assertRaisesRegexp(argf.AmbiguousParamDataType, r'\bx\b'):
+        with self.assertRaisesRegex(argf.AmbiguousParamDataType, r'\bx\b'):
             argf.extract_documentation(f)
 
 
@@ -199,7 +199,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             :param x: that
             """
 
-        with self.assertRaisesRegexp(argf.AmbiguousParamDesc, r'\bx\b'):
+        with self.assertRaisesRegex(argf.AmbiguousParamDesc, r'\bx\b'):
             argf.extract_documentation(f)
 
 
@@ -228,7 +228,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             :type x:
             """
 
-        with self.assertRaisesRegexp(argf.UndefinedParamDataType, r'\bx\b'):
+        with self.assertRaisesRegex(argf.UndefinedParamDataType, r'\bx\b'):
             argf.extract_documentation(f)
 
 
@@ -238,7 +238,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             :param x:
             """
 
-        with self.assertRaisesRegexp(argf.UndefinedParamDesc, r'\bx\b'):
+        with self.assertRaisesRegex(argf.UndefinedParamDesc, r'\bx\b'):
             argf.extract_documentation(f)
 
 
@@ -332,7 +332,7 @@ class TestDocumentationExtraction (unittest2.TestCase):
             (None, {}, {}))
 
 
-class TestParameterExtraction (unittest2.TestCase):
+class TestParameterExtraction (unittest.TestCase):
     def test_dynamic(self):
         def args(*args):
             pass
@@ -340,10 +340,10 @@ class TestParameterExtraction (unittest2.TestCase):
         def kwargs(**kwargs):
             pass
 
-        with self.assertRaisesRegexp(argf.DynamicArgs, '.'):
+        with self.assertRaisesRegex(argf.DynamicArgs, '.'):
             argf.extract_parameters(args)
 
-        with self.assertRaisesRegexp(argf.DynamicArgs, '.'):
+        with self.assertRaisesRegex(argf.DynamicArgs, '.'):
             argf.extract_parameters(kwargs)
 
 
@@ -395,7 +395,7 @@ class TestParameterExtraction (unittest2.TestCase):
         def test_tuple(self):
             f = eval('lambda (x, y): None')
 
-            with self.assertRaisesRegexp(argf.TupleArg, r'\(x, y\)'):
+            with self.assertRaisesRegex(argf.TupleArg, r'\(x, y\)'):
                 argf.extract_parameters(f)
 
 
@@ -403,4 +403,4 @@ if __name__ == '__main__':
     # Standard:
     import os.path
 
-    unittest2.main(os.path.splitext(os.path.basename(__file__))[0])
+    unittest.main(os.path.splitext(os.path.basename(__file__))[0])

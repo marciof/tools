@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, unicode_literals
 import contextlib
 import sys
-import unittest2
 
 # External:
 import argparse
@@ -13,6 +12,7 @@ import six
 
 # Internal:
 import argf
+from tests import unittest
 
 
 class Error (Exception):
@@ -43,7 +43,7 @@ def start(*args, **kwargs):
     return argf.start(*args, soft_errors = False, **kwargs)
 
 
-class TestArguments (unittest2.TestCase):
+class TestArguments (unittest.TestCase):
     def test_argument_help(self):
         def main(length, user_name = 'guest'):
             """
@@ -52,10 +52,10 @@ class TestArguments (unittest2.TestCase):
             """
             return user_name
 
-        with self.assertRaisesRegexp(Help, r'\bnumber of elements\b'):
+        with self.assertRaisesRegex(Help, r'\bnumber of elements\b'):
             start(main, args = ['-h'])
 
-        with self.assertRaisesRegexp(Help, r'\bfull username\b'):
+        with self.assertRaisesRegex(Help, r'\bfull username\b'):
             start(main, args = ['-h'])
 
 
@@ -90,20 +90,20 @@ class TestArguments (unittest2.TestCase):
         def main_without():
             return 321
 
-        with self.assertRaisesRegexp(Help, r'\bSample description\.'):
+        with self.assertRaisesRegex(Help, r'\bSample description\.'):
             start(main_with, args = ['-h'])
 
-        with self.assertRaisesRegexp(argf.AmbiguousDesc, '.'):
+        with self.assertRaisesRegex(argf.AmbiguousDesc, '.'):
             start(main_with,
                 arg_parser = ArgumentParser(description = 'Duplicate.'))
 
-        with self.assertRaisesRegexp(Help, r'\bAlternate\.'):
+        with self.assertRaisesRegex(Help, r'\bAlternate\.'):
             start(main_without,
                 args = ['-h'],
                 arg_parser = ArgumentParser(description = 'Alternate.'))
 
 
-class TestOptionalArguments (unittest2.TestCase):
+class TestOptionalArguments (unittest.TestCase):
     def test_boolean_argument(self):
         def main(verbose = False):
             return verbose
@@ -201,7 +201,7 @@ class TestOptionalArguments (unittest2.TestCase):
         self.assertEqual(start(main, args = ['--user-name', '123']), '123')
 
 
-class TestPositionalArguments (unittest2.TestCase):
+class TestPositionalArguments (unittest.TestCase):
     def test_boolean_argument(self):
         def main(debug):
             """
@@ -247,4 +247,4 @@ if __name__ == '__main__':
     # Standard:
     import os.path
 
-    unittest2.main(os.path.splitext(os.path.basename(__file__))[0])
+    unittest.main(os.path.splitext(os.path.basename(__file__))[0])

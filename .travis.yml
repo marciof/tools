@@ -5,17 +5,17 @@ python:
   - 3.3
 install: |
   pip install --allow-all-external -r docs/requirements.txt 'argparse>=1.2.1' coverage docutils pep8 python-coveralls six
-  if python -c "from sys import *; exit(version_info < (3,))"
+  if python -c "from sys import *; exit(version_info >= (3,))"
   then
-    pip install --allow-all-external unittest2py3k
-  else
-    pip install --allow-all-external unittest2
     pip install --allow-all-external --pre line_profiler
+  fi
+  if python -c "from sys import *; exit(version_info >= (2, 7))"
+    pip install --allow-all-external unittest2
   fi
 script: |
   if python -c "from sys import *; exit(version_info < (3,))"
   then
-    coverage run --branch --module --source=argf unittest2 discover
+    coverage run --branch --module --source=argf unittest discover
   else
     scons check
   fi
