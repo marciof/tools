@@ -422,8 +422,8 @@ def start(main,
     :param arg_parser: user defined argument parser
     :type soft_errors: bool
     :param soft_errors: if ``True``, catches conversion and parsing
-        exceptions and passes them as error messages for
-        :py:meth:`argparse.ArgumentParser.error`
+        exceptions and passes them as error messages to
+        :py:meth:`arg_parser.error`
     :return: entry point's return value
     """
 
