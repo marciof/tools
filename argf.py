@@ -404,6 +404,7 @@ def load_type(name, at_module):
 
 
 # TODO: Add a version argument from `__version__`?
+# TODO: Add parameter to enable/disable the defaults help formatter?
 def start(main,
         args = None,
         arg_parser = None,
