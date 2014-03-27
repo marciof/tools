@@ -1,21 +1,18 @@
 Description
 ===========
 
-Declarative command line arguments parser.
+Declarative command-line arguments parser.
 
-This library follows version 2.0.0 of Semantic Versioning (SemVer).
-
-Licensed under the MIT License.
+This library follows version 2.0.0 of `Semantic Versioning <http://semver.org>`_.
 
 Links
 -----
 
-- Package: http://pypi.python.org/pypi/...
 - Documentation: http://argf.readthedocs.org
+- Package: http://pypi.python.org/pypi/...
 - Source code and issue tracking: http://github.com/marciof/argf
 - Continuous integration: http://travis-ci.org/marciof/argf
 - Coverage: http://coveralls.io/r/marciof/argf
-- Semantic Versioning: http://semver.org
 
 Contributing
 ============

@@ -2,29 +2,29 @@
 
 
 """
-Declarative command line arguments parser.
+Declarative command-line arguments parser.
 
-Builds options for an :py:class:`argparse.ArgumentParser` from a function's
-parameters and docstring, and calls it with the program arguments already
-parsed.
+Builds options for an :py:class:`argparse.ArgumentParser` instance from a
+function's parameters and docstring, and then calls it with the command-line
+arguments already parsed.
 
 Help text is taken from the function's docstring:
 
 * The main paragraph describes the program.
-* Parameter descriptions describe program arguments.
+* Parameter descriptions describe command-line parameters.
 
-Arguments are taken from the function's parameters:
+Command-line parameters are defined by the function's parameters:
 
-* Non-keyword parameters are converted to positional arguments.
-* Keyword parameters are converted to optional arguments.
+* Non-keyword to positional.
+* Keyword to optional.
 
-  * Boolean parameters are converted to flag arguments.
+  * Boolean to flag.
 
-Argument types are taken from the first available definition:
+And their types are defined by whichever is first available:
 
 #. Parameter docstring type.
-#. Keyword parameter's default value, unless ``None``.
-#. Default to :py:data:`six.text_type`.
+#. Keyword parameter's default value type, unless it's ``None``.
+#. Fallback to :py:data:`six.text_type`.
 """
 
 
@@ -33,8 +33,10 @@ from __future__ import absolute_import, division, unicode_literals
 inspect = None # lazy
 import re
 
-# External:
+# Standard/External:
 argparse = None # lazy
+
+# External:
 docutils = None # lazy
 six = None # lazy
 
@@ -411,20 +413,22 @@ def start(main,
         soft_errors = True):
     
     """
-    Starts a function with program arguments parsed via :py:mod:`argparse`.
+    Calls a function with arguments parsed from command-line arguments via
+    :py:mod:`argparse`.
 
     :type main: types.FunctionType
-    :param main: entry point function
+    :param main: function
     :type args: list<six.text_type>
-    :param args: user defined program arguments, otherwise leaves it up to
-        :py:meth:`argparse.ArgumentParser.parse_args` to define
+    :param args: user defined command-line arguments, otherwise leaves it up to
+        :py:meth:`arg_parser.parse_args() <argparse.ArgumentParser.parse_args>`
+        to define
     :type arg_parser: argparse.ArgumentParser
     :param arg_parser: user defined argument parser
     :type soft_errors: bool
     :param soft_errors: if ``True``, catches conversion and parsing
         exceptions and passes them as error messages to
-        :py:meth:`arg_parser.error`
-    :return: entry point's return value
+        :py:meth:`arg_parser.error() <argparse.ArgumentParser.error>`
+    :return: function's return value
     """
 
     if arg_parser is None:
