@@ -42,8 +42,8 @@ project = argf.__name__
 master_doc = 'index'
 exclude_patterns = ['README.*']
 
-with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license_file:
-    copyright = license_file.readline().replace('Copyright (c)', '').strip()
+with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license:
+    copyright = license.readline().strip().replace('Copyright (c)', '')
 
 version = '.'.join(map(unicode, argf.__version__))
 release = version
