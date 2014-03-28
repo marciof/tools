@@ -311,7 +311,7 @@ def extract_documentation(function):
 
     main_desc = doc.traverse(lambda node:
         isinstance(node, docutils.nodes.paragraph) and (node.parent is doc))
-    
+
     if len(main_desc) == 0:
         main_desc = None
     else:
@@ -411,23 +411,27 @@ def start(main,
         args = None,
         arg_parser = None,
         soft_errors = True):
-    
+
     """
     Calls a function with arguments parsed from command-line arguments via
     :py:mod:`argparse`.
 
     :type main: types.FunctionType
     :param main: function
+
     :type args: list<six.text_type>
     :param args: user defined command-line arguments, otherwise leaves it up to
         :py:meth:`arg_parser.parse_args() <argparse.ArgumentParser.parse_args>`
         to define
+
     :type arg_parser: argparse.ArgumentParser
     :param arg_parser: user defined argument parser
+
     :type soft_errors: bool
     :param soft_errors: if ``True``, catches conversion and parsing
         exceptions and passes them as error messages to
         :py:meth:`arg_parser.error() <argparse.ArgumentParser.error>`
+
     :return: function's return value
     """
 
