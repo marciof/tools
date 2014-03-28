@@ -14,8 +14,8 @@ import os.path
 import sys
 
 
-# Read The Docs doesn't use SCons, which would set up the environment otherwise,
-# so help it find the main module.
+# Read The Docs doesn't use SCons, which would set up the environment
+# otherwise, so help it find the setup module.
 root = os.path.join(os.path.dirname(__file__), os.path.pardir)
 
 # (For Sphinx configuration.)
@@ -29,7 +29,7 @@ else:
 
 
 # Internal:
-import argf
+from setup import extract_info
 
 
 extensions = [
@@ -38,15 +38,14 @@ extensions = [
     'sphinxcontrib.programoutput',
 ]
 
-project = argf.__name__
+(name, version, docstring) = extract_info()
+project = name
+release = version
 master_doc = 'index'
 exclude_patterns = ['README.*']
 
 with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license:
     copyright = license.readline().strip().replace('Copyright (c)', '')
-
-version = '.'.join(map(unicode, argf.__version__))
-release = version
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),
