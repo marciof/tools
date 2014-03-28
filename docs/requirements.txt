@@ -1,2 +1,3 @@
+# Earlier versions don't support `exclude_patterns`.
 sphinx>=1.0
 sphinxcontrib-programoutput
