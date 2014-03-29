@@ -8,7 +8,6 @@ Sphinx configuration.
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import codecs
 import os
 import os.path
 import sys
@@ -28,23 +27,23 @@ else:
 
 
 # Internal:
-from setup import extract_info
+from setup import get_package
 
+
+package = get_package()
+
+project = package.name
+version = package.version
+release = package.version
+master_doc = 'index'
+exclude_patterns = ['README.*']
+copyright = package.copyright
 
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.programoutput',
 ]
-
-(name, version, docstring) = extract_info()
-project = name
-release = version
-master_doc = 'index'
-exclude_patterns = ['README.*']
-
-with codecs.open('LICENSE.txt', encoding = 'UTF-8') as license:
-    copyright = license.readline().strip().replace('Copyright (c)', '')
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/', None),

@@ -6,23 +6,24 @@
 from __future__ import absolute_import, division, unicode_literals
 import ast
 import codecs
+import collections
 import imp
 import os.path
+import re
 import sys
 
 # External:
 import setuptools
 
 
-def extract_info():
-    """
-    :return: module's name, version, and docstring
-    :rtype: tuple<unicode, unicode, unicode>
-    """
+Package = collections.namedtuple('Package', [
+    'name', 'version', 'author', 'email', 'docstring', 'readme', 'copyright'])
 
+
+def get_package():
     name = 'argf'
     docstring = version = None
-    (module, path, description) = imp.find_module(name)
+    module = imp.find_module(name)[0]
 
     # Avoid having to import the module.
     with module:
@@ -34,30 +35,44 @@ def extract_info():
                     version = ast.literal_eval(node.value)
 
             if None not in (docstring, version):
-                return (name, '.'.join(map(unicode, version)), docstring)
+                break
+
+    docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
+    license_file = os.path.join(docs_dir, 'LICENSE.txt')
+    readme_file = os.path.join(docs_dir, 'README.rst')
+
+    with codecs.open(license_file, encoding = 'UTF-8') as license:
+        copyright_line = license.readline()
+
+    [(author, email)] = re.findall(', (.+) <([^<>]+)>$', copyright_line)
+    [copyright] = re.findall(r'\(c\) (.+) <', copyright_line)
+
+    return Package(
+        name = name,
+        version = '.'.join(map(unicode, version)),
+        author = author,
+        email = email,
+        docstring = docstring,
+        readme = readme_file,
+        copyright = copyright)
 
 
 if __name__ == '__main__':
-    (name, version, docstring) = extract_info()
-
-    docs_path = 'docs'
-    readme_file = os.path.join(docs_path, 'README.rst')
-    license_file = os.path.join(docs_path, 'LICENSE.txt')
+    package = get_package()
     is_pre_py27 = sys.version_info < (2, 7)
 
-    with codecs.open(readme_file, encoding = 'UTF-8') as readme:
+    with codecs.open(package.readme, encoding = 'UTF-8') as readme:
         long_description = readme.read()
 
-    with codecs.open(license_file, encoding = 'UTF-8') as license:
-        author = license.readline().split(',')[-1].strip()
-
     setuptools.setup(
-        name = name,
-        version = version,
-        py_modules = [name],
+        name = package.name,
+        version = package.version,
+        py_modules = [package.name],
 
-        author = author,
-        description = docstring.strip().splitlines()[0],
+        author = package.author,
+        author_email = package.email,
+        url = 'http://pypi.python.org/pypi/...',
+        description = package.docstring.strip().splitlines()[0],
         long_description = long_description,
         license = 'MIT',
 
