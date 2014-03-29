@@ -20,11 +20,11 @@ Command-line parameters are defined by the function's parameters:
 
   * Boolean to flag.
 
-And their types are defined by whichever is first available:
+Parameter types are defined by whichever is first available:
 
 #. Parameter docstring type.
 #. Keyword parameter's default value type, unless it's ``None``.
-#. Fallback to :py:data:`six.text_type`.
+#. Default to :py:data:`six.text_type`.
 """
 
 
