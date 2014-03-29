@@ -9,7 +9,7 @@ Links
 -----
 
 - Documentation: http://argf.readthedocs.org
-- Package: http://pypi.python.org/pypi/...
+- Package: http://pypi.python.org/pypi/argf
 - Source code and issue tracking: http://github.com/marciof/argf
 - Continuous integration: http://travis-ci.org/marciof/argf
 - Coverage: http://coveralls.io/r/marciof/argf

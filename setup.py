@@ -61,6 +61,16 @@ if __name__ == '__main__':
     package = get_package()
     is_pre_py27 = sys.version_info < (2, 7)
 
+    requirements = {
+        'docutils': None,
+        'six': None,
+    }
+
+    if is_pre_py27:
+        # Earlier versions don't take `prefix_chars` into account when
+        # creating the help option.
+        requirements['argparse'] = '>=1.2.1'
+
     with codecs.open(package.readme, encoding = 'UTF-8') as readme:
         long_description = readme.read()
 
@@ -71,18 +81,22 @@ if __name__ == '__main__':
 
         author = package.author,
         author_email = package.email,
-        url = 'http://pypi.python.org/pypi/...',
+        url = 'http://pypi.python.org/pypi/' + package.name,
         description = package.docstring.strip().splitlines()[0],
         long_description = long_description,
         license = 'MIT',
+        platforms = 'any',
 
         test_suite = 'tests',
         tests_require = 'unittest2' if is_pre_py27 else [],
 
-        install_requires = ['docutils', 'six']
-            # Earlier versions don't take `prefix_chars` into account when
-            # creating the help option.
-            + ['argparse>=1.2.1'] if is_pre_py27 else [],
+        install_requires = [
+            name if version is None else name + version
+            for name, version in requirements.items()],
+
+        requires = [
+            name if version is None else '%s(%s)' % (name, version)
+            for name, version in requirements.items()],
 
         classifiers = [
             'Development Status :: 4 - Beta',
