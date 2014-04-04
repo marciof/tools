@@ -31,10 +31,6 @@ check_targets = [
         root = tests_path)
 ]
 
-if os.environ.get('TRAVIS') != 'true':
-    env.Tool('travis-lint')
-    check_targets.insert(0, env.TravisLint())
-
 env.PyUnit('test', root = tests_path)
 env.Alias('check', check_targets)
 

@@ -12,6 +12,9 @@ import os.path
 import re
 import sys
 
+# Internal:
+import setupcmds.travis_ci
+
 # External:
 import setuptools
 
@@ -97,6 +100,10 @@ if __name__ == '__main__':
         requires = [
             name if version is None else '%s(%s)' % (name, version)
             for name, version in requirements.items()],
+
+        cmdclass = {
+            'travis_lint': setupcmds.travis_ci.Lint,
+        },
 
         classifiers = [
             'Development Status :: 4 - Beta',
