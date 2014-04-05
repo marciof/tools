@@ -3,40 +3,41 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import distutils.errors
 import shutil
-import subprocess
 
 # Internal:
 import setupext.cmd
 
 
-requires = ['shutilwhich'] if not hasattr(shutil, 'which') else []
+requires = ['shutilwhich']
 
 
 class Lint (setupext.cmd.Command):
-    description = 'lints the Travis CI configuration file'
+    description = 'lints via `Travis::Yaml` or `travis-lint`'
 
 
     def run(self):
-        for module in requires:
-            __import__(module)
-
-        ruby = shutil.which('ruby')
-
-        if ruby is not None:
-            subprocess.call([
-                ruby,
+        try:
+            self.spawn([
+                'ruby',
                 '-r',
                 'travis/yaml',
                 '-e',
-                'Travis::Yaml.parse!(File.read(".travis.yml"))',
+                '''"Travis::Yaml.parse!(File.read('.travis.yml'))"''',
             ])
             return
+        except distutils.errors.DistutilsExecError:
+            pass
+
+        for module in requires:
+            __import__(module)
 
         travis_lint = shutil.which('travis-lint')
 
         if travis_lint is not None:
-            subprocess.call([travis_lint])
+            self.spawn([travis_lint])
             return
 
-        self.warn('neither `ruby` nor `travis-lint` found')
+        raise distutils.errors.DistutilsError(
+            'neither `Travis::Yaml` nor `travis-lint` found')
