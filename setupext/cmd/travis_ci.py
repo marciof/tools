@@ -7,13 +7,13 @@ import shutil
 import subprocess
 
 # Internal:
-import setupcmds.base
+import setupext.cmd
 
 
 requires = ['shutilwhich'] if not hasattr(shutil, 'which') else []
 
 
-class Lint (setupcmds.base.Command):
+class Lint (setupext.cmd.Command):
     description = 'lints the Travis CI configuration file'
 
 

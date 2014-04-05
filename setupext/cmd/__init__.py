@@ -9,10 +9,12 @@ import abc
 import setuptools
 
 
-class CommandMeta (abc.ABCMeta):
+class _CommandMeta (abc.ABCMeta):
     @classmethod
     def normalize_options(mcs, options):
-        return [tuple(map(str, option[:2])) + option[2:] for option in options]
+        # Some versions require byte strings.
+        Bytes = type(b'')
+        return [tuple(map(Bytes, o[:2])) + o[2:] for o in options]
 
 
     def __new__(mcs, name, bases, attributes):
@@ -21,11 +23,17 @@ class CommandMeta (abc.ABCMeta):
         if user_options is not None:
             attributes['user_options'] = mcs.normalize_options(user_options)
 
-        return super(CommandMeta, mcs).__new__(mcs, name, bases, attributes)
+        return super(_CommandMeta, mcs).__new__(mcs, name, bases, attributes)
 
 
-class Command (setuptools.Command, object):
-    __metaclass__ = CommandMeta
+try:
+    exec('class _Command (setuptools.Command, metaclass = _CommandMeta): pass')
+except SyntaxError:
+    class _Command (setuptools.Command, object):
+        __metaclass__ = _CommandMeta
+
+
+class Command (_Command):
     user_options = []
 
 

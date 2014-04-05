@@ -4,19 +4,18 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import ast
 import codecs
 import collections
-import imp
 import os.path
 import re
 import sys
 
-# Internal:
-import setupcmds.travis_ci
-
 # External:
 import setuptools
+
+# Internal:
+import setupext
+import setupext.cmd.travis_ci
 
 
 Package = collections.namedtuple('Package', [
@@ -24,22 +23,7 @@ Package = collections.namedtuple('Package', [
 
 
 def get_package():
-    name = 'argf'
-    docstring = version = None
-    module = imp.find_module(name)[0]
-
-    # Avoid having to import the module.
-    with module:
-        for node in ast.walk(ast.parse(module.read())):
-            if isinstance(node, ast.Module):
-                docstring = ast.get_docstring(node)
-            elif isinstance(node, ast.Assign):
-                if any(target.id == '__version__' for target in node.targets):
-                    version = ast.literal_eval(node.value)
-
-            if None not in (docstring, version):
-                break
-
+    (name, docstring, version) = setupext.extract_details('argf')
     docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
     license_file = os.path.join(docs_dir, 'LICENSE.txt')
     readme_file = os.path.join(docs_dir, 'README.rst')
@@ -93,18 +77,12 @@ if __name__ == '__main__':
         test_suite = 'tests',
         tests_require = 'unittest2' if is_pre_py27 else [],
 
-        setup_requires = setupcmds.travis_ci.requires,
-
-        install_requires = [
-            name if version is None else name + version
-            for name, version in requirements.items()],
-
-        requires = [
-            name if version is None else '%s(%s)' % (name, version)
-            for name, version in requirements.items()],
+        setup_requires = setupext.cmd.travis_ci.requires,
+        install_requires = setupext.to_install_requires(requirements),
+        requires = setupext.to_requires(requirements),
 
         cmdclass = {
-            'travis_lint': setupcmds.travis_ci.Lint,
+            'travis_lint': setupext.cmd.travis_ci.Lint,
         },
 
         classifiers = [

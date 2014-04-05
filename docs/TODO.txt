@@ -13,3 +13,4 @@
 - Show off Travis CI and Coveralls badges?
 - Use more code check tools? flake8, pyflakes, pylint, pychecker?
 - Test on Python 3.4. as well, <https://github.com/travis-ci/travis-ci/issues/1989>.
+- Document and test `setupext`.
