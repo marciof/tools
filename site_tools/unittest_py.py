@@ -10,13 +10,16 @@ Unit testing support.
 from __future__ import absolute_import, division, unicode_literals
 import sys
 
-# External:
-import unittest2
+
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 
 # Not using the package to support Python 2.6. Could use the provided `unit2`
 # script instead, but it would require a version check.
-_UNITTEST_ENTRY_POINT = 'unittest2.__main__'
+_UNITTEST_ENTRY_POINT = unittest.__name__ + '.__main__'
 
 
 # Not called, but required.
