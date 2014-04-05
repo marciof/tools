@@ -52,7 +52,7 @@ def get_package():
 
     return Package(
         name = name,
-        version = '.'.join(map(unicode, version)),
+        version = '%d.%d.%d' % version,
         author = author,
         email = email,
         docstring = docstring,
@@ -92,6 +92,8 @@ if __name__ == '__main__':
 
         test_suite = 'tests',
         tests_require = 'unittest2' if is_pre_py27 else [],
+
+        setup_requires = setupcmds.travis_ci.requires,
 
         install_requires = [
             name if version is None else name + version
