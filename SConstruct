@@ -18,14 +18,12 @@ env = Environment(tools = [
 env.AppendENVPath('PYTHONPATH', env.Dir('#'))
 tests_path = env.Find('tests')
 
-env.PyUnit('test', root = tests_path)
-
-env.Alias('check', env.PyUnitCoverage('test-coverage',
+env.PyUnitCoverage('test-coverage',
     sources = ['argf'],
     measure_branch = True,
     html_report = (None if os.environ.get('CI') == 'true' else '_coverage'),
     min_coverage = 100,
-    root = tests_path))
+    root = tests_path)
 
 env.Profile('profile-import',
     source = env.Find('argf.py'),

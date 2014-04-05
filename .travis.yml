@@ -19,6 +19,6 @@ script: |
     coverage run --branch --module --source=argf unittest discover
   else
     python setup.py lint
-    scons check
+    scons test-coverage
   fi
 after_success: coveralls
