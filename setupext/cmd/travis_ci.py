@@ -3,18 +3,25 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
+import distutils.cmd
 import distutils.errors
 import shutil
-
-# Internal:
-import setupext.cmd
 
 
 requires = ['shutilwhich']
 
 
-class Lint (setupext.cmd.Command):
+class Lint (distutils.cmd.Command, object):
     description = 'lints via `Travis::Yaml` or `travis-lint`'
+    user_options = []
+
+
+    def finalize_options(self):
+        pass
+
+
+    def initialize_options(self):
+        pass
 
 
     def run(self):
