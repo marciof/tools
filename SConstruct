@@ -13,7 +13,6 @@ env = Environment(tools = [
     'pep8',
     'profile_py',
     'python',
-    'sphinx',
     'unittest_py',
 ])
 
@@ -43,7 +42,3 @@ env.Profile('profile-run',
 
 env.KernProf('profile-line',
     source = env.Find('test_unit.py'))
-
-env.Sphinx('docs',
-    source = env.Find('docs'),
-    output = '_docs')
