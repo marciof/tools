@@ -407,7 +407,8 @@ def load_type(name, at_module):
 
 
 # TODO: Add a version argument from `__version__`?
-# TODO: Add parameter to enable/disable the defaults help formatter?
+# TODO: Add parameter to allow modification of the parser instance?
+# TODO: Use a better defaults help formatter?
 def start(main,
         args = None,
         arg_parser = None,
@@ -441,8 +442,7 @@ def start(main,
         if argparse is None: # pragma: no cover
             import argparse
 
-        arg_parser = argparse.ArgumentParser(
-            formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+        arg_parser = argparse.ArgumentParser()
 
     try:
         (description, arguments) = extract_arguments(main)
