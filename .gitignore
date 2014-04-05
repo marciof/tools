@@ -1,6 +1,0 @@
-# Build tools.
-/.sconsign.dblite
-
-# Editors.
-/.idea
-/*.iml
