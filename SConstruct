@@ -10,7 +10,6 @@ env = Environment(tools = [
     'default',
     'find',
     'line_profiler_py',
-    'pep8',
     'profile_py',
     'python',
     'unittest_py',
@@ -20,8 +19,6 @@ env.AppendENVPath('PYTHONPATH', env.Dir('#'))
 tests_path = env.Find('tests')
 
 check_targets = [
-    env.Pep8(config = env.Find('pep8.ini')),
-
     env.PyUnitCoverage('test-coverage',
         sources = ['argf'],
         measure_branch = True,

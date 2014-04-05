@@ -14,6 +14,7 @@ import setuptools
 
 # Internal:
 import setupext
+import setupext.cmd.pep8
 import setupext.cmd.travis_ci
 
 
@@ -71,12 +72,16 @@ if __name__ == '__main__':
         platforms = 'any',
 
         tests_require = 'unittest2' if is_pre_py27 else [],
-        setup_requires = setupext.cmd.travis_ci.requires,
         install_requires = setupext.to_install_requires(requirements),
         requires = setupext.to_requires(requirements),
 
+        setup_requires = (
+            setupext.cmd.pep8.requires
+            + setupext.cmd.travis_ci.requires),
+
         cmdclass = {
             'travis_lint': setupext.cmd.travis_ci.Lint,
+            'pep8': setupext.cmd.pep8.Pep8,
         },
 
         classifiers = [
