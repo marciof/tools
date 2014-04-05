@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, unicode_literals
 import distutils.cmd
 
 
-requires = ['glob2']
+requires = ['pep8', 'glob2']
 
 
 class Pep8 (distutils.cmd.Command, object):
@@ -23,5 +23,5 @@ class Pep8 (distutils.cmd.Command, object):
 
 
     def run(self):
-        [glob2] = map(__import__, requires)
+        glob2 = __import__(requires[0])
         self.spawn(['pep8'] + glob2.glob('**/*.py'))
