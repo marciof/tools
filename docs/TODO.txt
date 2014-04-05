@@ -1,5 +1,4 @@
-- Add support for both travis-lint and travis-yaml.
-- Add "setup.py" so it can be installed directly from source via pip and avoid SCons.
+- Add "setup.py" so it can be installed directly from source via pip (and avoid SCons?).
 - Add "features" variable for feature detection backwards compatibility?
 - Improve README as home page.
 - Move docs requirements to setup.py?

@@ -4,7 +4,6 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import codecs
 import collections
 import os.path
 import re
@@ -24,12 +23,11 @@ Package = collections.namedtuple('Package', [
 
 def get_package():
     (name, docstring, version) = setupext.extract_details('argf')
+
     docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
     license_file = os.path.join(docs_dir, 'LICENSE.txt')
     readme_file = os.path.join(docs_dir, 'README.rst')
-
-    with codecs.open(license_file, encoding = 'UTF-8') as license:
-        copyright_line = license.readline()
+    copyright_line = setupext.read_text(license_file, lambda f: f.readline())
 
     [(author, email)] = re.findall(', (.+) <([^<>]+)>$', copyright_line)
     [copyright] = re.findall(r'\(c\) (.+) <', copyright_line)
@@ -58,25 +56,21 @@ if __name__ == '__main__':
         # creating the help option.
         requirements['argparse'] = '>=1.2.1'
 
-    with codecs.open(package.readme, encoding = 'UTF-8') as readme:
-        long_description = readme.read()
-
     setuptools.setup(
         name = package.name,
         version = package.version,
         py_modules = [package.name],
+        test_suite = 'tests',
 
         author = package.author,
         author_email = package.email,
         url = 'http://pypi.python.org/pypi/' + package.name,
         description = package.docstring.strip().splitlines()[0],
-        long_description = long_description,
+        long_description = setupext.read_text(package.readme),
         license = 'MIT',
         platforms = 'any',
 
-        test_suite = 'tests',
         tests_require = 'unittest2' if is_pre_py27 else [],
-
         setup_requires = setupext.cmd.travis_ci.requires,
         install_requires = setupext.to_install_requires(requirements),
         requires = setupext.to_requires(requirements),

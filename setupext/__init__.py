@@ -4,6 +4,7 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import ast
+import codecs
 import imp
 
 
@@ -23,7 +24,12 @@ def extract_details(name):
             if None not in (docstring, version):
                 return (name, docstring, version)
 
-    raise Exception('unable to extract module information: ' + name)
+    raise Exception('failed to extract module information: ' + name)
+
+
+def read_text(path, read = lambda f: f.read(), encoding = 'UTF-8'):
+    with codecs.open(path, encoding = encoding) as f:
+        return read(f)
 
 
 def to_install_requires(requirements):
