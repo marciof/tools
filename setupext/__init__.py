@@ -5,10 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import ast
 import codecs
-import glob
 import imp
-import itertools
-import os.path
 
 
 def extract_details(name):
@@ -28,25 +25,6 @@ def extract_details(name):
                 return (name, docstring, version)
 
     raise Exception('failed to extract module information: ' + name)
-
-
-def globr(pattern, root = os.path.curdir):
-    """
-    :type pattern: unicode
-    :param pattern: glob pattern
-    :type root: unicode
-    :param root: search starting point path
-    :rtype: list<unicode>
-    :return: matching files
-    """
-
-    paths = glob.glob(os.path.join(root, pattern))
-
-    for path, dirs, files in os.walk(root):
-        paths.extend(itertools.chain.from_iterable(
-            [glob.glob(os.path.join(d, pattern)) for d in dirs]))
-
-    return paths
 
 
 def read_text(path, read = lambda f: f.read(), encoding = 'UTF-8'):

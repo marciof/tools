@@ -80,8 +80,8 @@ if __name__ == '__main__':
             + setupext.cmd.travis_ci.requires),
 
         cmdclass = {
+            'lint': setupext.cmd.pep8.Pep8,
             'travis_lint': setupext.cmd.travis_ci.Lint,
-            'pep8': setupext.cmd.pep8.Pep8,
         },
 
         classifiers = [

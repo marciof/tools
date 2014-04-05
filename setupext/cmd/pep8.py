@@ -5,20 +5,17 @@
 from __future__ import absolute_import, division, unicode_literals
 import distutils.cmd
 
-# Internal:
-import setupext
 
-
-requires = []
+requires = ['glob2']
 
 
 class Pep8 (distutils.cmd.Command, object):
-    description = 'lints via `pep8`'
-    user_options = [(b'config=', b'c', 'path to configuration file')]
+    description = 'lints Python files via `pep8`'
+    user_options = []
 
 
     def initialize_options(self):
-        self.config = None
+        pass
 
 
     def finalize_options(self):
@@ -26,9 +23,5 @@ class Pep8 (distutils.cmd.Command, object):
 
 
     def run(self):
-        if self.config is not None:
-            options = ['--config=' + self.config]
-        else:
-            options = []
-
-        self.spawn(['pep8'] + options + setupext.globr('*.py'))
+        [glob2] = map(__import__, requires)
+        self.spawn(['pep8'] + glob2.glob('**/*.py'))

@@ -12,7 +12,7 @@ requires = ['shutilwhich']
 
 
 class Lint (distutils.cmd.Command, object):
-    description = 'lints via `Travis::Yaml` or `travis-lint`'
+    description = 'lints Travis CI config via `Travis::Yaml` or `travis-lint`'
     user_options = []
 
 
