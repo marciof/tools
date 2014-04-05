@@ -365,6 +365,7 @@ def extract_parameters(function):
 
 
 # TODO: Support parameterized types? E.g. list<str>
+# TODO: Support multiple types for a single argument? E.g. int|unicode
 def load_type(name, at_module):
     """
     :type name: six.text_type
