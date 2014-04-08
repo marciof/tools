@@ -75,12 +75,8 @@ if __name__ == '__main__':
         install_requires = setupext.to_install_requires(requirements),
         requires = setupext.to_requires(requirements),
 
-        setup_requires = (
-            setupext.cmd.pep8.requires
-            + setupext.cmd.travis_ci.requires),
-
         cmdclass = {
-            'lint': setupext.cmd.pep8.Pep8,
+            'lint': setupext.cmd.pep8.Lint,
             'travis_lint': setupext.cmd.travis_ci.Lint,
         },
 

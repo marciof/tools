@@ -10,12 +10,10 @@ import shlex
 import setupext.cmd
 
 
-requires = []
-
 try:
-    _quote_argument = pipes.quote
+    _quote_shell_arg = pipes.quote
 except AttributeError:
-    _quote_argument = shlex.quote
+    _quote_shell_arg = shlex.quote
 
 
 class Lint (setupext.cmd.Command):
@@ -23,7 +21,7 @@ class Lint (setupext.cmd.Command):
 
 
     def run(self):
-        self.spawn(list(map(_quote_argument, [
+        self.spawn(list(map(_quote_shell_arg, [
             'ruby',
             '-r',
             'travis/yaml',
