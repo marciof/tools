@@ -14,6 +14,7 @@ import setuptools
 
 # Internal:
 import setupext
+import setupext.cmd.coverage
 import setupext.cmd.pep8
 import setupext.cmd.travis_ci
 
@@ -76,6 +77,7 @@ if __name__ == '__main__':
         requires = setupext.to_requires(requirements),
 
         cmdclass = {
+            'coverage': setupext.cmd.coverage.Measure,
             'lint': setupext.cmd.pep8.Lint,
             'travis_lint': setupext.cmd.travis_ci.Lint,
         },
