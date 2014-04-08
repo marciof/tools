@@ -322,7 +322,7 @@ def extract_documentation(function):
 
 
 # TODO: Support list options? Via type `list`? Via varargs?
-# TODO: Support sub-commands via enum parameters?
+# TODO: Support sub-commands? E.g. start([cmd_1, {'cmd_2': my_fn}])
 def extract_parameters(function):
     """
     :type function: types.FunctionType
