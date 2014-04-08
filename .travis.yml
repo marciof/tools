@@ -14,11 +14,11 @@ install: |
     pip install --allow-all-external 'argparse>=1.2.1' unittest2
   fi
 script: |
+  python setup.py lint
   if python -c "from sys import *; exit(version_info < (3,))"
   then
     coverage run --branch --module --source=argf unittest discover
   else
-    python setup.py lint
     scons test-coverage
   fi
 after_success: coveralls
