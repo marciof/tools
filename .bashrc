@@ -129,6 +129,8 @@ if [ -z "$CYGWIN_ENV" ]; then
         else
             ack_options='--all'
         fi
+
+        # TODO: ag --follow --hidden --pager 'python show.py -d'
         alias f="$NAME $ack_options --sort-files"
         unset ack_options
     fi
