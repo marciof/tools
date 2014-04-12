@@ -46,5 +46,10 @@ class Measure (setupext.cmd.Command):
             argv.append('--module')
 
         argv.append(self.input)
-        self.announce(' '.join([coverage.__name__] + argv), distutils.log.INFO)
-        coverage.main(argv)
+        command_line = ' '.join([coverage.__name__] + argv)
+
+        if self.dry_run:
+            self.announce('skipping "%s" (dry run)' % command_line)
+        else:
+            self.announce('running "%s"' % command_line)
+            coverage.main(argv)
