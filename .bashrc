@@ -6,30 +6,15 @@ case "$-" in
 ;;
 esac
 
-# Cygwin helper.
-if [ -n "$WINDIR" -a -z "$INTERACTIVE" ]; then
-    ls > /dev/null 2>&1
-    
-    if [ "$?" = '127' ]; then
-        export CD=$@
-        export HOME="/home/$USERNAME"
-        exec $SHELL -il
-    fi
-fi
-
 _warn() {
     [ -n "$INTERACTIVE" ] && echo "* $@" >&2
 }
 
-[ "$(uname -o)" = 'Cygwin' ] && export CYGWIN_ENV=x
-
-if [ -z "$CYGWIN_ENV" ]; then
-    if [ -e /etc/bash_completion ]; then
-        source /etc/bash_completion
-        complete -F _cd -o nospace c
-    else
-        _warn 'Missing: bash-completion'
-    fi
+if [ -e /etc/bash_completion ]; then
+    source /etc/bash_completion
+    complete -F _cd -o nospace c
+else
+    _warn 'Missing: bash-completion'
 fi
 
 # Disable tilde expansion only.
@@ -119,115 +104,98 @@ BBlue='\e[1;34m'
 UGreen='\e[4;32m'
 
 ps1_user_host='\u@\h'
+show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
-if [ -z "$CYGWIN_ENV" ]; then
-    show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
+if [ -e "$show_py" ]; then
+    alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
+    alias ss='s -l-l'
+    alias sss='ss -l-A'
+    export GIT_PAGER=$show_py
+else
+    _have colordiff && alias diff=$NAME
+fi
 
+if _have ag; then
     if [ -e "$show_py" ]; then
-        alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
-        alias ss='s -l-l'
-        alias sss='ss -l-A'
-        export GIT_PAGER=$show_py
+        ag_pager="--pager 'python $show_py -d'"
     else
-        _have colordiff && alias diff=$NAME
+        ag_pager=''
     fi
 
-    if _have ag; then
-        if [ -e "$show_py" ]; then
-            ag_pager="--pager 'python $show_py -d'"
-        else
-            ag_pager=''
-        fi
+    alias f="$NAME $ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden"
+    unset ag_pager
+fi
 
-        alias f="$NAME $ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden"
-        unset ag_pager
-    fi
+unset show_py
 
-    unset show_py
+_have dircolors && eval "$($NAME -b)"
+_have kwrite gedit nano && export VISUAL=$LOCATION
+_have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
+_have lesspipe && eval "$($NAME)"
 
-    _have dircolors && eval "$($NAME -b)"
-    _have kwrite gedit nano && export VISUAL=$LOCATION
-    _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
-    _have lesspipe && eval "$($NAME)"
+# Remove bright colors (has to come after `dircolors`).
+export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
-    # Remove bright colors (has to come after `dircolors`).
-    export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
+[ -z "$DISPLAY" ] && export DISPLAY=:0.0
 
-    [ -z "$DISPLAY" ] && export DISPLAY=:0.0
-    
-    [ -z "$JAVA_HOME" ] && _have javac && \
-        export JAVA_HOME=$(dirname $(dirname $(readlink -e $(which javac))))
-    
-    [ -z "$JRE_HOME" ] && _have java && \
-        export JRE_HOME=$(dirname $(dirname $(readlink -e $(which java))))
-    
-    _add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
+[ -z "$JAVA_HOME" ] && _have javac && \
+    export JAVA_HOME=$(dirname $(dirname $(readlink -e $(which javac))))
+
+[ -z "$JRE_HOME" ] && _have java && \
+    export JRE_HOME=$(dirname $(dirname $(readlink -e $(which java))))
+
+_add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
 #!/bin/sh
 ssh-add < /dev/null 2> /dev/null
 SCRIPT
-    
-    # Dates in ISO 8601 format.
-    if locale -a 2> /dev/null | grep -q '^en_DK'; then
-        export LC_TIME=en_DK.UTF-8
-    else
-        _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
-    fi
-    
-    # Allow AltGr + Space to be interpreted as a regular blank space.
-    if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
-        _warn 'Install XKB data: $ apt-get install xkb-data'
-    fi
-    
-    if _have mysql && grep -q -s '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
-        _warn 'Non-strict MySQL: $ $EDITOR /etc/mysql/conf.d/strict-mode.cnf'
-        _warn '    [mysqld]'
-        _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
-    fi
-    
-    if _have ssh && grep -E -q -s '^\s*SendEnv LANG LC_\*' /etc/ssh/ssh_config; then
-        _warn 'Locale will be SSH forwarded from client: $ $EDITOR /etc/ssh/ssh_config'
-        _warn '    # SendEnv LANG LC_*'
-    fi
-    
-    if [ "$TERM" = "xterm" ]; then
-        # Save history session to file and set terminal title.
-        export PROMPT_COMMAND='
-            history -a
-            echo -ne "\e]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
-    fi
-    
-    if [ "$(stat --format=%i /)" != '2' ]; then
-        ps1_user_host="($ps1_user_host)"
-        export CHROOT=x
-        _warn "chroot: $(uname -srmo)"
-    fi
-    
-    if pgrep metacity > /dev/null; then
-        _have gconftool-2 && $NAME -s -t bool \
-            /apps/metacity/general/resize_with_right_button true
-    fi
+
+# Dates in ISO 8601 format.
+if locale -a 2> /dev/null | grep -q '^en_DK'; then
+    export LC_TIME=en_DK.UTF-8
 else
-    export CYGWIN=nodosfilewarning
-    export TERM=cygwin
-    export TEMP=/tmp
-    export TMP='$TMP'
-    
-    if [ -n "$INTERACTIVE" ]; then
-        bind '"\e[2;2~": paste-from-clipboard'      # Shift + Insert
-        [ -n "$CD" ] && cd "$(cygpath "$CD")" && unset CD
-    fi
+    _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
 fi
 
-ps1_user_host="\[$UGreen\]$ps1_user_host\[$Color_Off\]"
-
-if [ -z "$CYGWIN_ENV" ]; then
-    _jobs_nr_ps1() {
-        local jobs=$(jobs | wc -l)
-        [ $jobs -gt 0 ] && echo -e ":$BRed$jobs$Color_Off"
-    }
-    
-    ps1_user_host="$ps1_user_host\$(_jobs_nr_ps1)"
+# Allow AltGr + Space to be interpreted as a regular blank space.
+if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
+    _warn 'Install XKB data: $ apt-get install xkb-data'
 fi
+
+if _have mysql && grep -q -s '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
+    _warn 'Non-strict MySQL: $ $EDITOR /etc/mysql/conf.d/strict-mode.cnf'
+    _warn '    [mysqld]'
+    _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
+fi
+
+if _have ssh && grep -E -q -s '^\s*SendEnv LANG LC_\*' /etc/ssh/ssh_config; then
+    _warn 'Locale will be SSH forwarded from client: $ $EDITOR /etc/ssh/ssh_config'
+    _warn '    # SendEnv LANG LC_*'
+fi
+
+if [ "$TERM" = "xterm" ]; then
+    # Save history session to file and set terminal title.
+    export PROMPT_COMMAND='
+        history -a
+        echo -ne "\e]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
+fi
+
+if [ "$(stat --format=%i /)" != '2' ]; then
+    ps1_user_host="($ps1_user_host)"
+    export CHROOT=x
+    _warn "chroot: $(uname -srmo)"
+fi
+
+if pgrep metacity > /dev/null; then
+    _have gconftool-2 && $NAME -s -t bool \
+        /apps/metacity/general/resize_with_right_button true
+fi
+
+_jobs_nr_ps1() {
+    local jobs=$(jobs | wc -l)
+    [ $jobs -gt 0 ] && echo -e ":$BRed$jobs$Color_Off"
+}
+
+ps1_user_host="\[$UGreen\]$ps1_user_host\[$Color_Off\]\$(_jobs_nr_ps1)"
 
 if _have cpan; then
     export FTP_PASSIVE=1
@@ -277,15 +245,12 @@ if _have git; then
         fi
     }
     
-    if [ -z "$CYGWIN_ENV" ]; then
-        _set_git_config alias.br 'branch -vv'
-        _set_git_config alias.co checkout
-        _set_git_config color.ui auto
-        _set_git_config core.whitespace -trailing-space
-        _set_git_config user.email
-        _set_git_config user.name
-    fi
-    
+    _set_git_config alias.br 'branch -vv'
+    _set_git_config alias.co checkout
+    _set_git_config color.ui auto
+    _set_git_config core.whitespace -trailing-space
+    _set_git_config user.email
+    _set_git_config user.name
     _set_git_config push.default tracking
     
     _set_git_config alias.pub '!bash -c '"'"'\
@@ -304,18 +269,14 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
     
-    if [ -z "$CYGWIN_ENV" -a -n "$(type -t __git_ps1)" ]; then
-        ps1_user_host="$ps1_user_host\$(_color_git_ps1)"
-    fi
+    ps1_user_host="$ps1_user_host\$(_color_git_ps1)"
 fi
 
-if [ -z "$CYGWIN_ENV" ]; then
-    _virtual_env_ps1() {
-        [ -n "$VIRTUAL_ENV" ] && echo -e ":$Purple$(basename $VIRTUAL_ENV)$Color_Off"
-    }
-    
-    ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
-fi
+_virtual_env_ps1() {
+    [ -n "$VIRTUAL_ENV" ] && echo -e ":$Purple$(basename $VIRTUAL_ENV)$Color_Off"
+}
+
+ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
 
 export PS1="$ps1_user_host:\[$BBlue\]\w\n\\$\[$Color_Off\] "
 unset ps1_user_host
@@ -451,11 +412,9 @@ sup() {
     fi
 }
 
-if [ -z "$CYGWIN_ENV" ]; then
-    for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-        source "$bashrc_child"
-        _warn "Loaded: $bashrc_child"
-    done
-    
-    unset bashrc_child
-fi
+for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
+    source "$bashrc_child"
+    _warn "Loaded: $bashrc_child"
+done
+
+unset bashrc_child
