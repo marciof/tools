@@ -35,6 +35,9 @@ class Measure (setupext.cmd.Command):
         if self.input is None:
             raise distutils.errors.DistutilsOptionError('no input specified')
 
+        if not self.dry_run:
+            self.distribution.fetch_build_eggs(_MODULE)
+
 
     def run(self):
         argv = ['run']
@@ -51,7 +54,6 @@ class Measure (setupext.cmd.Command):
         if self.dry_run:
             self.announce('skipping "%s" (dry run)' % command_line)
         else:
-            self.distribution.fetch_build_eggs(_MODULE)
             script = pkg_resources.load_entry_point(_MODULE,
                 'console_scripts', _MODULE)
 

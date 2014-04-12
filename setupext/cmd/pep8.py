@@ -45,6 +45,9 @@ class Lint (setupext.cmd.Command):
 
             self.include = paths
 
+        if not self.dry_run:
+            self.distribution.fetch_build_eggs(_MODULE)
+
 
     def run(self):
         argv = [_MODULE] + self.include
@@ -54,10 +57,8 @@ class Lint (setupext.cmd.Command):
             self.announce('skipping "%s" (dry run)' % command_line)
             return
 
-        self.distribution.fetch_build_eggs(_MODULE)
         script = pkg_resources.load_entry_point(_MODULE,
             'console_scripts', _MODULE)
-
         sys_argv = sys.argv[:]
 
         try:
