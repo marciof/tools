@@ -7,12 +7,18 @@ import glob
 import itertools
 import sys
 
+# External:
+import pkg_resources
+
 # Internal:
 import setupext.cmd
 
 
+_MODULE = 'pep8'
+
+
 class Lint (setupext.cmd.Command):
-    description = 'lints Python files via `pep8`'
+    description = 'lints Python files via `%s`' % _MODULE
 
     user_options = [
         ('glob', 'g', 'interpret paths as glob patterns'),
@@ -41,23 +47,22 @@ class Lint (setupext.cmd.Command):
 
 
     def run(self):
-        self.distribution.fetch_build_eggs('pep8')
-
-        # External:
-        import pep8
-
-        argv = [pep8.__name__] + self.include
-        command_line = ' '.join(sys.argv)
+        argv = [_MODULE] + self.include
+        command_line = ' '.join(argv)
 
         if self.dry_run:
             self.announce('skipping "%s" (dry run)' % command_line)
             return
+
+        self.distribution.fetch_build_eggs(_MODULE)
+        script = pkg_resources.load_entry_point(_MODULE,
+            'console_scripts', _MODULE)
 
         sys_argv = sys.argv[:]
 
         try:
             sys.argv = argv
             self.announce('running "%s"' % command_line)
-            pep8._main()
+            script()
         finally:
             sys.argv[:] = sys_argv
