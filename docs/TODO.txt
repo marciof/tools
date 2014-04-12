@@ -6,7 +6,7 @@
 - Move docs requirements to setup.py?
 - How to document parameterized types? tuple[(None, six.text_type), list[Argument]]
 - Put documentation in http://pythonhosted.org/ and redirect to Read The Docs.
-- Add a CHANGES.txt file? Append to "long_description"?
+- Better to name CHANGELOG? Append contents to "long_description"?
 - List alternative projects? E.g. argh, argfarce, argtools, argdeclare.
 - Use Attest for testing? Nose? Tox?
 - Review? http://thechangelog.com/top-ten-reasons-why-i-wont-use-your-open-source-project/
