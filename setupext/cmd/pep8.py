@@ -3,7 +3,6 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import distutils.log
 import glob
 import itertools
 import sys
@@ -47,11 +46,18 @@ class Lint (setupext.cmd.Command):
         # External:
         import pep8
 
-        argv = sys.argv
+        argv = [pep8.__name__] + self.include
+        command_line = ' '.join(sys.argv)
+
+        if self.dry_run:
+            self.announce('skipping "%s" (dry run)' % command_line)
+            return
+
+        sys_argv = sys.argv
 
         try:
-            sys.argv = [pep8.__name__] + self.include
-            self.announce(' '.join(sys.argv), distutils.log.INFO)
+            sys.argv = argv
+            self.announce('running "%s"' % command_line)
             pep8._main()
         finally:
-            sys.argv = argv
+            sys.argv = sys_argv

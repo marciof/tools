@@ -4,7 +4,6 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import distutils.errors
-import distutils.log
 
 # Internal:
 import setupext.cmd
