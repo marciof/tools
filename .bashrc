@@ -147,11 +147,6 @@ if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
     _warn 'Install XKB data: $ apt-get install xkb-data'
 fi
 
-if _have ssh && grep -E -q -s '^\s*SendEnv LANG LC_\*' /etc/ssh/ssh_config; then
-    _warn 'Locale will be SSH forwarded from client: $ $EDITOR /etc/ssh/ssh_config'
-    _warn '    # SendEnv LANG LC_*'
-fi
-
 if [ "$TERM" = "xterm" ]; then
     # Save history session to file and set terminal title.
     export PROMPT_COMMAND='
