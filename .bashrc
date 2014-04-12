@@ -80,8 +80,6 @@ alias ll='l -lA'
 alias -- -='c -'
 alias ..='c ..'
 
-_have nano && export EDITOR=$LOCATION
-
 export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
@@ -118,7 +116,6 @@ fi
 unset show_py
 
 _have dircolors && eval "$($NAME -b)"
-_have kwrite gedit nano && export VISUAL=$LOCATION
 _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
 _have lesspipe && eval "$($NAME)"
 
@@ -227,9 +224,7 @@ if _have git; then
 
     if _have nano; then
         # Go to the end of the first line in commit message templates.
-        export GIT_EDITOR="$EDITOR +,9999"
-    else
-        export GIT_EDITOR="$EDITOR"
+        export GIT_EDITOR="$NAME +,9999"
     fi;
 
     export GIT_PS1_SHOWDIRTYSTATE=x
@@ -247,27 +242,6 @@ ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
 
 export PS1="$ps1_user_host:\[$BBlue\]\w\n\\$\[$Color_Off\] "
 unset ps1_user_host
-
-nano_rc=~/.nanorc
-
-if [ -n "$HAVE_NANO" -a -n "$INTERACTIVE" -a ! -e "$nano_rc" ]; then
-    ls -1 /usr/share/nano/*.nanorc | sed -r 's/(.+)/include "\1"/' > "$nano_rc"
-    cat << 'TEXT' >> "$nano_rc"
-set autoindent
-set const
-set morespace
-set noconvert
-set nonewlines
-set nowrap
-set smarthome
-set smooth
-set suspend
-set tabsize 4
-set tabstospaces
-TEXT
-fi
-
-unset nano_rc
 
 _in_git() {
     git rev-parse --is-inside-work-tree > /dev/null 2>&1
