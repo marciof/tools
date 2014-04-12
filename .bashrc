@@ -162,11 +162,29 @@ _jobs_nr_ps1() {
 ps1_user_host="\[$UGreen\]$ps1_user_host\[$Color_Off\]\$(_jobs_nr_ps1)"
 
 if _have git; then
+    alias g=$NAME
+
     if ! type -t _git > /dev/null; then
         _completion_loader git
     fi
     
-    alias g=$NAME
+    alias sb='git blame --date=short "$@"'
+    alias sd='git diff "$@"'
+    alias sl='git log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
+    alias sr='git checkout "$@"'
+    alias st='git status "$@"'
+    alias sp='git pull "$@"'
+
+    sc() {
+        local cached=$(git diff --cached --name-only | wc -l)
+
+        if  [ $# -eq 0 -a $cached -eq 0 ]; then
+            git commit -a
+        else
+            git commit "$@"
+        fi
+    }
+
     complete -o bashdefault -o default -o nospace -F _git g
     
     _color_git_ps1() {
@@ -221,100 +239,12 @@ ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
 export PS1="$ps1_user_host:\[$BBlue\]\w\n\\$\[$Color_Off\] "
 unset ps1_user_host
 
-_in_git() {
-    git rev-parse --is-inside-work-tree > /dev/null 2>&1
-}
-
-_in_scm() {
-    echo "* SCM? $(pwd)" >&2
-}
-
-_in_svn() {
-    svn info > /dev/null 2>&1
-}
-
 iwait() {
     for PID in "$@"; do
         while kill -0 "$PID" 2> /dev/null; do
             sleep 0.5
         done
     done
-}
-
-sbl() {
-    if _in_git; then
-        git blame --date=short "$@"
-    elif _in_svn; then
-        svn blame "$@"
-    else
-        _in_scm
-    fi
-}
-
-sci() {
-    if _in_git; then
-        local cached=$(git diff --cached --name-only | wc -l)
-        
-        if  [ $# -eq 0 -a $cached -eq 0 ]; then
-            git commit -a
-        else
-            git commit "$@"
-        fi
-    elif _in_svn; then
-        svn commit "$@"
-    else
-        _in_scm
-    fi
-}
-
-sdi() {
-    if _in_git; then
-        git diff "$@"
-    elif _in_svn; then
-        svn diff "$@"
-    else
-        _in_scm
-    fi
-}
-
-sl() {
-    if _in_git; then
-        git log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"
-    elif _in_svn; then
-        svn log "$@"
-    else
-        _in_scm
-    fi
-}
-
-sre() {
-    if _in_git; then
-        git checkout "$@"
-    elif _in_svn; then
-        svn revert "$@"
-    else
-        _in_scm
-    fi
-}
-
-sst() {
-    if _in_git; then
-        git status "$@"
-    elif _in_svn; then
-        svn status "$@"
-    else
-        _in_scm
-    fi
-}
-
-sup() {
-    if _in_git; then
-        git pull "$@"
-    elif _in_svn; then
-        svn update "$@"
-    else
-        _in_scm
-    fi
 }
 
 for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
