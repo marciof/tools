@@ -161,28 +161,6 @@ _jobs_nr_ps1() {
 
 ps1_user_host="\[$UGreen\]$ps1_user_host\[$Color_Off\]\$(_jobs_nr_ps1)"
 
-if _have cpan; then
-    export FTP_PASSIVE=1
-    export PERL_AUTOINSTALL=1
-    export PERL_MM_USE_DEFAULT=1
-    cpan_setup=~/.cpan_setup
-    
-    if [ ! -e "$cpan_setup" ]; then
-        touch $cpan_setup
-        cat << 'TEXT' | tee "$cpan_setup" | cpan
-o conf make_install_make_command "sudo make"
-o conf mbuild_install_build_command "sudo ./Build"
-install local::lib
-o conf init
-o conf halt_on_failure 1
-o conf inhibit_startup_message 1
-o conf commit
-TEXT
-    fi
-    
-    unset cpan_setup
-fi
-
 if _have git; then
     if ! type -t _git > /dev/null; then
         _completion_loader git
@@ -213,9 +191,9 @@ if _have git; then
     _set_git_config alias.co checkout
     _set_git_config color.ui auto
     _set_git_config core.whitespace -trailing-space
+    _set_git_config push.default tracking
     _set_git_config user.email
     _set_git_config user.name
-    _set_git_config push.default tracking
     
     _set_git_config alias.pub '!bash -c '"'"'\
         COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
