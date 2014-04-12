@@ -14,12 +14,14 @@ class Measure (setupext.cmd.Command):
     description = 'measure code coverage via `coverage`'
 
     user_options = [
+        ('branch', 'b', 'pass the `--branch` command line option'),
         ('input=', 'i', 'Python file to execute'),
-        ('module', 'm', 'input is a module, instead of a script'),
+        ('module', 'm', 'pass the `--module` command line option'),
     ]
 
 
     def initialize_options(self):
+        self.branch = False
         self.input = None
         self.module = False
 
@@ -35,7 +37,10 @@ class Measure (setupext.cmd.Command):
         # External:
         import coverage
 
-        argv = ['run', '--branch']
+        argv = ['run']
+
+        if self.branch:
+            argv.append('--branch')
 
         if self.module:
             argv.append('--module')
