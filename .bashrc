@@ -147,12 +147,6 @@ if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
     _warn 'Install XKB data: $ apt-get install xkb-data'
 fi
 
-if _have mysql && grep -q -s '(STRICT_TRANS_TABLES|ANSI_QUOTES)' /etc/mysql/conf.d/*; then
-    _warn 'Non-strict MySQL: $ $EDITOR /etc/mysql/conf.d/strict-mode.cnf'
-    _warn '    [mysqld]'
-    _warn '    sql-mode=STRICT_TRANS_TABLES,ANSI_QUOTES'
-fi
-
 if _have ssh && grep -E -q -s '^\s*SendEnv LANG LC_\*' /etc/ssh/ssh_config; then
     _warn 'Locale will be SSH forwarded from client: $ $EDITOR /etc/ssh/ssh_config'
     _warn '    # SendEnv LANG LC_*'
