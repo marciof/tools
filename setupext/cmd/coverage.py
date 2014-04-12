@@ -5,12 +5,18 @@
 from __future__ import absolute_import, division, unicode_literals
 import distutils.errors
 
+# External:
+import pkg_resources
+
 # Internal:
 import setupext.cmd
 
 
+_MODULE = 'coverage'
+
+
 class Measure (setupext.cmd.Command):
-    description = 'measure code coverage via `coverage`'
+    description = 'measure code coverage via `%s`' % _MODULE
 
     user_options = [
         ('branch', 'b', 'pass the `--branch` command line option'),
@@ -27,15 +33,10 @@ class Measure (setupext.cmd.Command):
 
     def finalize_options(self):
         if self.input is None:
-            raise distutils.errors.DistutilsOptionError('no script specified')
+            raise distutils.errors.DistutilsOptionError('no input specified')
 
 
     def run(self):
-        self.distribution.fetch_build_eggs('coverage')
-
-        # External:
-        import coverage
-
         argv = ['run']
 
         if self.branch:
@@ -45,10 +46,14 @@ class Measure (setupext.cmd.Command):
             argv.append('--module')
 
         argv.append(self.input)
-        command_line = ' '.join([coverage.__name__] + argv)
+        command_line = ' '.join([_MODULE] + argv)
 
         if self.dry_run:
             self.announce('skipping "%s" (dry run)' % command_line)
         else:
+            self.distribution.fetch_build_eggs(_MODULE)
+            script = pkg_resources.load_entry_point(_MODULE,
+                'console_scripts', _MODULE)
+
             self.announce('running "%s"' % command_line)
-            coverage.main(argv)
+            script(argv)
