@@ -102,8 +102,6 @@ alias .....='c ../../../..'
 
 _have nano && export EDITOR=$LOCATION
 
-export ACK_COLOR_FILENAME='dark blue'
-export ACK_COLOR_LINENO='dark yellow'
 export BUSTER_TEST_OPT='-C dim'
 export HARNESS_COLOR=1
 export HISTCONTROL=ignoreboth
@@ -123,18 +121,30 @@ UGreen='\e[4;32m'
 ps1_user_host='\u@\h'
 
 if [ -z "$CYGWIN_ENV" ]; then
-    if _have ack-grep ack; then
-        if $NAME --version | head -n 1 | grep -q -E ' 2\.'; then
-            ack_options=''
+    show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
+
+    if [ -e "$show_py" ]; then
+        alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
+        alias ss='s -l-l'
+        alias sss='ss -l-A'
+        export GIT_PAGER=$show_py
+    else
+        _have colordiff && alias diff=$NAME
+    fi
+
+    if _have ag; then
+        if [ -e "$show_py" ]; then
+            ag_pager="--pager 'python $show_py -d'"
         else
-            ack_options='--all'
+            ag_pager=''
         fi
 
-        # TODO: ag --follow --hidden --pager 'python show.py -d'
-        alias f="$NAME $ack_options --sort-files"
-        unset ack_options
+        alias f="$NAME $ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden"
+        unset ag_pager
     fi
-    
+
+    unset show_py
+
     _have dircolors && eval "$($NAME -b)"
     _have kwrite gedit nano && export VISUAL=$LOCATION
     _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
@@ -196,20 +206,6 @@ SCRIPT
         _have gconftool-2 && $NAME -s -t bool \
             /apps/metacity/general/resize_with_right_button true
     fi
-    
-    show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
-    
-    if [ -e "$show_py" ]; then
-        alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
-        alias ss='s -l-l'
-        alias sss='ss -l-A'
-        export ACK_PAGER="\"$show_py\" -d"
-        export GIT_PAGER=$show_py
-    else
-        _have colordiff && alias diff=$NAME
-    fi
-
-    unset show_py
 else
     export CYGWIN=nodosfilewarning
     export TERM=cygwin
