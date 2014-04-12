@@ -78,6 +78,7 @@ if __name__ == '__main__':
 
         cmdclass = {
             'coverage': setupext.cmd.coverage.Measure,
+            'coverage_report': setupext.cmd.coverage.Report,
             'lint': setupext.cmd.pep8.Lint,
             'travis_lint': setupext.cmd.travis_ci.Lint,
         },
