@@ -177,11 +177,6 @@ if [ "$(stat --format=%i /)" != '2' ]; then
     _warn "chroot: $(uname -srmo)"
 fi
 
-if pgrep metacity > /dev/null; then
-    _have gconftool-2 && $NAME -s -t bool \
-        /apps/metacity/general/resize_with_right_button true
-fi
-
 _jobs_nr_ps1() {
     local jobs=$(jobs | wc -l)
     [ $jobs -gt 0 ] && echo -e ":$BRed$jobs$Color_Off"
