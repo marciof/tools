@@ -295,26 +295,12 @@ _in_svn() {
     svn info > /dev/null 2>&1
 }
 
-cleanup() {
-    _have apt-get && (sudo $NAME -qq autoremove; sudo $NAME -qq clean)
-    perl -i -ne 'print unless $seen{$_}++' $HISTFILE
-    rm -rf ~/.cpan/{build,sources}
-}
-
-ff() {
-    find "$@" -a ! -name '*.svn-base'
-}
-
 iwait() {
     for PID in "$@"; do
         while kill -0 "$PID" 2> /dev/null; do
             sleep 0.5
         done
     done
-}
-
-reload() {
-    exec $SHELL
 }
 
 sbl() {
