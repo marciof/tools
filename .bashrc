@@ -36,24 +36,6 @@ _have() {
     return 1
 }
 
-_add_to_auto_start() {
-    local script="$HOME/.kde/Autostart/$1"
-    
-    if [ -z "$KDE_FULL_SESSION" -o ! -e "$script" ]; then
-        local temp_script="$(mktemp)"
-        
-        chmod +x "$temp_script"
-        cat > "$temp_script"
-        "$temp_script" || return 1
-        
-        if  [ -n "$KDE_FULL_SESSION" ]; then
-            mv "$temp_script" "$script"
-        fi
-    fi
-    
-    return 0
-}
-
 if [ -n "$INTERACTIVE" ]; then
     # Disable XON/XOFF flow control to allow: bind -q forward-search-history
     stty -ixon
@@ -124,10 +106,17 @@ export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
 [ -z "$DISPLAY" ] && export DISPLAY=:0.0
 
-_add_to_auto_start 'ssh-add.sh' << 'SCRIPT'
+ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
+
+if [ -n "$KDE_FULL_SESSION" -a ! -e "$ssh_add_auto_start" ]; then
+    cat << 'SCRIPT' > "$ssh_add_auto_start"
 #!/bin/sh
 ssh-add < /dev/null 2> /dev/null
 SCRIPT
+    chmod +x "$ssh_add_auto_start"
+fi
+
+unset ssh_add_auto_start
 
 # Dates in ISO 8601 format.
 if locale -a 2> /dev/null | grep -q '^en_DK'; then
