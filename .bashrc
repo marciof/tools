@@ -74,16 +74,11 @@ fi
 shopt -s cdspell checkwinsize histappend
 
 alias c=cd
-alias e='$VISUAL'
 alias j=jobs
 alias l='ls -CFXh --color=auto --group-directories-first'
-alias ll='l -l'
-alias dir='l -lA'
+alias ll='l -lA'
 alias -- -='c -'
 alias ..='c ..'
-alias ...='c ../..'
-alias ....='c ../../..'
-alias .....='c ../../../..'
 
 _have nano && export EDITOR=$LOCATION
 
@@ -108,11 +103,8 @@ show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
 if [ -e "$show_py" ]; then
     alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
-    alias ss='s -l-l'
-    alias sss='ss -l-A'
+    alias ss='s -l-lA'
     export GIT_PAGER=$show_py
-else
-    _have colordiff && alias diff=$NAME
 fi
 
 if _have ag; then
@@ -133,7 +125,7 @@ _have kwrite gedit nano && export VISUAL=$LOCATION
 _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
 _have lesspipe && eval "$($NAME)"
 
-# Remove bright colors (has to come after `dircolors`).
+# Remove bright colors (must come after `dircolors`).
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
 [ -z "$DISPLAY" ] && export DISPLAY=:0.0
