@@ -53,11 +53,11 @@ class Lint (setupext.cmd.Command):
             self.announce('skipping "%s" (dry run)' % command_line)
             return
 
-        sys_argv = sys.argv
+        sys_argv = sys.argv[:]
 
         try:
             sys.argv = argv
             self.announce('running "%s"' % command_line)
             pep8._main()
         finally:
-            sys.argv = sys_argv
+            sys.argv[:] = sys_argv
