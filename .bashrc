@@ -82,11 +82,8 @@ alias ..='c ..'
 
 _have nano && export EDITOR=$LOCATION
 
-export BUSTER_TEST_OPT='-C dim'
-export HARNESS_COLOR=1
 export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
-export PATH="$PATH:node_modules/.bin"
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
 
