@@ -1,10 +1,6 @@
 #!/bin/bash
 
-case "$-" in
-*i*)
-    INTERACTIVE=x
-;;
-esac
+case "$-" in *i*) INTERACTIVE=x;; esac
 
 _warn() {
     [ -n "$INTERACTIVE" ] && echo "* $@" >&2
@@ -39,13 +35,13 @@ _have() {
 if [ -n "$INTERACTIVE" ]; then
     # Disable XON/XOFF flow control to allow: bind -q forward-search-history
     stty -ixon
-    
+
     bind 'set bind-tty-special-chars Off'
     bind 'set completion-ignore-case On'
     bind 'set expand-tilde Off'
     bind 'set mark-symlinked-directories On'
     bind 'set visible-stats On'
-    
+
     bind '"\e[1;5C": forward-word'                  # Ctrl + Right
     bind '"\e[1;5D": backward-word'                 # Ctrl + Left
     bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
