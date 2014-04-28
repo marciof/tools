@@ -206,20 +206,12 @@ _virtual_env_ps1() {
     [ -n "$VIRTUAL_ENV" ] && echo -e ":$Purple$(basename $VIRTUAL_ENV)$Color_Off"
 }
 
-export PS1="$ps1_user_host\$(_virtual_env_ps1):\[$BBlue\]\w\n\\$\[$Color_Off\] "
-
-iwait() {
-    for PID in "$@"; do
-        while kill -0 "$PID" 2> /dev/null; do
-            sleep 0.5
-        done
-    done
-}
-
 for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
     source "$bashrc_child"
     _warn "Loaded: $bashrc_child"
 done
+
+export PS1="$ps1_user_host\$(_virtual_env_ps1):\[$BBlue\]\w\n\\$\[$Color_Off\] "
 
 unset show_py
 unset ssh_add_auto_start
