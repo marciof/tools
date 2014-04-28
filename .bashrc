@@ -100,8 +100,6 @@ _have lesspipe && eval "$($NAME)"
 # Remove bright colors (must come after `dircolors`).
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
 
-[ -z "$DISPLAY" ] && export DISPLAY=:0.0
-
 ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
 
 if [ -n "$KDE_FULL_SESSION" -a ! -e "$ssh_add_auto_start" ]; then
