@@ -32,6 +32,39 @@ _have() {
     return 1
 }
 
+shopt -s cdspell checkwinsize histappend
+
+alias c=cd
+alias j=jobs
+alias l='ls -CFXh --color=auto --group-directories-first'
+alias ll='l -lA'
+alias -- -='c -'
+alias ..='c ..'
+
+_have dircolors && eval "$($NAME -b)"
+_have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
+_have lesspipe && eval "$($NAME)"
+
+export HISTCONTROL=ignoreboth
+export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
+export PYTHONDONTWRITEBYTECODE=x
+export VIRTUAL_ENV_DISABLE_PROMPT=x
+
+# Remove bright colors (must come after `dircolors`).
+export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
+
+# https://wiki.archlinux.org/index.php/Color_Bash_Prompt
+Color_Off='\e[0m'
+Yellow='\e[0;33m'
+Purple='\e[0;35m'
+BRed='\e[1;31m'
+BBlue='\e[1;34m'
+UGreen='\e[4;32m'
+
+ps1_user_host='\u@\h'
+show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
+ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
+
 if [ -n "$INTERACTIVE" ]; then
     # Disable XON/XOFF flow control to allow: bind -q forward-search-history
     stty -ixon
@@ -48,31 +81,6 @@ if [ -n "$INTERACTIVE" ]; then
     bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
     bind '"\e[2~": backward-kill-word'              # Insert
 fi
-
-shopt -s cdspell checkwinsize histappend
-
-alias c=cd
-alias j=jobs
-alias l='ls -CFXh --color=auto --group-directories-first'
-alias ll='l -lA'
-alias -- -='c -'
-alias ..='c ..'
-
-export HISTCONTROL=ignoreboth
-export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
-export PYTHONDONTWRITEBYTECODE=x
-export VIRTUAL_ENV_DISABLE_PROMPT=x
-
-# https://wiki.archlinux.org/index.php/Color_Bash_Prompt
-Color_Off='\e[0m'
-Yellow='\e[0;33m'
-Purple='\e[0;35m'
-BRed='\e[1;31m'
-BBlue='\e[1;34m'
-UGreen='\e[4;32m'
-
-ps1_user_host='\u@\h'
-show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 
 if [ -e "$show_py" ]; then
     alias s="\"$show_py\" -l-CFXh -l--color=always -l--group-directories-first"
@@ -91,17 +99,6 @@ if _have ag; then
     unset ag_pager
 fi
 
-unset show_py
-
-_have dircolors && eval "$($NAME -b)"
-_have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
-_have lesspipe && eval "$($NAME)"
-
-# Remove bright colors (must come after `dircolors`).
-export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
-
-ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
-
 if [ -n "$KDE_FULL_SESSION" -a ! -e "$ssh_add_auto_start" ]; then
     cat << 'SCRIPT' > "$ssh_add_auto_start"
 #!/bin/sh
@@ -109,8 +106,6 @@ ssh-add < /dev/null 2> /dev/null
 SCRIPT
     chmod +x "$ssh_add_auto_start"
 fi
-
-unset ssh_add_auto_start
 
 # Dates in ISO 8601 format.
 if locale -a 2> /dev/null | grep -q '^en_DK'; then
@@ -217,10 +212,7 @@ _virtual_env_ps1() {
     [ -n "$VIRTUAL_ENV" ] && echo -e ":$Purple$(basename $VIRTUAL_ENV)$Color_Off"
 }
 
-ps1_user_host="$ps1_user_host\$(_virtual_env_ps1)"
-
-export PS1="$ps1_user_host:\[$BBlue\]\w\n\\$\[$Color_Off\] "
-unset ps1_user_host
+export PS1="$ps1_user_host\$(_virtual_env_ps1):\[$BBlue\]\w\n\\$\[$Color_Off\] "
 
 iwait() {
     for PID in "$@"; do
@@ -235,4 +227,7 @@ for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
     _warn "Loaded: $bashrc_child"
 done
 
+unset show_py
+unset ssh_add_auto_start
 unset bashrc_child
+unset ps1_user_host
