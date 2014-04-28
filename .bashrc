@@ -185,11 +185,6 @@ if _have git; then
     _set_git_config user.email
     _set_git_config user.name
     
-    _set_git_config alias.pub '!bash -c '"'"'\
-        COMMAND="git push origin HEAD:refs/heads/$0 ${@:1}" \
-        && echo $COMMAND \
-        && $COMMAND'"'"
-
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
