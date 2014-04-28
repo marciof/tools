@@ -126,12 +126,6 @@ if [ "$TERM" = "xterm" ]; then
         echo -ne "\e]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
 fi
 
-if [ "$(stat --format=%i /)" != '2' ]; then
-    ps1_user_host="($ps1_user_host)"
-    export CHROOT=x
-    _warn "chroot: $(uname -srmo)"
-fi
-
 _jobs_nr_ps1() {
     local jobs=$(jobs | wc -l)
     [ $jobs -gt 0 ] && echo -e ":$BRed$jobs$Color_Off"
