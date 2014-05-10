@@ -4,21 +4,13 @@ python:
   - 2.7
   - 3.3
 install: |
-  pip install --allow-all-external -r docs/requirements.txt coverage docutils pep8 python-coveralls six
-  if python -c "from sys import *; exit(version_info >= (3,))"
-  then
-    pip install --allow-all-external --pre line_profiler
-  fi
-  if python -c "from sys import *; exit(version_info >= (2, 7))"
-  then
-    pip install --allow-all-external 'argparse>=1.2.1' unittest2
-  fi
+  pip install --allow-all-external -r docs/requirements.txt python-coveralls
 script: |
   python setup.py lint
-  if python -c "from sys import *; exit(version_info < (3,))"
+  if python -c "from sys import *; exit(version_info < (2, 7))"
   then
-    coverage run --branch --module --source=argf unittest discover
+    python setup.py coverage
   else
-    scons test-coverage
+    python setup.py test
   fi
 after_success: coveralls
