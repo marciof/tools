@@ -25,11 +25,10 @@ Package = collections.namedtuple('Package', [
 
 def get_package():
     (name, docstring, version) = setupext.extract_details('argf')
-
     docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
-    license_file = os.path.join(docs_dir, 'LICENSE.txt')
-    readme_file = os.path.join(docs_dir, 'README.rst')
-    copyright_line = setupext.read_text(license_file, lambda f: f.readline())
+
+    copyright_line = setupext.read_text(os.path.join(docs_dir, 'LICENSE.txt'),
+        read = lambda f: f.readline())
 
     [(author, email)] = re.findall(', (.+) <([^<>]+)>$', copyright_line)
     [copyright] = re.findall(r'\(c\) (.+) <', copyright_line)
@@ -40,7 +39,7 @@ def get_package():
         author = author,
         email = email,
         docstring = docstring,
-        readme = readme_file,
+        readme = os.path.join(docs_dir, 'README.rst'),
         copyright = copyright)
 
 

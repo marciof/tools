@@ -1,17 +1,23 @@
-- Add "setup.py" so it can be installed directly from source via pip (and avoid SCons?).
+- Do like SetupDocs to implement plug-ins that add commands to setuptools (need command to build docs).
+- Make `setupext` use `setuptools` directly.
+- Move docs requirements to setup.py?
+- Document and test `setupext`.
+- Extend setuptools "clean" command?
+- Add "setup.py" (simplify it) so it can be installed directly from source via pip (and avoid SCons?).
 - Add "features" variable for feature detection backwards compatibility?
+- Fix tests calling `unittest.main` (remove?).
+- Do tests need to be a package? Somewhat ugly.
+- Lint *all* Python files (e.g. "docs" folder is missing).
 - How to exit with a custom user defined error message?
 - Abstract more how things are processed? E.g. parameter names to options, etc.
-- Improve README as home page.
-- Move docs requirements to setup.py?
+- Improve README to be usable as a web page.
 - How to document parameterized types? tuple[(None, six.text_type), list[Argument]]
 - Put documentation in http://pythonhosted.org/ and redirect to Read The Docs.
 - Better to name CHANGELOG? Append contents to "long_description"?
 - List alternative projects? E.g. argh, argfarce, argtools, argdeclare.
 - Use Attest for testing? Nose? Tox?
 - Review? http://thechangelog.com/top-ten-reasons-why-i-wont-use-your-open-source-project/
-- Somehow integrate profiling in tests? Fail if it goes over X seconds?
+- Somehow integrate profiling in tests? Benchmark every change to find performance regressions.
 - Show off Travis CI and Coveralls badges?
 - Use more code check tools? flake8, pyflakes, pylint, pychecker?
-- Test on Python 3.4. as well, <https://github.com/travis-ci/travis-ci/issues/1989>.
-- Document and test `setupext`.
+- Support Python 3 type annotations?
