@@ -15,7 +15,7 @@
 - Put documentation in http://pythonhosted.org/ and redirect to Read The Docs.
 - Better to name CHANGELOG? Append contents to "long_description"?
 - List alternative projects? E.g. argh, argfarce, argtools, argdeclare.
-- Use Attest for testing? Nose? Tox?
+- Use Attest for testing? Nose? Tox? Pytest?
 - Review? http://thechangelog.com/top-ten-reasons-why-i-wont-use-your-open-source-project/
 - Somehow integrate profiling in tests? Benchmark every change to find performance regressions.
 - Show off Travis CI and Coveralls badges?
