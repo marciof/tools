@@ -4,7 +4,9 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import collections
+import ast
+import codecs
+import imp
 import os.path
 import re
 import sys
@@ -13,38 +15,56 @@ import sys
 import setuptools
 
 # Internal:
-import setupext
 import setupext.cmd.coverage
 import setupext.cmd.pep8
 import setupext.cmd.travis_ci
 
 
-Package = collections.namedtuple('Package', [
-    'name', 'version', 'author', 'email', 'docstring', 'readme', 'copyright'])
+def _parse_distribution():
+    (name, docstring, version) = _parse_module('argf')
+    docs_path = os.path.join(os.path.dirname(__file__), 'docs')
+    license_path = os.path.join(docs_path, 'LICENSE.txt')
 
-
-def get_package():
-    (name, docstring, version) = setupext.extract_details('argf')
-    docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
-
-    copyright_line = setupext.read_text(os.path.join(docs_dir, 'LICENSE.txt'),
-        read = lambda f: f.readline())
+    with codecs.open(license_path, encoding = 'UTF-8') as license:
+        copyright_line = license.readline()
 
     [(author, email)] = re.findall(', (.+) <([^<>]+)>$', copyright_line)
     [copyright] = re.findall(r'\(c\) (.+) <', copyright_line)
 
-    return Package(
-        name = name,
-        version = '%d.%d.%d' % version,
-        author = author,
-        email = email,
-        docstring = docstring,
-        readme = os.path.join(docs_dir, 'README.rst'),
-        copyright = copyright)
+    return (
+        name,
+        '%d.%d.%d' % version,
+        author,
+        email,
+        docstring,
+        os.path.join(docs_path, 'README.rst'),
+        copyright)
+
+
+def _parse_module(name):
+    docstring = version = None
+    module = imp.find_module(name)[0]
+
+    # Avoid having to import the module.
+    with module:
+        for node in ast.walk(ast.parse(module.read())):
+            if isinstance(node, ast.Module):
+                docstring = ast.get_docstring(node)
+            elif isinstance(node, ast.Assign):
+                if any(target.id == '__version__' for target in node.targets):
+                    version = ast.literal_eval(node.value)
+
+            if None not in (docstring, version):
+                return (name, docstring, version)
+
+    raise Exception('failed to extract module information: ' + name)
+
+
+(name, version, author, email, docstring, readme, copyright) \
+    = _parse_distribution()
 
 
 if __name__ == '__main__':
-    package = get_package()
     is_pre_py27 = sys.version_info < (2, 7)
 
     requirements = {
@@ -58,22 +78,27 @@ if __name__ == '__main__':
         requirements['argparse'] = '>=1.2.1'
 
     setuptools.setup(
-        name = package.name,
-        version = package.version,
-        py_modules = [package.name],
-        test_suite = 'tests',
-
-        author = package.author,
-        author_email = package.email,
-        url = 'http://pypi.python.org/pypi/' + package.name,
-        description = package.docstring.strip().splitlines()[0],
-        long_description = setupext.read_text(package.readme),
+        name = name,
+        version = version,
+        py_modules = [name],
+        author = author,
+        author_email = email,
+        url = 'http://pypi.python.org/pypi/' + name,
+        description = docstring.strip().splitlines()[0],
+        long_description = codecs.open(readme, encoding = 'UTF-8').read(),
         license = 'MIT',
         platforms = 'any',
 
+        test_suite = 'tests',
         tests_require = 'unittest2' if is_pre_py27 else [],
-        install_requires = setupext.to_install_requires(requirements),
-        requires = setupext.to_requires(requirements),
+
+        install_requires = [
+            name if version is None else name + version
+            for name, version in requirements.items()],
+
+        requires = [
+            name if version is None else '%s(%s)' % (name, version)
+            for name, version in requirements.items()],
 
         cmdclass = {
             'coverage': setupext.cmd.coverage.Measure,

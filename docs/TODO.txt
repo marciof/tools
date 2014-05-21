@@ -1,8 +1,7 @@
 - Do like SetupDocs to implement plug-ins that add commands to setuptools (need command to build docs).
 - Move docs requirements to setup.py?
-- Document and test `setupext`.
 - Extend setuptools "clean" command?
-- Add "setup.py" (simplify it) so it can be installed directly from source via pip.
+- Use "setup.py" so that the package can be installed directly from source via pip.
 - Add "features" variable for feature detection backwards compatibility?
 - Fix tests calling `unittest.main` (remove?).
 - Do tests need to be a package? Somewhat ugly.

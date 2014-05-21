@@ -27,17 +27,15 @@ else:
 
 
 # Internal:
-from setup import get_package
+import setup
 
 
-package = get_package()
-
-project = package.name
-version = package.version
-release = package.version
+project = setup.name
+version = setup.version
+release = setup.version
 master_doc = 'index'
 exclude_patterns = ['README.*']
-copyright = package.copyright
+copyright = setup.copyright
 
 extensions = [
     'sphinx.ext.autodoc',
