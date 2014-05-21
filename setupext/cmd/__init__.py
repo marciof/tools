@@ -4,7 +4,9 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import abc
-import distutils.cmd
+
+# External:
+import setuptools
 
 
 class _CommandMeta (abc.ABCMeta):
@@ -33,7 +35,7 @@ except SyntaxError:
         __metaclass__ = _CommandMeta
 
 
-class Command (distutils.cmd.Command, _Command):
+class Command (setuptools.Command, _Command):
     user_options = []
 
 

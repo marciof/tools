@@ -1,5 +1,4 @@
 - Do like SetupDocs to implement plug-ins that add commands to setuptools (need command to build docs).
-- Make `setupext` use `setuptools` directly.
 - Move docs requirements to setup.py?
 - Document and test `setupext`.
 - Extend setuptools "clean" command?
@@ -21,3 +20,4 @@
 - Show off Travis CI and Coveralls badges?
 - Use more code check tools? flake8, pyflakes, pylint, pychecker?
 - Support Python 3 type annotations?
+- Try to ignore less PEP8 rules.
