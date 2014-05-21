@@ -1,3 +1,0 @@
-[submodule "site_scons"]
-	path = site_scons
-	url = https://github.com/marciof/site_scons.git

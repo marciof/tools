@@ -1,0 +1,4 @@
+- Remove hard-coded options that have suitable defaults (e.g. PyUnit root).
+- Fix dependencies and generated files so that SCons cleaning works.
+- Document.
+- Test.
