@@ -246,6 +246,15 @@ class TestPositionalArguments (unittest.TestCase):
             start(main)
 
 
+class TestVersion (unittest.TestCase):
+    def test_tuple(self):
+        self.assertIsInstance(argf.__version__, tuple)
+        self.assertGreaterEqual(len(argf.__version__), 1)
+
+        for part in argf.__version__:
+            self.assertIsInstance(part, int)
+
+
 if __name__ == '__main__':
     # Standard:
     import os.path

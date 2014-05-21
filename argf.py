@@ -42,6 +42,8 @@ six = None # lazy
 
 
 __all__ = ['start']
+
+# TODO: Make `__version__` a string and add a `version_info` tuple?
 __version__ = (0, 1, 0) # SemVer
 
 

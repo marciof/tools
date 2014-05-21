@@ -1,4 +1,3 @@
-- Make `version_info` a tuple and `__version__` a string?
 - Use "setup.py" so that the package can be installed directly from source via pip.
 - Add "features" variable for feature detection backwards compatibility?
 - Fix tests calling `unittest.main` (remove?).
