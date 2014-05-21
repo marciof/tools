@@ -15,9 +15,9 @@ import sys
 import setuptools
 
 # Internal:
-import setupext.cmd.coverage
-import setupext.cmd.pep8
-import setupext.cmd.travis_ci
+import coverage_cmd
+import pep8_cmd
+import travis_ci_cmd
 
 
 def _parse_distribution():
@@ -77,6 +77,7 @@ if __name__ == '__main__':
         # creating the help option.
         requirements['argparse'] = '>=1.2.1'
 
+    # TODO: Specify documentation requirements in order to have build commands?
     setuptools.setup(
         name = name,
         version = version,
@@ -101,10 +102,10 @@ if __name__ == '__main__':
             for name, version in requirements.items()],
 
         cmdclass = {
-            'coverage': setupext.cmd.coverage.Measure,
-            'coverage_report': setupext.cmd.coverage.Report,
-            'lint': setupext.cmd.pep8.Lint,
-            'travis_lint': setupext.cmd.travis_ci.Lint,
+            'coverage': coverage_cmd.Measure,
+            'coverage_report': coverage_cmd.Report,
+            'lint': pep8_cmd.Lint,
+            'travis_lint': travis_ci_cmd.Lint,
         },
 
         classifiers = [

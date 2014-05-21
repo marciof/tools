@@ -1,23 +1,23 @@
 # -*- coding: UTF-8 -*-
 
+# TODO: Convert to a `setuptools` plug-in like `SetupDocs`.
+
 
 # Standard:
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import absolute_import, division
 import glob
 import itertools
 import sys
 
 # External:
 import pkg_resources
-
-# Internal:
-import setupext.cmd
+import setuptools
 
 
 _MODULE = 'pep8'
 
 
-class Lint (setupext.cmd.Command):
+class Lint (setuptools.Command):
     description = 'lints Python files via `%s`' % _MODULE
 
     user_options = [
@@ -25,12 +25,6 @@ class Lint (setupext.cmd.Command):
         ('include=', 'i', 'paths to lint'),
         ('separator=', 's', 'path separator (comma by default)'),
     ]
-
-
-    def initialize_options(self):
-        self.glob = False
-        self.include = None
-        self.separator = ','
 
 
     def finalize_options(self):
@@ -47,6 +41,12 @@ class Lint (setupext.cmd.Command):
 
         if not self.dry_run:
             self.distribution.fetch_build_eggs(_MODULE)
+
+
+    def initialize_options(self):
+        self.glob = False
+        self.include = None
+        self.separator = ','
 
 
     def run(self):

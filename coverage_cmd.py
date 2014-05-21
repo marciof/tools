@@ -1,21 +1,21 @@
 # -*- coding: UTF-8 -*-
 
+# TODO: Convert to a `setuptools` plug-in like `SetupDocs`.
+
 
 # Standard:
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import absolute_import, division
 import distutils.errors
 
 # External:
 import pkg_resources
-
-# Internal:
-import setupext.cmd
+import setuptools
 
 
 _MODULE = 'coverage'
 
 
-class Measure (setupext.cmd.Command):
+class Measure (setuptools.Command):
     description = 'measure code coverage via `%s`' % _MODULE
 
     user_options = [
@@ -27,16 +27,6 @@ class Measure (setupext.cmd.Command):
         ('source=', 's', 'pass the `--source` command line option'),
         ('test-requires', 't', 'require test dependencies'),
     ]
-
-
-    def initialize_options(self):
-        self.args = None
-        self.branch = False
-        self.input = None
-        self.module = False
-        self.separator = ' '
-        self.source = None
-        self.test_requires = False
 
 
     def finalize_options(self):
@@ -58,6 +48,16 @@ class Measure (setupext.cmd.Command):
             if self.test_requires and self.distribution.tests_require:
                 self.distribution.fetch_build_eggs(
                     self.distribution.tests_require)
+
+
+    def initialize_options(self):
+        self.args = None
+        self.branch = False
+        self.input = None
+        self.module = False
+        self.separator = ' '
+        self.source = None
+        self.test_requires = False
 
 
     def run(self):
@@ -86,7 +86,7 @@ class Measure (setupext.cmd.Command):
             script(argv)
 
 
-class Report (setupext.cmd.Command):
+class Report (setuptools.Command):
     description = 'report code coverage via `%s`' % _MODULE
 
     user_options = [
@@ -95,14 +95,14 @@ class Report (setupext.cmd.Command):
     ]
 
 
-    def initialize_options(self):
-        self.fail_under = 0
-        self.path = None
-
-
     def finalize_options(self):
         if not self.dry_run:
             self.distribution.fetch_build_eggs(_MODULE)
+
+
+    def initialize_options(self):
+        self.fail_under = 0
+        self.path = None
 
 
     def run(self):

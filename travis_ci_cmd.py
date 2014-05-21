@@ -1,13 +1,15 @@
 # -*- coding: UTF-8 -*-
 
+# TODO: Convert to a `setuptools` plug-in like `SetupDocs`.
+
 
 # Standard:
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import absolute_import, division
 import pipes
 import shlex
 
-# Internal:
-import setupext.cmd
+# External:
+import setuptools
 
 
 try:
@@ -16,8 +18,17 @@ except AttributeError:
     _quote_shell_arg = shlex.quote
 
 
-class Lint (setupext.cmd.Command):
+class Lint (setuptools.Command):
     description = 'lints Travis CI config via `Travis::Yaml`'
+    user_options = []
+
+
+    def finalize_options(self):
+        pass
+
+
+    def initialize_options(self):
+        pass
 
 
     def run(self):
