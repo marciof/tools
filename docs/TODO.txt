@@ -1,5 +1,7 @@
-- Use "setup.py" so that the package can be installed directly from source via pip.
+- Add a documentation setuptools command.
+- Make sure "__version__" is publicly documented.
 - Add "features" variable for feature detection backwards compatibility?
+- Test "setup.py" for installation via PyPI and via source.
 - Fix tests calling `unittest.main` (remove?).
 - Do tests need to be a package? Somewhat ugly.
 - Lint *all* Python files (e.g. "docs" folder is missing).

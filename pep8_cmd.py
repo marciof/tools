@@ -1,7 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-# TODO: Convert to a `setuptools` plug-in like `SetupDocs`.
-
 
 # Standard:
 from __future__ import absolute_import, division
@@ -17,7 +15,7 @@ import setuptools
 _MODULE = 'pep8'
 
 
-class Lint (setuptools.Command):
+class Lint (setuptools.Command, object):
     description = 'lints Python files via `%s`' % _MODULE
 
     user_options = [

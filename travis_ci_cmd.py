@@ -1,7 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-# TODO: Convert to a `setuptools` plug-in like `SetupDocs`.
-
 
 # Standard:
 from __future__ import absolute_import, division
@@ -18,7 +16,7 @@ except AttributeError:
     _quote_shell_arg = shlex.quote
 
 
-class Lint (setuptools.Command):
+class Lint (setuptools.Command, object):
     description = 'lints Travis CI config via `Travis::Yaml`'
     user_options = []
 

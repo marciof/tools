@@ -23,10 +23,14 @@ import travis_ci_cmd
 def _parse_distribution():
     (name, docstring, version) = _parse_module('argf')
     docs_path = os.path.join(os.path.dirname(__file__), 'docs')
+    doc_reqs_path = os.path.join(docs_path, 'requirements.txt')
     license_path = os.path.join(docs_path, 'LICENSE.txt')
 
-    with codecs.open(license_path, encoding = 'UTF-8') as license:
-        copyright_line = license.readline()
+    with codecs.open(license_path, encoding = 'UTF-8') as license_file:
+        copyright_line = license_file.readline()
+
+    with codecs.open(doc_reqs_path, encoding = 'UTF-8') as doc_reqs_file:
+        doc_reqs = [l.strip() for l in doc_reqs_file if not l.startswith('#')]
 
     [(author, email)] = re.findall(', (.+) <([^<>]+)>$', copyright_line)
     [copyright] = re.findall(r'\(c\) (.+) <', copyright_line)
@@ -37,6 +41,7 @@ def _parse_distribution():
         author,
         email,
         docstring,
+        doc_reqs,
         os.path.join(docs_path, 'README.rst'),
         copyright)
 
@@ -60,7 +65,7 @@ def _parse_module(name):
     raise Exception('failed to extract module information: ' + name)
 
 
-(name, version, author, email, docstring, readme, copyright) \
+(name, version, author, email, docstring, doc_reqs, readme, copyright) \
     = _parse_distribution()
 
 
@@ -77,7 +82,6 @@ if __name__ == '__main__':
         # creating the help option.
         requirements['argparse'] = '>=1.2.1'
 
-    # TODO: Specify documentation requirements in order to have build commands?
     setuptools.setup(
         name = name,
         version = version,
@@ -94,13 +98,14 @@ if __name__ == '__main__':
         tests_require = 'unittest2' if is_pre_py27 else [],
 
         install_requires = [
-            name if version is None else name + version
+            name if version is None else '%s%s' % (name, version)
             for name, version in requirements.items()],
 
         requires = [
             name if version is None else '%s(%s)' % (name, version)
             for name, version in requirements.items()],
 
+        # TODO: Convert custom commands to plug-ins for `setup_requires`.
         cmdclass = {
             'coverage': coverage_cmd.Measure,
             'coverage_report': coverage_cmd.Report,

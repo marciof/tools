@@ -1,7 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-# TODO: Convert to a `setuptools` plug-in like `SetupDocs`.
-
 
 # Standard:
 from __future__ import absolute_import, division
@@ -15,7 +13,7 @@ import setuptools
 _MODULE = 'coverage'
 
 
-class Measure (setuptools.Command):
+class Measure (setuptools.Command, object):
     description = 'measure code coverage via `%s`' % _MODULE
 
     user_options = [
@@ -86,7 +84,7 @@ class Measure (setuptools.Command):
             script(argv)
 
 
-class Report (setuptools.Command):
+class Report (setuptools.Command, object):
     description = 'report code coverage via `%s`' % _MODULE
 
     user_options = [
