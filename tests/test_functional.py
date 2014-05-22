@@ -46,6 +46,20 @@ def start(*args, **kwargs):
     return argf.start(*args, soft_errors = False, **kwargs)
 
 
+class TestDistribution (unittest.TestCase):
+    def test_features(self):
+        self.assertIsInstance(argf.__features__, frozenset)
+        self.assertEquals(argf.__features__, frozenset())
+
+
+    def test_version_tuple(self):
+        self.assertIsInstance(argf.__version__, tuple)
+        self.assertGreaterEqual(len(argf.__version__), 1)
+
+        for part in argf.__version__:
+            self.assertIsInstance(part, int)
+
+
 class TestArguments (unittest.TestCase):
     def test_argument_help(self):
         def main(length, user_name = 'guest'):
@@ -244,15 +258,6 @@ class TestPositionalArguments (unittest.TestCase):
 
         with self.assertRaises(Error):
             start(main)
-
-
-class TestVersion (unittest.TestCase):
-    def test_tuple(self):
-        self.assertIsInstance(argf.__version__, tuple)
-        self.assertGreaterEqual(len(argf.__version__), 1)
-
-        for part in argf.__version__:
-            self.assertIsInstance(part, int)
 
 
 if __name__ == '__main__':

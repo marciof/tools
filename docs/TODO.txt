@@ -1,6 +1,5 @@
 - Add a documentation setuptools command.
-- Make sure "__version__" is publicly documented.
-- Add "features" variable for feature detection backwards compatibility?
+- Make sure "__version__" and "__features__" are publicly documented.
 - Test "setup.py" for installation via PyPI and via source.
 - Fix tests calling `unittest.main` (remove?).
 - Do tests need to be a package? Somewhat ugly.

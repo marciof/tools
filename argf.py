@@ -43,8 +43,11 @@ six = None # lazy
 
 __all__ = ['start']
 
+#: Supported features, as Unicode strings, for backwards compatibility.
+__features__ = frozenset()
+
 # TODO: Make `__version__` a string and add a `version_info` tuple?
-__version__ = (0, 1, 0) # SemVer
+__version__ = (0, 1, 0)
 
 
 # TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?
@@ -409,13 +412,8 @@ def load_type(name, at_module):
 
 
 # TODO: Add a version argument from `__version__`?
-# TODO: Add parameter to allow modification of the parser instance?
 # TODO: Use a better defaults help formatter?
-def start(main,
-        args = None,
-        arg_parser = None,
-        soft_errors = True):
-
+def start(main, args = None, arg_parser = None, soft_errors = True):
     """
     Calls a function with arguments parsed from command-line arguments via
     :py:mod:`argparse`.
