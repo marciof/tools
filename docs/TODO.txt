@@ -1,3 +1,4 @@
+- Create a "scripts" or "etc" folder and put setuptools commands there?
 - Add a documentation setuptools command.
 - Make sure "__version__" and "__features__" are publicly documented.
 - Test "setup.py" for installation via PyPI and via source.
@@ -18,3 +19,4 @@
 - Use more code check tools? flake8, pyflakes, pylint, pychecker?
 - Support Python 3 type annotations?
 - Try to ignore less PEP8 rules.
+- Use "psutil" to write tests that profile memory usage?
