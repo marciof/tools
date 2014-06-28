@@ -13,13 +13,13 @@ import os.path
 import sys
 
 
-# Read The Docs doesn't use SCons which would set up the environment otherwise.
+# Setup the environment for Read The Docs:
 root = os.path.join(os.path.dirname(__file__), os.path.pardir)
 
-# Help Sphinx find the setup module.
+# - Help Sphinx find the setup module.
 sys.path.append(root)
 
-# Help the `program-output` directive find the main module.
+#  Help the `program-output` directive find the main module.
 if 'PYTHONPATH' in os.environ:
     os.environ['PYTHONPATH'] += os.pathsep + root
 else:

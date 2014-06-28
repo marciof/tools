@@ -1,4 +1,6 @@
-- Create a "scripts" or "etc" folder and put setuptools commands there?
+- Convert custom commands to plug-ins for `setup_requires`
+  https://pypi.python.org/pypi/SetupDocs
+  Or create a "scripts" or "etc" folder and put setuptools commands there?
 - Add a documentation setuptools command.
 - Make sure "__version__" and "__features__" are publicly documented.
 - Test "setup.py" for installation via PyPI and via source.

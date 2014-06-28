@@ -105,7 +105,6 @@ if __name__ == '__main__':
             name if version is None else '%s(%s)' % (name, version)
             for name, version in requirements.items()],
 
-        # TODO: Convert custom commands to plug-ins for `setup_requires`.
         cmdclass = {
             'coverage': coverage_cmd.Measure,
             'coverage_report': coverage_cmd.Report,
