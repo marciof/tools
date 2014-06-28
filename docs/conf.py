@@ -27,15 +27,15 @@ else:
 
 
 # Internal:
-import setup
+import setup as distribution # Avoid clashing with Sphinx options.
 
 
-project = setup.name
-version = setup.version
-release = setup.version
+project = distribution.name
+version = distribution.version
+release = distribution.version
 master_doc = 'index'
 exclude_patterns = ['README.*']
-copyright = setup.copyright
+copyright = distribution.copyright
 
 extensions = [
     'sphinx.ext.autodoc',

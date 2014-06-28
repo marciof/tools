@@ -1,7 +1,8 @@
 - Convert custom commands to plug-ins for `setup_requires`
   https://pypi.python.org/pypi/SetupDocs
   Or create a "scripts" or "etc" folder and put setuptools commands there?
-- Add a documentation setuptools command.
+- Add a documentation setuptools command (the example script will be run, the command needs all `install_requires`, remove `setup_requires`?).
+  http://stackoverflow.com/a/22273180/753501
 - Make sure "__version__" and "__features__" are publicly documented.
 - Test "setup.py" for installation via PyPI and via source.
 - Fix tests calling `unittest.main` (remove?).

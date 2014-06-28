@@ -96,6 +96,7 @@ if __name__ == '__main__':
 
         test_suite = 'tests',
         tests_require = 'unittest2' if is_pre_py27 else [],
+        setup_requires = doc_reqs,
 
         install_requires = [
             name if version is None else '%s%s' % (name, version)
