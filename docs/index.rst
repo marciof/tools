@@ -2,11 +2,14 @@ Description
 ===========
 
 .. automodule:: argf
+    :members:
+    :special-members:
 
-Usage
-=====
+    Usage
+    =====
 
-.. autofunction:: argf.start
+.. autodata:: __features__
+.. autodata:: __version__
 
 Example
 =======

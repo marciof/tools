@@ -1,5 +1,4 @@
-- Change module level constants in commands to class level?
-- Make sure "__version__" and "__features__" are publicly documented.
+- Why isn't "__version__" and "__features__" automatically autodoc'ed?
 - Test "setup.py" for installation via PyPI and via source.
 - Fix tests calling `unittest.main` (remove?).
 - Do tests need to be a package? Somewhat ugly.

@@ -41,12 +41,13 @@ docutils = None # lazy
 six = None # lazy
 
 
-__all__ = ['start']
+__all__ = ['start', '__features__', '__version__']
 
 #: Supported features, as Unicode strings, for backwards compatibility.
 __features__ = frozenset()
 
 # TODO: Make `__version__` a string and add a `version_info` tuple?
+#:
 __version__ = (0, 1, 0)
 
 
