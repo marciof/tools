@@ -1,10 +1,9 @@
-- Add a documentation setuptools command (the example script will be run, the command needs all `install_requires`, remove `setup_requires`?).
-  http://stackoverflow.com/a/22273180/753501
+- Change module level constants in commands to class level?
 - Make sure "__version__" and "__features__" are publicly documented.
 - Test "setup.py" for installation via PyPI and via source.
 - Fix tests calling `unittest.main` (remove?).
 - Do tests need to be a package? Somewhat ugly.
-- Lint *all* Python files (e.g. "docs" folder is missing).
+- Lint *all* Python files (e.g. "docs" folder is missing, commands).
 - How to exit with a custom user defined error message?
 - Abstract more how things are processed? E.g. parameter names to options, etc.
 - Improve README to be usable as a web page.
