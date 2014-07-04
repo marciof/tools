@@ -14,11 +14,6 @@ import sys
 # External:
 import setuptools
 
-# Internal:
-import coverage_cmd
-import pep8_cmd
-import travis_ci_cmd
-
 
 def _parse_distribution():
     (name, docstring, version) = _parse_module('argf')
@@ -70,6 +65,13 @@ def _parse_module(name):
 
 
 if __name__ == '__main__':
+    sys.path.append('etc')
+
+    # Internal:
+    import coverage_cmd
+    import pep8_cmd
+    import travis_ci_cmd
+
     is_pre_py27 = sys.version_info < (2, 7)
 
     requirements = {
