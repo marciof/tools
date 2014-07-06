@@ -370,7 +370,7 @@ def extract_parameters(function):
     return params
 
 
-# TODO: Support parameterized types? E.g. list<str>
+# TODO: Support parameterized types? E.g. list<int>
 # TODO: Support multiple types for a single argument? E.g. int|unicode
 def load_type(name, at_module):
     """
@@ -413,7 +413,7 @@ def load_type(name, at_module):
 
 
 # TODO: Add a version argument from `__version__`?
-# TODO: Use a better defaults help formatter?
+# TODO: Add option to call `sys.exit()` with the return value? By default?
 def start(main, args = None, arg_parser = None, soft_errors = True):
     """
     Calls a function with arguments parsed from command-line arguments via

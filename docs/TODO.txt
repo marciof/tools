@@ -1,3 +1,4 @@
+- Incorrect module data documentation on RTD? Old Sphinx version?
 - Why isn't "__version__" and "__features__" automatically autodoc'ed?
 - Test "setup.py" for installation via PyPI and via source.
 - Fix tests calling `unittest.main` (remove?).
