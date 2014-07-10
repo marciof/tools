@@ -18,32 +18,33 @@ import argf
 import tests
 
 
-class Error (Exception):
+class ErrorCalled (Exception):
     pass
 
 
-class Help (Exception):
+class PrintHelpCalled (Exception):
     pass
 
 
 class ArgumentParser (argparse.ArgumentParser):
     def error(self, message):
-        raise Error(message)
+        raise ErrorCalled(message)
 
 
     def print_help(self, file = None):
         message = six.StringIO()
         argparse.ArgumentParser.print_help(self, file = message)
-        raise Help(message.getvalue())
+        raise PrintHelpCalled(message.getvalue())
 
 
 def start(*args, **kwargs):
     kwargs.setdefault('args', [])
+    kwargs.setdefault('soft_errors', False)
 
     if 'arg_parser' not in kwargs:
         kwargs['arg_parser'] = ArgumentParser()
 
-    return argf.start(*args, soft_errors = False, **kwargs)
+    return argf.start(*args, **kwargs)
 
 
 class TestDistribution (tests.TestCase):
@@ -69,10 +70,10 @@ class TestArguments (tests.TestCase):
             """
             return user_name
 
-        with self.assertRaisesRegex(Help, r'\bnumber of elements\b'):
+        with self.assertRaisesRegex(PrintHelpCalled, r'\bnumber of elements\b'):
             start(main, args = ['-h'])
 
-        with self.assertRaisesRegex(Help, r'\bfull username\b'):
+        with self.assertRaisesRegex(PrintHelpCalled, r'\bfull username\b'):
             start(main, args = ['-h'])
 
 
@@ -93,7 +94,7 @@ class TestArguments (tests.TestCase):
 
         self.assertEqual(start(main), 123)
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main, args = ['123'])
 
 
@@ -107,17 +108,28 @@ class TestArguments (tests.TestCase):
         def main_without():
             return 321
 
-        with self.assertRaisesRegex(Help, r'\bSample description\.'):
+        with self.assertRaisesRegex(PrintHelpCalled, r'\bSample description\.'):
             start(main_with, args = ['-h'])
 
         with self.assertRaisesRegex(argf.AmbiguousDesc, '.'):
             start(main_with,
                 arg_parser = ArgumentParser(description = 'Duplicate.'))
 
-        with self.assertRaisesRegex(Help, r'\bAlternate\.'):
+        with self.assertRaisesRegex(PrintHelpCalled, r'\bAlternate\.'):
             start(main_without,
                 args = ['-h'],
                 arg_parser = ArgumentParser(description = 'Alternate.'))
+
+
+class TestErrorHandling (tests.TestCase):
+    def test_user_defined_message(self):
+        error_message = 'input must be non-empty'
+
+        def main():
+            raise argf.Error(error_message)
+
+        with self.assertRaisesRegex(ErrorCalled, error_message):
+            start(main, soft_errors = True)
 
 
 class TestOptionalArguments (tests.TestCase):
@@ -129,7 +141,7 @@ class TestOptionalArguments (tests.TestCase):
         self.assertEqual(start(main, args = ['-v']), True)
         self.assertEqual(start(main, args = ['--verbose']), True)
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main, args = ['--verbose', 'False'])
 
 
@@ -137,13 +149,13 @@ class TestOptionalArguments (tests.TestCase):
         def main():
             return 123
 
-        with self.assertRaises(Help):
+        with self.assertRaises(PrintHelpCalled):
             start(main, args = ['-h'])
 
-        with self.assertRaises(Help):
+        with self.assertRaises(PrintHelpCalled):
             start(main, args = ['--help'])
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main,
                 args = ['-h'],
                 arg_parser = ArgumentParser(add_help = False))
@@ -157,7 +169,7 @@ class TestOptionalArguments (tests.TestCase):
         self.assertEqual(start(main, args = ['-l', '321']), 321)
         self.assertEqual(start(main, args = ['--length', '321']), 321)
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main, args = ['--length', 'text'])
 
 
@@ -229,7 +241,7 @@ class TestPositionalArguments (tests.TestCase):
         self.assertEqual(start(main, args = ['x']), True)
         self.assertEqual(start(main, args = ['']), False)
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main)
 
 
@@ -242,10 +254,10 @@ class TestPositionalArguments (tests.TestCase):
 
         self.assertEqual(start(main, args = ['321']), 321)
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main)
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main, args = ['text'])
 
 
@@ -256,5 +268,5 @@ class TestPositionalArguments (tests.TestCase):
         self.assertEqual(start(main, args = ['test']), 'test')
         self.assertEqual(start(main, args = ['123']), '123')
 
-        with self.assertRaises(Error):
+        with self.assertRaises(ErrorCalled):
             start(main)

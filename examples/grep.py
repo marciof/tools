@@ -15,6 +15,9 @@ def main(string, invert = False):
     :param invert: show non-matching lines instead
     """
 
+    if string == '':
+        raise argf.Error('string to search for must be non-empty')
+
     for line in sys.stdin:
         is_match = string in line
 

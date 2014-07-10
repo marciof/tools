@@ -25,6 +25,8 @@ Parameter types are defined by whichever is first available:
 #. Parameter docstring type.
 #. Keyword parameter's default value type, unless it's ``None``.
 #. Default to :py:data:`six.text_type`.
+
+Error messages are taken from instances of :py:class:`Error`.
 """
 
 
@@ -41,7 +43,7 @@ docutils = None # lazy
 six = None # lazy
 
 
-__all__ = ['start', '__features__', '__version__']
+__all__ = ['Error', 'start', '__features__', '__version__']
 
 #: Supported features, as Unicode strings, for backwards compatibility.
 __features__ = frozenset()
@@ -53,7 +55,9 @@ __version__ = (0, 1, 0)
 
 # TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?
 class Error (Exception):
-    pass
+    """
+    Base class for argument handling errors.
+    """
 
 
 class AmbiguousDesc (Error):
@@ -431,8 +435,8 @@ def start(main, args = None, arg_parser = None, soft_errors = True):
     :param arg_parser: user defined argument parser
 
     :type soft_errors: bool
-    :param soft_errors: if ``True``, catches conversion and parsing
-        exceptions and passes them as error messages to
+    :param soft_errors: if ``True``, catches instances of :py:class:`Error`
+        and passes them as error messages to
         :py:meth:`arg_parser.error() <argparse.ArgumentParser.error>`
 
     :return: function's return value
@@ -456,10 +460,10 @@ def start(main, args = None, arg_parser = None, soft_errors = True):
 
         for argument in arguments:
             argument.add_to_parser(arg_parser)
+
+        return main(**vars(arg_parser.parse_args(args=args)))
     except Error as error:
         if soft_errors:
             arg_parser.error(error)
         else:
             raise
-    else:
-        return main(**vars(arg_parser.parse_args(args = args)))

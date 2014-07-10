@@ -13,17 +13,17 @@ import os.path
 import sys
 
 
-# Setup the environment for Read The Docs:
+# Prepare the environment for Sphinx:
 root = os.path.join(os.path.dirname(__file__), os.path.pardir)
 
-# - Help Sphinx find the setup module.
+# - Help it find the setup module.
 sys.path.append(root)
 
-#  Help the `program-output` directive find the main module.
+# - Help the `program-output` directive find the main module and dependencies.
 if 'PYTHONPATH' in os.environ:
-    os.environ['PYTHONPATH'] += os.pathsep + root
+    os.environ['PYTHONPATH'] += os.pathsep + os.pathsep.join(sys.path)
 else:
-    os.environ['PYTHONPATH'] = root
+    os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
 
 
 # Internal:
