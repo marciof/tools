@@ -1,8 +1,6 @@
 - Incorrect module data documentation on RTD? Old Sphinx version?
 - Why isn't "__version__" and "__features__" automatically autodoc'ed?
 - Test "setup.py" for installation via PyPI and via source.
-- Fix tests calling `unittest.main` (remove?).
-- Do tests need to be a package? Somewhat ugly.
 - How to exit with a custom user defined error message?
 - Abstract more how things are processed? E.g. parameter names to options, etc.
 - Improve README to be usable as a web page.

@@ -12,15 +12,15 @@ import six
 
 # Internal:
 import argf
-from tests import unittest
+import tests
 
 
-class ClassForLoadingTest:
+class ClassForTypeLoadingTest:
     class Inner:
         pass
 
 
-class TestArgumentExtraction (unittest.TestCase):
+class TestArgumentExtraction (tests.TestCase):
     def test_compatible_data_types(self):
         def f(length = True):
             """
@@ -137,7 +137,7 @@ class TestArgumentExtraction (unittest.TestCase):
             argf.extract_arguments(data_type)
 
 
-class TestDataTypeLoading (unittest.TestCase):
+class TestDataTypeLoading (tests.TestCase):
     def setUp(self):
         self.module = sys.modules[__name__]
 
@@ -161,14 +161,14 @@ class TestDataTypeLoading (unittest.TestCase):
 
     def test_global(self):
         self.assertIs(
-            argf.load_type('ClassForLoadingTest', self.module),
-            ClassForLoadingTest)
+            argf.load_type('ClassForTypeLoadingTest', self.module),
+            ClassForTypeLoadingTest)
 
 
     def test_inner(self):
         self.assertIs(
-            argf.load_type('ClassForLoadingTest.Inner', self.module),
-            ClassForLoadingTest.Inner)
+            argf.load_type('ClassForTypeLoadingTest.Inner', self.module),
+            ClassForTypeLoadingTest.Inner)
 
 
     def test_invalid(self):
@@ -181,7 +181,7 @@ class TestDataTypeLoading (unittest.TestCase):
             argf.load_type('does_not_exist', self.module)
 
 
-class TestDocumentationExtraction (unittest.TestCase):
+class TestDocumentationExtraction (tests.TestCase):
     def test_ambiguous_param_data_type(self):
         def f():
             """
@@ -333,7 +333,7 @@ class TestDocumentationExtraction (unittest.TestCase):
             (None, {}, {}))
 
 
-class TestParameterExtraction (unittest.TestCase):
+class TestParameterExtraction (tests.TestCase):
     def test_dynamic(self):
         def args(*args):
             pass
@@ -398,10 +398,3 @@ class TestParameterExtraction (unittest.TestCase):
 
             with self.assertRaisesRegex(argf.TupleArg, r'\(x, y\)'):
                 argf.extract_parameters(f)
-
-
-if __name__ == '__main__':
-    # Standard:
-    import os.path
-
-    unittest.main(os.path.splitext(os.path.basename(__file__))[0])

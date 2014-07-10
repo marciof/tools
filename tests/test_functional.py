@@ -15,7 +15,7 @@ import six
 
 # Internal:
 import argf
-from tests import unittest
+import tests
 
 
 class Error (Exception):
@@ -46,7 +46,7 @@ def start(*args, **kwargs):
     return argf.start(*args, soft_errors = False, **kwargs)
 
 
-class TestDistribution (unittest.TestCase):
+class TestDistribution (tests.TestCase):
     def test_features(self):
         self.assertIsInstance(argf.__features__, frozenset)
         self.assertEquals(argf.__features__, frozenset())
@@ -60,7 +60,7 @@ class TestDistribution (unittest.TestCase):
             self.assertIsInstance(part, int)
 
 
-class TestArguments (unittest.TestCase):
+class TestArguments (tests.TestCase):
     def test_argument_help(self):
         def main(length, user_name = 'guest'):
             """
@@ -120,7 +120,7 @@ class TestArguments (unittest.TestCase):
                 arg_parser = ArgumentParser(description = 'Alternate.'))
 
 
-class TestOptionalArguments (unittest.TestCase):
+class TestOptionalArguments (tests.TestCase):
     def test_boolean_argument(self):
         def main(verbose = False):
             return verbose
@@ -218,7 +218,7 @@ class TestOptionalArguments (unittest.TestCase):
         self.assertEqual(start(main, args = ['--user-name', '123']), '123')
 
 
-class TestPositionalArguments (unittest.TestCase):
+class TestPositionalArguments (tests.TestCase):
     def test_boolean_argument(self):
         def main(debug):
             """
@@ -258,10 +258,3 @@ class TestPositionalArguments (unittest.TestCase):
 
         with self.assertRaises(Error):
             start(main)
-
-
-if __name__ == '__main__':
-    # Standard:
-    import os.path
-
-    unittest.main(os.path.splitext(os.path.basename(__file__))[0])
