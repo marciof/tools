@@ -26,7 +26,8 @@ Parameter types are defined by whichever is first available:
 #. Keyword parameter's default value type, unless it's ``None``.
 #. Default to :py:data:`six.text_type`.
 
-Error messages are taken from instances of :py:class:`Error`.
+Error messages are taken from instances of :py:class:`Error` thrown by the
+function and passed as-is to :py:meth:`argparse.ArgumentParser.error`.
 """
 
 
@@ -43,9 +44,10 @@ docutils = None # lazy
 six = None # lazy
 
 
-__all__ = ['Error', 'start', '__features__', '__version__']
+__all__ = ['Error', 'SetupError', 'start', '__features__', '__version__']
 
-#: Supported features, as Unicode strings, for backwards compatibility.
+#: Supported features, as Unicode strings, for backwards compatibility and
+#: to allow feature detection instead of version detection.
 __features__ = frozenset()
 
 # TODO: Make `__version__` a string and add a `version_info` tuple?
@@ -56,58 +58,64 @@ __version__ = (0, 1, 0)
 # TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?
 class Error (Exception):
     """
-    Base class for argument handling errors.
+    Generic argument handling error.
     """
 
 
-class AmbiguousDesc (Error):
+class SetupError (Error):
+    """
+    Initialization error, e.g. parsing or conversion exceptions.
+    """
+
+
+class AmbiguousDesc (SetupError):
     def __str__(self):
         return 'user defined arg parser instance already has a description'
 
 
-class AmbiguousParamDesc (Error):
+class AmbiguousParamDesc (SetupError):
     def __str__(self):
         return 'ambiguous parameter description: %s' % self.args
 
 
-class AmbiguousParamDataType (Error):
+class AmbiguousParamDataType (SetupError):
     def __str__(self):
         return 'ambiguous parameter data type: %s' % self.args
 
 
-class DynamicArgs (Error):
+class DynamicArgs (SetupError):
     def __str__(self):
         return 'varargs and kwargs are not supported'
 
 
-class IncompatibleParamDataTypes (Error):
+class IncompatibleParamDataTypes (SetupError):
     def __str__(self):
         return 'default value and docstring types are not compatible: %s' \
             % self.args
 
 
-class UndefinedParamDataType (Error):
+class UndefinedParamDataType (SetupError):
     def __str__(self):
         return 'undefined parameter data type: %s' % self.args
 
 
-class UndefinedParamDesc (Error):
+class UndefinedParamDesc (SetupError):
     def __str__(self):
         return 'undefined parameter description: %s' % self.args
 
 
-class UnknownParams (Error):
+class UnknownParams (SetupError):
     def __str__(self):
         (names,) = self.args
         return 'unknown parameter(s): ' + ', '.join(sorted(names))
 
 
-class UnknownParamDataType (Error):
+class UnknownParamDataType (SetupError):
     def __str__(self):
         return 'unknown parameter data type: %s' % self.args
 
 
-class TupleArg (Error):
+class TupleArg (SetupError):
     def __str__(self):
         (arg,) = self.args
         return 'tuple argument (parameter unpacking) is not supported: (%s)' \
@@ -418,7 +426,7 @@ def load_type(name, at_module):
 
 # TODO: Add a version argument from `__version__`?
 # TODO: Add option to call `sys.exit()` with the return value? By default?
-def start(main, args = None, arg_parser = None, soft_errors = True):
+def start(main, args = None, arg_parser = None):
     """
     Calls a function with arguments parsed from command-line arguments via
     :py:mod:`argparse`.
@@ -429,17 +437,14 @@ def start(main, args = None, arg_parser = None, soft_errors = True):
     :type args: list<six.text_type>
     :param args: user defined command-line arguments, otherwise leaves it up to
         :py:meth:`arg_parser.parse_args() <argparse.ArgumentParser.parse_args>`
-        to define
 
     :type arg_parser: argparse.ArgumentParser
     :param arg_parser: user defined argument parser
 
-    :type soft_errors: bool
-    :param soft_errors: if ``True``, catches instances of :py:class:`Error`
-        and passes them as error messages to
-        :py:meth:`arg_parser.error() <argparse.ArgumentParser.error>`
-
     :return: function's return value
+
+    :raise SetupError: if the function definition is inconsistent and
+        incompatible with an :py:class:`argparse.ArgumentParser` instance
     """
 
     if arg_parser is None:
@@ -449,21 +454,18 @@ def start(main, args = None, arg_parser = None, soft_errors = True):
 
         arg_parser = argparse.ArgumentParser()
 
-    try:
-        (description, arguments) = extract_arguments(main)
+    (description, arguments) = extract_arguments(main)
 
-        if description is not None:
-            if arg_parser.description is None:
-                arg_parser.description = description
-            else:
-                raise AmbiguousDesc()
-
-        for argument in arguments:
-            argument.add_to_parser(arg_parser)
-
-        return main(**vars(arg_parser.parse_args(args=args)))
-    except Error as error:
-        if soft_errors:
-            arg_parser.error(error)
+    if description is not None:
+        if arg_parser.description is None:
+            arg_parser.description = description
         else:
-            raise
+            raise AmbiguousDesc()
+
+    for argument in arguments:
+        argument.add_to_parser(arg_parser)
+
+    try:
+        return main(**vars(arg_parser.parse_args(args = args)))
+    except Error as error:
+        arg_parser.error(error)

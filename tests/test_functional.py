@@ -4,8 +4,6 @@
 
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
-import contextlib
-import sys
 
 # Standard/External:
 import argparse
@@ -39,7 +37,6 @@ class ArgumentParser (argparse.ArgumentParser):
 
 def start(*args, **kwargs):
     kwargs.setdefault('args', [])
-    kwargs.setdefault('soft_errors', False)
 
     if 'arg_parser' not in kwargs:
         kwargs['arg_parser'] = ArgumentParser()
@@ -77,17 +74,6 @@ class TestArguments (tests.TestCase):
             start(main, args = ['-h'])
 
 
-    def test_error_handling(self):
-        def main():
-            """
-            :param user: user name
-            """
-
-        with self.assertRaises(SystemExit):
-            with contextlib.closing(six.StringIO()) as sys.stderr:
-                argf.start(main, args = [])
-
-
     def test_no_arguments(self):
         def main():
             return 123
@@ -121,15 +107,24 @@ class TestArguments (tests.TestCase):
                 arg_parser = ArgumentParser(description = 'Alternate.'))
 
 
-class TestErrorHandling (tests.TestCase):
-    def test_user_defined_message(self):
+    def test_setup_error(self):
+        def main():
+            """
+            :param user: user name
+            """
+
+        with self.assertRaises(argf.SetupError):
+            argf.start(main, args = [])
+
+
+    def test_user_defined_error(self):
         error_message = 'input must be non-empty'
 
         def main():
             raise argf.Error(error_message)
 
         with self.assertRaisesRegex(ErrorCalled, error_message):
-            start(main, soft_errors = True)
+            start(main)
 
 
 class TestOptionalArguments (tests.TestCase):
