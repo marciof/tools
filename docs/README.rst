@@ -5,8 +5,8 @@ Declarative command-line arguments parser.
 
 This library follows version 2.0.0 of `Semantic Versioning <http://semver.org>`_.
 
-Links
------
+Resources
+=========
 
 - Documentation: http://argf.readthedocs.org
 - Package: http://pypi.python.org/pypi/argf

@@ -54,7 +54,7 @@ class BuildDocs (setuptools.Command, object):
 
 
     def run(self):
-        argv = [_BUILD_CMD, self.source_dir, self.build_dir]
+        argv = [_BUILD_CMD, '-W', self.source_dir, self.build_dir]
         command_line = ' '.join(argv)
 
         if self.dry_run:

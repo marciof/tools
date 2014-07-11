@@ -34,7 +34,7 @@ project = distribution.name
 version = distribution.version
 release = distribution.version
 master_doc = 'index'
-exclude_patterns = ['README.*']
+exclude_patterns = ['CHANGES.*', 'README.*']
 copyright = distribution.copyright
 
 extensions = [

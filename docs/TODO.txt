@@ -1,12 +1,11 @@
 - Incorrect module data documentation on RTD? Old Sphinx version?
 - Why isn't "__version__" and "__features__" automatically autodoc'ed?
 - Test "setup.py" for installation via PyPI and via source.
-- Fix Sphinx build warning.
 - Abstract more how things are processed? E.g. parameter names to options, etc.
 - Improve README to be usable as a web page.
 - How to document parameterized types? tuple[(None, six.text_type), list[Argument]]
 - Put documentation in http://pythonhosted.org/ and redirect to Read The Docs.
-- Better to name CHANGELOG? Append contents to "long_description"?
+- Append changelog/history contents to "long_description"?
 - List alternative projects? E.g. argh, argfarce, argtools, argdeclare.
 - Use Attest for testing? Nose? Tox? Pytest?
 - Review? http://thechangelog.com/top-ten-reasons-why-i-wont-use-your-open-source-project/
