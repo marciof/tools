@@ -27,6 +27,12 @@ Command line usage help:
 
 Command line error handling:
 
+.. command-output:: python examples/grep.py --invert=false
+    :cwd: ..
+    :returncode: 2
+
+User defined errors:
+
 .. command-output:: python examples/grep.py ''
     :cwd: ..
     :returncode: 2
