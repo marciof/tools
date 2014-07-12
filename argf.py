@@ -46,13 +46,17 @@ six = None # lazy
 
 __all__ = ['Error', 'SetupError', 'start', '__features__', '__version__']
 
-#: Supported features, as Unicode strings, for backwards compatibility and
-#: to allow feature detection instead of version detection.
 __features__ = frozenset()
+"""
+Supported features, as Unicode strings, to allow feature detection instead
+of version detection for backwards compatibility.
+"""
 
 # TODO: Make `__version__` a string and add a `version_info` tuple?
-#:
 __version__ = (0, 1, 0)
+"""
+`Semantic Versioning <http://semver.org>`_ version 2.0.0 format.
+"""
 
 
 # TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?
@@ -424,8 +428,9 @@ def load_type(name, at_module):
     raise UnknownParamDataType(name)
 
 
-# TODO: Add a version argument from `__version__`?
+# TODO: Add a version argument from the caller's `__version__`?
 # TODO: Add option to call `sys.exit()` with the return value? By default?
+# TODO: Allow more customization: add hooks for creating option names, etc.
 def start(main, args = None, arg_parser = None):
     """
     Calls a function with arguments parsed from command-line arguments via
