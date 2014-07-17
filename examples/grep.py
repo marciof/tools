@@ -9,9 +9,9 @@ import argf
 
 def main(string, invert = False):
     """
-    Really simple *grep* clone.
+    Really simple grep clone.
 
-    :param string: literal text to search for in *stdin*
+    :param string: literal text to search for in stdin
     :param invert: show non-matching lines instead
     """
 

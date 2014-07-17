@@ -25,7 +25,7 @@ Command line usage help:
 .. command-output:: python examples/grep.py -h
     :cwd: ..
 
-Command line error handling:
+Error handling:
 
 .. command-output:: python examples/grep.py --invert=false
     :cwd: ..

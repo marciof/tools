@@ -4,7 +4,7 @@
 """
 Declarative command-line arguments parser.
 
-Builds options for an :py:class:`argparse.ArgumentParser` instance from a
+Builds options for an :class:`argparse.ArgumentParser` instance from a
 function's parameters and docstring, and then calls it with the command-line
 arguments already parsed.
 
@@ -24,10 +24,10 @@ Parameter types are defined by whichever is first available:
 
 #. Parameter docstring type.
 #. Keyword parameter's default value type, unless it's ``None``.
-#. Default to :py:data:`six.text_type`.
+#. Default to :data:`six.text_type`.
 
-Error messages are taken from instances of :py:class:`Error` thrown by the
-function and passed as-is to :py:meth:`argparse.ArgumentParser.error`.
+Error messages are taken from instances of :class:`Error` thrown by the
+function and passed as-is to :meth:`argparse.ArgumentParser.error`.
 """
 
 
@@ -434,22 +434,22 @@ def load_type(name, at_module):
 def start(main, args = None, arg_parser = None):
     """
     Calls a function with arguments parsed from command-line arguments via
-    :py:mod:`argparse`.
+    :mod:`argparse`.
 
     :type main: types.FunctionType
     :param main: function
 
     :type args: list<six.text_type>
     :param args: user defined command-line arguments, otherwise leaves it up to
-        :py:meth:`arg_parser.parse_args() <argparse.ArgumentParser.parse_args>`
+        :meth:`arg_parser.parse_args() <argparse.ArgumentParser.parse_args>`
 
     :type arg_parser: argparse.ArgumentParser
     :param arg_parser: user defined argument parser
 
     :return: function's return value
 
-    :raise SetupError: if the function definition is inconsistent and
-        incompatible with an :py:class:`argparse.ArgumentParser` instance
+    :raise SetupError: if the function definition is inconsistent or
+        incompatible with an :class:`argparse.ArgumentParser` instance
     """
 
     if arg_parser is None:
@@ -471,6 +471,6 @@ def start(main, args = None, arg_parser = None):
         argument.add_to_parser(arg_parser)
 
     try:
-        return main(**vars(arg_parser.parse_args(args = args)))
+        return main(**vars(arg_parser.parse_args(args)))
     except Error as error:
         arg_parser.error(error)
