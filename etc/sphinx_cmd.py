@@ -28,8 +28,6 @@ class BuildDocs (setuptools.Command, object):
 
     def finalize_options(self):
         if not self.dry_run:
-            self.distribution.fetch_build_eggs(_MODULE)
-
             if self.requirements is not None:
                 with open(self.requirements) as reqs:
                     for req in reqs:
@@ -44,6 +42,10 @@ class BuildDocs (setuptools.Command, object):
 
                 for req in reqs.splitlines():
                     self.distribution.fetch_build_eggs(req)
+
+            # Install at the end to give a chance for a different version to
+            # be specified.
+            self.distribution.fetch_build_eggs(_MODULE)
 
 
     def initialize_options(self):
