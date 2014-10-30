@@ -19,13 +19,13 @@ fi
 _have() {
     for NAME; do
         LOCATION=$(which $NAME 2> /dev/null)
-        
+
         if [ -n "$LOCATION" ]; then
             eval "HAVE_$(echo $NAME | tr '[:lower:]-' '[:upper:]_')='$LOCATION'"
             return 0
         fi
     done
-    
+
     _warn "Missing: $@"
     return 1
 }
@@ -33,10 +33,17 @@ _have() {
 shopt -s cdspell checkwinsize histappend
 
 alias j=jobs
-alias l='ls -CFXh --color=auto --group-directories-first'
-alias ll='l -lA'
 alias -- -='cd -'
 alias ..='cd ..'
+
+if ls --group-directories-first 2> /dev/null; then
+    _ls_group_dir_opt=--group-directories-first
+else
+    _ls_group_dir_opt=
+fi
+
+alias l="ls -CFXh --color=auto $_ls_group_dir_opt"
+alias ll='l -lA'
 
 _have dircolors && eval "$($NAME -b)"
 _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
@@ -80,7 +87,11 @@ if [[ "$-" =~ 'i' ]]; then
 fi
 
 if [ -e "$_show_py" ]; then
-    alias s="\"$_show_py\" -l-CFXh -l--color=always -l--group-directories-first"
+    if [ -n "$_ls_group_dir_opt" ]; then
+        _ls_group_dir_opt="-l$_ls_group_dir_opt"
+    fi
+
+    alias s="\"$_show_py\" -l-CFXh -l--color=always $_ls_group_dir_opt"
     alias ss='s -l-lA'
     export GIT_PAGER=$_show_py
 fi
@@ -128,7 +139,7 @@ if _have git; then
     if ! type -t _git > /dev/null; then
         _completion_loader git
     fi
-    
+
     alias sb='git blame --date=short "$@"'
     alias sd='git diff "$@"'
     alias sl='git log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
@@ -147,16 +158,16 @@ if _have git; then
     }
 
     complete -o bashdefault -o default -o nospace -F _git g
-    
+
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
         [ -n "$ps1" ] && echo -e ":$_yellow$ps1$_color_off"
     }
-    
+
     _set_git_config() {
         local option=$1
         local value=$2
-        
+
         if ! git config --global "$option" > /dev/null; then
             if [ -z "$value" ]; then
                 _warn "Missing Git config: $option"
@@ -165,7 +176,7 @@ if _have git; then
             fi
         fi
     }
-    
+
     _set_git_config alias.br 'branch -vv'
     _set_git_config alias.co checkout
     _set_git_config color.ui auto
@@ -173,7 +184,7 @@ if _have git; then
     _set_git_config push.default tracking
     _set_git_config user.email
     _set_git_config user.name
-    
+
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
@@ -182,7 +193,7 @@ if _have git; then
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
-    
+
     _ps1_user_host="$_ps1_user_host\$(_color_git_ps1)"
 fi
 
