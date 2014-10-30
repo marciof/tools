@@ -133,6 +133,7 @@ _jobs_nr_ps1() {
 
 _ps1_user_host="\[$_u_green\]$_ps1_user_host\[$_color_off\]\$(_jobs_nr_ps1)"
 
+# https://github.com/git/git/tree/master/contrib/completion
 if _have git; then
     alias g=$NAME
 
