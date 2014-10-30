@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if [[ "$-" =~ 'i' ]]; then
+    _warn() {
+        echo "* $@" >&2
+    }
+else
+    _warn() {
+        :
+    }
+fi
+
 if [ -e /etc/bash_completion ]; then
     source /etc/bash_completion
 else
@@ -19,16 +29,6 @@ _have() {
     _warn "Missing: $@"
     return 1
 }
-
-if [[ "$-" =~ 'i' ]]; then
-    _warn() {
-        echo "* $@" >&2
-    }
-else
-    _warn() {
-        :
-    }
-fi
 
 shopt -s cdspell checkwinsize histappend
 
