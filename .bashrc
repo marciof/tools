@@ -190,7 +190,11 @@ if _have git; then
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
-    fi;
+
+        if ! grep -qsF 'set nowrap' ~/.nanorc; then
+            echo 'set nowrap' >> ~/.nanorc
+        fi
+    fi
 
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
