@@ -10,6 +10,11 @@ else
     }
 fi
 
+for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
+    source "$bashrc_child"
+    _warn "Loaded: $bashrc_child"
+done
+
 if [ -e /etc/bash_completion ]; then
     source /etc/bash_completion
 else
@@ -197,10 +202,5 @@ fi
 _virtual_env_ps1() {
     [ -n "$VIRTUAL_ENV" ] && echo -e ":$_purple$(basename $VIRTUAL_ENV)$_color_off"
 }
-
-for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-    source "$bashrc_child"
-    _warn "Loaded: $bashrc_child"
-done
 
 export PS1="$_ps1_user_host\$(_virtual_env_ps1):\[$_b_blue\]\w\n\\$\[$_color_off\] "
