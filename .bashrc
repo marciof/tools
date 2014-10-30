@@ -136,7 +136,7 @@ _ps1_user_host="\[$_u_green\]$_ps1_user_host\[$_color_off\]\$(_jobs_nr_ps1)"
 if _have git; then
     alias g=$NAME
 
-    if ! type -t _git > /dev/null; then
+    if type -t _git > /dev/null; then
         _completion_loader git
     fi
 
