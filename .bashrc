@@ -1,14 +1,16 @@
 #!/bin/bash
 
-if [[ "$-" =~ 'i' ]]; then
-    _warn() {
-        echo "* $@" >&2
-    }
-else
-    _warn() {
-        :
-    }
+if [[ ! "$-" =~ 'i' ]]; then
+    if [[ $_ != $0 ]]; then
+        return 0
+    else
+        exit 0
+    fi
 fi
+
+_warn() {
+    echo "* $@" >&2
+}
 
 for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
     source "$bashrc_child"
@@ -74,22 +76,20 @@ _ps1_user_host='\u@\h'
 _show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 _ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
 
-if [[ "$-" =~ 'i' ]]; then
-    # Disable XON/XOFF flow control to allow: bind -q forward-search-history
-    stty -ixon
+# Disable XON/XOFF flow control to allow: bind -q forward-search-history
+stty -ixon
 
-    bind 'set bind-tty-special-chars Off'
-    bind 'set completion-ignore-case On'
-    bind 'set expand-tilde Off'
-    bind 'set mark-symlinked-directories On'
-    bind 'set visible-stats On'
+bind 'set bind-tty-special-chars Off'
+bind 'set completion-ignore-case On'
+bind 'set expand-tilde Off'
+bind 'set mark-symlinked-directories On'
+bind 'set visible-stats On'
 
-    bind '"\e[1;5C": forward-word'                  # Ctrl + Right
-    bind '"\e[1;5D": backward-word'                 # Ctrl + Left
-    bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
-    bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
-    bind '"\e[2~": backward-kill-word'              # Insert
-fi
+bind '"\e[1;5C": forward-word'                  # Ctrl + Right
+bind '"\e[1;5D": backward-word'                 # Ctrl + Left
+bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
+bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
+bind '"\e[2~": backward-kill-word'              # Insert
 
 if [ -e "$_show_py" ]; then
     if [ -n "$_ls_group_dir_opt" ]; then
