@@ -43,7 +43,7 @@ alias j=jobs
 alias -- -='cd -'
 alias ..='cd ..'
 
-if ls --group-directories-first 2> /dev/null; then
+if ls --group-directories-first > /dev/null 2>&1; then
     _ls_group_dir_opt=--group-directories-first
 else
     _ls_group_dir_opt=
