@@ -108,7 +108,7 @@ if _have ag; then
         _ag_pager=''
     fi
 
-    alias f="$NAME $_ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden"
+    alias f="$NAME $_ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden --case-sensitive"
 fi
 
 if [ -n "$KDE_FULL_SESSION" -a ! -e "$_ssh_add_auto_start" ]; then
