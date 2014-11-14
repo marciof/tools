@@ -49,7 +49,7 @@ else
     _ls_group_dir_opt=
 fi
 
-alias l="ls -CFXh --color=auto $_ls_group_dir_opt"
+alias l="ls $_ls_group_dir_opt -CFXh --color=auto"
 alias ll='l -lA'
 
 _have dircolors && eval "$($NAME -b)"
@@ -96,7 +96,7 @@ if [ -e "$_show_py" ]; then
         _ls_group_dir_opt="-l$_ls_group_dir_opt"
     fi
 
-    alias s="\"$_show_py\" -l-CFXh -l--color=always $_ls_group_dir_opt"
+    alias s="\"$_show_py\" $_ls_group_dir_opt -l-CFXh -l--color=always"
     alias ss='s -l-lA'
     export GIT_PAGER=$_show_py
 fi
