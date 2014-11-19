@@ -159,8 +159,6 @@ if _have git; then
         fi
     }
 
-    complete -o bashdefault -o default -o nospace -F _git g
-
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
         [ -n "$ps1" ] && echo -e ":$_yellow$ps1$_color_off"
@@ -195,6 +193,12 @@ if _have git; then
             echo 'set nowrap' >> ~/.nanorc
         fi
     fi
+
+    if type -t _completion_loader > /dev/null; then
+        _completion_loader git
+    fi
+
+    complete -o bashdefault -o default -o nospace -F _git g
 
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
