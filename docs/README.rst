@@ -20,7 +20,7 @@ To contribute submit a pull request via GitHub.
 All pull requests *must* respect the following rules:
 
 - Code *must* be readable, tested, documented and profiled.
-- Code (branch) coverage *must* be 100%.
+- Test branch coverage *must* be 100%.
 - Coding style *should* follow PEP 8.
 - All existing tests *must* pass.
-- All supported Python versions *must* remain so.
+- All supported Python versions *should* remain so.
