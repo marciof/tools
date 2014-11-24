@@ -53,20 +53,21 @@ of version detection for backwards compatibility.
 """
 
 # TODO: Make `__version__` a string and add a `version_info` tuple?
+#       http://legacy.python.org/dev/peps/pep-0396/#specification
 __version__ = (0, 1, 0)
 """
-`Semantic Versioning <http://semver.org>`_ version 2.0.0 format.
+Current version in `Semantic Versioning <http://semver.org>`_ 2.0.0 format.
 """
 
 
 # TODO: Use the `python_2_unicode_compatible` decorator for `__unicode__`?
-class Error (Exception):
+class Error (SystemExit):
     """
     Generic argument handling error.
     """
 
 
-class SetupError (Error):
+class SetupError (Exception):
     """
     Initialization error, e.g. parsing or conversion exceptions.
     """

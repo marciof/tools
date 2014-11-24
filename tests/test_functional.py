@@ -126,6 +126,12 @@ class TestArguments (tests.TestCase):
         with self.assertRaisesRegex(ErrorCalled, error_message):
             start(main)
 
+        with self.assertRaises(argf.Error):
+            main()
+
+        with self.assertRaises(SystemExit):
+            main()
+
 
 class TestOptionalArguments (tests.TestCase):
     def test_boolean_argument(self):

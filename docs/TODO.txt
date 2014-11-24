@@ -1,4 +1,3 @@
-- Make `Error` a subclass of `SystemExit` to transparently exit with an error message when `start()` isn't used?
 - "setup.py" out-of-source builds? To avoid constantly calling `git clean`.
 - Why isn't "__version__" and "__features__" automatically autodoc'ed?
 - Test "setup.py" for installation via PyPI and via source.
