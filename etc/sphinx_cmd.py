@@ -16,7 +16,7 @@ _BUILD_CMD = 'sphinx-build'
 
 
 class BuildDocs (setuptools.Command, object):
-    description = 'builds documentation via `%s`' % _BUILD_CMD
+    description = 'build documentation via `%s`' % _BUILD_CMD
 
     user_options = [
         ('build-dir=', 'b', 'build directory'),

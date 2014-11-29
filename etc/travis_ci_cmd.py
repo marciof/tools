@@ -3,6 +3,7 @@
 
 # Standard:
 from __future__ import absolute_import, division
+import distutils.errors
 import pipes
 import shlex
 
@@ -17,7 +18,7 @@ except AttributeError:
 
 
 class Lint (setuptools.Command, object):
-    description = 'lints Travis CI config via `Travis::Yaml`'
+    description = 'lint Travis CI config files via `Travis::Yaml`'
     user_options = []
 
 
@@ -30,10 +31,58 @@ class Lint (setuptools.Command, object):
 
 
     def run(self):
-        self.spawn(list(map(_quote_shell_arg, [
-            'ruby',
-            '-r',
-            'travis/yaml',
-            '-e',
-            'Travis::Yaml.parse!(File.read(".travis.yml"))',
-        ])))
+        find_ruby_alternatives = [
+            self._find_ruby_from_path,
+            self._find_ruby_from_winreg,
+        ]
+
+        for find_ruby in find_ruby_alternatives:
+            try:
+                self.spawn([find_ruby()] + list(map(_quote_shell_arg, [
+                    '-r',
+                    'travis/yaml',
+                    '-e',
+                    'Travis::Yaml.parse!(File.read(".travis.yml"))',
+                ])))
+            except distutils.errors.DistutilsPlatformError:
+                continue
+            else:
+                break
+        else:
+            raise distutils.errors.DistutilsPlatformError(
+                'unable to find a Ruby interpreter')
+
+
+    def _find_ruby_from_path(self):
+        import subprocess
+        ruby = 'ruby'
+
+        try:
+            subprocess.call([ruby, '-e', '1'])
+        except OSError as error:
+            raise distutils.errors.DistutilsPlatformError(error)
+        else:
+            return ruby
+
+
+    def _find_ruby_from_winreg(self):
+        try:
+            import _winreg as winreg
+        except ImportError:
+            try:
+                import winreg
+            except ImportError as error:
+                raise distutils.errors.DistutilsPlatformError(error)
+
+        ruby_file_open_cmd = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r'Software\Classes\RubyFile\shell\open\command',
+            0,
+            winreg.KEY_QUERY_VALUE)
+
+        ruby = shlex.split(winreg.QueryValue(ruby_file_open_cmd, None))
+
+        if len(ruby) < 1:
+            raise distutils.errors.DistutilsPlatformError()
+        else:
+            return ruby[0]

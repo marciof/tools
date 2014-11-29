@@ -16,7 +16,7 @@ _MODULE = 'pep8'
 
 
 class Lint (setuptools.Command, object):
-    description = 'lints Python files via `%s`' % _MODULE
+    description = 'lint Python files via `%s`' % _MODULE
 
     user_options = [
         ('glob', 'g', 'interpret paths as glob patterns'),
