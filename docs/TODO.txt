@@ -1,5 +1,4 @@
-- Fix https://github.com/rtfd/readthedocs.org/issues/855
-- "setup.py" out-of-source builds? To avoid constantly calling `git clean`.
+- Fix <https://github.com/rtfd/readthedocs.org/issues/855>.
 - Why isn't "__version__" and "__features__" automatically autodoc'ed?
 - Test "setup.py" for installation via PyPI and via source.
 - Improve README to be usable as a web page.

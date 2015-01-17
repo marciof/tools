@@ -80,6 +80,9 @@ if __name__ == '__main__':
         # creating the help option.
         requirements['argparse'] = '>=1.2.1'
 
+    # TODO: Add command to clean the source tree from build artifacts (e.g.
+    # test requirements) or use a separate temporary directory.
+    # http://stackoverflow.com/q/10703601/753501
     setuptools.setup(
         name = name,
         version = version,

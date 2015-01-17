@@ -53,7 +53,7 @@ of version detection for backwards compatibility.
 """
 
 # TODO: Make `__version__` a string and add a `version_info` tuple?
-#       http://legacy.python.org/dev/peps/pep-0396/#specification
+# http://legacy.python.org/dev/peps/pep-0396/#specification
 __version__ = (0, 1, 0)
 """
 Current version in `Semantic Versioning <http://semver.org>`_ 2.0.0 format.

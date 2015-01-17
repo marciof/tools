@@ -10,6 +10,9 @@ Description
     Reference
     =========
 
+    ..
+        TODO: Ensure special-members are included when using the
+        ``special-members`` flag option. Doesn't seem to work otherwise.
     .. autodata:: __features__
     .. autodata:: __version__
 
