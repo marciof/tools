@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-use feature ':5.10';
 use strict;
 use threads;
 use utf8;
@@ -84,7 +83,7 @@ sub gd_run {
     my ($self) = @ARG;
     
     foreach my $git ($self->list_git_repos) {
-        say 'Tracking: ', $git->wc_path;
+        print 'Tracking: ', $git->wc_path, "\n";
         
         my $template_file = $self->get_template_file($git);
         push @{$self->{template_files}}, $template_file;
@@ -93,7 +92,7 @@ sub gd_run {
             while (1) {
                 my $commit_message = $template_file->openw;
                 
-                say 'Reading template: ', $git->wc_path;
+                print 'Reading template: ', $git->wc_path, "\n";
                 $self->add_ticket_number($git, $commit_message);
                 
                 close $commit_message;
