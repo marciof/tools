@@ -18,7 +18,7 @@ use POSIX ();
 use Try::Tiny;
 
 
-my $COMMIT_TEMPLATE_FILE = 'COMMIT_TEMPLATEMSG';
+my $COMMIT_TEMPLATE_FILE = 'COMMIT_TEMPLATE_MSG';
 my $COMMIT_TEMPLATE_OPTION = 'commit.template';
 my $GIT_OPTION = 'git';
 
@@ -76,7 +76,6 @@ sub gd_more_opt {
 
 sub gd_quit_event {
     my ($self) = @ARG;
-    $ARG->remove foreach @{$self->{template_files}};
     return;
 }
 
@@ -86,20 +85,17 @@ sub gd_run {
     
     foreach my $git ($self->list_git_repos) {
         print 'Tracking: ', $git->wc_path, "\n";
-        
-        my $template_file = $self->get_template_file($git);
-        push @{$self->{template_files}}, $template_file;
+        my ($template_file, $cleanup) = $self->get_template_file($git);
         
         async {
             try {
                 while (1) {
                     my $commit_message = $template_file->openw;
                     
-                    print 'Writing template: ', $git->wc_path, "\n";
+                    print 'Template: ', $git->wc_path, "\n";
                     $self->add_ticket_number($git, $commit_message);
                     
                     close $commit_message;
-                    sleep 1;
                 }
             }
             catch {
@@ -107,11 +103,15 @@ sub gd_run {
                     die $ERRNO;
                 }
             };
+            
+            print 'Cleaning up: ', $git->wc_path, "\n";
+            $cleanup->();
         };
     }
     
     print "Waiting...\n";
     wait;
+    return;
 }
 
 
@@ -142,10 +142,16 @@ sub get_template_file {
             $COMMIT_TEMPLATE_OPTION, $template_file);
     }
     
+    $template_file->remove;
+    
     POSIX::mkfifo($template_file,
         Fcntl::S_IRUSR + Fcntl::S_IWUSR + Fcntl::S_IRGRP + Fcntl::S_IROTH);
     
-    return $template_file;
+    return ($template_file, sub {
+        $template_file->remove;
+        $template_file->touch;
+        return;
+    });
 }
 
 
