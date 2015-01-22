@@ -1,12 +1,14 @@
 #!/usr/bin/env perl
 
+use forks;
+
 use strict;
-use threads;
 use utf8;
 use warnings;
 
 use Daemon::Generic ();
 use English '-no_match_vars';
+use Errno ();
 use Fcntl ();
 use File::Basename ();
 use File::Spec ();
@@ -31,7 +33,7 @@ sub add_ticket_number {
             $local_branch);
     };
     
-    for my $branch ($remote_branch, $local_branch) {
+    foreach my $branch ($remote_branch, $local_branch) {
         if (my ($ticket) = (($branch // '') =~ m/(\w+-\d+)/)) {
             print $commit_message "[\U$ticket\E] ";
             last;
@@ -89,20 +91,27 @@ sub gd_run {
         push @{$self->{template_files}}, $template_file;
         
         async {
-            while (1) {
-                my $commit_message = $template_file->openw;
-                
-                print 'Reading template: ', $git->wc_path, "\n";
-                $self->add_ticket_number($git, $commit_message);
-                
-                close $commit_message;
-                sleep 1;
+            try {
+                while (1) {
+                    my $commit_message = $template_file->openw;
+                    
+                    print 'Writing template: ', $git->wc_path, "\n";
+                    $self->add_ticket_number($git, $commit_message);
+                    
+                    close $commit_message;
+                    sleep 1;
+                }
             }
-        }->detach;
+            catch {
+                if ($ERRNO != Errno::EINTR) {
+                    die $ERRNO;
+                }
+            };
+        };
     }
     
-    sleep;
-    return;
+    print "Waiting...\n";
+    wait;
 }
 
 
