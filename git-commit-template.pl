@@ -94,14 +94,11 @@ sub gd_run {
                     
                     print 'Template: ', $git->wc_path, "\n";
                     $self->add_ticket_number($git, $commit_message);
-                    
                     close $commit_message;
                 }
             }
             catch {
-                if ($ERRNO != Errno::EINTR) {
-                    die $ERRNO;
-                }
+                die $ERRNO if $ERRNO != Errno::EINTR;
             };
             
             print 'Cleaning up: ', $git->wc_path, "\n";
