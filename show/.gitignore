@@ -1,8 +1,0 @@
-# Python compiled files.
-*.pyc
-
-# SCons database.
-/.sconsign.dblite
-
-# Editors.
-/.idea
