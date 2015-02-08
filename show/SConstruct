@@ -2,25 +2,30 @@
 
 
 # Standard:
-from __future__ import division, print_function, unicode_literals
-import os.path
+from __future__ import absolute_import, division, unicode_literals
+
+# Internal:
+#import show as lib
 
 
-env = Environment(tools = ['default', 'cython', 'pep8', 'pylint', 'unittest'])
-conf_dir = 'config'
-src_files = env.Glob('*.py')
+env = Environment(tools = ['default', 'cython', 'find', 'pep8', 'pylint',
+    'pyprofile', 'pyunit', 'travis-lint', 'virtualenv'])
 
-env.Alias('check', [
-    env.Pep8('pep8', src_files,
-        config_file = os.path.join(conf_dir, 'pep8.cfg')),
-    env.Pylint('pylint', src_files,
-        config_file = os.path.join(conf_dir, 'pylint.cfg'))])
+src = env.Find('sources')
+
+env.Alias('verify', [
+    env.Alias('check', [
+        env.TravisLint(),
+        env.Pep8(root = src, config = env.Find('pep8.ini')),
+        env.Pylint(root = src, config = env.Find('pylint.ini'))]),
+    
+    env.Alias('test', env.PyUnit(root = src))])
 
 env.Alias('compile',
-    env.Cython('show.c', 'show.py',
+    env.Cython('show.c', env.Find('show.py'),
         is_standalone = True,
         do_compilation = True))
 
-env.Alias('test', env.UnitTest('unit-test', env.Glob('test*.py')))
+#env.Profile(source = lambda args: lib.Options.from_cmdl_args(args))
 
 env.Default('compile')

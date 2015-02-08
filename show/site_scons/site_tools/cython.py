@@ -2,13 +2,13 @@
 
 
 # Standard:
-from __future__ import division, print_function, unicode_literals
+from __future__ import absolute_import, division, unicode_literals
 
 
 PROGRAM = 'cython'
 
 
-def build(env, target, source, is_standalone = False, do_compilation = False):
+def execute(env, target, source, is_standalone = False, do_compilation = False):
     embed = ['--embed'] if is_standalone else []
     
     if not isinstance(source, list):
@@ -29,4 +29,4 @@ def exists(env):
 
 
 def generate(env):
-    env.AddMethod(build, PROGRAM.title())
+    env.AddMethod(execute, PROGRAM.title())

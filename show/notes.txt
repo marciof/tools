@@ -1,47 +1,81 @@
 Features:
-- pager: terminal size detection
-- view files: plug-in based (Git commits), encoding detection, binary files (archives, images), URL's, output transformation (syntax highlighting, syntax formatting, stop-if-slow, etc), case insensitive if not ambiguous
-- compare files: Git support
-- file monitoring: `tail`, Linux inotify
+- pager: terminal size detection, fake TTY
+- viewer: plug-in based (Git commits, Git remote -v, URL's, archives (zip, tgz, 7z), `perldoc`, `pydoc`), encoding detection, output transformation (syntax highlighting, syntax formatting, stop-if-slow, JSON reindent, etc), case insensitive if not ambiguous
+  - encoding detection: ~/Downloads/Python-2.7.3/Tools/i18n/msgfmt.py
+- diff/comparison: Git support, type aware (`json_tools`)
+- file monitoring: `tail` (log viewer with built-in support for `logging` with colors and grouping), Linux inotify
 - list directories: `ls`
 - find files: `find`
 - search files: `ack-grep`
-- view documentation: man pages, Perl, Python
-- good defaults + optional commands
+- good defaults + optional commands + options for everything
 
 Requirements:
-- Linux/Windows support
-- fast: ~0 sec startup time, native-like fast
+- Linux support (Windows optional)
+- fast: ~0 sec startup time (resort to C++ once done?)
 - extensible
 
 Plan:
-- library abstraction
-- tests
-- profiling
+- library abstraction with project-agnostic utilities
+- profiling: i.e.
+  $ GIT_PAGER= python -m cProfile -s time show.py -o /dev/null HEAD
+  $ GIT_PAGER= kernprof.py -v -l show.py -o /dev/null HEAD
+  $ time GIT_PAGER= ./show.py -o /dev/null HEAD
+  $ time GIT_PAGER= git show HEAD > /dev/null
+  http://www.huyng.com/posts/python-performance-analysis/
 - coverage: code, documentation
 - packaging
-- documentation 
-- continuous integration
+- documentation
 
 Dependencies:
 - Run-time:
   - Python: >= 2.7, < 3
-  - perl-doc: to view Perl documentation
-  - pydoc: to view Python documentation
 - Build:
   - all: SCons
+  - continuous integration: gem install travis-lint
   - documentation: Sphinx
+  - profiler: python-profiler, line-profiler
   - executable:
     - Cython
       - python-dev
       - compiler (gcc)
-- Development:
-  - pep8
-  - pylint
 
 To do:
+- Test `compat` module: read TTY with/without newlines, file, string
+- Test output command line option.
+- Move tests to a separate folder.
+- Faster to use old-style classes?
+- Faster to import modules on-demand? In background?
+- Automate more profiling (both function and line) + lazy SCons "import show"
+- Add option to enable/disable fake TTY and window size emulation
+- Faster to use `struct.Struct` instead of `struct.(un)pack`?
+- Faster to use C's `forkpty`?
+- Faster to use `os.read`?
+- Allow tool-specific options.
+- Use `os.fork()` when not `os.isatty()` if faster than `subprocess`.
+- Faster to `stat` files in the environment path instead of `os.execvp`? `os.defpath`
+- Split child process stdout/stderr.
+- Check external programs exist.
+- Faster to use an external module instead of the git executable?
+- Handle interrupts if required.
+- Faster to buffer output? E.g. line-by-line?
+- Faster to check suitable viewers in parallel?
+- Faster to use `gnu_getopt`? `argparse`? Hand-made?
+- Use stdout as the default output?
+- Handle invalid command line options
+- Faster to avoid list slice on `sys.argv`?
+- Handle case where no suitable viewers were found
+- Complete first packaging with dependencies and all
+- Add *.pyc to PyUnit's SCons tool side-effect/output list
+- Automate full dependency installation on Travis CI
+- Use Cython's own SCons tool? python-config SCons tool
+- Document/test SCons tools.
+- Recursive Glob to also include "conf.py" for Pylint, etc
+- Translatable to Python 3
+- Strip whitespace from URL inputs.
 - Sphinx SCons tool: sphinx-build -c config/ -b html . Documentation
-- python-config SCons tool
-- Correct Windows errors
-- Setup CI https://travis-ci.org/
-- Replace hardcoded config path with unambiguous file find
+- Performance check: __slots__, __future__ imports
+- Use virtualenv?
+- Enable more code check tools?
+  http://pypi.python.org/pypi/flake8
+  http://pypi.python.org/pypi/pyflakes
+  http://pychecker.sourceforge.net/
