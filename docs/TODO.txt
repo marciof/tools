@@ -1,5 +1,13 @@
-- Fix <https://github.com/rtfd/readthedocs.org/issues/855>.
-- Why isn't "__version__" and "__features__" automatically autodoc'ed?
+- Make Read the Docs include special-members documentation.
+  https://github.com/rtfd/readthedocs.org/issues/855
+  http://stackoverflow.com/q/28004099/753501
+  https://groups.google.com/forum/#!forum/read-the-docs
+  #readthedocs irc://freenode.net
+- Make Sphinx autodoc include "__version__" and "__features__" automatically?
+  https://github.com/sphinx-doc/sphinx/issues
+  http://stackoverflow.com
+  https://groups.google.com/forum/#!topic/sphinx-users/fQ6blKPMuYs
+  #sphinx-doc irc://freenode.net
 - Test "setup.py" for installation via PyPI and via source.
 - Improve README to be usable as a web page.
 - How to document parameterized types? tuple[(None, six.text_type), list[Argument]]
