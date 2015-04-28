@@ -142,7 +142,7 @@ _ps1_user_host="\[$_u_green\]$_ps1_user_host\[$_color_off\]\$(_jobs_nr_ps1)"
 if _have git; then
     alias g=$NAME
 
-    alias sb='git blame --date=short "$@"'
+    alias sb='git blame -w --date=short "$@"'
     alias sd='git diff "$@"'
     alias sl='git log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
     alias sr='git checkout "$@"'
