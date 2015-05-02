@@ -76,7 +76,7 @@ _ps1_user_host='\u@\h'
 _show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 _ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
 
-# Disable XON/XOFF flow control to allow: bind -q forward-search-history
+# Disable XON/XOFF flow control to allow `bind -q forward-search-history`.
 stty -ixon
 
 bind 'set bind-tty-special-chars Off'
@@ -126,7 +126,7 @@ else
     _warn 'Select "en_DK.UTF-8": $ dpkg-reconfigure locales'
 fi
 
-# Allow AltGr + Space to be interpreted as a regular blank space.
+# Interpret AltGr + Space as a regular blank space.
 if _have setxkbmap && ! $NAME -option 'nbsp:none' 2> /dev/null; then
     _warn 'Install XKB data: $ apt-get install xkb-data'
 fi
