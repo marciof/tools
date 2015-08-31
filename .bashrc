@@ -182,6 +182,7 @@ if _have git; then
     _set_git_config color.ui auto
     _set_git_config core.whitespace -trailing-space
     _set_git_config push.default tracking
+    _set_git_config branch.autosetuprebase always
     _set_git_config user.email
     _set_git_config user.name
 
