@@ -80,6 +80,14 @@ if __name__ == '__main__':
         # creating the help option.
         requirements['argparse'] = '>=1.2.1'
 
+        # Avoid `atexit` hook exception after interpreter shutdown, due to a
+        # bug in old Python versions.
+        # http://bugs.python.org/issue15881
+        # https://bitbucket.org/pypa/setuptools/issues/38/atexit-error
+        # http://article.gmane.org/gmane.comp.python.peak/2511
+        import multiprocessing
+        del multiprocessing
+
     # TODO: Add command to clean the source tree from build artifacts (e.g.
     # test requirements) or use a separate temporary directory.
     # http://stackoverflow.com/q/10703601/753501
