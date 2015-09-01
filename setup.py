@@ -21,16 +21,13 @@ def _parse_distribution():
     license_path = os.path.join(docs_path, 'LICENSE.txt')
 
     with codecs.open(license_path, encoding = 'UTF-8') as license_file:
-        copyright_line = license_file.readline()
-
-    [(author, email)] = re.findall(', (.+) <([^<>]+)>$', copyright_line)
-    [copyright] = re.findall(r'\(c\) (.+) <', copyright_line)
+        [(copyright, author)] = re.findall(r'\(c\) ([^,]+, (.+))',
+            license_file.readline())
 
     return (
         name,
         '%d.%d.%d' % version,
         author,
-        email,
         docstring,
         os.path.join(docs_path, 'README.rst'),
         copyright)
@@ -55,8 +52,7 @@ def _parse_module(name):
     raise Exception('failed to extract module information: ' + name)
 
 
-(name, version, author, email, docstring, readme, copyright) \
-    = _parse_distribution()
+(name, version, author, docstring, readme, copyright) = _parse_distribution()
 
 
 if __name__ == '__main__':
@@ -96,7 +92,6 @@ if __name__ == '__main__':
         version = version,
         py_modules = [name],
         author = author,
-        author_email = email,
         url = 'http://pypi.python.org/pypi/' + name,
         description = docstring.strip().splitlines()[0],
         long_description = codecs.open(readme, encoding = 'UTF-8').read(),
