@@ -15,6 +15,23 @@ _MODULE = 'sphinx'
 _BUILD_CMD = 'sphinx-build'
 
 
+try:
+    _check_output = subprocess.check_output
+except AttributeError:
+    def _check_output(command):
+        process = subprocess.Popen(command,
+            stderr = subprocess.PIPE,
+            stdout = subprocess.PIPE)
+
+        output = process.communicate()[0]
+        exit_code = process.poll()
+
+        if exit_code:
+            raise subprocess.CalledProcessError(exit_code, command)
+
+        return output
+
+
 class BuildDocs (setuptools.Command, object):
     description = 'build documentation via `%s`' % _BUILD_CMD
 
@@ -37,7 +54,7 @@ class BuildDocs (setuptools.Command, object):
                             self.distribution.fetch_build_eggs(req)
 
             if self.setup_requirements:
-                reqs = subprocess.check_output(
+                reqs = _check_output(
                     [sys.executable, sys.argv[0], '--requires'])
 
                 for req in reqs.splitlines():
