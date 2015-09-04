@@ -34,7 +34,7 @@ function and passed as-is to :meth:`argparse.ArgumentParser.error`.
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 inspect = None # lazy
-import re
+import re # noqa
 
 # Standard/External:
 argparse = None # lazy

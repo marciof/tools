@@ -27,7 +27,7 @@ else:
 
 
 # Internal:
-import setup as distribution # Avoid clashing with Sphinx options.
+import setup as distribution # noqa # Avoid clashing with Sphinx options.
 
 
 project = distribution.name
