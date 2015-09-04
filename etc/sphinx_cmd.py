@@ -3,6 +3,7 @@
 
 # Standard:
 from __future__ import absolute_import, division
+import re
 import subprocess
 import sys
 
@@ -58,7 +59,8 @@ class BuildDocs (setuptools.Command, object):
                     [sys.executable, sys.argv[0], '--requires'])
 
                 for req in reqs.splitlines():
-                    self.distribution.fetch_build_eggs(req)
+                    self.distribution.fetch_build_eggs(
+                        re.sub(r'\(([^()]+)\)$', r'\1', req))
 
             # Install at the end to give a chance for a different version to
             # be specified.
