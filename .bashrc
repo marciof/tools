@@ -74,7 +74,6 @@ _u_green='\e[4;32m'
 
 _ps1_user_host='\u@\h'
 _show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
-_ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
 
 # Disable XON/XOFF flow control to allow `bind -q forward-search-history`.
 stty -ixon
@@ -111,12 +110,21 @@ if _have ag; then
     alias f="$NAME $_ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden --case-sensitive"
 fi
 
-if [ -n "$KDE_FULL_SESSION" -a ! -e "$_ssh_add_auto_start" ]; then
-    cat << 'SCRIPT' > "$_ssh_add_auto_start"
+# https://wiki.archlinux.org/index.php/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_keys
+if [ -n "$KDE_FULL_SESSION" ]; then
+    if [ -d "$HOME/.kde/Autostart" ]; then
+        _ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
+    else
+        _ssh_add_auto_start="$HOME/.config/autostart-scripts/ssh-add.sh"
+    fi
+
+    if [ ! -e "$_ssh_add_auto_start" ]; then
+        cat << 'SCRIPT' > "$_ssh_add_auto_start"
 #!/bin/sh
 ssh-add < /dev/null 2> /dev/null
 SCRIPT
-    chmod +x "$_ssh_add_auto_start"
+        chmod +x "$_ssh_add_auto_start"
+    fi
 fi
 
 # Dates in ISO 8601 format.
