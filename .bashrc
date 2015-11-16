@@ -60,6 +60,7 @@ export HISTCONTROL=ignoreboth
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
+export ANSIBLE_NOCOWS=1
 
 # Remove bright colors (must come after `dircolors`).
 export LS_COLORS=$(echo $LS_COLORS | sed -e 's/=01;/=30;/g')
