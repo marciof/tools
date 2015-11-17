@@ -42,6 +42,7 @@ shopt -s cdspell checkwinsize histappend
 alias j=jobs
 alias -- -='cd -'
 alias ..='cd ..'
+alias ...='cd ../..'
 
 if ls --group-directories-first > /dev/null 2>&1; then
     _ls_group_dir_opt=--group-directories-first
