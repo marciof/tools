@@ -1,14 +1,12 @@
 #!/usr/bin/env perl
 
-use forks;
-
 use strict;
+use threads;
 use utf8;
 use warnings;
 
 use Daemon::Generic ();
 use English '-no_match_vars';
-use Errno ();
 use Fcntl ();
 use File::Basename ();
 use File::Spec ();
@@ -82,32 +80,33 @@ sub gd_quit_event {
 
 sub gd_run {
     my ($self) = @ARG;
+    my %cleanups;
     
     foreach my $git ($self->list_git_repos) {
         print 'Tracking: ', $git->wc_path, "\n";
         my ($template_file, $cleanup) = $self->get_template_file($git);
+        $cleanups{$git->wc_path} = $cleanup;
         
         async {
-            try {
-                while (1) {
-                    my $commit_message = $template_file->openw;
-                    
-                    print 'Template: ', $git->wc_path, "\n";
-                    $self->add_ticket_number($git, $commit_message);
-                    close $commit_message;
-                }
+            while (1) {
+                my $commit_message = $template_file->openw;
+                
+                print 'Template: ', $git->wc_path, "\n";
+                $self->add_ticket_number($git, $commit_message);
+                close $commit_message;
             }
-            catch {
-                die $ERRNO if $ERRNO != Errno::EINTR;
-            };
-            
-            print 'Cleaning up: ', $git->wc_path, "\n";
-            $cleanup->();
-        };
+        }->detach;
     }
     
     print "Waiting...\n";
-    wait;
+    sleep;
+    keys %cleanups;
+    
+    while (my ($git_repo, $cleanup) = each %cleanups) {
+        print "Cleaning up: $git_repo\n";
+        $cleanup->();
+    }
+    
     return;
 }
 
