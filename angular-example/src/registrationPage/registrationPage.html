@@ -1,0 +1,146 @@
+<form name="form" data-ng-submit="register()">
+  <div data-uib-tabset>
+    <div data-uib-tab
+         data-heading="Name"
+         data-active="nameTab.isActive"
+         data-select="updateNavigation(null, passwordTab)">
+
+      <p>
+        <label>
+          First Name:
+          <input type="text"
+                 name="firstName"
+                 data-ng-model="input.firstName"
+                 data-ng-pattern="/\S/"
+                 data-auto-focus
+                 required>
+        </label>
+        <em class="error" data-ng-hide="form.firstName.$valid">Please enter your first name.</em>
+      </p>
+
+      <p>
+        <label>
+          Last Name:
+          <input type="text"
+                 name="lastName"
+                 data-ng-model="input.lastName"
+                 data-ng-pattern="/\S/"
+                 required>
+        </label>
+        <em class="error" data-ng-hide="form.lastName.$valid">Please enter your last or family name.</em>
+      </p>
+    </div>
+
+    <div data-uib-tab
+         data-heading="Password"
+         data-active="passwordTab.isActive"
+         data-select="updateNavigation(nameTab, preferencesTab)">
+
+      <p>
+        <label>
+          Password:
+          <input type="password"
+                 name="password"
+                 data-ng-model="input.password"
+                 data-ng-minlength="8"
+                 required>
+        </label>
+        <em class="error" data-ng-hide="form.password.$valid">Please enter a password with at least 8 characters.</em>
+      </p>
+
+      <p>
+        <label>
+          Repeat Password:
+          <input type="password"
+                 name="repeatPassword"
+                 data-ng-model="input.repeatPassword">
+        </label>
+        <em class="error" data-ng-hide="passwordTab.isValid()">Please repeat your password.</em>
+      </p>
+    </div>
+
+    <div data-uib-tab
+         data-heading="Preferences"
+         data-active="preferencesTab.isActive"
+         data-select="updateNavigation(passwordTab, reviewTab)">
+
+      <p>
+        <label>
+          Receive Newsletter?
+          <input type="checkbox"
+                 name="wantsNewsletter"
+                 data-ng-model="input.wantsNewsletter">
+        </label>
+      </p>
+
+      <p>
+        Clock Format:
+        <label>
+          12H
+          <input type="radio"
+                 name="clockFormat"
+                 data-ng-model="input.clockFormat"
+                 data-ng-value="12">
+        </label>
+        <label>
+          24H
+          <input type="radio"
+                 name="clockType"
+                 data-ng-model="input.clockFormat"
+                 data-ng-value="24">
+        </label>
+      </p>
+    </div>
+
+    <div data-uib-tab
+         data-heading="Review"
+         data-active="reviewTab.isActive"
+         data-select="updateNavigation(preferencesTab, null)">
+
+      <dl>
+        <dt>First Name:</dt>
+        <dd data-ng-switch="form.firstName.$valid">
+          <span data-ng-switch-when="true">{{input.firstName}}</span>
+          <em data-ng-switch-when="false">N/A</em>
+        </dd>
+
+        <dt>Last Name:</dt>
+        <dd data-ng-switch="form.lastName.$valid">
+          <span data-ng-switch-when="true">{{input.lastName}}</span>
+          <em data-ng-switch-when="false">N/A</em>
+        </dd>
+
+        <dt>Password:</dt>
+        <dd>{{passwordTab.isValid() ? 'Valid' : 'Invalid'}}</dd>
+
+        <dt>Receive Newsletter?</dt>
+        <dd>{{input.wantsNewsletter ? 'Yes' : 'No'}}</dd>
+
+        <dt>Clock Format:</dt>
+        <dd>{{input.clockFormat}}H</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button"
+            accesskey="P"
+            data-ng-click="goToPreviousTab()"
+            data-ng-disabled="nameTab.isActive">
+      <em>P</em>revious
+    </button>
+
+    <button type="button"
+            accesskey="N"
+            data-ng-click="goToNextTab()"
+            data-ng-disabled="reviewTab.isActive">
+      <em>N</em>ext
+    </button>
+
+    <button type="submit"
+            accesskey="R"
+            data-ng-disabled="!canRegister()">
+      <em>R</em>egister
+    </button>
+  </div>
+</form>

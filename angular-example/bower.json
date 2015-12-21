@@ -1,0 +1,16 @@
+{
+    "name": "MySite",
+    "private": true,
+    "ignore": [
+        "/node_modules/",
+        "/bower_components/"
+    ],
+    "dependencies": {
+        "angular": "^1.4.8",
+        "angular-bootstrap": "^0.14.3",
+        "angular-route": "^1.4.8",
+        "bootstrap": "^3.3.6",
+        "lodash": "^3.10.1",
+        "angular-auto-focus": "^1.0.4"
+    }
+}
