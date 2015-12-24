@@ -1,0 +1,18 @@
+language: python
+python:
+  - 2.6
+  - 2.7
+  - 3.3
+  - 3.4
+install: |
+  pip install --allow-all-external -r docs/requirements.txt python-coveralls
+script: |
+  python setup.py lint
+  if python -c "from sys import *; exit(version_info < (2, 7))"
+  then
+    python setup.py coverage
+  else
+    python setup.py test
+  fi
+after_success: coveralls
+sudo: false
