@@ -1,6 +1,0 @@
-# >=1.0 for `exclude_patterns`.
-# >=1.1 for `autodoc` `special-members`.
-# !=1.3b1 to avoid <https://bitbucket.org/birkenfeld/sphinx/issue/1611>.
-sphinx>=1.1,!=1.3b1
-
-sphinxcontrib-programoutput
