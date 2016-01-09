@@ -1,0 +1,152 @@
+$user-card-spacing: 1.5em;
+$user-card-padding: 0.7em;
+$user-avatar-size: 4em;
+
+@mixin box-sizing($box-model) {
+    -webkit-box-sizing: $box-model;
+    -moz-box-sizing: $box-model;
+    box-sizing: $box-model;
+}
+
+@mixin border-radius($border-radius) {
+    -moz-border-radius: $border-radius;
+    -webkit-border-radius: $border-radius;
+    -khtml-border-radius: $border-radius;
+    border-radius: $border-radius;
+}
+
+html {
+    @include box-sizing(border-box);
+    height: 100%;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    height: 100%;
+}
+
+.user-card {
+    @include border-radius(0.6em);
+    background-color: white;
+    border: 0.25em solid #020202;
+    padding: $user-card-padding;
+    font-family: Arial, sans-serif;
+}
+
+.user-avatar {
+    @include border-radius(50%);
+    overflow: hidden;
+    width: $user-avatar-size;
+    height: $user-avatar-size;
+    margin-bottom: $user-card-padding;
+    margin-right: $user-card-padding;
+    float: left;
+
+    * {
+        width: inherit;
+        height: inherit;
+    }
+
+    h1 {
+        background-color: #3599DB;
+        color: white;
+        text-align: center;
+        vertical-align: middle;
+        display: table-cell;
+        margin: 0;
+        font-weight: lighter;
+    }
+}
+
+.user-info {
+    height: $user-avatar-size;
+    vertical-align: middle;
+    display: table-cell;
+}
+
+.user-name {
+    font-size: medium;
+    font-weight: bolder;
+    margin: 0;
+}
+
+.user-occupation {
+    color: #96A6A7;
+    font-size: smaller;
+    font-weight: bolder;
+    margin: 0;
+}
+
+.user-impressions,
+.user-conversions {
+    font-size: smaller;
+    color: #96A6A7;
+    margin: 0;
+}
+
+.user-revenue {
+    margin: 0;
+
+    em {
+        color: #29AE61;
+        font-style: inherit;
+        font-weight: bolder;
+    }
+}
+
+.user-log-count {
+    font-weight: bolder;
+}
+
+.user-impressions {
+    clear: left;
+
+    .user-log-count {
+        color: #E67F24;
+    }
+}
+
+.user-conversions .user-log-count {
+    color: #2A81B9;
+}
+
+.user-conversions-chart {
+    width: 8.5em;
+    margin-right: 1em;
+}
+
+.user-grid {
+    padding-right: $user-card-spacing;
+    padding-bottom: $user-card-spacing;
+    background-color: #808D8E;
+    min-height: 100%;
+
+    &:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+}
+
+.user-grid-cell {
+    padding-top: $user-card-spacing;
+    padding-left: $user-card-spacing;
+    float: left;
+    width: 100%;
+}
+
+@media all and (min-width: 500px) and (max-width: 800px) {
+    .user-grid-cell {
+        width: percentage(1 / 2);
+    }
+}
+
+@media all and (min-width: 800px) {
+    .user-grid-cell {
+        width: percentage(1 / 3);
+    }
+}

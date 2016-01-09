@@ -1,0 +1,54 @@
+<div class="user-grid">
+
+  <div class="user-grid-cell"
+       data-ng-repeat="user in users track by user.id">
+
+    <div class="user-card">
+
+      <div class="user-avatar"
+           data-ng-switch="user.hasAvatar()">
+        <img data-ng-switch-when="true"
+             data-on-error="user.disableAvatar()"
+             data-ng-src="{{user.avatar}}">
+        <h1 data-ng-switch-when="false">{{user.getFallbackAvatarText()}}</h1>
+      </div>
+
+      <div class="user-info">
+        <h2 class="user-name">{{user.name}}</h2>
+        <h3 class="user-occupation">{{user.occupation}}</h3>
+      </div>
+
+      <p class="user-impressions">
+      <span data-ng-switch="logAggregation.nrImpressionsByUserId.hasOwnProperty(user.id)">
+        <span data-ng-switch-when="true"
+              class="user-log-count">{{logAggregation.nrImpressionsByUserId[user.id] | number}}</span>
+        <span data-ng-switch-when="false">N/A</span>
+      </span>
+        <span>impressions</span>
+      </p>
+
+      <p class="user-conversions">
+      <span data-ng-switch="logAggregation.nrConversionsByUserId.hasOwnProperty(user.id)">
+        <span data-ng-switch-when="true"
+              class="user-log-count">{{logAggregation.nrConversionsByUserId[user.id] | number}}</span>
+        <span data-ng-switch-when="false">N/A</span>
+      </span>
+        <span>conversions</span>
+      </p>
+
+      <p class="user-revenue"
+         data-ng-if="logAggregation.totalRevenueByUserId.hasOwnProperty(user.id)">
+        <em>{{logAggregation.totalRevenueByUserId[user.id] | currency}}</em>
+      </p>
+
+      <div class="user-conversions-chart">
+        <canvas class="chart chart-line"
+                data-ng-if="userConversionsChartDataByUserId.hasOwnProperty(user.id)"
+                data-chart-data="userConversionsChartDataByUserId[user.id]"
+                data-chart-labels="userConversionsChartLabelsByUserId[user.id]"
+                data-chart-options="userConversionsChartOptions"
+                data-chart-colours="userConversionsChartColors"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
