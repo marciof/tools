@@ -7,6 +7,10 @@ import unittest
 
 
 def find_pairs(numbers, sum):
+    """
+    Find all pairs from `numbers` that when added equal `sum`.
+    """
+    
     needed_numbers = set()
     pairs = []
 
