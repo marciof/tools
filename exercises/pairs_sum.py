@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, unicode_literals
 import unittest
 
 
-def find_pairs(numbers, sum):
+def list_pairs(numbers, sum):
     """
     Find all pairs from `numbers` that when added equal `sum`.
     """
@@ -25,23 +25,23 @@ def find_pairs(numbers, sum):
 
 class Test (unittest.TestCase):
     def test_no_numbers(self):
-        self.assertEqual(find_pairs([], 0), [])
+        self.assertEqual(list_pairs([], 0), [])
     
     def test_one_number(self):
-        self.assertEqual(find_pairs([1], 0), [])
+        self.assertEqual(list_pairs([1], 0), [])
     
     def test_multiple_pairs_found(self):
         self.assertEqual(
-            find_pairs([2, 0, 4, 3, 9, -1, 7, 1], 3),
+            list_pairs([2, 0, 4, 3, 9, -1, 7, 1], 3),
             [(0, 3), (4, -1), (2, 1)])
     
     def test_repeats(self):
         self.assertEqual(
-            find_pairs([0, 0, 0], 0),
+            list_pairs([0, 0, 0], 0),
             [(0, 0), (0, 0)])
     
     def test_no_pairs_found(self):
-        self.assertEqual(find_pairs([1, 2, 3], -1), [])
+        self.assertEqual(list_pairs([1, 2, 3], -1), [])
 
 
 if __name__ == '__main__':
