@@ -40,10 +40,25 @@ def find_substring(string, alphabet):
 
 
 class Test (unittest.TestCase):
-    def test_simple(self):
+    def test_repeats(self):
         self.assertEquals(
             find_substring('aabbaadca', set('abcd')),
             'baadc')
+
+    def test_empty_string(self):
+        self.assertEquals(
+            find_substring('', set('abc')),
+            None)
+
+    def test_empty_alphabet(self):
+        self.assertEquals(
+            find_substring('hello', set()),
+            None)
+
+    def test_incomplete_alphabet(self):
+        self.assertEquals(
+            find_substring('world', set('rd')),
+            'rld')
 
 
 if __name__ == '__main__':
