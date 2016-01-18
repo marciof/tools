@@ -4,6 +4,7 @@
 # Standard:
 from __future__ import absolute_import, division, unicode_literals
 import collections
+import unittest
 
 
 Direction = collections.namedtuple('Direction', ['x', 'y'])
@@ -15,7 +16,7 @@ RIGHT = Direction(x = +1, y = 0)
 
 
 def create_spiral(size):
-    if size == 0:
+    if size <= 0:
         return []
 
     directions = [UP, RIGHT, DOWN, LEFT]
@@ -54,5 +55,32 @@ def print_matrix(matrix):
         print row
 
 
+class Test (unittest.TestCase):
+    def test_empty(self):
+        self.assertEquals(create_spiral(0), [])
+
+    def test_size_1(self):
+        self.assertEquals(create_spiral(1), [[1]])
+
+    def test_even_size(self):
+        self.assertEquals(
+            create_spiral(4),
+            [
+                [ 7,  8,  9, 10],
+                [ 6,  1,  2, 11],
+                [ 5,  4,  3, 12],
+                [16, 15, 14, 13]
+            ])
+
+    def test_odd_size(self):
+        self.assertEquals(
+            create_spiral(3),
+            [
+                [7, 8, 9],
+                [6, 1, 2],
+                [5, 4, 3]
+            ])
+
+
 if __name__ == '__main__':
-    print_matrix(create_spiral(4))
+    unittest.main(verbosity = 2)
