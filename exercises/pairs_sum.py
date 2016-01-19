@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, unicode_literals
 import unittest
 
 
-def list_pairs(numbers, sum):
+def list_pairs(numbers, target_sum):
     """
     Find all pairs from `numbers` that when added equal `sum`.
     """
@@ -16,9 +16,9 @@ def list_pairs(numbers, sum):
 
     for n in numbers:
         if n in needed_numbers:
-            pairs.append((sum - n, n))
+            pairs.append((target_sum - n, n))
         else:
-            needed_numbers.add(sum - n)
+            needed_numbers.add(target_sum - n)
     
     return pairs
 

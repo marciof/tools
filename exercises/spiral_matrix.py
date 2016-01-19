@@ -16,6 +16,11 @@ RIGHT = Direction(x = +1, y = 0)
 
 
 def create_spiral(size):
+    """
+    Creates a clock-wise spiral starting at the center of a square matrix of
+    side length `size` with increasing positive integers.
+    """
+
     if size <= 0:
         return []
 
