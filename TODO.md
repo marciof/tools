@@ -1,6 +1,8 @@
-- Continuous integration.
+- Tests.
 - Coverage.
+- Continuous integration.
 - Profile.
+- Input transformation: syntax highlighting, code reformatting, show whitespace.
+- Plugin ideas: Git commits, perldoc, pydoc
 - Check if working directory exists, so that plugins such as `ls` won't fail?
-- Add option to reformat code on-the-fly to be able to logically compare different files with different indentations.
 - Zero-copy where possible for performance?
