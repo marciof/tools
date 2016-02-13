@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <iostream>
 #include <pty.h>
 #include <stdexcept>
 #include <stdio.h>
@@ -22,7 +21,7 @@
 
 
 namespace show {
-    int exec_forkpty(char* file, char* argv[]) {
+    int exec_forkpty(char* file, std::vector<char*>* argv) {
         int saved_stderr = dup(STDERR_FILENO);
 
         if (saved_stderr == -1) {
@@ -44,7 +43,7 @@ namespace show {
             throw std::runtime_error(strerror(errno));
         }
 
-        if (execvp(file, argv) == -1) {
+        if (execvp(file, argv->data()) == -1) {
             throw std::runtime_error(strerror(errno));
         }
         else {
@@ -127,7 +126,7 @@ int main(int argc, char* argv[]) {
     int child_out_fd;
 
     try {
-        child_out_fd = show::exec_forkpty(ls_argv[0], ls_argv.data());
+        child_out_fd = show::exec_forkpty(ls_argv[0], &ls_argv);
     }
     catch (const std::runtime_error& error) {
         fprintf(stderr, "%s\n", error.what());
