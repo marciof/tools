@@ -1,3 +1,7 @@
-# 0.1.0 - YYYY-MM-DD #
+# 0.2.0 - YYYY-MM-DD #
 
-- Simple `ls` passthrough.
+- Automatic paging.
+
+# 0.1.0 - 2016-01-13 #
+
+- Plugin "ls".
