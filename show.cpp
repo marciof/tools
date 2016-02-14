@@ -73,7 +73,7 @@ namespace show {
             }
             else if (option == *HELP_OPT) {
                 fprintf(stderr,
-                    "Usage: %s [OPTION]... [RESOURCE]...\n"
+                    "Usage: show [OPTION]... [RESOURCE]...\n"
                         "Version: 0.2.0\n"
                         "\n"
                         "Options:\n"
@@ -83,7 +83,6 @@ namespace show {
                         "\n"
                         "Plugins:\n"
                         "  ls               POSIX `ls` command\n",
-                    argv[0],
                     *HELP_OPT,
                     *PLUGIN_OPTION_OPT,
                     *DISABLE_PLUGIN_OPT);
