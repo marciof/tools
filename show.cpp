@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <pty.h>
+#include <set>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,10 +10,12 @@
 
 
 #define HELP_OPT "h"
+#define DISABLE_PLUGIN_OPT "x:"
 #define PLUGIN_OPTION_OPT "p:"
 
 #define ALL_OPTS ( \
     HELP_OPT \
+    DISABLE_PLUGIN_OPT \
     PLUGIN_OPTION_OPT \
 )
 
@@ -20,19 +23,22 @@
     (sizeof(array) / sizeof((array)[0]))
 
 
+using namespace std;
+
+
 namespace show {
-    int exec_forkpty(char* file, std::vector<char*>* argv) {
+    int exec_forkpty(char* file, char* argv[]) {
         int saved_stderr = dup(STDERR_FILENO);
 
         if (saved_stderr == -1) {
-            throw std::runtime_error(strerror(errno));
+            throw runtime_error(strerror(errno));
         }
 
         int child_out_fd;
         int child_pid = forkpty(&child_out_fd, NULL, NULL, NULL);
 
         if (child_pid == -1) {
-            throw std::runtime_error(strerror(errno));
+            throw runtime_error(strerror(errno));
         }
         else if (child_pid != 0) {
             close(saved_stderr);
@@ -40,11 +46,11 @@ namespace show {
         }
 
         if (dup2(saved_stderr, STDERR_FILENO) == -1) {
-            throw std::runtime_error(strerror(errno));
+            throw runtime_error(strerror(errno));
         }
 
-        if (execvp(file, argv->data()) == -1) {
-            throw std::runtime_error(strerror(errno));
+        if (execvp(file, argv) == -1) {
+            throw runtime_error(strerror(errno));
         }
         else {
             exit(EXIT_SUCCESS);
@@ -52,24 +58,51 @@ namespace show {
     }
 
 
-    bool parse_options(int argc, char* argv[], std::vector<char*>* ls_options) {
+    bool parse_options(
+            int argc,
+            char* argv[],
+            set<char*>* disabled_plugins,
+            vector<char*>* ls_options)
+    {
         const char PLUGIN_OPTION_SEP[] = ":";
         int option;
 
         while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
-            if (option == *PLUGIN_OPTION_OPT) {
+            if (option == *DISABLE_PLUGIN_OPT) {
+                disabled_plugins->insert(optarg);
+            }
+            else if (option == *HELP_OPT) {
+                fprintf(stderr,
+                    "Usage: %s [OPTION]... [RESOURCE]...\n"
+                        "Version: 0.2.0\n"
+                        "\n"
+                        "Options:\n"
+                        "  -%c               display this help and exit\n"
+                        "  -%c PLUGIN:OPT    plugin specific option\n"
+                        "  -%c PLUGIN        disable plugin\n"
+                        "\n"
+                        "Plugins:\n"
+                        "  ls               POSIX `ls` command\n",
+                    argv[0],
+                    *HELP_OPT,
+                    *PLUGIN_OPTION_OPT,
+                    *DISABLE_PLUGIN_OPT);
+
+                return false;
+            }
+            else if (option == *PLUGIN_OPTION_OPT) {
                 char* separator = strstr(optarg, PLUGIN_OPTION_SEP);
 
                 if ((separator == NULL)
                     || (separator[ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0'))
                 {
-                    throw std::runtime_error("No plugin option specified.");
+                    throw runtime_error("No plugin option specified.");
                 }
 
                 unsigned long name_length = (separator - optarg);
 
                 if (name_length == 0) {
-                    throw std::runtime_error("No plugin name specified.");
+                    throw runtime_error("No plugin name specified.");
                 }
 
                 if (strncmp("ls", optarg, name_length) == 0) {
@@ -77,25 +110,8 @@ namespace show {
                         separator + ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1);
                 }
             }
-            else if (option == *HELP_OPT) {
-                fprintf(stderr,
-                    "Usage: %s [OPTION]... [RESOURCE]...\n"
-                        "Version: 0.1.0\n"
-                        "\n"
-                        "Options:\n"
-                        "  -%c   plugin specific option, as PLUGIN:OPTION\n"
-                        "  -%c   display this help and exit\n"
-                        "\n"
-                        "Plugins:\n"
-                        "  ls   POSIX `ls` command\n",
-                    argv[0],
-                    *PLUGIN_OPTION_OPT,
-                    *HELP_OPT);
-
-                return false;
-            }
             else {
-                throw std::runtime_error("Try `-h` for more information.");
+                throw runtime_error("Try '-h' for more information.");
             }
         }
 
@@ -109,15 +125,17 @@ namespace show {
 
 
 int main(int argc, char* argv[]) {
-    std::vector<char*> ls_argv;
+    set<char*> disabled_plugins;
+    vector<char*> ls_argv;
+
     ls_argv.push_back((char*) "ls");
 
     try {
-        if (!show::parse_options(argc, argv, &ls_argv)) {
+        if (!show::parse_options(argc, argv, &disabled_plugins, &ls_argv)) {
             return EXIT_SUCCESS;
         }
     }
-    catch (const std::runtime_error& error) {
+    catch (const runtime_error& error) {
         fprintf(stderr, "%s\n", error.what());
         return EXIT_FAILURE;
     }
@@ -126,9 +144,9 @@ int main(int argc, char* argv[]) {
     int child_out_fd;
 
     try {
-        child_out_fd = show::exec_forkpty(ls_argv[0], &ls_argv);
+        child_out_fd = show::exec_forkpty(ls_argv[0], ls_argv.data());
     }
-    catch (const std::runtime_error& error) {
+    catch (const runtime_error& error) {
         fprintf(stderr, "%s\n", error.what());
         return EXIT_FAILURE;
     }
