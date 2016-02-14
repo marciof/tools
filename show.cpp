@@ -62,7 +62,7 @@ namespace show {
 
     void parse_plugin_option(
             char* option,
-            map<string, vector<char*> >& plugin_options) {
+            map<string, vector<char*> >* plugin_options) {
 
         const char PLUGIN_OPTION_SEP[] = ":";
         char* separator = strstr(option, PLUGIN_OPTION_SEP);
@@ -81,10 +81,10 @@ namespace show {
         }
 
         string name = string(option, name_length);
-        auto options_it = plugin_options.find(name);
+        auto options_it = plugin_options->find(name);
 
-        vector<char*>& options = (options_it == plugin_options.end())
-            ? plugin_options[name] = vector<char*>()
+        vector<char*>& options = (options_it == plugin_options->end())
+            ? (*plugin_options)[name] = vector<char*>()
             : options_it->second;
 
         options.push_back(
@@ -95,14 +95,14 @@ namespace show {
     int parse_options(
             int argc,
             char* argv[],
-            set<char*>& disabled_plugins,
-            map<string, vector<char*> >& plugin_options) {
+            set<string>* disabled_plugins,
+            map<string, vector<char*> >* plugin_options) {
 
         int option;
 
         while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
             if (option == *DISABLE_PLUGIN_OPT) {
-                disabled_plugins.insert(optarg);
+                disabled_plugins->insert(optarg);
             }
             else if (option == *HELP_OPT) {
                 fprintf(stderr,
@@ -132,17 +132,51 @@ namespace show {
 
         return optind;
     }
+
+
+    struct Plugin {
+        char* (*get_name)();
+        int (*run)(int argc, char** argv, vector<char*>* options);
+    };
+
+
+    namespace plugin {
+        namespace ls {
+            char* get_name() {
+                return (char*) "ls";
+            }
+
+
+            int run(int argc, char** argv, vector<char*>* options) {
+                vector<char*> ls_argv;
+
+                ls_argv.push_back((char*) "ls");
+
+                if (options != NULL) {
+                    ls_argv.insert(
+                        ls_argv.end(), options->begin(), options->end());
+                }
+
+                for (int i = 0; i < argc; ++i) {
+                    ls_argv.push_back(argv[i]);
+                }
+
+                ls_argv.push_back(NULL);
+                return show::exec_forkpty(ls_argv[0], ls_argv.data());
+            }
+        }
+    }
 }
 
 
 int main(int argc, char* argv[]) {
-    set<char*> disabled_plugins;
+    set<string> disabled_plugins;
     map<string, vector<char*> > plugin_options;
     int arg_optind;
 
     try {
         arg_optind = show::parse_options(
-            argc, argv, disabled_plugins, plugin_options);
+            argc, argv, &disabled_plugins, &plugin_options);
     }
     catch (const runtime_error& error) {
         fprintf(stderr, "%s\n", error.what());
@@ -153,39 +187,44 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    vector<char*> ls_argv;
-    auto plugin_options_it = plugin_options.find("ls");
+    struct show::Plugin plugins[] = {
+        {
+            &show::plugin::ls::get_name,
+            &show::plugin::ls::run,
+        },
+    };
 
-    ls_argv.push_back((char*) "ls");
+    for (auto& plugin : plugins) {
+        if (disabled_plugins.find(plugin.get_name()) == disabled_plugins.end()) {
+            int output_fd;
+            auto plugin_options_it = plugin_options.find(plugin.get_name());
 
-    if (plugin_options_it != plugin_options.end()) {
-        vector<char*>& options = plugin_options_it->second;
-        ls_argv.insert(ls_argv.end(), options.begin(), options.end());
+            try {
+                output_fd = plugin.run(
+                    argc - arg_optind,
+                    argv + arg_optind,
+                    (plugin_options_it != plugin_options.end())
+                        ? &(plugin_options_it->second)
+                        : NULL);
+            }
+            catch (const runtime_error& error) {
+                fprintf(stderr, "%s\n", error.what());
+                return EXIT_FAILURE;
+            }
+
+            ssize_t nr_bytes_read;
+            const int BUFFER_SIZE = 256;
+            char buffer[BUFFER_SIZE + 1];
+
+            while ((nr_bytes_read = read(output_fd, buffer, BUFFER_SIZE)) > 0) {
+                buffer[nr_bytes_read] = '\0';
+                fputs(buffer, stdout);
+            }
+
+            return EXIT_SUCCESS;
+        }
     }
 
-    while (arg_optind < argc) {
-        ls_argv.push_back(argv[arg_optind++]);
-    }
-
-    ls_argv.push_back(NULL);
-    int child_out_fd;
-
-    try {
-        child_out_fd = show::exec_forkpty(ls_argv[0], ls_argv.data());
-    }
-    catch (const runtime_error& error) {
-        fprintf(stderr, "%s\n", error.what());
-        return EXIT_FAILURE;
-    }
-
-    ssize_t nr_bytes_read;
-    const int BUFFER_SIZE = 256;
-    char buffer[BUFFER_SIZE + 1];
-
-    while ((nr_bytes_read = read(child_out_fd, buffer, BUFFER_SIZE)) > 0) {
-        buffer[nr_bytes_read] = '\0';
-        fputs(buffer, stdout);
-    }
-
-    return EXIT_SUCCESS;
+    fputs("No enabled plugin found.\n", stderr);
+    return EXIT_FAILURE;
 }
