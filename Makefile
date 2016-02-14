@@ -1,5 +1,5 @@
-CPPFLAGS=-ansi -pedantic-errors -Wall
+CXXFLAGS=-std=c++11 -pedantic-errors -Wall
 LDFLAGS=-lutil
 
 show: show.cpp
-	$(CXX) $(CPPFLAGS) -O2 -g -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -O2 -g -o $@ $^ $(LDFLAGS)
