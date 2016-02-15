@@ -132,10 +132,10 @@ if _have git; then
     alias sb='g blame --date=short "$@"'
     alias sd='g diff "$@"'
     alias sl='g log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
-    alias ss='g push "$@"'
+    alias sp='g push "$@"'
     alias sr='g checkout "$@"'
+    alias ss='g pull "$@"'
     alias st='g status "$@"'
-    alias sp='g pull "$@"'
 
     sc() {
         local cached=$(git diff --cached --name-only | wc -l)
