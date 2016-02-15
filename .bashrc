@@ -92,7 +92,13 @@ if [ -e "$_show_py" ]; then
 fi
 
 if _have ag; then
-    alias f="$NAME --color-path '0;34' --color-line-number '0;33' --follow --hidden --case-sensitive"
+    if [ -e "$_show_py" ]; then
+        _ag_pager="--pager 'python $_show_py -d'"
+    else
+        _ag_pager=''
+    fi
+
+    alias f="$NAME $_ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden --case-sensitive"
 fi
 
 # https://wiki.archlinux.org/index.php/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_keys
