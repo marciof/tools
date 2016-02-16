@@ -1,8 +1,7 @@
-- Tests.
-- Coverage.
+- Tests with coverage.
 - Continuous integration.
-- Profile.
+- Profiling.
 - Input transformation: syntax highlighting, code reformatting, show whitespace.
 - Plugin ideas: Git commits, perldoc, pydoc
-- Check if working directory exists, so that plugins such as `ls` won't fail?
-- Zero-copy where possible for performance?
+- Switch to C?
+- Plugin architecture: pipes to child processes, specific exit error status code if it can't handle, get_name() : char*, run(int argc, char* argv[], char* options[]) : int
