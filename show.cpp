@@ -77,11 +77,13 @@ void parse_plugin_option(
     }
 
     std::string name = std::string(option, name_length);
-    auto options_it = plugin_options->find(name);
 
-    std::vector<char*>& options = (options_it == plugin_options->end())
+    std::map<std::string, std::vector<char*> >::iterator it
+        = plugin_options->find(name);
+
+    std::vector<char*>& options = (it == plugin_options->end())
         ? (*plugin_options)[name] = std::vector<char*>()
-        : options_it->second;
+        : it->second;
 
     options.push_back(
         separator + ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1);
@@ -185,17 +187,20 @@ int main(int argc, char* argv[]) {
         },
     };
 
-    for (auto& plugin : plugins) {
-        if (disabled_plugins.find(plugin.get_name()) == disabled_plugins.end()) {
+    for (unsigned int i = 0; i < ARRAY_LENGTH(plugins); ++i) {
+        struct Plugin* plugin = &plugins[i];
+
+        if (disabled_plugins.find(plugin->get_name()) == disabled_plugins.end()) {
             int output_fd;
-            auto plugin_options_it = plugin_options.find(plugin.get_name());
+            std::map<std::string, std::vector<char*> >::iterator it
+                = plugin_options.find(plugin->get_name());
 
             try {
-                output_fd = plugin.run(
+                output_fd = plugin->run(
                     argc - arg_optind,
                     argv + arg_optind,
-                    (plugin_options_it != plugin_options.end())
-                        ? &(plugin_options_it->second)
+                    (it != plugin_options.end())
+                        ? &(it->second)
                         : NULL);
             }
             catch (const std::runtime_error& error) {

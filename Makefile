@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++11 -pedantic-errors -Wall
+CXXFLAGS=-ansi -pedantic-errors -Wall
 LDFLAGS=-lutil
 
 show: show.cpp
