@@ -2,12 +2,15 @@
 #include <map>
 #include <pty.h>
 #include <set>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <string.h>
 #include <unistd.h>
 #include <vector>
+#include "array.h"
+#include "std/string.h"
 
 
 #define HELP_OPT "h"
@@ -20,9 +23,6 @@
     PLUGIN_OPTION_OPT \
 )
 
-#define ARRAY_LENGTH(array) \
-    (sizeof(array) / sizeof((array)[0]))
-
 
 typedef enum {
     STATUS_OK,
@@ -34,7 +34,7 @@ typedef enum {
 
 
 typedef struct {
-    Status (*get_name)(const char** name);
+    Status (*get_name)(char** name);
 
     Status (*run)(
         int argc,
@@ -42,6 +42,13 @@ typedef struct {
         std::vector<char*>* options,
         int* output_fd);
 } Plugin;
+
+
+struct Cstring_cmp {
+    bool operator()(char* a, char* b) const {
+        return strcmp(a, b) < 0;
+    }
+};
 
 
 static const char* status_string_by_code[] = {
@@ -94,7 +101,7 @@ Status exec_forkpty(char* file, char* argv[], int* output_fd) {
 
 Status parse_plugin_option(
         char* option,
-        std::map<std::string, std::vector<char*> >* plugin_options) {
+        std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options) {
 
     const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
@@ -106,23 +113,30 @@ Status parse_plugin_option(
         return STATUS_UNSPECIFIED_PLUGIN_OPTION;
     }
 
-    unsigned long name_length = (separator - option);
+    size_t name_length = (separator - option);
 
     if (name_length == 0) {
         return STATUS_UNSPECIFIED_PLUGIN_NAME;
     }
 
-    std::string name = std::string(option, name_length);
+    char* name = strncopy(option, name_length);
 
-    std::map<std::string, std::vector<char*> >::iterator it
+    if (name == NULL) {
+        return STATUS_ERRNO;
+    }
+
+    char* value = separator + ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
+
+    std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
         = plugin_options->find(name);
 
-    std::vector<char*>& options = (it == plugin_options->end())
-        ? (*plugin_options)[name] = std::vector<char*>()
-        : it->second;
-
-    options.push_back(
-        separator + ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1);
+    if (it == plugin_options->end()) {
+        (*plugin_options)[name] = std::vector<char*>(1, value);
+    }
+    else {
+        free(name);
+        it->second.push_back(value);
+    }
 
     return STATUS_OK;
 }
@@ -133,7 +147,7 @@ Status parse_options(
         char* argv[],
         int* last_optind,
         std::set<std::string>* disabled_plugins,
-        std::map<std::string, std::vector<char*> >* plugin_options) {
+        std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options) {
 
     int option;
 
@@ -177,8 +191,8 @@ Status parse_options(
 }
 
 
-Status plugin_ls_get_name(const char** name) {
-    *name = "ls";
+Status plugin_ls_get_name(char** name) {
+    *name = (char*) "ls";
     return STATUS_OK;
 }
 
@@ -207,7 +221,7 @@ Status plugin_ls_run(
 
 int main(int argc, char* argv[]) {
     std::set<std::string> disabled_plugins;
-    std::map<std::string, std::vector<char*> > plugin_options;
+    std::map<char*, std::vector<char*>, Cstring_cmp> plugin_options;
     int arg_optind;
 
     Status status = parse_options(
@@ -229,9 +243,9 @@ int main(int argc, char* argv[]) {
         },
     };
 
-    for (unsigned int i = 0; i < ARRAY_LENGTH(plugins); ++i) {
+    for (size_t i = 0; i < ARRAY_LENGTH(plugins); ++i) {
         Plugin* plugin = &plugins[i];
-        const char* name;
+        char* name;
 
         status = plugin->get_name(&name);
 
@@ -242,7 +256,7 @@ int main(int argc, char* argv[]) {
 
         if (disabled_plugins.find(name) == disabled_plugins.end()) {
             int output_fd;
-            std::map<std::string, std::vector<char*> >::iterator it
+            std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
                 = plugin_options.find(name);
 
             status = plugin->run(
@@ -265,6 +279,10 @@ int main(int argc, char* argv[]) {
             while ((nr_bytes_read = read(output_fd, buffer, BUFFER_SIZE)) > 0) {
                 buffer[nr_bytes_read] = '\0';
                 fputs(buffer, stdout);
+            }
+
+            if (it != plugin_options.end()) {
+                free(it->first);
             }
 
             return EXIT_SUCCESS;
