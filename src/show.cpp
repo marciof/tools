@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 #include <string.h>
 #include <unistd.h>
 #include <vector>
@@ -146,7 +145,7 @@ Status parse_options(
         int argc,
         char* argv[],
         int* last_optind,
-        std::set<std::string>* disabled_plugins,
+        std::set<char*, Cstring_cmp>* disabled_plugins,
         std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options) {
 
     int option;
@@ -220,7 +219,7 @@ Status plugin_ls_run(
 
 
 int main(int argc, char* argv[]) {
-    std::set<std::string> disabled_plugins;
+    std::set<char*, Cstring_cmp> disabled_plugins;
     std::map<char*, std::vector<char*>, Cstring_cmp> plugin_options;
     int arg_optind;
 
