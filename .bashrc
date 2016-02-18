@@ -49,7 +49,7 @@ _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
 _have lesspipe && eval "$($NAME)"
 
 export HISTCONTROL=ignoreboth
-export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS'
+export LESS='-x4 -c -M -R -i'
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
 export ANSIBLE_NOCOWS=1
