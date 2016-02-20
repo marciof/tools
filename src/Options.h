@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "list/List.h"
 #include "map/Map.h"
-#include "Plugin.h"
+#include "plugin/Plugin.h"
 #include "std/Error.h"
 
 

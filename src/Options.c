@@ -9,7 +9,6 @@
 #include "Options.h"
 #include "std/array.h"
 #include "std/string.h"
-#include "Plugin.h"
 
 
 #define HELP_OPT "h"
@@ -47,7 +46,7 @@ static Options create(Error* error) {
 static void display_help(Plugin* plugins[]) {
     fprintf(stderr,
         "Usage: show [OPTION]... [RESOURCE]...\n"
-        "Version: 0.2.0\n"
+        "Version: 0.3.0\n"
         "\n"
         "Options:\n"
         "  -%c              display this help and exit\n"

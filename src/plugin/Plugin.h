@@ -2,8 +2,11 @@
 #define SHOW__PLUGIN_H
 
 
-#include "list/List.h"
-#include "std/Error.h"
+#include "../list/List.h"
+#include "../std/Error.h"
+
+
+#define PLUGIN_INVALID_FD_OUT (-1)
 
 
 typedef struct {

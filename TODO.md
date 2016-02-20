@@ -1,9 +1,9 @@
-- Plugin architecture: pipes to child processes, specific exit error status code if it can't handle, get_name() : char*, run(int argc, char* argv[], char* options[]) : int
+- Disable `ls` plugin if `pipe` plugin is active?
+- Passthrough `ls` exit status?
 - Tests with coverage.
 - Continuous integration.
 - Profiling.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
 - Try to improve readability with more helper functions?
-- Add a set data type? (To store disabled plugin names.)
 - Input transformation: syntax highlighting, code reformatting, show whitespace.
 - Plugin ideas: Git commits, perldoc, pydoc

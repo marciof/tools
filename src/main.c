@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "Ls_Plugin.h"
 #include "Options.h"
+#include "plugin/Ls_Plugin.h"
+#include "plugin/Pipe_Plugin.h"
 #include "std/array.h"
 
 
 int main(int argc, char* argv[]) {
     Plugin* plugins[] = {
+        &Pipe_Plugin,
         &Ls_Plugin,
         NULL
     };
@@ -26,32 +28,35 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        const char* name = plugins[i]->get_name();
+    int exit_status = EXIT_FAILURE;
+
+    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins) - 1; ++i) {
+        Plugin* plugin = plugins[i];
+        const char* name = plugin->get_name();
         bool is_enabled = Options_is_plugin_enabled(options, name, &error);
 
         if (error) {
-            Options_delete(options);
-            fprintf(stderr, "%s\n", error);
-            return EXIT_FAILURE;
+            fprintf(stderr, "%s: %s\n", plugin->get_name(), error);
+            continue;
         }
-
         if (!is_enabled) {
             continue;
         }
 
         List plugin_options = Options_get_plugin_options(options, name);
 
-        int output_fd = plugins[i]->run(
+        int output_fd = plugin->run(
             argc - options.optind,
             argv + options.optind,
             plugin_options,
             &error);
 
         if (error) {
-            Options_delete(options);
-            fprintf(stderr, "%s\n", error);
-            return EXIT_FAILURE;
+            fprintf(stderr, "%s: %s\n", plugin->get_name(), error);
+            continue;
+        }
+        if (output_fd == PLUGIN_INVALID_FD_OUT) {
+            continue;
         }
 
         ssize_t nr_bytes_read;
@@ -63,11 +68,9 @@ int main(int argc, char* argv[]) {
             fputs(buffer, stdout);
         }
 
-        Options_delete(options);
-        return EXIT_SUCCESS;
+        exit_status = EXIT_SUCCESS;
     }
 
     Options_delete(options);
-    fputs("No working enabled plugin found.\n", stderr);
-    return EXIT_FAILURE;
+    return exit_status;
 }

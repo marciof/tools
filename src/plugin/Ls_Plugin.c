@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "list/Array_List.h"
+#include "../list/Array_List.h"
 #include "Ls_Plugin.h"
 
 
@@ -12,7 +12,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
 
     if (saved_stderr == -1) {
         *error = strerror(errno);
-        return -1;
+        return PLUGIN_INVALID_FD_OUT;
     }
 
     int child_out_fd;
@@ -20,7 +20,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
 
     if (child_pid == -1) {
         *error = strerror(errno);
-        return -1;
+        return PLUGIN_INVALID_FD_OUT;
     }
     else if (child_pid != 0) {
         close(saved_stderr);
@@ -30,12 +30,12 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
 
     if (dup2(saved_stderr, STDERR_FILENO) == -1) {
         *error = strerror(errno);
-        return -1;
+        return PLUGIN_INVALID_FD_OUT;
     }
 
     if (execvp(file, argv) == -1) {
         *error = strerror(errno);
-        return -1;
+        return PLUGIN_INVALID_FD_OUT;
     }
     else {
         exit(EXIT_SUCCESS);
@@ -58,7 +58,7 @@ static int run(int argc, char** argv, List options, Error* error) {
     Error discard;
 
     if (*error) {
-        return -1;
+        return PLUGIN_INVALID_FD_OUT;
     }
 
     if (options != NULL) {
@@ -66,7 +66,7 @@ static int run(int argc, char** argv, List options, Error* error) {
 
         if (*error) {
             List_delete(ls_argv, &discard);
-            return -1;
+            return PLUGIN_INVALID_FD_OUT;
         }
     }
 
@@ -75,7 +75,7 @@ static int run(int argc, char** argv, List options, Error* error) {
 
         if (*error) {
             List_delete(ls_argv, &discard);
-            return -1;
+            return PLUGIN_INVALID_FD_OUT;
         }
     }
 
@@ -83,7 +83,7 @@ static int run(int argc, char** argv, List options, Error* error) {
     List_delete(ls_argv, &discard);
 
     if (*error) {
-        return -1;
+        return PLUGIN_INVALID_FD_OUT;
     }
 
     int output_fd = exec_forkpty(exec_ls_argv[0], exec_ls_argv, error);
