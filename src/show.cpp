@@ -5,10 +5,8 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <vector>
-#include "array.h"
 #include "std/string.h"
 
 
@@ -22,24 +20,18 @@
     PLUGIN_OPTION_OPT \
 )
 
-
-typedef enum {
-    STATUS_OK,
-    STATUS_ERRNO,
-    STATUS_UNSPECIFIED_PLUGIN_OPTION,
-    STATUS_UNSPECIFIED_PLUGIN_NAME,
-    STATUS_INVALID_OPTION
-} Status;
+#define STATIC_ARRAY_LENGTH(array) \
+    (sizeof(array) / sizeof((array)[0]))
 
 
 typedef struct {
-    Status (*get_name)(char** name);
+    const char* (*get_name)();
 
-    Status (*run)(
+    int (*run)(
         int argc,
-        char** argv,
+        char* argv[],
         std::vector<char*>* options,
-        int* output_fd);
+        char** error);
 } Plugin;
 
 
@@ -50,47 +42,40 @@ struct Cstring_cmp {
 };
 
 
-static const char* status_string_by_code[] = {
-    "Ok.",
-    NULL,
-    "No plugin option specified.",
-    "No plugin name specified.",
-    "Try '-h' for more information.",
-};
+static char* ERROR_INVALID_OPTION = (char*) "Try '-h' for more information.";
+static char* ERROR_NO_PLUGIN_NAME = (char*) "No plugin name specified.";
+static char* ERROR_NO_PLUGIN_OPTION = (char*) "No plugin option specified.";
 
 
-const char* Status_describe(Status status) {
-    return status == STATUS_ERRNO
-        ? strerror(errno)
-        : status_string_by_code[status];
-}
-
-
-Status exec_forkpty(char* file, char* argv[], int* output_fd) {
+int exec_forkpty(char* file, char* argv[], char** error) {
     int saved_stderr = dup(STDERR_FILENO);
 
     if (saved_stderr == -1) {
-        return STATUS_ERRNO;
+        *error = strerror(errno);
+        return -1;
     }
 
     int child_out_fd;
     int child_pid = forkpty(&child_out_fd, NULL, NULL, NULL);
 
     if (child_pid == -1) {
-        return STATUS_ERRNO;
+        *error = strerror(errno);
+        return -1;
     }
     else if (child_pid != 0) {
-        *output_fd = child_out_fd;
         close(saved_stderr);
-        return STATUS_OK;
+        *error = NULL;
+        return child_out_fd;
     }
 
     if (dup2(saved_stderr, STDERR_FILENO) == -1) {
-        return STATUS_ERRNO;
+        *error = strerror(errno);
+        return -1;
     }
 
     if (execvp(file, argv) == -1) {
-        return STATUS_ERRNO;
+        *error = strerror(errno);
+        return -1;
     }
     else {
         exit(EXIT_SUCCESS);
@@ -98,33 +83,36 @@ Status exec_forkpty(char* file, char* argv[], int* output_fd) {
 }
 
 
-Status parse_plugin_option(
+void parse_plugin_option(
         char* option,
-        std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options) {
+        std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options,
+        char** error) {
 
     const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
 
     bool is_option_missing = (separator == NULL)
-        || (separator[ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0');
+        || (separator[STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        return STATUS_UNSPECIFIED_PLUGIN_OPTION;
+        *error = ERROR_NO_PLUGIN_OPTION;
+        return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        return STATUS_UNSPECIFIED_PLUGIN_NAME;
+        *error = ERROR_NO_PLUGIN_NAME;
+        return;
     }
 
-    char* name = strncopy(option, name_length);
+    char* name = strncopy((const char*) option, name_length, error);
 
-    if (name == NULL) {
-        return STATUS_ERRNO;
+    if (*error) {
+        return;
     }
 
-    char* value = separator + ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
+    char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
     std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
         = plugin_options->find(name);
@@ -137,16 +125,16 @@ Status parse_plugin_option(
         it->second.push_back(value);
     }
 
-    return STATUS_OK;
+    *error = NULL;
 }
 
 
-Status parse_options(
+int parse_options(
         int argc,
         char* argv[],
-        int* last_optind,
         std::set<char*, Cstring_cmp>* disabled_plugins,
-        std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options) {
+        std::map<char*, std::vector<char*>, Cstring_cmp>* plugin_options,
+        char** error) {
 
     int option;
 
@@ -170,37 +158,37 @@ Status parse_options(
                 *PLUGIN_OPTION_OPT,
                 *DISABLE_PLUGIN_OPT);
 
-            *last_optind = -1;
-            return STATUS_OK;
+            *error = NULL;
+            return -1;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
-            Status status = parse_plugin_option(optarg, plugin_options);
+            parse_plugin_option(optarg, plugin_options, error);
 
-            if (status != STATUS_OK) {
-                return status;
+            if (*error) {
+                return -1;
             }
         }
         else {
-            return STATUS_INVALID_OPTION;
+            *error = ERROR_INVALID_OPTION;
+            return -1;
         }
     }
 
-    *last_optind = optind;
-    return STATUS_OK;
+    *error = NULL;
+    return optind;
 }
 
 
-Status plugin_ls_get_name(char** name) {
-    *name = (char*) "ls";
-    return STATUS_OK;
+const char* plugin_ls_get_name() {
+    return "ls";
 }
 
 
-Status plugin_ls_run(
+int plugin_ls_run(
         int argc,
-        char** argv,
+        char* argv[],
         std::vector<char*>* options,
-        int* output_fd) {
+        char** error) {
 
     std::vector<char*> ls_argv;
     ls_argv.push_back((char*) "ls");
@@ -214,20 +202,20 @@ Status plugin_ls_run(
     }
 
     ls_argv.push_back(NULL);
-    return exec_forkpty(ls_argv[0], ls_argv.data(), output_fd);
+    return exec_forkpty(ls_argv[0], ls_argv.data(), error);
 }
 
 
 int main(int argc, char* argv[]) {
     std::set<char*, Cstring_cmp> disabled_plugins;
     std::map<char*, std::vector<char*>, Cstring_cmp> plugin_options;
-    int arg_optind;
+    char* error;
 
-    Status status = parse_options(
-        argc, argv, &arg_optind, &disabled_plugins, &plugin_options);
+    int arg_optind = parse_options(
+        argc, argv, &disabled_plugins, &plugin_options, &error);
 
-    if (status != STATUS_OK) {
-        fprintf(stderr, "%s\n", Status_describe(status));
+    if (error) {
+        fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
@@ -242,32 +230,25 @@ int main(int argc, char* argv[]) {
         },
     };
 
-    for (size_t i = 0; i < ARRAY_LENGTH(plugins); ++i) {
+    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         Plugin* plugin = &plugins[i];
-        char* name;
+        const char* name = plugin->get_name();
 
-        status = plugin->get_name(&name);
-
-        if (status != STATUS_OK) {
-            fprintf(stderr, "%s\n", Status_describe(status));
-            continue;
-        }
-
-        if (disabled_plugins.find(name) == disabled_plugins.end()) {
-            int output_fd;
+        if (disabled_plugins.find((char*) name) == disabled_plugins.end()) {
             std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
-                = plugin_options.find(name);
+                = plugin_options.find((char*) name);
 
-            status = plugin->run(
+            int output_fd = plugin->run(
                 argc - arg_optind,
                 argv + arg_optind,
-                (it != plugin_options.end())
-                    ? &(it->second)
-                    : NULL,
-                &output_fd);
+                (it != plugin_options.end()) ? &(it->second) : NULL,
+                &error);
 
-            if (status != STATUS_OK) {
-                fprintf(stderr, "%s\n", Status_describe(status));
+            if (error) {
+                if (it != plugin_options.end()) {
+                    free(it->first);
+                }
+                fprintf(stderr, "%s\n", error);
                 return EXIT_FAILURE;
             }
 
@@ -286,6 +267,13 @@ int main(int argc, char* argv[]) {
 
             return EXIT_SUCCESS;
         }
+    }
+
+    std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
+        = plugin_options.begin();
+
+    for (; it != plugin_options.end(); ++it) {
+        free(it->first);
     }
 
     fputs("No working enabled plugin found.\n", stderr);

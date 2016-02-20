@@ -3,5 +3,4 @@
 - Profiling.
 - Input transformation: syntax highlighting, code reformatting, show whitespace.
 - Plugin ideas: Git commits, perldoc, pydoc
-- Switch to C?
 - Plugin architecture: pipes to child processes, specific exit error status code if it can't handle, get_name() : char*, run(int argc, char* argv[], char* options[]) : int
