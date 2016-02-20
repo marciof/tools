@@ -1,3 +1,4 @@
+- Allow iterating using only callbacks to avoid allocating memory and to be faster?
 - Tests with coverage.
 - Continuous integration.
 - Profiling.

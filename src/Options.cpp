@@ -19,12 +19,7 @@
 )
 
 
-Error ERROR_INVALID_OPTION = "Try '-h' for more information.";
-Error ERROR_NO_PLUGIN_NAME = "No plugin name specified.";
-Error ERROR_NO_PLUGIN_OPTION = "No plugin option specified.";
-
-
-static void parse_plugin_option(char* option, Options* options, Error* error) {
+static void parse_plugin_option(Options options, char* option, Error* error) {
     const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
 
@@ -32,14 +27,14 @@ static void parse_plugin_option(char* option, Options* options, Error* error) {
         || (separator[STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        *error = ERROR_NO_PLUGIN_OPTION;
+        *error = "No plugin option specified.";
         return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        *error = ERROR_NO_PLUGIN_NAME;
+        *error = "No plugin name specified.";
         return;
     }
 
@@ -51,15 +46,35 @@ static void parse_plugin_option(char* option, Options* options, Error* error) {
 
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
-    std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
-        = options->plugin_options.find(name);
+    std::map<char*, List, Cstring_cmp>::iterator it
+        = options.plugin_options->find(name);
 
-    if (it == options->plugin_options.end()) {
-        options->plugin_options[name] = std::vector<char*>(1, value);
+    if (it == options.plugin_options->end()) {
+        List plugin_options = List_new(Array_List, error);
+
+        if (*error) {
+            free(name);
+            return;
+        }
+
+        List_add(plugin_options, (intptr_t) value, error);
+
+        if (*error) {
+            Error discard;
+            free(name);
+            List_delete(plugin_options, &discard);
+            return;
+        }
+
+        (*options.plugin_options)[name] = plugin_options;
     }
     else {
         free(name);
-        it->second.push_back(value);
+        List_add(it->second, (intptr_t) value, error);
+
+        if (*error) {
+            return;
+        }
     }
 
     *error = NULL;
@@ -67,15 +82,26 @@ static void parse_plugin_option(char* option, Options* options, Error* error) {
 
 
 void Options_delete(Options options) {
-    std::map<char*, std::vector<char*>, Cstring_cmp>::iterator options_it
-        = options.plugin_options.begin();
+    Error discard;
 
-    for (; options_it != options.plugin_options.end(); ++options_it) {
-        free(options_it->first);
+    std::map<char*, List, Cstring_cmp>::iterator it
+        = options.plugin_options->begin();
+
+    for (; it != options.plugin_options->end(); ++it) {
+        free(it->first);
+        List_delete(it->second, &discard);
     }
 
-    Error discard;
+    delete options.plugin_options;
     List_delete(options.disabled_plugins, &discard);
+}
+
+
+List Options_get_plugin_options(Options options, const char* name) {
+    std::map<char*, List, Cstring_cmp>::iterator it
+        = options.plugin_options->find((char*) name);
+
+    return it == options.plugin_options->end() ? NULL : it->second;
 }
 
 
@@ -108,6 +134,7 @@ Options Options_parse(int argc, char* argv[], Error* error) {
 
     options.optind = -1;
     options.disabled_plugins = List_new(Array_List, error);
+    options.plugin_options = new std::map<char*, List, Cstring_cmp>();
 
     if (*error) {
         return options;
@@ -142,14 +169,16 @@ Options Options_parse(int argc, char* argv[], Error* error) {
             return options;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
-            parse_plugin_option(optarg, &options, error);
+            parse_plugin_option(options, optarg, error);
 
             if (*error) {
+                Options_delete(options);
                 return options;
             }
         }
         else {
-            *error = ERROR_INVALID_OPTION;
+            Options_delete(options);
+            *error = "Try '-h' for more information.";
             return options;
         }
     }

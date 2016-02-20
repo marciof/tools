@@ -1,24 +1,19 @@
 #include <errno.h>
-#include <map>
 #include <pty.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <vector>
 #include "Options.h"
+#include "list/Array_List.h"
+#include "list/List.h"
 #include "std/array.h"
 #include "std/Error.h"
 
 
 typedef struct {
     const char* (*get_name)();
-
-    int (*run)(
-        int argc,
-        char* argv[],
-        std::vector<char*>* options,
-        Error* error);
+    int (*run)(int argc, char* argv[], List options, Error* error);
 } Plugin;
 
 
@@ -63,25 +58,61 @@ const char* plugin_ls_get_name() {
 }
 
 
-int plugin_ls_run(
-        int argc,
-        char* argv[],
-        std::vector<char*>* options,
-        Error* error) {
+int plugin_ls_run(int argc, char* argv[], List options, Error* error) {
+    List ls_argv = List_new(Array_List, error);
 
-    std::vector<char*> ls_argv;
-    ls_argv.push_back((char*) "ls");
+    if (*error) {
+        return -1;
+    }
+
+    List_add(ls_argv, (intptr_t) "ls", error);
+    Error discard;
+
+    if (*error) {
+        List_delete(ls_argv, &discard);
+        return -1;
+    }
 
     if (options != NULL) {
-        ls_argv.insert(ls_argv.end(), options->begin(), options->end());
+        Iterator it = List_iterator(options, error);
+
+        if (*error) {
+            List_delete(ls_argv, &discard);
+            return -1;
+        }
+
+        while (Iterator_has_next(it)) {
+            List_add(ls_argv, Iterator_next(it, &discard), error);
+
+            if (*error) {
+                List_delete(ls_argv, &discard);
+                Iterator_delete(it);
+                return -1;
+            }
+        }
+
+        Iterator_delete(it);
     }
 
-    for (int i = 0; i < argc; ++i) {
-        ls_argv.push_back(argv[i]);
+    for (int i = 0; i <= argc; ++i) {
+        List_add(ls_argv, (intptr_t) argv[i], error);
+
+        if (*error) {
+            List_delete(ls_argv, &discard);
+            return -1;
+        }
     }
 
-    ls_argv.push_back(NULL);
-    return exec_forkpty(ls_argv[0], ls_argv.data(), error);
+    char** exec_ls_argv = (char**) List_to_array(ls_argv, sizeof(char*), error);
+    List_delete(ls_argv, &discard);
+
+    if (*error) {
+        return -1;
+    }
+
+    int output_fd = exec_forkpty(exec_ls_argv[0], exec_ls_argv, error);
+    free(exec_ls_argv);
+    return output_fd;
 }
 
 
@@ -90,7 +121,6 @@ int main(int argc, char* argv[]) {
     Options options = Options_parse(argc, argv, &error);
 
     if (error) {
-        Options_delete(options);
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
@@ -122,13 +152,12 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
-            = options.plugin_options.find((char*) name);
+        List plugin_options = Options_get_plugin_options(options, name);
 
         int output_fd = plugin->run(
             argc - options.optind,
             argv + options.optind,
-            (it != options.plugin_options.end()) ? &(it->second) : NULL,
+            plugin_options,
             &error);
 
         if (error) {
