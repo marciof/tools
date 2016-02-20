@@ -4,12 +4,12 @@
 #include "string.h"
 
 
-char* strcopy(const char* string, char** error) {
+char* strcopy(const char* string, Error* error) {
     return strncopy(string, strlen(string), error);
 }
 
 
-char* strformat(const char* format, char** error, ...) {
+char* strformat(const char* format, Error* error, ...) {
     va_list args;
 
     va_start(args, error);
@@ -24,7 +24,7 @@ char* strjoin(
         size_t length,
         const char** strings,
         const char* separator,
-        char** error) {
+        Error* error) {
 
     if (length == 0) {
         return strcopy("", error);
@@ -57,7 +57,7 @@ char* strjoin(
 }
 
 
-char* strncopy(const char* string, size_t length, char** error) {
+char* strncopy(const char* string, size_t length, Error* error) {
     char* copy = (char*) malloc((length + 1) * sizeof(char));
     
     if (copy == NULL) {
@@ -87,7 +87,7 @@ char** strsplit(
         const char* string,
         const char* separator,
         size_t* length,
-        char** error) {
+        Error* error) {
 
     size_t separator_length = strlen(separator);
     size_t tokens_length = 0;
@@ -158,7 +158,7 @@ bool strsuffix(const char* string, const char* suffix) {
 }
 
 
-char* strvformat(const char* format, va_list arguments, char** error) {
+char* strvformat(const char* format, va_list arguments, Error* error) {
     long length = BUFSIZ;
     char* string = NULL;
 

@@ -17,12 +17,12 @@
 )
 
 
-char* ERROR_INVALID_OPTION = (char*) "Try '-h' for more information.";
-char* ERROR_NO_PLUGIN_NAME = (char*) "No plugin name specified.";
-char* ERROR_NO_PLUGIN_OPTION = (char*) "No plugin option specified.";
+Error ERROR_INVALID_OPTION = "Try '-h' for more information.";
+Error ERROR_NO_PLUGIN_NAME = "No plugin name specified.";
+Error ERROR_NO_PLUGIN_OPTION = "No plugin option specified.";
 
 
-static void parse_plugin_option(char* option, Options* options, char** error) {
+static void parse_plugin_option(char* option, Options* options, Error* error) {
     const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
 
@@ -64,7 +64,17 @@ static void parse_plugin_option(char* option, Options* options, char** error) {
 }
 
 
-Options Options_parse(int argc, char* argv[], char** error) {
+void Options_delete(Options options) {
+    std::map<char*, std::vector<char*>, Cstring_cmp>::iterator options_it
+        = options.plugin_options.begin();
+
+    for (; options_it != options.plugin_options.end(); ++options_it) {
+        free(options_it->first);
+    }
+}
+
+
+Options Options_parse(int argc, char* argv[], Error* error) {
     Options options;
     int option;
 

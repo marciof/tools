@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <vector>
+#include "std/Error.h"
 
 
 struct Cstring_cmp {
@@ -23,12 +24,13 @@ typedef struct {
 } Options;
 
 
-extern char* ERROR_INVALID_OPTION;
-extern char* ERROR_NO_PLUGIN_NAME;
-extern char* ERROR_NO_PLUGIN_OPTION;
+extern Error ERROR_INVALID_OPTION;
+extern Error ERROR_NO_PLUGIN_NAME;
+extern Error ERROR_NO_PLUGIN_OPTION;
 
 
-Options Options_parse(int argc, char* argv[], char** error);
+void Options_delete(Options options);
+Options Options_parse(int argc, char* argv[], Error* error);
 
 
 #endif

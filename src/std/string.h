@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include "Error.h"
 
 
 /**
@@ -16,7 +17,7 @@
  * @return new copy of the given string or `NULL` on error
  * @exception ENOMEM not enough memory
  */
-char* strcopy(const char* string, char** error);
+char* strcopy(const char* string, Error* error);
 
 
 /**
@@ -28,7 +29,7 @@ char* strcopy(const char* string, char** error);
  * @return new formatted string or `NULL` on error
  * @exception ENOMEM not enough memory
  */
-char* strformat(const char* format, char** error, ...);
+char* strformat(const char* format, Error* error, ...);
 
 
 /**
@@ -42,7 +43,7 @@ char* strformat(const char* format, char** error, ...);
  * @exception ENOMEM not enough memory
  */
 char* strjoin(
-    size_t length, const char** strings, const char* separator, char** error);
+    size_t length, const char** strings, const char* separator, Error* error);
 
 
 /**
@@ -54,7 +55,7 @@ char* strjoin(
  * @return new partial copy of the given string or `NULL` on error
  * @exception ENOMEM not enough memory
  */
-char* strncopy(const char* string, size_t length, char** error);
+char* strncopy(const char* string, size_t length, Error* error);
 
 
 /**
@@ -80,7 +81,7 @@ bool strprefix(const char* string, const char* prefix);
  * @exception ENOMEM not enough memory
  */
 char** strsplit(
-    const char* string, const char* separator, size_t* length, char** error);
+    const char* string, const char* separator, size_t* length, Error* error);
 
 
 /**
@@ -102,7 +103,7 @@ bool strsuffix(const char* string, const char* suffix);
  * @return new formatted string or `NULL` on error
  * @exception ENOMEM not enough memory
  */
-char* strvformat(const char* format, va_list arguments, char** error);
+char* strvformat(const char* format, va_list arguments, Error* error);
 
 
 #endif

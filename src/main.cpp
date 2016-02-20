@@ -9,6 +9,7 @@
 #include <vector>
 #include "options.h"
 #include "std/array.h"
+#include "std/Error.h"
 
 
 typedef struct {
@@ -18,11 +19,11 @@ typedef struct {
         int argc,
         char* argv[],
         std::vector<char*>* options,
-        char** error);
+        Error* error);
 } Plugin;
 
 
-int exec_forkpty(char* file, char* argv[], char** error) {
+int exec_forkpty(char* file, char* argv[], Error* error) {
     int saved_stderr = dup(STDERR_FILENO);
 
     if (saved_stderr == -1) {
@@ -67,7 +68,7 @@ int plugin_ls_run(
         int argc,
         char* argv[],
         std::vector<char*>* options,
-        char** error) {
+        Error* error) {
 
     std::vector<char*> ls_argv;
     ls_argv.push_back((char*) "ls");
@@ -86,15 +87,17 @@ int plugin_ls_run(
 
 
 int main(int argc, char* argv[]) {
-    char* error;
+    Error error;
     Options options = Options_parse(argc, argv, &error);
 
     if (error) {
+        Options_delete(options);
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
     if (options.optind < 0) {
+        Options_delete(options);
         return EXIT_SUCCESS;
     }
 
@@ -120,9 +123,7 @@ int main(int argc, char* argv[]) {
                 &error);
 
             if (error) {
-                if (it != options.plugin_options.end()) {
-                    free(it->first);
-                }
+                Options_delete(options);
                 fprintf(stderr, "%s\n", error);
                 return EXIT_FAILURE;
             }
@@ -136,21 +137,12 @@ int main(int argc, char* argv[]) {
                 fputs(buffer, stdout);
             }
 
-            if (it != options.plugin_options.end()) {
-                free(it->first);
-            }
-
+            Options_delete(options);
             return EXIT_SUCCESS;
         }
     }
 
-    std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
-        = options.plugin_options.begin();
-
-    for (; it != options.plugin_options.end(); ++it) {
-        free(it->first);
-    }
-
+    Options_delete(options);
     fputs("No working enabled plugin found.\n", stderr);
     return EXIT_FAILURE;
 }
