@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "List.h"
@@ -102,6 +103,39 @@ Iterator List_iterator(List list, Error* error) {
 
 size_t List_length(List list) {
     return list->impl->length(list->list);
+}
+
+
+List List_literal(List_Impl implementation, Error* error, ...) {
+    List list = List_new(implementation, error);
+
+    if (*error) {
+        return NULL;
+    }
+
+    va_list args;
+    va_start(args, error);
+
+    while (true) {
+        intptr_t arg = va_arg(args, intptr_t);
+
+        if (arg == 0) {
+            break;
+        }
+
+        List_add(list, arg, error);
+
+        if (*error) {
+            va_end(args);
+            Error discard;
+            List_delete(list, &discard);
+            return NULL;
+        }
+    }
+
+    va_end(args);
+    *error = NULL;
+    return list;
 }
 
 

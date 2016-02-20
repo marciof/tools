@@ -127,6 +127,19 @@ size_t List_length(List list);
 
 
 /**
+ * Create a list from variable arguments.
+ *
+ * @param implementation list implementation to use
+ * @param error error message, if any
+ * @param ... elements to add, until the first `NULL` argument
+ * @return new empty list or `NULL` on error
+ * @exception ENOMEM not enough memory
+ * @exception EPERM maximum number of elements (`SIZE_MAX`) reached
+ */
+List List_literal(List_Impl implementation, Error* error, ...);
+
+
+/**
  * Create a list.
  *
  * @param implementation list implementation to use

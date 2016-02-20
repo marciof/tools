@@ -52,18 +52,10 @@ static void parse_plugin_option(Options options, char* option, Error* error) {
         options.plugin_options, (intptr_t) name, &discard);
 
     if (plugin_options == NULL) {
-        plugin_options = List_new(Array_List, error);
+        plugin_options = List_literal(Array_List, error, value, NULL);
 
         if (*error) {
             free(name);
-            return;
-        }
-
-        List_add(plugin_options, (intptr_t) value, error);
-
-        if (*error) {
-            free(name);
-            List_delete(plugin_options, &discard);
             return;
         }
 

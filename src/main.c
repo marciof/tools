@@ -60,17 +60,10 @@ const char* plugin_ls_get_name() {
 
 
 int plugin_ls_run(int argc, char* argv[], List options, Error* error) {
-    List ls_argv = List_new(Array_List, error);
-
-    if (*error) {
-        return -1;
-    }
-
-    List_add(ls_argv, (intptr_t) "ls", error);
+    List ls_argv = List_literal(Array_List, error, "ls", NULL);
     Error discard;
 
     if (*error) {
-        List_delete(ls_argv, &discard);
         return -1;
     }
 
