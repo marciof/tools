@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "Options.h"
 #include "list/Array_List.h"
@@ -74,24 +75,12 @@ int plugin_ls_run(int argc, char* argv[], List options, Error* error) {
     }
 
     if (options != NULL) {
-        Iterator it = List_iterator(options, error);
+        List_extend(ls_argv, options, error);
 
         if (*error) {
             List_delete(ls_argv, &discard);
             return -1;
         }
-
-        while (Iterator_has_next(it)) {
-            List_add(ls_argv, Iterator_next(it, &discard), error);
-
-            if (*error) {
-                List_delete(ls_argv, &discard);
-                Iterator_delete(it);
-                return -1;
-            }
-        }
-
-        Iterator_delete(it);
     }
 
     for (int i = 0; i <= argc; ++i) {

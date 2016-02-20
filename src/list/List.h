@@ -53,6 +53,20 @@ void List_delete(List list, Error* error);
 
 
 /**
+ * Appends elements to a list.
+ *
+ * @param list list into which to add the elemente
+ * @param elements list of elements to insert at the end
+ * @param error error message, if any
+ * @exception ENOMEM not enough memory
+ * @exception EPERM list is being iterated
+ * @exception EPERM maximum number of iterators (`SIZE_MAX`) reached
+ * @exception EPERM maximum number of elements (`SIZE_MAX`) reached
+ */
+void List_extend(List list, List elements, Error* error);
+
+
+/**
  * Get an element from a list.
  *
  * @param list list from which to retrieve an element

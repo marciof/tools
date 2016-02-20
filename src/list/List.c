@@ -52,6 +52,34 @@ void List_delete(List list, Error* error) {
 }
 
 
+void List_extend(List list, List elements, Error* error) {
+    Iterator it = List_iterator(elements, error);
+
+    if (*error) {
+        return;
+    }
+
+    size_t length = List_length(list);
+    Error discard;
+
+    for (size_t added = 0; Iterator_has_next(it); ++added) {
+        List_add(list, Iterator_next(it, &discard), error);
+
+        if (*error) {
+            for (; added > 0; --added) {
+                List_remove(list, length + added - 1, &discard);
+            }
+
+            Iterator_delete(it);
+            return;
+        }
+    }
+
+    Iterator_delete(it);
+    *error = NULL;
+}
+
+
 intptr_t List_get(List list, size_t position, Error* error) {
     return list->impl->get(list->list, position, error);
 }

@@ -3,7 +3,6 @@
 
 
 #include <stdbool.h>
-#include <string.h>
 #include "list/List.h"
 #include "map/Map.h"
 #include "std/Error.h"

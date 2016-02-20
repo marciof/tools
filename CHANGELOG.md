@@ -1,6 +1,6 @@
 # 0.3.0 - YYYY-MM-DD #
 
-- Plugin "pager": automatic paging.
+- Plugin "io": `stdin`/`stdout` pipe.
 
 # 0.2.0 - 2016-02-20 #
 
