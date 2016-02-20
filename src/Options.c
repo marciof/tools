@@ -20,6 +20,27 @@
 )
 
 
+static Options create(Error* error) {
+    Options options;
+
+    options.optind = -1;
+    options.disabled_plugins = List_new(Array_List, error);
+
+    if (*error) {
+        return options;
+    }
+
+    options.plugin_options = Map_new(String_Hash_Map, error);
+
+    if (*error) {
+        Options_delete(options);
+        return options;
+    }
+
+    return options;
+}
+
+
 static void parse_plugin_option(Options options, char* option, Error* error) {
     const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
@@ -138,37 +159,11 @@ bool Options_is_plugin_enabled(
 
 Options Options_parse(int argc, char* argv[], Error* error) {
     int option;
-    Options options = {
-        -1,
-        NULL,
-        NULL,
-    };
-
-    options.optind = -1;
-    options.disabled_plugins = List_new(Array_List, error);
+    Options options = create(error);
 
     if (*error) {
         return options;
     }
-
-    options.plugin_options = Map_new(Hash_Map, error);
-
-    if (*error) {
-        Options_delete(options);
-        return options;
-    }
-
-    Map_set_property(
-        options.plugin_options,
-        HASH_MAP_EQUAL,
-        (intptr_t) Hash_Map_str_equal,
-        error);
-
-    Map_set_property(
-        options.plugin_options,
-        HASH_MAP_HASH,
-        (intptr_t) Hash_Map_str_hash,
-        error);
 
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == *DISABLE_PLUGIN_OPT) {
@@ -185,12 +180,12 @@ Options Options_parse(int argc, char* argv[], Error* error) {
                     "Version: 0.2.0\n"
                     "\n"
                     "Options:\n"
-                    "  -%c               display this help and exit\n"
-                    "  -%c PLUGIN:OPT    pass an option to a plugin\n"
-                    "  -%c PLUGIN        disable plugin\n"
+                    "  -%c              display this help and exit\n"
+                    "  -%c PLUGIN:OPT   pass an option to a plugin\n"
+                    "  -%c PLUGIN       disable plugin\n"
                     "\n"
                     "Plugins:\n"
-                    "  ls               POSIX `ls` command\n",
+                    "  ls              POSIX `ls` command\n",
                 *HELP_OPT,
                 *PLUGIN_OPTION_OPT,
                 *DISABLE_PLUGIN_OPT);

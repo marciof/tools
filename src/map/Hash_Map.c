@@ -553,6 +553,21 @@ static size_t size(void* m) {
 }
 
 
+static void* create_for_string_keys(Error* error) {
+    Hash map = (Hash) create(error);
+
+    if (*error) {
+        return NULL;
+    }
+
+    Error discard;
+    set_property(map, HASH_MAP_EQUAL, (intptr_t) Hash_Map_str_equal, &discard);
+    set_property(map, HASH_MAP_HASH, (intptr_t) Hash_Map_str_hash, &discard);
+
+    return map;
+}
+
+
 static void iterator_to_end(void* it) {
     Hash_Iterator iterator = (Hash_Iterator) it;
     
@@ -703,7 +718,21 @@ static const struct _Map_Impl impl = {
 };
 
 
+static const struct _Map_Impl string_impl = {
+    (Iterator_Impl) &keys_iterator_impl,
+    create_for_string_keys,
+    destroy,
+    get,
+    get_property,
+    put,
+    remove,
+    set_property,
+    size
+};
+
+
 const Map_Impl Hash_Map = (Map_Impl) &impl;
+const Map_Impl String_Hash_Map = (Map_Impl) &string_impl;
 
 
 uint32_t Hash_Map_hash(uint8_t* data, size_t length) {

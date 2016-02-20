@@ -49,6 +49,14 @@ extern const Map_Impl Hash_Map;
 
 
 /**
+ * Hash table map implementation for `NUL` terminated string keys.
+ *
+ * The collision strategy used is a singly linked linear list.
+ */
+extern const Map_Impl String_Hash_Map;
+
+
+/**
  * Compute a hash code using the One-at-a-Time algorithm.
  *
  * @param data data to hash
