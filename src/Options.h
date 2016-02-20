@@ -3,10 +3,10 @@
 
 
 #include <map>
-#include <set>
 #include <stdbool.h>
 #include <string.h>
 #include <vector>
+#include "list/List.h"
 #include "std/Error.h"
 
 
@@ -19,7 +19,7 @@ struct Cstring_cmp {
 
 typedef struct {
     int optind;
-    std::set<char*, Cstring_cmp> disabled_plugins;
+    List disabled_plugins;
     std::map<char*, std::vector<char*>, Cstring_cmp> plugin_options;
 } Options;
 
@@ -30,6 +30,7 @@ extern Error ERROR_NO_PLUGIN_OPTION;
 
 
 void Options_delete(Options options);
+bool Options_is_plugin_enabled(Options options, const char* name, Error* error);
 Options Options_parse(int argc, char* argv[], Error* error);
 
 

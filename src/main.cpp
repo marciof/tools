@@ -1,13 +1,12 @@
 #include <errno.h>
 #include <map>
 #include <pty.h>
-#include <set>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <vector>
-#include "options.h"
+#include "Options.h"
 #include "std/array.h"
 #include "std/Error.h"
 
@@ -111,35 +110,44 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         Plugin* plugin = &plugins[i];
         const char* name = plugin->get_name();
+        bool is_enabled = Options_is_plugin_enabled(options, name, &error);
 
-        if (options.disabled_plugins.find((char*) name) == options.disabled_plugins.end()) {
-            std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
-                = options.plugin_options.find((char*) name);
-
-            int output_fd = plugin->run(
-                argc - options.optind,
-                argv + options.optind,
-                (it != options.plugin_options.end()) ? &(it->second) : NULL,
-                &error);
-
-            if (error) {
-                Options_delete(options);
-                fprintf(stderr, "%s\n", error);
-                return EXIT_FAILURE;
-            }
-
-            ssize_t nr_bytes_read;
-            const int BUFFER_SIZE = 256;
-            char buffer[BUFFER_SIZE + 1];
-
-            while ((nr_bytes_read = read(output_fd, buffer, BUFFER_SIZE)) > 0) {
-                buffer[nr_bytes_read] = '\0';
-                fputs(buffer, stdout);
-            }
-
+        if (error) {
             Options_delete(options);
-            return EXIT_SUCCESS;
+            fprintf(stderr, "%s\n", error);
+            return EXIT_FAILURE;
         }
+
+        if (!is_enabled) {
+            continue;
+        }
+
+        std::map<char*, std::vector<char*>, Cstring_cmp>::iterator it
+            = options.plugin_options.find((char*) name);
+
+        int output_fd = plugin->run(
+            argc - options.optind,
+            argv + options.optind,
+            (it != options.plugin_options.end()) ? &(it->second) : NULL,
+            &error);
+
+        if (error) {
+            Options_delete(options);
+            fprintf(stderr, "%s\n", error);
+            return EXIT_FAILURE;
+        }
+
+        ssize_t nr_bytes_read;
+        const int BUFFER_SIZE = 256;
+        char buffer[BUFFER_SIZE + 1];
+
+        while ((nr_bytes_read = read(output_fd, buffer, BUFFER_SIZE)) > 0) {
+            buffer[nr_bytes_read] = '\0';
+            fputs(buffer, stdout);
+        }
+
+        Options_delete(options);
+        return EXIT_SUCCESS;
     }
 
     Options_delete(options);

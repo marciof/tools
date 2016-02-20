@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "options.h"
+#include "iterator/Iterator.h"
+#include "list/Array_List.h"
+#include "Options.h"
 #include "std/array.h"
 #include "std/string.h"
 
@@ -71,6 +73,32 @@ void Options_delete(Options options) {
     for (; options_it != options.plugin_options.end(); ++options_it) {
         free(options_it->first);
     }
+
+    Error discard;
+    List_delete(options.disabled_plugins, &discard);
+}
+
+
+bool Options_is_plugin_enabled(
+        Options options, const char* name, Error* error) {
+
+    Iterator it = List_iterator(options.disabled_plugins, error);
+
+    if (*error) {
+        return false;
+    }
+
+    while (Iterator_has_next(it)) {
+        const char* disabled_name = (const char*) Iterator_next(it, error);
+
+        if (strcmp(disabled_name, name) == 0) {
+            Iterator_delete(it);
+            return false;
+        }
+    }
+
+    Iterator_delete(it);
+    return true;
 }
 
 
@@ -79,10 +107,20 @@ Options Options_parse(int argc, char* argv[], Error* error) {
     int option;
 
     options.optind = -1;
+    options.disabled_plugins = List_new(Array_List, error);
+
+    if (*error) {
+        return options;
+    }
 
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == *DISABLE_PLUGIN_OPT) {
-            options.disabled_plugins.insert(optarg);
+            List_add(options.disabled_plugins, (intptr_t) optarg, error);
+
+            if (*error) {
+                Options_delete(options);
+                return options;
+            }
         }
         else if (option == *HELP_OPT) {
             fprintf(stderr,
