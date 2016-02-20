@@ -1,8 +1,9 @@
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "iterator/Iterator.h"
 #include "list/Array_List.h"
+#include "map/Hash_Map.h"
 #include "Options.h"
 #include "std/array.h"
 #include "std/string.h"
@@ -45,12 +46,13 @@ static void parse_plugin_option(Options options, char* option, Error* error) {
     }
 
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
+    Error discard;
 
-    std::map<char*, List, Cstring_cmp>::iterator it
-        = options.plugin_options->find(name);
+    List plugin_options = (List) Map_get(
+        options.plugin_options, (intptr_t) name, &discard);
 
-    if (it == options.plugin_options->end()) {
-        List plugin_options = List_new(Array_List, error);
+    if (plugin_options == NULL) {
+        plugin_options = List_new(Array_List, error);
 
         if (*error) {
             free(name);
@@ -60,17 +62,26 @@ static void parse_plugin_option(Options options, char* option, Error* error) {
         List_add(plugin_options, (intptr_t) value, error);
 
         if (*error) {
-            Error discard;
             free(name);
             List_delete(plugin_options, &discard);
             return;
         }
 
-        (*options.plugin_options)[name] = plugin_options;
+        Map_put(
+            options.plugin_options,
+            (intptr_t) name,
+            (intptr_t) plugin_options,
+            error);
+
+        if (*error) {
+            free(name);
+            List_delete(plugin_options, &discard);
+            return;
+        }
     }
     else {
         free(name);
-        List_add(it->second, (intptr_t) value, error);
+        List_add(plugin_options, (intptr_t) value, error);
 
         if (*error) {
             return;
@@ -83,25 +94,30 @@ static void parse_plugin_option(Options options, char* option, Error* error) {
 
 void Options_delete(Options options) {
     Error discard;
+    Iterator it = Map_keys_iterator(options.plugin_options, &discard);
 
-    std::map<char*, List, Cstring_cmp>::iterator it
-        = options.plugin_options->begin();
+    if (!discard) {
+        while (Iterator_has_next(it)) {
+            char* plugin_name = (char*) Iterator_next(it, &discard);
 
-    for (; it != options.plugin_options->end(); ++it) {
-        free(it->first);
-        List_delete(it->second, &discard);
+            List plugin_options = (List) Map_get(
+                options.plugin_options, (intptr_t) plugin_name, &discard);
+
+            free(plugin_name);
+            List_delete(plugin_options, &discard);
+        }
+
+        Iterator_delete(it);
     }
 
-    delete options.plugin_options;
+    Map_delete(options.plugin_options, &discard);
     List_delete(options.disabled_plugins, &discard);
 }
 
 
 List Options_get_plugin_options(Options options, const char* name) {
-    std::map<char*, List, Cstring_cmp>::iterator it
-        = options.plugin_options->find((char*) name);
-
-    return it == options.plugin_options->end() ? NULL : it->second;
+    Error discard;
+    return (List) Map_get(options.plugin_options, (intptr_t) name, &discard);
 }
 
 
@@ -129,16 +145,38 @@ bool Options_is_plugin_enabled(
 
 
 Options Options_parse(int argc, char* argv[], Error* error) {
-    Options options;
     int option;
+    Options options = {
+        -1,
+        NULL,
+        NULL,
+    };
 
     options.optind = -1;
     options.disabled_plugins = List_new(Array_List, error);
-    options.plugin_options = new std::map<char*, List, Cstring_cmp>();
 
     if (*error) {
         return options;
     }
+
+    options.plugin_options = Map_new(Hash_Map, error);
+
+    if (*error) {
+        Options_delete(options);
+        return options;
+    }
+
+    Map_set_property(
+        options.plugin_options,
+        HASH_MAP_EQUAL,
+        (intptr_t) Hash_Map_str_equal,
+        error);
+
+    Map_set_property(
+        options.plugin_options,
+        HASH_MAP_HASH,
+        (intptr_t) Hash_Map_str_hash,
+        error);
 
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == *DISABLE_PLUGIN_OPT) {

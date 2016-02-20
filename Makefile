@@ -1,5 +1,5 @@
-CXXFLAGS=-std=c99 -pedantic-errors -Wall -Wno-conversion-null
-LDFLAGS=-lutil
+CFLAGS=-std=c99 -pedantic-errors -Wall
+LDFLAGS=-lm -lutil
 
-show: src/*.cpp src/*/*.c
-	$(CXX) $(CXXFLAGS) -O2 -g -o $@ $^ $(LDFLAGS)
+show: src/*.c src/*/*.c
+	$(CC) $(CFLAGS) -O2 -g -o $@ $^ $(LDFLAGS)

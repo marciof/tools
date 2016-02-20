@@ -2,24 +2,17 @@
 #define SHOW__OPTIONS_H
 
 
-#include <map>
 #include <stdbool.h>
 #include <string.h>
 #include "list/List.h"
+#include "map/Map.h"
 #include "std/Error.h"
-
-
-struct Cstring_cmp {
-    bool operator()(char* a, char* b) const {
-        return strcmp(a, b) < 0;
-    }
-};
 
 
 typedef struct {
     int optind;
     List disabled_plugins;
-    std::map<char*, List, Cstring_cmp>* plugin_options;
+    Map plugin_options;
 } Options;
 
 

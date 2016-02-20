@@ -312,7 +312,7 @@ static intptr_t get(void* l, size_t position, Error* error) {
     
     if (position >= list->length) {
         *error = strerror(EINVAL);
-        return NULL;
+        return 0;
     }
     
     *error = NULL;
@@ -329,7 +329,7 @@ static intptr_t get_property(void* l, size_t property, Error* error) {
         return list->capacity;
     default:
         *error = strerror(EINVAL);
-        return NULL;
+        return 0;
     }
 }
 
@@ -376,11 +376,11 @@ static intptr_t remove(void* l, size_t position, Error* error) {
 
     if (position >= list->length) {
         *error = strerror(EINVAL);
-        return NULL;
+        return 0;
     }
     if (list->iterators > 0) {
         *error = strerror(EPERM);
-        return NULL;
+        return 0;
     }
     
     --list->length;
@@ -404,7 +404,7 @@ static intptr_t replace(
 
     if (position >= list->length) {
         *error = strerror(EINVAL);
-        return NULL;
+        return 0;
     }
     
     intptr_t previous_element = list->array[position];
@@ -528,7 +528,7 @@ static intptr_t iterator_next(void* it, Error* error) {
 
     if (!iterator_has_next(it)) {
         *error = strerror(EPERM);
-        return NULL;
+        return 0;
     }
     
     if (iterator->location == START) {
@@ -559,7 +559,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
 
     if (!iterator_has_previous(it)) {
         *error = strerror(EPERM);
-        return NULL;
+        return 0;
     }
     
     if (iterator->location == END) {

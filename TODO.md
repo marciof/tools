@@ -1,4 +1,6 @@
+- Make getting values from a map never fail due to memory.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
+- Try to improve readability with more helper functions.
 - Tests with coverage.
 - Continuous integration.
 - Profiling.
