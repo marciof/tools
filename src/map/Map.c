@@ -154,15 +154,7 @@ List Map_values(Map map, Error* error) {
             return NULL;
         }
 
-        intptr_t value = Map_get(map, key, error);
-
-        if (*error) {
-            List_delete(values, &discard);
-            Iterator_delete(keys_iterator);
-            return NULL;
-        }
-
-        List_add(values, value, error);
+        List_add(values, Map_get(map, key, &discard), error);
         
         if (*error) {
             List_delete(values, &discard);

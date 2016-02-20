@@ -307,21 +307,19 @@ static bool get_previous(
  * @param error error message, if any
  */
 static void initialize(Hash map, Error* error) {
-    Hash_Bucket* table;
-    double power;
-    
     if (map->table != NULL) {
         *error = NULL;
         return;
     }
-    
-    power = log((double) map->capacity) / log((double) 2);
+
+    double power = log((double) map->capacity) / log((double) 2);
     assert(power == ceil(power));
     assert(map->load_factor >= 0);
     assert(map->load_factor <= 1);
     
     // calloc is used to set all buckets to NULL.
-    table = (Hash_Bucket*) calloc(map->capacity, sizeof(Hash_Bucket));
+    Hash_Bucket* table = (Hash_Bucket*) calloc(
+        map->capacity, sizeof(Hash_Bucket));
     
     if (table == NULL) {
         *error = strerror(ENOMEM);
@@ -453,12 +451,12 @@ static void destroy(void* m, Error* error) {
 
 static intptr_t get(void* m, intptr_t key, Error* error) {
     Hash map = (Hash) m;
-    initialize(map, error);
 
-    if (*error) {
+    if (map->table == NULL) {
+        *error = strerror(EINVAL);
         return 0;
     }
-    
+
     for (Hash_Bucket e = *bucket_of(map, key); e != NULL; e = e->next) {
         if (map->equals(e->key, key)) {
             *error = NULL;

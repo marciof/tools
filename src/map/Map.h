@@ -43,7 +43,6 @@ void Map_delete(Map map, Error* error);
  * @param error error message, if any
  * @return associated value or `NULL` on error
  * @exception EINVAL unknown key
- * @exception ENOMEM not enough memory
  */
 intptr_t Map_get(Map map, intptr_t key, Error* error);
 
