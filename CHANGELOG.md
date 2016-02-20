@@ -1,6 +1,6 @@
 # 0.3.0 - YYYY-MM-DD #
 
-- Plugin "io": `stdin`/`stdout` pipe.
+- Plugin "pipe": `stdin`/`stdout` pipe.
 
 # 0.2.0 - 2016-02-20 #
 

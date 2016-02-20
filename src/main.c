@@ -1,106 +1,20 @@
-#include <errno.h>
-#include <pty.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include "Ls_Plugin.h"
 #include "Options.h"
-#include "list/Array_List.h"
-#include "list/List.h"
 #include "std/array.h"
-#include "std/Error.h"
-
-
-typedef struct {
-    const char* (*get_name)();
-    int (*run)(int argc, char* argv[], List options, Error* error);
-} Plugin;
-
-
-int exec_forkpty(char* file, char* argv[], Error* error) {
-    int saved_stderr = dup(STDERR_FILENO);
-
-    if (saved_stderr == -1) {
-        *error = strerror(errno);
-        return -1;
-    }
-
-    int child_out_fd;
-    int child_pid = forkpty(&child_out_fd, NULL, NULL, NULL);
-
-    if (child_pid == -1) {
-        *error = strerror(errno);
-        return -1;
-    }
-    else if (child_pid != 0) {
-        close(saved_stderr);
-        *error = NULL;
-        return child_out_fd;
-    }
-
-    if (dup2(saved_stderr, STDERR_FILENO) == -1) {
-        *error = strerror(errno);
-        return -1;
-    }
-
-    if (execvp(file, argv) == -1) {
-        *error = strerror(errno);
-        return -1;
-    }
-    else {
-        exit(EXIT_SUCCESS);
-    }
-}
-
-
-const char* plugin_ls_get_name() {
-    return "ls";
-}
-
-
-int plugin_ls_run(int argc, char* argv[], List options, Error* error) {
-    List ls_argv = List_literal(Array_List, error, "ls", NULL);
-    Error discard;
-
-    if (*error) {
-        return -1;
-    }
-
-    if (options != NULL) {
-        List_extend(ls_argv, options, error);
-
-        if (*error) {
-            List_delete(ls_argv, &discard);
-            return -1;
-        }
-    }
-
-    for (int i = 0; i <= argc; ++i) {
-        List_add(ls_argv, (intptr_t) argv[i], error);
-
-        if (*error) {
-            List_delete(ls_argv, &discard);
-            return -1;
-        }
-    }
-
-    char** exec_ls_argv = (char**) List_to_array(ls_argv, sizeof(char*), error);
-    List_delete(ls_argv, &discard);
-
-    if (*error) {
-        return -1;
-    }
-
-    int output_fd = exec_forkpty(exec_ls_argv[0], exec_ls_argv, error);
-    free(exec_ls_argv);
-    return output_fd;
-}
 
 
 int main(int argc, char* argv[]) {
+    Plugin* plugins[] = {
+        &Ls_Plugin,
+        NULL
+    };
+
     Error error;
-    Options options = Options_parse(argc, argv, &error);
+    Options options = Options_parse(argc, argv, plugins, &error);
 
     if (error) {
         fprintf(stderr, "%s\n", error);
@@ -112,16 +26,8 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    Plugin plugins[] = {
-        {
-            plugin_ls_get_name,
-            plugin_ls_run,
-        },
-    };
-
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        Plugin* plugin = &plugins[i];
-        const char* name = plugin->get_name();
+        const char* name = plugins[i]->get_name();
         bool is_enabled = Options_is_plugin_enabled(options, name, &error);
 
         if (error) {
@@ -136,7 +42,7 @@ int main(int argc, char* argv[]) {
 
         List plugin_options = Options_get_plugin_options(options, name);
 
-        int output_fd = plugin->run(
+        int output_fd = plugins[i]->run(
             argc - options.optind,
             argv + options.optind,
             plugin_options,

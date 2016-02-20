@@ -1,12 +1,15 @@
 #include <getopt.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "iterator/Iterator.h"
 #include "list/Array_List.h"
 #include "map/Hash_Map.h"
 #include "Options.h"
 #include "std/array.h"
 #include "std/string.h"
+#include "Plugin.h"
 
 
 #define HELP_OPT "h"
@@ -38,6 +41,36 @@ static Options create(Error* error) {
     }
 
     return options;
+}
+
+
+static void display_help(Plugin* plugins[]) {
+    fprintf(stderr,
+        "Usage: show [OPTION]... [RESOURCE]...\n"
+        "Version: 0.2.0\n"
+        "\n"
+        "Options:\n"
+        "  -%c              display this help and exit\n"
+        "  -%c PLUGIN:OPT   pass an option to a plugin\n"
+        "  -%c PLUGIN       disable plugin\n",
+        *HELP_OPT,
+        *PLUGIN_OPTION_OPT,
+        *DISABLE_PLUGIN_OPT);
+
+    if (*plugins) {
+        fputs(
+            "\n"
+            "Plugins:\n",
+            stderr);
+
+        while (*plugins) {
+            Plugin* plugin = *plugins++;
+
+            fprintf(stderr, "  %-16s%s\n",
+                plugin->get_name(),
+                plugin->get_description());
+        }
+    }
 }
 
 
@@ -157,7 +190,7 @@ bool Options_is_plugin_enabled(
 }
 
 
-Options Options_parse(int argc, char* argv[], Error* error) {
+Options Options_parse(int argc, char* argv[], Plugin* plugins[], Error* error) {
     int option;
     Options options = create(error);
 
@@ -175,21 +208,7 @@ Options Options_parse(int argc, char* argv[], Error* error) {
             }
         }
         else if (option == *HELP_OPT) {
-            fprintf(stderr,
-                "Usage: show [OPTION]... [RESOURCE]...\n"
-                    "Version: 0.2.0\n"
-                    "\n"
-                    "Options:\n"
-                    "  -%c              display this help and exit\n"
-                    "  -%c PLUGIN:OPT   pass an option to a plugin\n"
-                    "  -%c PLUGIN       disable plugin\n"
-                    "\n"
-                    "Plugins:\n"
-                    "  ls              POSIX `ls` command\n",
-                *HELP_OPT,
-                *PLUGIN_OPTION_OPT,
-                *DISABLE_PLUGIN_OPT);
-
+            display_help(plugins);
             *error = NULL;
             return options;
         }
