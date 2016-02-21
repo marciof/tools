@@ -12,11 +12,11 @@ int main(int argc, char* argv[]) {
     Plugin* plugins[] = {
         &Pipe_Plugin,
         &Ls_Plugin,
-        NULL
     };
 
     Error error;
-    Options options = Options_parse(argc, argv, plugins, &error);
+    Options options = Options_parse(
+        argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (error) {
         fprintf(stderr, "%s\n", error);
@@ -30,19 +30,14 @@ int main(int argc, char* argv[]) {
 
     int exit_status = EXIT_FAILURE;
 
-    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins) - 1; ++i) {
+    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         Plugin* plugin = plugins[i];
+
+        if (!plugin) {
+            continue;
+        }
+
         const char* name = plugin->get_name();
-        bool is_enabled = Options_is_plugin_enabled(options, name, &error);
-
-        if (error) {
-            fprintf(stderr, "%s: %s\n", plugin->get_name(), error);
-            continue;
-        }
-        if (!is_enabled) {
-            continue;
-        }
-
         List plugin_options = Options_get_plugin_options(options, name);
 
         int output_fd = plugin->run(
@@ -52,7 +47,7 @@ int main(int argc, char* argv[]) {
             &error);
 
         if (error) {
-            fprintf(stderr, "%s: %s\n", plugin->get_name(), error);
+            fprintf(stderr, "%s: %s\n", name, error);
             continue;
         }
         if (output_fd == PLUGIN_INVALID_FD_OUT) {

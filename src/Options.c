@@ -22,28 +22,7 @@
 )
 
 
-static Options create(Error* error) {
-    Options options;
-
-    options.optind = -1;
-    options.disabled_plugins = List_new(Array_List, error);
-
-    if (*error) {
-        return options;
-    }
-
-    options.plugin_options = Map_new(String_Hash_Map, error);
-
-    if (*error) {
-        Options_delete(options);
-        return options;
-    }
-
-    return options;
-}
-
-
-static void display_help(Plugin* plugins[]) {
+static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
         "Usage: show [OPTION]... [RESOURCE]...\n"
         "Version: 0.3.0\n"
@@ -56,18 +35,26 @@ static void display_help(Plugin* plugins[]) {
         *PLUGIN_OPTION_OPT,
         *DISABLE_PLUGIN_OPT);
 
-    if (*plugins) {
-        fputs(
-            "\n"
-            "Plugins:\n",
-            stderr);
+    if (nr_plugins > 0) {
+        bool needs_header = true;
 
-        while (*plugins) {
-            Plugin* plugin = *plugins++;
+        for (size_t i = 0; i < nr_plugins; ++i) {
+            if (!plugins[i]) {
+                continue;
+            }
+
+            if (needs_header) {
+                needs_header = false;
+
+                fputs(
+                    "\n"
+                    "Plugins:\n",
+                    stderr);
+            }
 
             fprintf(stderr, "  %-16s%s\n",
-                plugin->get_name(),
-                plugin->get_description());
+                plugins[i]->get_name(),
+                plugins[i]->get_description());
         }
     }
 }
@@ -156,7 +143,6 @@ void Options_delete(Options options) {
     }
 
     Map_delete(options.plugin_options, &discard);
-    List_delete(options.disabled_plugins, &discard);
 }
 
 
@@ -166,32 +152,18 @@ List Options_get_plugin_options(Options options, const char* name) {
 }
 
 
-bool Options_is_plugin_enabled(
-        Options options, const char* name, Error* error) {
+Options Options_parse(
+        int argc,
+        char* argv[],
+        Plugin* plugins[],
+        size_t nr_plugins,
+        Error* error) {
 
-    Iterator it = List_iterator(options.disabled_plugins, error);
-
-    if (*error) {
-        return false;
-    }
-
-    while (Iterator_has_next(it)) {
-        const char* disabled_name = (const char*) Iterator_next(it, error);
-
-        if (strcmp(disabled_name, name) == 0) {
-            Iterator_delete(it);
-            return false;
-        }
-    }
-
-    Iterator_delete(it);
-    return true;
-}
-
-
-Options Options_parse(int argc, char* argv[], Plugin* plugins[], Error* error) {
+    Options options;
     int option;
-    Options options = create(error);
+
+    options.optind = -1;
+    options.plugin_options = Map_new(String_Hash_Map, error);
 
     if (*error) {
         return options;
@@ -199,15 +171,15 @@ Options Options_parse(int argc, char* argv[], Plugin* plugins[], Error* error) {
 
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == *DISABLE_PLUGIN_OPT) {
-            List_add(options.disabled_plugins, (intptr_t) optarg, error);
-
-            if (*error) {
-                Options_delete(options);
-                return options;
+            for (size_t i = 0; i < nr_plugins; ++i) {
+                if (plugins[i] && strcmp(optarg, plugins[i]->get_name()) == 0) {
+                    plugins[i] = NULL;
+                    break;
+                }
             }
         }
         else if (option == *HELP_OPT) {
-            display_help(plugins);
+            display_help(plugins, nr_plugins);
             *error = NULL;
             return options;
         }
