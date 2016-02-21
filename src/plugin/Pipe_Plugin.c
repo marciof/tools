@@ -26,19 +26,6 @@ static bool has_input(int fd_in, Error* error) {
 }
 
 
-static bool is_being_piped_into(int fd_in, Error* error) {
-    struct stat stats;
-
-    if (fstat(fd_in, &stats) == -1) {
-        *error = strerror(errno);
-        return false;
-    }
-
-    *error = NULL;
-    return S_ISFIFO(stats.st_mode);
-}
-
-
 const char* get_description() {
     return "pipe `stdin` (if any) to `stdout`";
 }
@@ -52,20 +39,26 @@ const char* get_name() {
 int run(int fd_in, int argc, char* argv[], List options, Error* error) {
     if (fd_in == PLUGIN_INVALID_FD_OUT) {
         *error = NULL;
-        return fd_in;
-    }
-
-    bool is_active = is_being_piped_into(fd_in, error);
-
-    if (*error) {
         return PLUGIN_INVALID_FD_OUT;
     }
-    else if (is_active) {
+
+    struct stat fd_in_stat;
+
+    if (fstat(fd_in, &fd_in_stat) == -1) {
+        *error = strerror(errno);
+        return PLUGIN_INVALID_FD_OUT;
+    }
+
+    if (S_ISFIFO(fd_in_stat.st_mode)) {
         *error = NULL;
         return fd_in;
     }
+    else if (S_ISDIR(fd_in_stat.st_mode)) {
+        *error = NULL;
+        return PLUGIN_INVALID_FD_OUT;
+    }
 
-    is_active = has_input(fd_in, error);
+    bool is_active = has_input(fd_in, error);
 
     if (*error) {
         return PLUGIN_INVALID_FD_OUT;
