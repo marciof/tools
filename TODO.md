@@ -1,4 +1,3 @@
-- Disable `ls` plugin if `pipe` plugin is active?
 - Passthrough `ls` exit status?
 - Tests with coverage.
 - Continuous integration.

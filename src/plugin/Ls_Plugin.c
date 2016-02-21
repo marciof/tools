@@ -15,8 +15,8 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
         return PLUGIN_INVALID_FD_OUT;
     }
 
-    int child_out_fd;
-    int child_pid = forkpty(&child_out_fd, NULL, NULL, NULL);
+    int child_fd_out;
+    int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
         *error = strerror(errno);
@@ -25,7 +25,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     else if (child_pid != 0) {
         close(saved_stderr);
         *error = NULL;
-        return child_out_fd;
+        return child_fd_out;
     }
 
     if (dup2(saved_stderr, STDERR_FILENO) == -1) {
@@ -53,7 +53,12 @@ static const char* get_name() {
 }
 
 
-static int run(int argc, char** argv, List options, Error* error) {
+static int run(int fd_in, int argc, char** argv, List options, Error* error) {
+    if (fd_in != PLUGIN_INVALID_FD_OUT) {
+        *error = NULL;
+        return fd_in;
+    }
+
     List ls_argv = List_literal(Array_List, error, "ls", NULL);
     Error discard;
 
@@ -86,9 +91,9 @@ static int run(int argc, char** argv, List options, Error* error) {
         return PLUGIN_INVALID_FD_OUT;
     }
 
-    int output_fd = exec_forkpty(exec_ls_argv[0], exec_ls_argv, error);
+    int fd_out = exec_forkpty(exec_ls_argv[0], exec_ls_argv, error);
     free(exec_ls_argv);
-    return output_fd;
+    return fd_out;
 }
 
 

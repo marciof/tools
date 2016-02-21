@@ -8,10 +8,10 @@
 #include "Pipe_Plugin.h"
 
 
-static bool has_input(Error* error) {
+static bool has_input(int fd_in, Error* error) {
     struct pollfd fds;
 
-    fds.fd = STDIN_FILENO;
+    fds.fd = fd_in;
     fds.events = POLLIN;
 
     int nr_fds = poll(&fds, 1, 0);
@@ -26,10 +26,10 @@ static bool has_input(Error* error) {
 }
 
 
-static bool is_being_piped_into(Error* error) {
+static bool is_being_piped_into(int fd_in, Error* error) {
     struct stat stats;
 
-    if (fstat(STDIN_FILENO, &stats) == -1) {
+    if (fstat(fd_in, &stats) == -1) {
         *error = strerror(errno);
         return false;
     }
@@ -40,7 +40,7 @@ static bool is_being_piped_into(Error* error) {
 
 
 const char* get_description() {
-    return "pipe `stdin` to `stdout`";
+    return "pipe `stdin` (if any) to `stdout`";
 }
 
 
@@ -49,25 +49,30 @@ const char* get_name() {
 }
 
 
-int run(int argc, char* argv[], List options, Error* error) {
-    bool is_active = is_being_piped_into(error);
+int run(int fd_in, int argc, char* argv[], List options, Error* error) {
+    if (fd_in == PLUGIN_INVALID_FD_OUT) {
+        *error = NULL;
+        return fd_in;
+    }
+
+    bool is_active = is_being_piped_into(fd_in, error);
 
     if (*error) {
         return PLUGIN_INVALID_FD_OUT;
     }
     else if (is_active) {
         *error = NULL;
-        return STDIN_FILENO;
+        return fd_in;
     }
 
-    is_active = has_input(error);
+    is_active = has_input(fd_in, error);
 
     if (*error) {
         return PLUGIN_INVALID_FD_OUT;
     }
     else if (is_active) {
         *error = NULL;
-        return STDIN_FILENO;
+        return fd_in;
     }
 
     *error = NULL;

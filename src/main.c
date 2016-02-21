@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    int exit_status = EXIT_FAILURE;
+    int pipe = STDIN_FILENO;
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         Plugin* plugin = plugins[i];
@@ -40,7 +40,8 @@ int main(int argc, char* argv[]) {
         const char* name = plugin->get_name();
         List plugin_options = Options_get_plugin_options(options, name);
 
-        int output_fd = plugin->run(
+        pipe = plugin->run(
+            pipe,
             argc - options.optind,
             argv + options.optind,
             plugin_options,
@@ -50,22 +51,22 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, "%s: %s\n", name, error);
             continue;
         }
-        if (output_fd == PLUGIN_INVALID_FD_OUT) {
-            continue;
-        }
-
-        ssize_t nr_bytes_read;
-        const int BUFFER_SIZE = 256;
-        char buffer[BUFFER_SIZE + 1];
-
-        while ((nr_bytes_read = read(output_fd, buffer, BUFFER_SIZE)) > 0) {
-            buffer[nr_bytes_read] = '\0';
-            fputs(buffer, stdout);
-        }
-
-        exit_status = EXIT_SUCCESS;
     }
 
     Options_delete(options);
-    return exit_status;
+
+    if (pipe == PLUGIN_INVALID_FD_OUT) {
+        return EXIT_FAILURE;
+    }
+
+    ssize_t nr_bytes_read;
+    const int BUFFER_SIZE = 256;
+    char buffer[BUFFER_SIZE + 1];
+
+    while ((nr_bytes_read = read(pipe, buffer, BUFFER_SIZE)) > 0) {
+        buffer[nr_bytes_read] = '\0';
+        fputs(buffer, stdout);
+    }
+
+    return EXIT_SUCCESS;
 }

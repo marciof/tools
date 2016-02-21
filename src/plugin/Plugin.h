@@ -12,7 +12,7 @@
 typedef struct {
     const char* (*get_description)();
     const char* (*get_name)();
-    int (*run)(int argc, char* argv[], List options, Error* error);
+    int (*run)(int fd_in, int argc, char* argv[], List options, Error* error);
 } Plugin;
 
 
