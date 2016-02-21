@@ -1,7 +1,7 @@
 #include <getopt.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <sys/types.h>
 #include "list/Array_List.h"
 #include "Options.h"
 #include "std/array.h"
@@ -17,6 +17,8 @@
     DISABLE_PLUGIN_OPT \
     PLUGIN_OPTION_OPT \
 )
+
+#define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled."
 
 
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
@@ -57,6 +59,41 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
 }
 
 
+static ssize_t find_plugin(
+        char* name,
+        size_t name_length,
+        Plugin* plugins[],
+        size_t nr_plugins) {
+
+    for (size_t i = 0; i < nr_plugins; ++i) {
+        if (plugins[i]) {
+            const char* other = plugins[i]->get_name();
+
+            if (name_length == 0) {
+                if (strcmp(other, name) == 0) {
+                    return i;
+                }
+            }
+            else {
+                size_t j = 0;
+
+                for (j = 0; (j < name_length) && (other[j] != '\0'); ++j) {
+                    if (other[j] != name[j]) {
+                        break;
+                    }
+                }
+
+                if (j == name_length) {
+                    return i;
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
+
 static void parse_plugin_option(
         char* option,
         Plugin* plugins[],
@@ -81,27 +118,14 @@ static void parse_plugin_option(
         return;
     }
 
-    char* name = strncopy((const char*) option, name_length, error);
-    Plugin* plugin = NULL;
+    ssize_t plugin_pos = find_plugin(option, name_length, plugins, nr_plugins);
 
-    if (*error) {
+    if (plugin_pos < 0) {
+        *error = ERROR_UNKNOWN_PLUGIN;
         return;
     }
 
-    for (size_t i = 0; i < nr_plugins; ++i) {
-        if (plugins[i] && strcmp(name, plugins[i]->get_name()) == 0) {
-            plugin = plugins[i];
-            break;
-        }
-    }
-
-    free(name);
-
-    if (plugin == NULL) {
-        *error = "No such plugin or disabled.";
-        return;
-    }
-
+    Plugin* plugin = plugins[plugin_pos];
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
     if (plugin->options == NULL) {
@@ -134,13 +158,16 @@ int Options_parse(
 
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == *DISABLE_PLUGIN_OPT) {
-            for (size_t i = 0; i < nr_plugins; ++i) {
-                if (plugins[i] && strcmp(optarg, plugins[i]->get_name()) == 0) {
-                    Error discard;
-                    List_delete(plugins[i]->options, &discard);
-                    plugins[i] = NULL;
-                    break;
-                }
+            ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
+
+            if (pos >= 0) {
+                Error discard;
+                List_delete(plugins[pos]->options, &discard);
+                plugins[pos] = NULL;
+            }
+            else {
+                *error = ERROR_UNKNOWN_PLUGIN;
+                return -1;
             }
         }
         else if (option == *HELP_OPT) {

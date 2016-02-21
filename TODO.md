@@ -1,5 +1,4 @@
 - Passthrough `ls` exit status?
-- Avoid allocating plugin names for each option.
 - What to do when the `cat` and `ls` plugins are both enabled? E.g. `$ echo test | ./show .`
 - Tests with coverage.
 - Continuous integration.
