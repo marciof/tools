@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include "Iterator.h"
 
 
@@ -12,6 +13,7 @@ struct _Iterator {
 void Iterator_delete(Iterator iterator) {
     if (iterator != NULL) {
         iterator->impl->destroy(iterator->iterator);
+        memset(iterator, 0, sizeof(struct _Iterator));
         free(iterator);
     }
 }

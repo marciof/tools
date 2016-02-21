@@ -143,6 +143,7 @@ void Options_delete(Options options) {
     }
 
     Map_delete(options.plugin_options, &discard);
+    options.plugin_options = NULL;
 }
 
 

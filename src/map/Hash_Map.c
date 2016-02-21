@@ -110,11 +110,13 @@ static void delete_table(Hash_Bucket* table, size_t capacity) {
         
         while (element != NULL) {
             Hash_Bucket next = element->next;
+            memset(element, 0, sizeof(struct _Hash_Bucket));
             free(element);
             element = next;
         }
     }
 
+    memset(table, 0, sizeof(Hash_Bucket) * capacity);
     free(table);
 }
 
@@ -444,6 +446,7 @@ static void destroy(void* m, Error* error) {
         delete_table(map->table, map->capacity);
     }
 
+    memset(map, 0, sizeof(struct _Hash));
     free(map);
     *error = NULL;
 }
@@ -615,6 +618,7 @@ static void* iterator_create(void* collection, Error* error) {
 
 static void iterator_destroy(void* it) {
     --((Hash_Iterator) it)->map->iterators;
+    memset(it, 0, sizeof(struct _Hash_Iterator));
     free(it);
 }
 

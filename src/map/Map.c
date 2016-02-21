@@ -18,7 +18,8 @@ void Map_delete(Map map, Error* error) {
         if (*error) {
             return;
         }
-        
+
+        memset(map, 0, sizeof(struct _Map));
         free(map);
     }
     

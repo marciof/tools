@@ -203,7 +203,8 @@ static void destroy(void* l, Error* error) {
         free(element);
         element = next;
     }
-    
+
+    memset(list, 0, sizeof(struct _Linked));
     free(list);
     *error = NULL;
 }
@@ -440,6 +441,7 @@ static void* iterator_create(void* collection, Error* error) {
 
 static void iterator_destroy(void* it) {
     --((Linked_Iterator) it)->list->iterators;
+    memset(it, 0, sizeof(struct _Linked_Iterator));
     free(it);
 }
 

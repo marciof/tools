@@ -302,6 +302,7 @@ static void destroy(void* l, Error* error) {
     }
     
     free(list->array);
+    memset(list, 0, sizeof(struct _Array));
     free(list);
     *error = NULL;
 }
@@ -507,6 +508,7 @@ static void* iterator_create(void* collection, Error* error) {
 
 static void iterator_destroy(void* it) {
     --((Array_Iterator) it)->list->iterators;
+    memset(it, 0, sizeof(struct _Array_Iterator));
     free(it);
 }
 

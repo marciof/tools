@@ -45,7 +45,8 @@ void List_delete(List list, Error* error) {
         if (*error) {
             return;
         }
-        
+
+        memset(list, 0, sizeof(struct _List));
         free(list);
     }
     
