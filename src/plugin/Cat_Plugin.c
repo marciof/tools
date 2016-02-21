@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../std/Error.h"
-#include "Pipe_Plugin.h"
+#include "Cat_Plugin.h"
 
 
 static bool has_input(int fd_in, Error* error) {
@@ -27,12 +27,12 @@ static bool has_input(int fd_in, Error* error) {
 
 
 const char* get_description() {
-    return "pipe `stdin` (if any) to `stdout`";
+    return "POSIX `cat` command";
 }
 
 
 const char* get_name() {
-    return "pipe";
+    return "cat";
 }
 
 
@@ -73,7 +73,8 @@ int run(int fd_in, int argc, char* argv[], List options, Error* error) {
 }
 
 
-Plugin Pipe_Plugin = {
+Plugin Cat_Plugin = {
+    NULL,
     get_description,
     get_name,
     run,

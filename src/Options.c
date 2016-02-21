@@ -2,10 +2,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "iterator/Iterator.h"
 #include "list/Array_List.h"
-#include "map/Hash_Map.h"
 #include "Options.h"
 #include "std/array.h"
 #include "std/string.h"
@@ -60,7 +57,12 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
 }
 
 
-static void parse_plugin_option(Options options, char* option, Error* error) {
+static void parse_plugin_option(
+        char* option,
+        Plugin* plugins[],
+        size_t nr_plugins,
+        Error* error) {
+
     const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
 
@@ -80,40 +82,37 @@ static void parse_plugin_option(Options options, char* option, Error* error) {
     }
 
     char* name = strncopy((const char*) option, name_length, error);
+    Plugin* plugin = NULL;
 
     if (*error) {
         return;
     }
 
-    char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
-    Error discard;
-
-    List plugin_options = (List) Map_get(
-        options.plugin_options, (intptr_t) name, &discard);
-
-    if (plugin_options == NULL) {
-        plugin_options = List_literal(Array_List, error, value, NULL);
-
-        if (*error) {
-            free(name);
-            return;
+    for (size_t i = 0; i < nr_plugins; ++i) {
+        if (plugins[i] && strcmp(name, plugins[i]->get_name()) == 0) {
+            plugin = plugins[i];
+            break;
         }
+    }
 
-        Map_put(
-            options.plugin_options,
-            (intptr_t) name,
-            (intptr_t) plugin_options,
-            error);
+    free(name);
+
+    if (plugin == NULL) {
+        *error = "No such plugin or disabled.";
+        return;
+    }
+
+    char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
+
+    if (plugin->options == NULL) {
+        plugin->options = List_literal(Array_List, error, value, NULL);
 
         if (*error) {
-            free(name);
-            List_delete(plugin_options, &discard);
             return;
         }
     }
     else {
-        free(name);
-        List_add(plugin_options, (intptr_t) value, error);
+        List_add(plugin->options, (intptr_t) value, error);
 
         if (*error) {
             return;
@@ -124,56 +123,21 @@ static void parse_plugin_option(Options options, char* option, Error* error) {
 }
 
 
-void Options_delete(Options options) {
-    Error discard;
-    Iterator it = Map_keys_iterator(options.plugin_options, &discard);
-
-    if (!discard) {
-        while (Iterator_has_next(it)) {
-            char* plugin_name = (char*) Iterator_next(it, &discard);
-
-            List plugin_options = (List) Map_get(
-                options.plugin_options, (intptr_t) plugin_name, &discard);
-
-            free(plugin_name);
-            List_delete(plugin_options, &discard);
-        }
-
-        Iterator_delete(it);
-    }
-
-    Map_delete(options.plugin_options, &discard);
-    options.plugin_options = NULL;
-}
-
-
-List Options_get_plugin_options(Options options, const char* name) {
-    Error discard;
-    return (List) Map_get(options.plugin_options, (intptr_t) name, &discard);
-}
-
-
-Options Options_parse(
+int Options_parse(
         int argc,
         char* argv[],
         Plugin* plugins[],
         size_t nr_plugins,
         Error* error) {
 
-    Options options;
     int option;
-
-    options.optind = -1;
-    options.plugin_options = Map_new(String_Hash_Map, error);
-
-    if (*error) {
-        return options;
-    }
 
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == *DISABLE_PLUGIN_OPT) {
             for (size_t i = 0; i < nr_plugins; ++i) {
                 if (plugins[i] && strcmp(optarg, plugins[i]->get_name()) == 0) {
+                    Error discard;
+                    List_delete(plugins[i]->options, &discard);
                     plugins[i] = NULL;
                     break;
                 }
@@ -182,24 +146,21 @@ Options Options_parse(
         else if (option == *HELP_OPT) {
             display_help(plugins, nr_plugins);
             *error = NULL;
-            return options;
+            return -1;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
-            parse_plugin_option(options, optarg, error);
+            parse_plugin_option(optarg, plugins, nr_plugins, error);
 
             if (*error) {
-                Options_delete(options);
-                return options;
+                return -1;
             }
         }
         else {
-            Options_delete(options);
             *error = "Try '-h' for more information.";
-            return options;
+            return -1;
         }
     }
 
     *error = NULL;
-    options.optind = optind;
-    return options;
+    return optind;
 }

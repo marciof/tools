@@ -1,6 +1,6 @@
 # 0.3.0 - YYYY-MM-DD #
 
-- Plugin "pipe": pipe `stdin` to `stdout`.
+- Plugin "cat": POSIX `cat` command.
 
 # 0.2.0 - 2016-02-20 #
 

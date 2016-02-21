@@ -98,6 +98,7 @@ static int run(int fd_in, int argc, char** argv, List options, Error* error) {
 
 
 Plugin Ls_Plugin = {
+    NULL,
     get_description,
     get_name,
     run,

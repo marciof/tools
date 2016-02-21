@@ -3,59 +3,64 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "Options.h"
+#include "plugin/Cat_Plugin.h"
 #include "plugin/Ls_Plugin.h"
-#include "plugin/Pipe_Plugin.h"
 #include "std/array.h"
 
 
+static void cleanup_plugins(Plugin* plugins[], size_t nr_plugins) {
+    for (size_t i = 0; i < nr_plugins; ++i) {
+        if (plugins[i]) {
+            Error discard;
+            List_delete(plugins[i]->options, &discard);
+            plugins[i] = NULL;
+        }
+    }
+}
+
+
 int main(int argc, char* argv[]) {
+    Error error;
+
     Plugin* plugins[] = {
-        &Pipe_Plugin,
+        &Cat_Plugin,
         &Ls_Plugin,
     };
 
-    Error error;
-    Options options = Options_parse(
+    int optind = Options_parse(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (error) {
+        cleanup_plugins(plugins, STATIC_ARRAY_LENGTH(plugins));
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
-    if (options.optind < 0) {
-        Options_delete(options);
+    if (optind < 0) {
+        cleanup_plugins(plugins, STATIC_ARRAY_LENGTH(plugins));
         return EXIT_SUCCESS;
     }
 
     int pipe = STDIN_FILENO;
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        Plugin* plugin = plugins[i];
+        if (plugins[i]) {
+            pipe = plugins[i]->run(
+                pipe,
+                argc - optind,
+                argv + optind,
+                plugins[i]->options,
+                &error);
 
-        if (!plugin) {
-            continue;
-        }
-
-        const char* name = plugin->get_name();
-        List plugin_options = Options_get_plugin_options(options, name);
-
-        pipe = plugin->run(
-            pipe,
-            argc - options.optind,
-            argv + options.optind,
-            plugin_options,
-            &error);
-
-        if (error) {
-            fprintf(stderr, "%s: %s\n", name, error);
-            continue;
+            if (error) {
+                fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
+                continue;
+            }
         }
     }
 
-    Options_delete(options);
-
     if (pipe == PLUGIN_INVALID_FD_OUT) {
+        cleanup_plugins(plugins, STATIC_ARRAY_LENGTH(plugins));
         return EXIT_FAILURE;
     }
 
@@ -68,5 +73,6 @@ int main(int argc, char* argv[]) {
         fputs(buffer, stdout);
     }
 
+    cleanup_plugins(plugins, STATIC_ARRAY_LENGTH(plugins));
     return EXIT_SUCCESS;
 }
