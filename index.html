@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Márcio Faustino</title>
+    <meta charset="UTF-8"/>
+    <style type="text/css">
+body {
+    font-family: sans-serif;
+    margin-left: 2em;
+    margin-right: 0;
+}
+
+body > * {
+    padding-right: 2em;
+}
+
+h1 {
+    font-family: "Georgia", "Times New Roman", serif;
+    font-variant: small-caps;
+    font-size: 250%;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid #89B2FF;
+}
+
+a {
+    color: #7BA0E6;
+}
+
+a:active {
+    color: inherit;
+}
+
+a:hover {
+    text-decoration: none;
+}
+    </style>
+    <script type="text/javascript">
+'use strict';
+
+function getEmail() {
+    var charCodes = [
+        109, 111, 99, 46, 108, 105, 97, 109, 103, 64, 111, 110, 105,
+        116, 115, 117, 97, 102, 98, 109, 111, 105, 99, 114, 97, 109
+    ];
+    
+    return eval('String.fromCharCode.apply(null, charCodes.reverse())');
+}
+
+function initialize() {
+    var anchors = document.getElementsByTagName('a');
+    var email = getEmail();
+    
+    for (var i = 0; i < anchors.length; ++i) {
+        var anchor = anchors.item(i);
+        
+        if (anchor.className && anchor.className.match(/\bEmail\b/)) {
+            anchor.href = 'mailto:' + email;
+        }
+    }
+}
+
+if (window.addEventListener) {
+    window.addEventListener('load', initialize, false);
+}
+else if (document.addEventListener) {
+    document.addEventListener('load', initialize, false);
+}
+else if (window.attachEvent) {
+    window.attachEvent('onload', initialize);
+}
+else {
+    window.onload = initialize;
+}
+    </script>
+  </head>
+  <body>
+    <h1>Márcio Faustino</h1>
+    <p>Welcome! If you need to contact me, please <a class="Email">send an e-mail</a>.</p>
+    <p>I'm currently working on some <a href="https://github.com/marciof">side projects</a>, available at GitHub.</p>
+  </body>
+</html>
