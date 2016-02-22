@@ -147,6 +147,19 @@ if _have git; then
         fi
     }
 
+    if type -t _completion_loader > /dev/null; then
+        _completion_loader git
+    fi
+
+    complete -o bashdefault -o default -o nospace -F _git g
+
+    __git_complete sc _git_commit
+    __git_complete sd _git_diff
+    __git_complete sl _git_log
+    __git_complete sp _git_push
+    __git_complete sr _git_checkout
+    __git_complete ss _git_pull
+
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
         [ -n "$ps1" ] && echo -e ":$_yellow$ps1$_color_off"
@@ -167,6 +180,7 @@ if _have git; then
 
     _set_git_config alias.br 'branch -vv'
     _set_git_config alias.co checkout
+    _set_git_config alias.re rebase
     _set_git_config color.ui auto
     _set_git_config core.whitespace -trailing-space
     _set_git_config push.default tracking
@@ -183,15 +197,9 @@ if _have git; then
         fi
     fi
 
-    if type -t _completion_loader > /dev/null; then
-        _completion_loader git
-    fi
-
     if [ -e "$_show_py" ]; then
         export GIT_PAGER=$_show_py
     fi
-
-    complete -o bashdefault -o default -o nospace -F _git g
 
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
