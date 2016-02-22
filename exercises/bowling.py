@@ -34,7 +34,6 @@
 #     the bonus throws are only used to calculate the score of the final turn.
 
 
-# Standard:
 import unittest
 
 
