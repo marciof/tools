@@ -1,7 +1,6 @@
 This project adheres to [Semantic Versioning](http://semver.org).
 
-# Build #
+# Dependencies #
 
-## Dependencies ##
-
-* [CMake](https://cmake.org)
+- [CMake](https://cmake.org)
+- [libcheck](http://libcheck.github.io/check/)
