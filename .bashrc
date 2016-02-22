@@ -64,7 +64,7 @@ _u_green='\e[4;32m'
 
 _ps1_user_host='\u@\h'
 
-# Transition from show[Python] to show[C++].
+# Transition from show[Python] to show[C].
 _show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
 _show="$(readlink -e "$(dirname $_show_py)/../show/show")"
 
@@ -84,11 +84,7 @@ bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
 bind '"\e[2~": backward-kill-word'              # Insert
 
 if [ -e "$_show" ]; then
-    alias s="\"$_show\" -p ls:-F -p ls:--color=auto"
-fi
-
-if [ -e "$_show_py" ]; then
-    alias t="\"$_show_py\" -l -F -l --color=always -l -C"
+    alias s="\"$_show\" -p ls:-Fh -p ls:--color=auto -p ls:--group-directories-first"
 fi
 
 if _have ag; then
