@@ -27,7 +27,7 @@ static bool has_input(int fd_in, Error* error) {
 
 
 const char* get_description() {
-    return "POSIX `cat` command";
+    return "`cat` POSIX command";
 }
 
 
