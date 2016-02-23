@@ -127,7 +127,7 @@ if _have git; then
 
     alias sb='g blame --date=short "$@"'
     alias sd='g diff "$@"'
-    alias sl='g log --graph --pretty="format:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
+    alias sl='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
     alias sp='g push "$@"'
     alias sr='g checkout "$@"'
     alias ss='g pull "$@"'
