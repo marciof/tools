@@ -1,10 +1,5 @@
-- Use Ansible for dependencies?
-- Passthrough `ls` exit status?
-- What to do when the `cat` and `ls` plugins are both enabled? E.g. `$ echo test | ./show .`
 - Tests with coverage.
 - Continuous integration.
 - Profiling.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
-- Try to improve readability with more helper functions?
-- Input transformation: syntax highlighting, code reformatting, show whitespace.
-- Plugin ideas: Git commits, perldoc, pydoc
+- Git show plugin.
