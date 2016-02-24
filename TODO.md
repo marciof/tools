@@ -1,3 +1,4 @@
+- Use Ansible for dependencies?
 - Passthrough `ls` exit status?
 - What to do when the `cat` and `ls` plugins are both enabled? E.g. `$ echo test | ./show .`
 - Tests with coverage.
