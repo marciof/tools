@@ -39,7 +39,6 @@ _have() {
 
 shopt -s cdspell checkwinsize histappend
 
-alias j=jobs
 alias -- -='cd -'
 alias ..='cd ..'
 alias ...='cd ../..'
@@ -48,11 +47,11 @@ _have dircolors && eval "$($NAME -b)"
 _have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
 _have lesspipe && eval "$($NAME)"
 
+export ANSIBLE_NOCOWS=x
 export HISTCONTROL=ignoreboth
 export LESS='-x4 -c -M -R -i'
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
-export ANSIBLE_NOCOWS=1
 
 # https://wiki.archlinux.org/index.php/Color_Bash_Prompt
 _color_off='\e[0m'
