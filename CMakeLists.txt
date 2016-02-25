@@ -6,13 +6,37 @@ if(CMAKE_COMPILER_IS_GNUCC)
     add_compile_options(-std=c99 -pedantic-errors -Wall -O2)
 endif()
 
+add_executable(${PROJECT_NAME}
+    src/iterator/Iterator.c
+    src/iterator/Iterator.h
+    src/list/Array_List.c
+    src/list/Array_List.h
+    src/list/Linked_List.c
+    src/list/Linked_List.h
+    src/list/List.c
+    src/list/List.h
+    src/map/Hash_Map.c
+    src/map/Hash_Map.h
+    src/map/Map.c
+    src/map/Map.h
+    src/plugin/Cat_Plugin.c
+    src/plugin/Cat_Plugin.h
+    src/plugin/Ls_Plugin.c
+    src/plugin/Ls_Plugin.h
+    src/plugin/Plugin.h
+    src/std/array.h
+    src/std/Error.h
+    src/std/string.c
+    src/std/string.h
+    src/main.c
+    src/Options.c
+    src/Options.h)
+
+add_executable(${PROJECT_NAME}-test
+    test/main.c)
+
 set(libraries m util)
-file(GLOB_RECURSE sources src/*.c src/*.h)
-file(GLOB_RECURSE tests test/*.c test/*.h)
-
-add_executable(${PROJECT_NAME} ${sources})
 target_link_libraries(${PROJECT_NAME} ${libraries})
+target_link_libraries(${PROJECT_NAME}-test check rt pthread ${libraries})
 
-add_executable("${PROJECT_NAME}-test" ${tests})
-target_link_libraries("${PROJECT_NAME}-test" check rt pthread ${libraries})
-target_include_directories("${PROJECT_NAME}-test" PUBLIC src/)
+target_include_directories(${PROJECT_NAME}-test PUBLIC src/)
