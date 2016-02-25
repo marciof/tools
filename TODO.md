@@ -1,5 +1,4 @@
 - Tests with coverage.
 - Continuous integration.
-- Profiling.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
 - Git show plugin.

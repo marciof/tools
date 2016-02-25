@@ -1,0 +1,2 @@
+#!/bin/sh
+perf stat --sync --repeat 10 show $@

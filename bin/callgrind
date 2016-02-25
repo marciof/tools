@@ -1,0 +1,5 @@
+#!/bin/sh
+valgrind --tool=callgrind show $@
+REPORT=$(ls -1 -t callgrind.out.* | head -n1)
+kcachegrind "$REPORT"
+rm "$REPORT"
