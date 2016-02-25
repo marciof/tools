@@ -1,6 +1,10 @@
-# 0.3.0 - YYYY-MM-DD #
+# 0.4.0 - YYYY-MM-DD #
 
-- Plugin "cat": `cat` POSIX command.
+- Plugin "file": read files.
+
+# 0.3.0 - 2016-02-25 #
+
+- Plugin "pipe": pipe `stdin`.
 
 # 0.2.0 - 2016-02-20 #
 

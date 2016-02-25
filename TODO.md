@@ -1,4 +1,5 @@
 - Tests with coverage.
 - Continuous integration.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
-- Git show plugin.
+- Plugin for `git show`.
+- Allow passing `NULL` as the `error` parameter?

@@ -6,14 +6,18 @@
 #include "../std/Error.h"
 
 
-#define PLUGIN_INVALID_FD_OUT (-1)
-
-
 typedef struct {
     List options;
+
     const char* (*get_description)();
     const char* (*get_name)();
-    int (*run)(int fd_in, int argc, char* argv[], List options, Error* error);
+
+    List (*run)(
+        List fds_in,
+        int argc,
+        char* argv[],
+        List options,
+        Error* error);
 } Plugin;
 
 

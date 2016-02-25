@@ -19,8 +19,8 @@ add_executable(${PROJECT_NAME}
     src/map/Hash_Map.h
     src/map/Map.c
     src/map/Map.h
-    src/plugin/Cat_Plugin.c
-    src/plugin/Cat_Plugin.h
+    src/plugin/Pipe_Plugin.c
+    src/plugin/Pipe_Plugin.h
     src/plugin/Ls_Plugin.c
     src/plugin/Ls_Plugin.h
     src/plugin/Plugin.h
