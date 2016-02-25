@@ -123,7 +123,7 @@ if _have git; then
     alias st='g status "$@"'
 
     if _have kompare; then
-        alias sd='g difftool -Y -t kompare'
+        alias sd='GIT_PAGER="kompare -o -" g diff --no-color "$@"'
     else
         alias sd='g diff "$@"'
     fi
