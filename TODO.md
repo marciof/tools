@@ -1,3 +1,4 @@
+- https://github.com/andrewrk/malcheck
 - https://matt.sh/howto-c
 - Tests with coverage.
 - Continuous integration.
