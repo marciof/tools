@@ -64,10 +64,6 @@ _u_green='\e[4;32m'
 
 _ps1_user_host='\u@\h'
 
-# Transition from show[Python] to show[C].
-_show_py="$(dirname "$(readlink "$BASH_SOURCE")" 2> /dev/null)/show.py"
-_show="$(readlink -e "$(dirname $_show_py)/../show/show")"
-
 # Disable XON/XOFF flow control to allow `bind -q forward-search-history`.
 stty -ixon
 
@@ -83,18 +79,12 @@ bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
 bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
 bind '"\e[2~": backward-kill-word'              # Insert
 
-if [ -e "$_show" ]; then
-    alias s="\"$_show\" -p ls:-Fh -p ls:--color=auto -p ls:--group-directories-first"
+if _have show; then
+    alias s="$NAME -p ls:-Fh -p ls:--color=auto -p ls:--group-directories-first"
 fi
 
 if _have ag; then
-    if [ -e "$_show_py" ]; then
-        _ag_pager="--pager 'python $_show_py -d'"
-    else
-        _ag_pager=''
-    fi
-
-    alias f="$NAME $_ag_pager --color-path '0;34' --color-line-number '0;33' --follow --hidden --case-sensitive"
+    alias f="$NAME --color-path '0;34' --color-line-number '0;33' --follow --hidden --case-sensitive"
 fi
 
 # https://wiki.archlinux.org/index.php/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_keys
@@ -126,12 +116,17 @@ if _have git; then
     alias g=$NAME
 
     alias sb='g blame --date=short "$@"'
-    alias sd='g diff "$@"'
     alias sl='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
     alias sp='g push "$@"'
     alias sr='g checkout "$@"'
     alias ss='g pull "$@"'
     alias st='g status "$@"'
+
+    if _have kompare; then
+        alias sd='g difftool -Y -t kompare'
+    else
+        alias sd='g diff "$@"'
+    fi
 
     sc() {
         local cached=$(git diff --cached --name-only | wc -l)
@@ -191,10 +186,6 @@ if _have git; then
         if ! grep -qsF 'set nowrap' ~/.nanorc; then
             echo 'set nowrap' >> ~/.nanorc
         fi
-    fi
-
-    if [ -e "$_show_py" ]; then
-        export GIT_PAGER=$_show_py
     fi
 
     export GIT_PS1_SHOWDIRTYSTATE=x
