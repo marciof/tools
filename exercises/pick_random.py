@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# Standard:
-from __future__ import absolute_import, division, unicode_literals
 import random
 import unittest
 
@@ -18,7 +16,7 @@ def pick_random(array, count):
     shuffled = {}
     elements = []
 
-    for i in xrange(0, len(array) - 1):
+    for i in range(0, len(array) - 1):
         if len(elements) == count:
             return elements
 
@@ -48,12 +46,12 @@ class Test (unittest.TestCase):
             [])
 
     def test_all_elements(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             pick_random(list('example'), 7),
             'example')
 
     def test_more_elements_than_array(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             pick_random(list('example'), 100),
             'example')
 

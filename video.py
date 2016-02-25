@@ -2,7 +2,6 @@
 # -*- coding: UTF-8 -*-
 
 
-# Standard:
 import glob
 import itertools
 import os

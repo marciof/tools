@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# Standard:
-from __future__ import absolute_import, division, unicode_literals
 import unittest
 
 
@@ -33,7 +31,7 @@ class Test (unittest.TestCase):
         self.assertEqual(permutate('a'), ['a'])
 
     def test_unique_chars_string(self):
-        self.assertItemsEqual(permutate('abc'), [
+        self.assertCountEqual(permutate('abc'), [
             'abc',
             'acb',
             'bac',
@@ -43,7 +41,7 @@ class Test (unittest.TestCase):
         ])
 
     def test_repeated_chars_string(self):
-        self.assertItemsEqual(permutate('aab'), [
+        self.assertCountEqual(permutate('aab'), [
             'aab',
             'aba',
             'aab',

@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# Standard:
-from __future__ import absolute_import, division, unicode_literals
 import collections
 import unittest
 
@@ -57,18 +55,18 @@ def create_spiral(size):
 
 def print_matrix(matrix):
     for row in matrix:
-        print row
+        print(row)
 
 
 class Test (unittest.TestCase):
     def test_empty(self):
-        self.assertEquals(create_spiral(0), [])
+        self.assertEqual(create_spiral(0), [])
 
     def test_size_1(self):
-        self.assertEquals(create_spiral(1), [[1]])
+        self.assertEqual(create_spiral(1), [[1]])
 
     def test_even_size(self):
-        self.assertEquals(
+        self.assertEqual(
             create_spiral(4),
             [
                 [ 7,  8,  9, 10],
@@ -78,7 +76,7 @@ class Test (unittest.TestCase):
             ])
 
     def test_odd_size(self):
-        self.assertEquals(
+        self.assertEqual(
             create_spiral(3),
             [
                 [7, 8, 9],
