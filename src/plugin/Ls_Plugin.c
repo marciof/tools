@@ -7,46 +7,46 @@
 #include "Ls_Plugin.h"
 
 
-static char** create_exec_argv(
-        int argc,
-        char* argv[],
-        List options,
-        Error* error) {
-
-    List exec_argv_list = List_literal(Array_List, error, "ls", NULL);
+static char** create_exec_argv(List args, List options, Error* error) {
     Error discard;
+    List argv_list = List_literal(Array_List, error, "ls", NULL);
 
     if (*error) {
         return NULL;
     }
 
     if (options != NULL) {
-        List_extend(exec_argv_list, options, error);
+        List_extend(argv_list, options, error);
 
         if (*error) {
-            List_delete(exec_argv_list, &discard);
+            List_delete(argv_list, &discard);
             return NULL;
         }
     }
 
-    for (int i = 0; i <= argc; ++i) {
-        List_add(exec_argv_list, (intptr_t) argv[i], error);
+    List_extend(argv_list, args, error);
 
-        if (*error) {
-            List_delete(exec_argv_list, &discard);
-            return NULL;
-        }
+    if (*error) {
+        List_delete(argv_list, &discard);
+        return NULL;
     }
 
-    char** exec_argv = (char**) List_to_array(exec_argv_list, sizeof(char*), error);
-    List_delete(exec_argv_list, &discard);
+    List_add(argv_list, (intptr_t) NULL, error);
+
+    if (*error) {
+        List_delete(argv_list, &discard);
+        return NULL;
+    }
+
+    char** argv = (char**) List_to_array(argv_list, sizeof(char*), error);
+    List_delete(argv_list, &discard);
 
     if (*error) {
         return NULL;
     }
 
     *error = NULL;
-    return exec_argv;
+    return argv;
 }
 
 
@@ -96,26 +96,20 @@ static const char* get_name() {
 }
 
 
-static List run(
-        List fds_in,
-        int argc,
-        char* argv[],
-        List options,
-        Error* error) {
-
-    if ((List_length(fds_in) > 0) && (argc == 0)) {
+static List run(List args, List options, List fds_in, Error* error) {
+    if ((List_length(fds_in) > 0) && (List_length(args) == 0)) {
         *error = NULL;
         return fds_in;
     }
 
-    char** exec_ls_argv = create_exec_argv(argc, argv, options, error);
+    char** argv = create_exec_argv(args, options, error);
 
     if (*error) {
         return NULL;
     }
 
-    int fd_out = exec_forkpty(exec_ls_argv[0], exec_ls_argv, error);
-    free(exec_ls_argv);
+    int fd_out = exec_forkpty(argv[0], argv, error);
+    free(argv);
 
     if (*error) {
         return NULL;

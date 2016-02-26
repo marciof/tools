@@ -24,7 +24,7 @@
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
         "Usage: show [OPTION]... [RESOURCE]...\n"
-        "Version: 0.3.0\n"
+        "Version: 0.4.0\n"
         "\n"
         "Options:\n"
         "  -%c              display this help and exit\n"
@@ -147,7 +147,7 @@ static void parse_plugin_option(
 }
 
 
-int Options_parse(
+List Options_parse(
         int argc,
         char* argv[],
         Plugin* plugins[],
@@ -167,27 +167,43 @@ int Options_parse(
             }
             else {
                 *error = ERROR_UNKNOWN_PLUGIN;
-                return -1;
+                return NULL;
             }
         }
         else if (option == *HELP_OPT) {
             display_help(plugins, nr_plugins);
             *error = NULL;
-            return -1;
+            return NULL;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
             if (*error) {
-                return -1;
+                return NULL;
             }
         }
         else {
             *error = "Try '-h' for more information.";
-            return -1;
+            return NULL;
+        }
+    }
+
+    List args = List_new(Array_List, error);
+
+    if (*error) {
+        return NULL;
+    }
+
+    for (int i = optind; i < argc; ++i) {
+        List_add(args, (intptr_t) argv[i], error);
+
+        if (*error) {
+            Error discard;
+            List_delete(args, &discard);
+            return NULL;
         }
     }
 
     *error = NULL;
-    return optind;
+    return args;
 }

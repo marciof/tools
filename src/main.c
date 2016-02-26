@@ -15,12 +15,14 @@ static Plugin* plugins[] = {
 };
 
 
-static void cleanup(List fds_in, Error error) {
+static void cleanup(List args, List fds_in, Error error) {
     if (error) {
         fprintf(stderr, "%s\n", error);
     }
 
     Error discard;
+
+    List_delete(args, &discard);
     List_delete(fds_in, &discard);
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
@@ -54,38 +56,37 @@ static List list_input_fds(Error* error) {
 
 int main(int argc, char* argv[]) {
     Error error;
-    int optind = Options_parse(
+    List args = Options_parse(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (error) {
-        cleanup(NULL, error);
+        cleanup(NULL, NULL, error);
         return EXIT_FAILURE;
     }
 
-    if (optind < 0) {
-        cleanup(NULL, NULL);
+    if (args == NULL) {
+        cleanup(NULL, NULL, NULL);
         return EXIT_SUCCESS;
     }
 
     List fds_in = list_input_fds(&error);
 
     if (error) {
-        cleanup(NULL, error);
+        cleanup(args, NULL, error);
         return EXIT_FAILURE;
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i]) {
             List new_fds_in = plugins[i]->run(
-                fds_in,
-                argc - optind,
-                argv + optind,
+                args,
                 plugins[i]->options,
+                fds_in,
                 &error);
 
             if (error) {
                 fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
-                cleanup(fds_in, NULL);
+                cleanup(args, fds_in, NULL);
                 return EXIT_FAILURE;
             }
 
@@ -94,7 +95,7 @@ int main(int argc, char* argv[]) {
                 fds_in = new_fds_in;
 
                 if (error) {
-                    cleanup(new_fds_in, error);
+                    cleanup(args, new_fds_in, error);
                     return EXIT_FAILURE;
                 }
             }
@@ -104,7 +105,7 @@ int main(int argc, char* argv[]) {
     Iterator it = List_iterator(fds_in, &error);
 
     if (error) {
-        cleanup(fds_in, error);
+        cleanup(args, fds_in, error);
         return EXIT_FAILURE;
     }
 
@@ -123,6 +124,6 @@ int main(int argc, char* argv[]) {
     }
 
     Iterator_delete(it);
-    cleanup(fds_in, NULL);
+    cleanup(args, fds_in, NULL);
     return EXIT_SUCCESS;
 }

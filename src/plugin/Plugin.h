@@ -8,16 +8,9 @@
 
 typedef struct {
     List options;
-
     const char* (*get_description)();
     const char* (*get_name)();
-
-    List (*run)(
-        List fds_in,
-        int argc,
-        char* argv[],
-        List options,
-        Error* error);
+    List (*run)(List args, List options, List fds_in, Error* error);
 } Plugin;
 
 

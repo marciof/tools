@@ -37,13 +37,7 @@ static const char* get_name() {
 }
 
 
-static List run(
-        List fds_in,
-        int argc,
-        char* argv[],
-        List options,
-        Error* error) {
-
+static List run(List args, List options, List fds_in, Error* error) {
     List new_fds_in = List_new(Array_List, error);
 
     if (*error) {
