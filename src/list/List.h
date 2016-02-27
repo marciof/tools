@@ -40,6 +40,16 @@ void List_add(List list, intptr_t element, Error* error);
 
 
 /**
+ * Remove all elements from a list.
+ *
+ * @param list list to clear of all elements
+ * @param error error message, if any
+ * @exception EPERM list is being iterated
+ */
+void List_clear(List list, Error* error);
+
+
+/**
  * Create a list, using the most appropriate implementation.
  *
  * @param error error message, if any

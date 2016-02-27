@@ -120,6 +120,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         return NO_PLUGIN_RESULT;
     }
 
+    List_clear(args, NULL);
     Error_clear(error);
     return NO_PLUGIN_RESULT;
 }

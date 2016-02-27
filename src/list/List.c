@@ -39,6 +39,13 @@ void List_add(List list, intptr_t element, Error* error) {
 }
 
 
+void List_clear(List list, Error* error) {
+    for (size_t length = List_length(list); length > 0; --length) {
+        List_remove(list, length - 1, error);
+    }
+}
+
+
 List List_create(Error* error) {
     return List_new(Array_List, error);
 }

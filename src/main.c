@@ -9,7 +9,7 @@
 #include "std/array.h"
 
 
-static Plugin* plugins[] = {
+Plugin* plugins[] = {
     &Pipe_Plugin,
     &File_Plugin,
     &Ls_Plugin,
@@ -70,28 +70,30 @@ int main(int argc, char* argv[]) {
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        if (plugins[i]) {
-            Plugin_Result result = plugins[i]->run(
-                args,
-                plugins[i]->options,
-                fds_in,
-                &error);
+        if (!plugins[i]) {
+            continue;
+        }
 
-            if (error) {
-                fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
-                cleanup(args, fds_in, NULL);
-                return EXIT_FAILURE;
-            }
+        Plugin_Result result = plugins[i]->run(
+            args,
+            plugins[i]->options,
+            fds_in,
+            &error);
 
-            if (result.args && (result.args != args)) {
-                List_delete(args, NULL);
-                args = result.args;
-            }
+        if (error) {
+            fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
+            cleanup(args, fds_in, NULL);
+            return EXIT_FAILURE;
+        }
 
-            if (result.fds_in && (result.fds_in != fds_in)) {
-                List_delete(fds_in, NULL);
-                fds_in = result.fds_in;
-            }
+        if ((result.args != NULL) && (result.args != args)) {
+            List_delete(args, NULL);
+            args = result.args;
+        }
+
+        if ((result.fds_in != NULL) && (result.fds_in != fds_in)) {
+            List_delete(fds_in, NULL);
+            fds_in = result.fds_in;
         }
     }
 
