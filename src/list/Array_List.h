@@ -1,7 +1,4 @@
-#ifndef SHOW__LIST__ARRAY_LIST_H
-#define SHOW__LIST__ARRAY_LIST_H
-
-
+#pragma once
 #include "List.h"
 
 
@@ -23,6 +20,3 @@ enum Array_List_Properties {
  * The sorting algorithm is stable and is O(n log n) in time and O(1) in memory.
  */
 extern const List_Impl Array_List;
-
-
-#endif

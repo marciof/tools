@@ -1,7 +1,4 @@
-#ifndef SHOW__MAP__MAP_H
-#define SHOW__MAP__MAP_H
-
-
+#pragma once
 #include <stddef.h>
 #include <stdint.h>
 #include "../iterator/Iterator.h"
@@ -164,6 +161,3 @@ size_t Map_size(Map map);
  * @exception ENOMEM not enough memory
  */
 List Map_values(Map map, Error* error);
-
-
-#endif

@@ -1,7 +1,4 @@
-#ifndef SHOW__PLUGIN_H
-#define SHOW__PLUGIN_H
-
-
+#pragma once
 #include "../list/List.h"
 #include "../std/Error.h"
 
@@ -21,6 +18,3 @@ typedef struct {
 
 
 extern Plugin_Result NULL_PLUGIN_RESULT;
-
-
-#endif

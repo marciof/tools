@@ -1,10 +1,4 @@
-#ifndef SHOW__LS_PLUGIN_H
-#define SHOW__LS_PLUGIN_H
-
-
+#pragma once
 #include "Plugin.h"
 
 extern Plugin Ls_Plugin;
-
-
-#endif

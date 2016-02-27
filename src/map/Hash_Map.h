@@ -1,7 +1,4 @@
-#ifndef SHOW__MAP__HASH_MAP_H
-#define SHOW__MAP__HASH_MAP_H
-
-
+#pragma once
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -85,6 +82,3 @@ bool Hash_Map_str_equal(intptr_t a, intptr_t b);
  * @return hash code for the given string
  */
 size_t Hash_Map_str_hash(intptr_t string);
-
-
-#endif

@@ -1,7 +1,4 @@
-#ifndef SHOW__LIST__LIST_H
-#define SHOW__LIST__LIST_H
-
-
+#pragma once
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -227,6 +224,3 @@ void List_sort(List list, int (*compare)(intptr_t, intptr_t), Error* error);
  * @exception ENOMEM not enough memory
  */
 void* List_to_array(List list, size_t data_size, Error* error);
-
-
-#endif

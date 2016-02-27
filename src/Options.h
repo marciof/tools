@@ -1,7 +1,4 @@
-#ifndef SHOW__OPTIONS_H
-#define SHOW__OPTIONS_H
-
-
+#pragma once
 #include <stddef.h>
 #include "list/List.h"
 #include "plugin/Plugin.h"
@@ -10,6 +7,3 @@
 
 List Options_parse(
     int argc, char* argv[], Plugin* plugins[], size_t nr_plugins, Error* error);
-
-
-#endif

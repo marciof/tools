@@ -1,9 +1,4 @@
-#ifndef SHOW__STD__ARRAY_H
-#define SHOW__STD__ARRAY_H
-
+#pragma once
 
 #define STATIC_ARRAY_LENGTH(array) \
     (sizeof(array) / sizeof((array)[0]))
-
-
-#endif

@@ -1,7 +1,4 @@
-#ifndef SHOW__ITERATOR__ITERATOR_H
-#define SHOW__ITERATOR__ITERATOR_H
-
-
+#pragma once
 #include <stdbool.h>
 #include <stdint.h>
 #include "../std/Error.h"
@@ -96,6 +93,3 @@ void Iterator_to_end(Iterator iterator);
  * @param iterator iterator to move to the start of its collection
  */
 void Iterator_to_start(Iterator iterator);
-
-
-#endif

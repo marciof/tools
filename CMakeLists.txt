@@ -17,7 +17,7 @@ add_executable(${PROJECT_NAME}
     src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c)
 
 add_executable(${PROJECT_NAME}-test
-    test/main.c)
+    test/main.test.c test/std/array.test.c test/std/array.test.h)
 
 set(libraries m util)
 target_link_libraries(${PROJECT_NAME} ${libraries})

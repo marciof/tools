@@ -1,7 +1,4 @@
-#ifndef SHOW__STD__STRING_H
-#define SHOW__STD__STRING_H
-
-
+#pragma once
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -104,6 +101,3 @@ bool strsuffix(const char* string, const char* suffix);
  * @exception ENOMEM not enough memory
  */
 char* strvformat(const char* format, va_list arguments, Error* error);
-
-
-#endif
