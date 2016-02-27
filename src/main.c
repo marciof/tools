@@ -21,14 +21,12 @@ static void cleanup(List args, List fds_in, Error error) {
         fprintf(stderr, "%s\n", error);
     }
 
-    Error discard;
-
-    List_delete(args, &discard);
-    List_delete(fds_in, &discard);
+    List_delete(args, NULL);
+    List_delete(fds_in, NULL);
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i]) {
-            List_delete(plugins[i]->options, &discard);
+            List_delete(plugins[i]->options, NULL);
             plugins[i] = NULL;
         }
     }
@@ -45,8 +43,7 @@ static List list_input_fds(Error* error) {
     List_add(fds_in, STDIN_FILENO, error);
 
     if (*error) {
-        Error discard;
-        List_delete(fds_in, &discard);
+        List_delete(fds_in, error);
         return NULL;
     }
 
@@ -71,7 +68,6 @@ int main(int argc, char* argv[]) {
     }
 
     List fds_in = list_input_fds(&error);
-    Error discard;
 
     if (error) {
         cleanup(args, NULL, error);
@@ -93,12 +89,12 @@ int main(int argc, char* argv[]) {
             }
 
             if (result.args && (result.args != args)) {
-                List_delete(args, &discard);
+                List_delete(args, NULL);
                 args = result.args;
             }
 
             if (result.fds_in && (result.fds_in != fds_in)) {
-                List_delete(fds_in, &discard);
+                List_delete(fds_in, NULL);
                 fds_in = result.fds_in;
             }
         }
@@ -112,7 +108,7 @@ int main(int argc, char* argv[]) {
     }
 
     while (Iterator_has_next(it)) {
-        int fd_in = (int) Iterator_next(it, &discard);
+        int fd_in = (int) Iterator_next(it, NULL);
         ssize_t nr_bytes_read;
         const int BUFFER_SIZE = 256;
         char buffer[BUFFER_SIZE + 1];

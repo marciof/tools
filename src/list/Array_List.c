@@ -297,14 +297,14 @@ static void destroy(void* l, Error* error) {
     Array list = (Array) l;
     
     if (list->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return;
     }
     
     free(list->array);
     memset(list, 0, sizeof(struct _Array));
     free(list);
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -531,7 +531,7 @@ static intptr_t iterator_next(void* it, Error* error) {
     Array_Iterator iterator = (Array_Iterator) it;
 
     if (!iterator_has_next(it)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
     
@@ -553,7 +553,7 @@ static intptr_t iterator_next(void* it, Error* error) {
         iterator_to_end(iterator);
     }
     
-    *error = NULL;
+    Error_clear(error);
     return element;
 }
 

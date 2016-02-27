@@ -640,7 +640,7 @@ static intptr_t iterator_next(void* it, Error* error) {
     Hash_Iterator iterator = (Hash_Iterator) it;
 
     if (!iterator_has_next(iterator)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
     
@@ -662,7 +662,7 @@ static intptr_t iterator_next(void* it, Error* error) {
         iterator_to_end(iterator);
     }
     
-    *error = NULL;
+    Error_clear(error);
     return key;
 }
 

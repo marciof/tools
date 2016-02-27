@@ -15,7 +15,8 @@ add_executable(${PROJECT_NAME}
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
     src/plugin/Plugin.h src/std/array.h src/std/Error.h src/std/string.c
     src/std/string.h src/main.c src/Options.c src/Options.h
-    src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c)
+    src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
+    src/std/Error.c)
 
 add_executable(${PROJECT_NAME}-test
     src/iterator/Iterator.c src/iterator/Iterator.h src/list/Array_List.c
@@ -27,7 +28,7 @@ add_executable(${PROJECT_NAME}-test
     src/std/string.h src/Options.c src/Options.h
     src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
     test/main.test.c test/std/array.test.c test/std/array.test.h
-    test/std/string.test.c test/std/string.test.h)
+    test/std/string.test.c test/std/string.test.h src/std/Error.c)
 
 set(libraries m util)
 target_link_libraries(${PROJECT_NAME} ${libraries})

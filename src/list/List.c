@@ -48,15 +48,15 @@ void List_delete(List list, Error* error) {
     if (list != NULL) {
         list->impl->destroy(list->list, error);
         
-        if (*error) {
+        if (Error_has(error)) {
             return;
         }
 
         memset(list, 0, sizeof(struct _List));
         free(list);
     }
-    
-    *error = NULL;
+
+    Error_clear(error);
 }
 
 

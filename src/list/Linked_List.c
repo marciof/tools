@@ -193,7 +193,7 @@ static void destroy(void* l, Error* error) {
     Linked_Element element = list->first;
     
     if (list->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return;
     }
     
@@ -206,7 +206,7 @@ static void destroy(void* l, Error* error) {
 
     memset(list, 0, sizeof(struct _Linked));
     free(list);
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -462,7 +462,7 @@ static intptr_t iterator_next(void* it, Error* error) {
     Linked_Iterator iterator = (Linked_Iterator) it;
 
     if (!iterator_has_next(it)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
     
@@ -484,7 +484,7 @@ static intptr_t iterator_next(void* it, Error* error) {
         iterator_to_end(iterator);
     }
     
-    *error = NULL;
+    Error_clear(error);
     return value;
 }
 
