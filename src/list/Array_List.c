@@ -342,6 +342,7 @@ static void insert(void* l, intptr_t element, size_t position, Error* error) {
         *error = strerror(EINVAL);
         return;
     }
+
     if ((list->length == SIZE_MAX) || (list->iterators > 0)) {
         *error = strerror(EPERM);
         return;
@@ -379,6 +380,7 @@ static intptr_t remove(void* l, size_t position, Error* error) {
         *error = strerror(EINVAL);
         return 0;
     }
+
     if (list->iterators > 0) {
         *error = strerror(EPERM);
         return 0;

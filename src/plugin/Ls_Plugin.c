@@ -96,32 +96,33 @@ static const char* get_name() {
 }
 
 
-static List run(List args, List options, List fds_in, Error* error) {
+static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     if ((List_length(fds_in) > 0) && (List_length(args) == 0)) {
         *error = NULL;
-        return fds_in;
+        return NULL_PLUGIN_RESULT;
     }
 
     char** argv = create_exec_argv(args, options, error);
 
     if (*error) {
-        return NULL;
+        return NULL_PLUGIN_RESULT;
     }
 
     int fd_out = exec_forkpty(argv[0], argv, error);
     free(argv);
 
     if (*error) {
-        return NULL;
+        return NULL_PLUGIN_RESULT;
     }
 
     List_add(fds_in, (intptr_t) fd_out, error);
 
     if (*error) {
-        return NULL;
+        return NULL_PLUGIN_RESULT;
     }
 
-    return fds_in;
+    *error = NULL;
+    return NULL_PLUGIN_RESULT;
 }
 
 

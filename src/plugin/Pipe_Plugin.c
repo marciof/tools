@@ -37,11 +37,11 @@ static const char* get_name() {
 }
 
 
-static List run(List args, List options, List fds_in, Error* error) {
+static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     List new_fds_in = List_new(Array_List, error);
 
     if (*error) {
-        return fds_in;
+        return NULL_PLUGIN_RESULT;
     }
 
     Iterator it = List_iterator(fds_in, error);
@@ -52,10 +52,10 @@ static List run(List args, List options, List fds_in, Error* error) {
         struct stat fd_in_stat;
 
         if (fstat(fd_in, &fd_in_stat) == -1) {
+            *error = strerror(errno);
             List_delete(new_fds_in, &discard);
             Iterator_delete(it);
-            *error = strerror(errno);
-            return NULL;
+            return NULL_PLUGIN_RESULT;
         }
 
         if (S_ISDIR(fd_in_stat.st_mode)) {
@@ -68,7 +68,7 @@ static List run(List args, List options, List fds_in, Error* error) {
             if (*error) {
                 List_delete(new_fds_in, &discard);
                 Iterator_delete(it);
-                return NULL;
+                return NULL_PLUGIN_RESULT;
             }
 
             if (!has_fd_input) {
@@ -81,17 +81,18 @@ static List run(List args, List options, List fds_in, Error* error) {
         if (*error) {
             List_delete(new_fds_in, &discard);
             Iterator_delete(it);
-            return NULL;
+            return NULL_PLUGIN_RESULT;
         }
     }
 
+    Plugin_Result result = {args, new_fds_in};
     Iterator_delete(it);
     *error = NULL;
-    return new_fds_in;
+    return result;
 }
 
 
-Plugin Cat_Plugin = {
+Plugin Pipe_Plugin = {
     NULL,
     get_description,
     get_name,

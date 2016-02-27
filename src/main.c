@@ -4,13 +4,15 @@
 #include <unistd.h>
 #include "list/Array_List.h"
 #include "Options.h"
+#include "plugin/File_Plugin.h"
 #include "plugin/Ls_Plugin.h"
 #include "plugin/Pipe_Plugin.h"
 #include "std/array.h"
 
 
 static Plugin* plugins[] = {
-    &Cat_Plugin,
+    &Pipe_Plugin,
+    &File_Plugin,
     &Ls_Plugin,
 };
 
@@ -70,6 +72,7 @@ int main(int argc, char* argv[]) {
     }
 
     List fds_in = list_input_fds(&error);
+    Error discard;
 
     if (error) {
         cleanup(args, NULL, error);
@@ -78,7 +81,7 @@ int main(int argc, char* argv[]) {
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i]) {
-            List new_fds_in = plugins[i]->run(
+            Plugin_Result result = plugins[i]->run(
                 args,
                 plugins[i]->options,
                 fds_in,
@@ -90,14 +93,14 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
 
-            if (new_fds_in != fds_in) {
-                List_delete(fds_in, &error);
-                fds_in = new_fds_in;
+            if (result.args && (result.args != args)) {
+                List_delete(args, &discard);
+                args = result.args;
+            }
 
-                if (error) {
-                    cleanup(args, new_fds_in, error);
-                    return EXIT_FAILURE;
-                }
+            if (result.fds_in && (result.fds_in != fds_in)) {
+                List_delete(fds_in, &discard);
+                fds_in = result.fds_in;
             }
         }
     }
@@ -110,9 +113,7 @@ int main(int argc, char* argv[]) {
     }
 
     while (Iterator_has_next(it)) {
-        Error discard;
         int fd_in = (int) Iterator_next(it, &discard);
-
         ssize_t nr_bytes_read;
         const int BUFFER_SIZE = 256;
         char buffer[BUFFER_SIZE + 1];

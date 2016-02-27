@@ -4,15 +4,15 @@
 
 
 START_TEST(test_array) {
-    char letters[] = {'a', 'b', 'c'};
-    ck_assert_int_eq(STATIC_ARRAY_LENGTH(letters), 3);
+    int numbers[] = {-1, 0, 1};
+    ck_assert_int_eq(STATIC_ARRAY_LENGTH(numbers), 3);
 }
 END_TEST
 
 
 START_TEST(test_string) {
-    char text[] = "hello";
-    ck_assert_int_eq(STATIC_ARRAY_LENGTH(text), 6);
+    char text[] = "abc";
+    ck_assert_int_eq(STATIC_ARRAY_LENGTH(text), 4);
 }
 END_TEST
 

@@ -4,7 +4,7 @@
 
 #include "Plugin.h"
 
-extern Plugin Cat_Plugin;
+extern Plugin Pipe_Plugin;
 
 
 #endif
