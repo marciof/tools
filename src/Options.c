@@ -131,14 +131,14 @@ static void parse_plugin_option(
     if (plugin->options == NULL) {
         plugin->options = List_literal(Array_List, error, value, NULL);
 
-        if (*error) {
+        if (Error_has(error)) {
             return;
         }
     }
     else {
         List_add(plugin->options, (intptr_t) value, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             return;
         }
     }
@@ -178,7 +178,7 @@ List Options_parse(
         else if (option == *PLUGIN_OPTION_OPT) {
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
-            if (*error) {
+            if (Error_has(error)) {
                 return NULL;
             }
         }
@@ -190,14 +190,14 @@ List Options_parse(
 
     List args = List_create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
         List_add(args, (intptr_t) argv[i], error);
 
-        if (*error) {
+        if (Error_has(error)) {
             Error discard;
             List_delete(args, &discard);
             return NULL;

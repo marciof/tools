@@ -113,7 +113,7 @@ char** strsplit(
                 : strncopy(
                     start_offset, (size_t) (end_offset - start_offset), error);
             
-            if (*error) {
+            if (Error_has(error)) {
                 // Rollback.
                 for (size_t i = 0; i < tokens_length; ++i) {
                     free(tokens[i]);

@@ -14,7 +14,7 @@ void Map_delete(Map map, Error* error) {
     if (map != NULL) {
         map->impl->destroy(map->map, error);
         
-        if (*error) {
+        if (Error_has(error)) {
             return;
         }
 
@@ -46,13 +46,13 @@ bool Map_has_key(Map map, intptr_t key) {
 List Map_keys(Map map, Error* error) {
     List keys = List_create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
     
     Iterator keys_iterator = Map_keys_iterator(map, error);
     
-    if (*error) {
+    if (Error_has(error)) {
         List_delete(keys, error);
         *error = strerror(ENOMEM);
         return NULL;
@@ -62,7 +62,7 @@ List Map_keys(Map map, Error* error) {
         intptr_t key = Iterator_next(keys_iterator, error);
         Error discard;
 
-        if (*error) {
+        if (Error_has(error)) {
             List_delete(keys, &discard);
             Iterator_delete(keys_iterator);
             return NULL;
@@ -70,7 +70,7 @@ List Map_keys(Map map, Error* error) {
 
         List_add(keys, key, error);
         
-        if (*error) {
+        if (Error_has(error)) {
             List_delete(keys, &discard);
             Iterator_delete(keys_iterator);
             return NULL;
@@ -99,7 +99,7 @@ Map Map_new(Map_Impl implementation, Error* error) {
     map->impl = implementation;
     map->map = implementation->create(error);
     
-    if (*error) {
+    if (Error_has(error)) {
         free(map);
         return NULL;
     }
@@ -133,14 +133,14 @@ size_t Map_size(Map map) {
 List Map_values(Map map, Error* error) {
     List values = List_create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
     
     Iterator keys_iterator = Map_keys_iterator(map, error);
     Error discard;
 
-    if (*error) {
+    if (Error_has(error)) {
         List_delete(values, &discard);
         return NULL;
     }
@@ -148,7 +148,7 @@ List Map_values(Map map, Error* error) {
     while (Iterator_has_next(keys_iterator)) {
         intptr_t key = Iterator_next(keys_iterator, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             List_delete(values, &discard);
             Iterator_delete(keys_iterator);
             return NULL;
@@ -156,7 +156,7 @@ List Map_values(Map map, Error* error) {
 
         List_add(values, Map_get(map, key, &discard), error);
         
-        if (*error) {
+        if (Error_has(error)) {
             List_delete(values, &discard);
             Iterator_delete(keys_iterator);
             return NULL;

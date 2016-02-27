@@ -39,7 +39,7 @@ static const char* get_name() {
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     List new_fds_in = List_create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL_PLUGIN_RESULT;
     }
 
@@ -64,7 +64,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         if (!S_ISFIFO(fd_in_stat.st_mode)) {
             bool has_fd_input = has_input(fd_in, error);
 
-            if (*error) {
+            if (Error_has(error)) {
                 List_delete(new_fds_in, &discard);
                 Iterator_delete(it);
                 return NULL_PLUGIN_RESULT;
@@ -77,7 +77,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
         List_add(new_fds_in, (intptr_t) fd_in, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             List_delete(new_fds_in, &discard);
             Iterator_delete(it);
             return NULL_PLUGIN_RESULT;

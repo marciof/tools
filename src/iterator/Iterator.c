@@ -40,7 +40,7 @@ Iterator Iterator_new(Iterator_Impl impl, void* collection, Error* error) {
     iterator->impl = impl;
     iterator->iterator = impl->create(collection, error);
     
-    if (*error) {
+    if (Error_has(error)) {
         free(iterator);
         return NULL;
     }

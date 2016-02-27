@@ -500,7 +500,7 @@ static intptr_t put(void* m, intptr_t key, intptr_t value, Error* error) {
 
     initialize(map, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return 0;
     }
 
@@ -523,7 +523,7 @@ static intptr_t remove(void* m, intptr_t key, Error* error) {
 
     initialize(map, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return 0;
     }
     
@@ -560,7 +560,7 @@ static size_t size(void* m) {
 static void* create_for_string_keys(Error* error) {
     Hash map = (Hash) create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
 

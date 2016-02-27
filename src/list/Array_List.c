@@ -351,7 +351,7 @@ static void insert(void* l, intptr_t element, size_t position, Error* error) {
     if (list->length >= list->capacity) {
         change_capacity(list, (size_t) (list->capacity * 1.5 + 1), error);
         
-        if (*error) {
+        if (Error_has(error)) {
             return;
         }
     }

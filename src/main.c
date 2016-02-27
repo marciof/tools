@@ -36,13 +36,13 @@ static void cleanup(List args, List fds_in, Error error) {
 static List list_input_fds(Error* error) {
     List fds_in = List_create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
 
     List_add(fds_in, STDIN_FILENO, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         List_delete(fds_in, error);
         return NULL;
     }

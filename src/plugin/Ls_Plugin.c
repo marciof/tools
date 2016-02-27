@@ -11,14 +11,14 @@ static char** create_exec_argv(List args, List options, Error* error) {
     Error discard;
     List argv_list = List_literal(Array_List, error, "ls", NULL);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
 
     if (options != NULL) {
         List_extend(argv_list, options, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             List_delete(argv_list, &discard);
             return NULL;
         }
@@ -26,14 +26,14 @@ static char** create_exec_argv(List args, List options, Error* error) {
 
     List_extend(argv_list, args, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         List_delete(argv_list, &discard);
         return NULL;
     }
 
     List_add(argv_list, (intptr_t) NULL, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         List_delete(argv_list, &discard);
         return NULL;
     }
@@ -41,7 +41,7 @@ static char** create_exec_argv(List args, List options, Error* error) {
     char** argv = (char**) List_to_array(argv_list, sizeof(char*), error);
     List_delete(argv_list, &discard);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
 
@@ -104,20 +104,20 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
     char** argv = create_exec_argv(args, options, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL_PLUGIN_RESULT;
     }
 
     int fd_out = exec_forkpty(argv[0], argv, error);
     free(argv);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL_PLUGIN_RESULT;
     }
 
     List_add(fds_in, (intptr_t) fd_out, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL_PLUGIN_RESULT;
     }
 

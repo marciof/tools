@@ -48,13 +48,13 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
     Iterator it = List_iterator(args, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL_PLUGIN_RESULT;
     }
 
     List new_args = List_create(error);
 
-    if (*error) {
+    if (Error_has(error)) {
         Iterator_delete(it);
         return NULL_PLUGIN_RESULT;
     }
@@ -64,7 +64,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         char* arg = (char*) Iterator_next(it, &discard);
         int fd_in = open_file(arg, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             Iterator_delete(it);
             List_delete(new_args, &discard);
             return NULL_PLUGIN_RESULT;
@@ -73,7 +73,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         if (fd_in == -1) {
             List_add(new_args, (intptr_t) arg, error);
 
-            if (*error) {
+            if (Error_has(error)) {
                 Iterator_delete(it);
                 List_delete(new_args, &discard);
                 return NULL_PLUGIN_RESULT;
@@ -84,7 +84,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
         List_add(fds_in, (intptr_t) fd_in, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             Iterator_delete(it);
             List_delete(new_args, &discard);
             return NULL_PLUGIN_RESULT;

@@ -63,7 +63,7 @@ void List_delete(List list, Error* error) {
 void List_extend(List list, List elements, Error* error) {
     Iterator it = List_iterator(elements, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return;
     }
 
@@ -73,7 +73,7 @@ void List_extend(List list, List elements, Error* error) {
     for (size_t added = 0; Iterator_has_next(it); ++added) {
         List_add(list, Iterator_next(it, &discard), error);
 
-        if (*error) {
+        if (Error_has(error)) {
             for (; added > 0; --added) {
                 List_remove(list, length + added - 1, &discard);
             }
@@ -116,7 +116,7 @@ size_t List_length(List list) {
 List List_literal(List_Impl implementation, Error* error, ...) {
     List list = List_new(implementation, error);
 
-    if (*error) {
+    if (Error_has(error)) {
         return NULL;
     }
 
@@ -132,7 +132,7 @@ List List_literal(List_Impl implementation, Error* error, ...) {
 
         List_add(list, arg, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             va_end(args);
             Error discard;
             List_delete(list, &discard);
@@ -157,7 +157,7 @@ List List_new(List_Impl implementation, Error* error) {
     list->impl = implementation;
     list->list = implementation->create(error);
     
-    if (*error) {
+    if (Error_has(error)) {
         free(list);
         return NULL;
     }
@@ -225,7 +225,7 @@ void* List_to_array(List list, size_t data_size, Error* error) {
     while (Iterator_has_next(it)) {
         intptr_t element = Iterator_next(it, error);
 
-        if (*error) {
+        if (Error_has(error)) {
             Iterator_delete(it);
             free(array);
             return NULL;
