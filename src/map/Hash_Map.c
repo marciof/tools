@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 #include "Hash_Map.h"
 
 
@@ -269,7 +270,7 @@ static bool get_previous(
         return true;
     }
     else if (position.element == map->table[position.bucket]) {
-        size_t bucket = position.bucket;
+        ssize_t bucket = position.bucket;
         
         do {
             --bucket;
@@ -280,7 +281,7 @@ static bool get_previous(
             return false;
         }
         
-        position.bucket = bucket;
+        position.bucket = (size_t) bucket;
         position.element = NULL;
         
         return get_previous(position, previous, map);
