@@ -21,6 +21,6 @@ void Error_set(Error* error, char* message) {
         abort();
     }
     else {
-        *error = message;
+        Error_set(error, message);
     }
 }

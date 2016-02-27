@@ -54,7 +54,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     int saved_stderr = dup(STDERR_FILENO);
 
     if (saved_stderr == -1) {
-        *error = strerror(errno);
+        Error_set(error, strerror(errno));
         return -1;
     }
 
@@ -62,7 +62,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
-        *error = strerror(errno);
+        Error_set(error, strerror(errno));
         return -1;
     }
     else if (child_pid != 0) {
@@ -72,12 +72,12 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     }
 
     if (dup2(saved_stderr, STDERR_FILENO) == -1) {
-        *error = strerror(errno);
+        Error_set(error, strerror(errno));
         return -1;
     }
 
     if (execvp(file, argv) == -1) {
-        *error = strerror(errno);
+        Error_set(error, strerror(errno));
         return -1;
     }
     else {

@@ -150,7 +150,7 @@ List List_new(List_Impl implementation, Error* error) {
     List list = (List) malloc(sizeof(struct _List));
 
     if (list == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -203,19 +203,19 @@ void List_sort(List list, int (*compare)(intptr_t, intptr_t), Error* error) {
 
 void* List_to_array(List list, size_t data_size, Error* error) {
     if (List_length(list) == 0) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return NULL;
     }
     
     if (data_size == 0) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return NULL;
     }
     
     void* array = malloc(data_size * List_length(list));
     
     if (array == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     

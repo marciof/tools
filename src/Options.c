@@ -107,21 +107,21 @@ static void parse_plugin_option(
         || (separator[STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        *error = "No plugin option specified.";
+        Error_set(error, "No plugin option specified.");
         return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        *error = "No plugin name specified.";
+        Error_set(error, "No plugin name specified.");
         return;
     }
 
     ssize_t plugin_pos = find_plugin(option, name_length, plugins, nr_plugins);
 
     if (plugin_pos < 0) {
-        *error = ERROR_UNKNOWN_PLUGIN;
+        Error_set(error, ERROR_UNKNOWN_PLUGIN);
         return;
     }
 
@@ -166,7 +166,7 @@ List Options_parse(
                 plugins[pos] = NULL;
             }
             else {
-                *error = ERROR_UNKNOWN_PLUGIN;
+                Error_set(error, ERROR_UNKNOWN_PLUGIN);
                 return NULL;
             }
         }
@@ -183,7 +183,7 @@ List Options_parse(
             }
         }
         else {
-            *error = "Try '-h' for more information.";
+            Error_set(error, "Try '-h' for more information.");
             return NULL;
         }
     }

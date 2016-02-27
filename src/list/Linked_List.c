@@ -174,7 +174,7 @@ static void* create(Error* error) {
     Linked list = (Linked) malloc(sizeof(struct _Linked));
     
     if (list == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -214,7 +214,7 @@ static intptr_t get(void* l, size_t position, Error* error) {
     Linked list = (Linked) l;
     
     if (position >= list->length) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return 0;
     }
     
@@ -224,7 +224,7 @@ static intptr_t get(void* l, size_t position, Error* error) {
 
 
 static intptr_t get_property(void* l, size_t property, Error* error) {
-    *error = strerror(EINVAL);
+    Error_set(error, strerror(EINVAL));
     return 0;
 }
 
@@ -233,11 +233,11 @@ static void insert(void* l, intptr_t value, size_t position, Error* error) {
     Linked list = (Linked) l;
 
     if (position > list->length) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return;
     }
     if ((list->length == SIZE_MAX) || (list->iterators > 0)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return;
     }
     
@@ -245,7 +245,7 @@ static void insert(void* l, intptr_t value, size_t position, Error* error) {
         sizeof(struct _Linked_Element));
     
     if (element == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return;
     }
     
@@ -293,11 +293,11 @@ static intptr_t remove(void* l, size_t position, Error* error) {
     Linked list = (Linked) l;
 
     if (position >= list->length) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return 0;
     }
     if (list->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
     
@@ -337,7 +337,7 @@ static intptr_t replace(
     Linked list = (Linked) l;
 
     if (position >= list->length) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return 0;
     }
     
@@ -354,7 +354,7 @@ static void reverse(void* l, Error* error) {
     Linked list = (Linked) l;
     
     if (list->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return;
     }
 
@@ -379,7 +379,7 @@ static void reverse(void* l, Error* error) {
 static void set_property(
         void* l, size_t property, intptr_t value, Error* error) {
 
-    *error = strerror(EINVAL);
+    Error_set(error, strerror(EINVAL));
 }
 
 
@@ -387,7 +387,7 @@ static void sort(void* l, int (* compare)(intptr_t, intptr_t), Error* error) {
     Linked list = (Linked) l;
     
     if (list->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
     }
     else {
         merge_sort(list, compare);
@@ -418,7 +418,7 @@ static void* iterator_create(void* collection, Error* error) {
     Linked list = (Linked) collection;
 
     if (list->iterators == SIZE_MAX) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return NULL;
     }
     
@@ -426,7 +426,7 @@ static void* iterator_create(void* collection, Error* error) {
         sizeof(struct _Linked_Iterator));
     
     if (iterator == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -493,7 +493,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
     Linked_Iterator iterator = (Linked_Iterator) it;
 
     if (!iterator_has_previous(it)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
     

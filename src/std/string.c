@@ -43,7 +43,7 @@ char* strjoin(
     s = string = (char*) malloc((string_length + 1) * sizeof(char));
     
     if (string == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -61,7 +61,7 @@ char* strncopy(const char* string, size_t length, Error* error) {
     char* copy = (char*) malloc((length + 1) * sizeof(char));
     
     if (copy == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -96,7 +96,7 @@ char** strsplit(
     char* end_offset;
     
     if (tokens == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -120,7 +120,7 @@ char** strsplit(
                 }
                 
                 free(tokens);
-                *error = strerror(ENOMEM);
+                Error_set(error, strerror(ENOMEM));
                 return NULL;
             }
             
@@ -168,7 +168,7 @@ char* strvformat(const char* format, va_list arguments, Error* error) {
 
         if (temp == NULL) {
             free(string);
-            *error = strerror(ENOMEM);
+            Error_set(error, strerror(ENOMEM));
             return NULL;
         }
 

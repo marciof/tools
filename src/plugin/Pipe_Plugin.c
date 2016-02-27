@@ -17,7 +17,7 @@ static bool has_input(int fd_in, Error* error) {
     int nr_fds = poll(&fds, 1, 0);
 
     if (nr_fds < 0) {
-        *error = strerror(errno);
+        Error_set(error, strerror(errno));
         return false;
     }
 
@@ -51,7 +51,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         struct stat fd_in_stat;
 
         if (fstat(fd_in, &fd_in_stat) == -1) {
-            *error = strerror(errno);
+            Error_set(error, strerror(errno));
             List_delete(new_fds_in, &discard);
             Iterator_delete(it);
             return NULL_PLUGIN_RESULT;

@@ -325,7 +325,7 @@ static void initialize(Hash map, Error* error) {
         map->capacity, sizeof(Hash_Bucket));
     
     if (table == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return;
     }
     
@@ -362,7 +362,7 @@ static intptr_t put_key(Hash map, intptr_t key, intptr_t value, Error* error) {
     e = (Hash_Bucket) malloc(sizeof(struct _Hash_Bucket));
     
     if (e == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return 0;
     }
     
@@ -409,7 +409,7 @@ static intptr_t remove_key(Hash map, intptr_t key, Error* error) {
         }
     }
     
-    *error = strerror(EINVAL);
+    Error_set(error, strerror(EINVAL));
     return 0;
 }
 
@@ -418,7 +418,7 @@ static void* create(Error* error) {
     Hash map = (Hash) malloc(sizeof(struct _Hash));
     
     if (map == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -439,7 +439,7 @@ static void destroy(void* m, Error* error) {
     Hash map = (Hash) m;
     
     if (map->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return;
     }
 
@@ -457,7 +457,7 @@ static intptr_t get(void* m, intptr_t key, Error* error) {
     Hash map = (Hash) m;
 
     if (map->table == NULL) {
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return 0;
     }
 
@@ -468,7 +468,7 @@ static intptr_t get(void* m, intptr_t key, Error* error) {
         }
     }
     
-    *error = strerror(EINVAL);
+    Error_set(error, strerror(EINVAL));
     return 0;
 }
 
@@ -484,7 +484,7 @@ static intptr_t get_property(void* m, size_t property, Error* error) {
         Error_clear(error);
         return (intptr_t) (map->hash == default_hash ? NULL : map->hash);
     default:
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         return 0;
     }
 }
@@ -494,7 +494,7 @@ static intptr_t put(void* m, intptr_t key, intptr_t value, Error* error) {
     Hash map = (Hash) m;
     
     if ((map->size == SIZE_MAX) || (map->iterators > 0)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
 
@@ -517,7 +517,7 @@ static intptr_t remove(void* m, intptr_t key, Error* error) {
     Hash map = (Hash) m;
     
     if (map->iterators > 0) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
 
@@ -546,7 +546,7 @@ static void set_property(
         Error_clear(error);
         break;
     default:
-        *error = strerror(EINVAL);
+        Error_set(error, strerror(EINVAL));
         break;
     }
 }
@@ -596,7 +596,7 @@ static void* iterator_create(void* collection, Error* error) {
     Hash map = (Hash) collection;
 
     if (map->iterators == SIZE_MAX) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return NULL;
     }
     
@@ -604,7 +604,7 @@ static void* iterator_create(void* collection, Error* error) {
         sizeof(struct _Hash_Iterator));
     
     if (iterator == NULL) {
-        *error = strerror(ENOMEM);
+        Error_set(error, strerror(ENOMEM));
         return NULL;
     }
     
@@ -671,7 +671,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
     Hash_Iterator iterator = (Hash_Iterator) it;
 
     if (!iterator_has_previous(iterator)) {
-        *error = strerror(EPERM);
+        Error_set(error, strerror(EPERM));
         return 0;
     }
     
