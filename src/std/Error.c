@@ -5,7 +5,7 @@
 
 void Error_clear(Error* error) {
     if (error != NULL) {
-        Error_clear(error);
+        *error = NULL;
     }
 }
 
@@ -21,6 +21,6 @@ void Error_set(Error* error, char* message) {
         abort();
     }
     else {
-        Error_set(error, message);
+        *error = message;
     }
 }

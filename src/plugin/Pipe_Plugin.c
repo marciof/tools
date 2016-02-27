@@ -40,21 +40,20 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     List new_fds_in = List_create(error);
 
     if (Error_has(error)) {
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     Iterator it = List_iterator(fds_in, error);
 
     while (Iterator_has_next(it)) {
-        Error discard;
-        int fd_in = (int) Iterator_next(it, &discard);
+        int fd_in = (int) Iterator_next(it, NULL);
         struct stat fd_in_stat;
 
         if (fstat(fd_in, &fd_in_stat) == -1) {
             Error_set(error, strerror(errno));
-            List_delete(new_fds_in, &discard);
+            List_delete(new_fds_in, NULL);
             Iterator_delete(it);
-            return NULL_PLUGIN_RESULT;
+            return NO_PLUGIN_RESULT;
         }
 
         if (S_ISDIR(fd_in_stat.st_mode)) {
@@ -65,9 +64,9 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
             bool has_fd_input = has_input(fd_in, error);
 
             if (Error_has(error)) {
-                List_delete(new_fds_in, &discard);
+                List_delete(new_fds_in, NULL);
                 Iterator_delete(it);
-                return NULL_PLUGIN_RESULT;
+                return NO_PLUGIN_RESULT;
             }
 
             if (!has_fd_input) {
@@ -78,9 +77,9 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         List_add(new_fds_in, (intptr_t) fd_in, error);
 
         if (Error_has(error)) {
-            List_delete(new_fds_in, &discard);
+            List_delete(new_fds_in, NULL);
             Iterator_delete(it);
-            return NULL_PLUGIN_RESULT;
+            return NO_PLUGIN_RESULT;
         }
     }
 

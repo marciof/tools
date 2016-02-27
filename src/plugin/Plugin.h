@@ -17,4 +17,4 @@ typedef struct {
 } Plugin;
 
 
-extern Plugin_Result NULL_PLUGIN_RESULT;
+extern Plugin_Result NO_PLUGIN_RESULT;

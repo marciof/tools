@@ -1,4 +1,4 @@
 #include "Plugin.h"
 
 
-Plugin_Result NULL_PLUGIN_RESULT = {NULL, NULL};
+Plugin_Result NO_PLUGIN_RESULT = {NULL, NULL};

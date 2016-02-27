@@ -4,8 +4,5 @@
 - Continuous integration.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
 - Plugin for `git show`.
-- Allow passing `NULL` as the `error` parameter?
-- Helper method for adding arrays to lists?
 - Put directories in `stdin` into `args`.
-- Simplify code, error handling.
 - Preserve arguments order when reading files and listing directories?

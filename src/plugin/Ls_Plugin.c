@@ -8,7 +8,6 @@
 
 
 static char** create_exec_argv(List args, List options, Error* error) {
-    Error discard;
     List argv_list = List_literal(Array_List, error, "ls", NULL);
 
     if (Error_has(error)) {
@@ -19,7 +18,7 @@ static char** create_exec_argv(List args, List options, Error* error) {
         List_extend(argv_list, options, error);
 
         if (Error_has(error)) {
-            List_delete(argv_list, &discard);
+            List_delete(argv_list, NULL);
             return NULL;
         }
     }
@@ -27,19 +26,19 @@ static char** create_exec_argv(List args, List options, Error* error) {
     List_extend(argv_list, args, error);
 
     if (Error_has(error)) {
-        List_delete(argv_list, &discard);
+        List_delete(argv_list, NULL);
         return NULL;
     }
 
     List_add(argv_list, (intptr_t) NULL, error);
 
     if (Error_has(error)) {
-        List_delete(argv_list, &discard);
+        List_delete(argv_list, NULL);
         return NULL;
     }
 
     char** argv = (char**) List_to_array(argv_list, sizeof(char*), error);
-    List_delete(argv_list, &discard);
+    List_delete(argv_list, NULL);
 
     if (Error_has(error)) {
         return NULL;
@@ -99,30 +98,30 @@ static const char* get_name() {
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     if ((List_length(fds_in) > 0) && (List_length(args) == 0)) {
         Error_clear(error);
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     char** argv = create_exec_argv(args, options, error);
 
     if (Error_has(error)) {
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     int fd_out = exec_forkpty(argv[0], argv, error);
     free(argv);
 
     if (Error_has(error)) {
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     List_add(fds_in, (intptr_t) fd_out, error);
 
     if (Error_has(error)) {
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     Error_clear(error);
-    return NULL_PLUGIN_RESULT;
+    return NO_PLUGIN_RESULT;
 }
 
 

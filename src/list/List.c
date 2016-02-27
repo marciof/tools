@@ -68,14 +68,13 @@ void List_extend(List list, List elements, Error* error) {
     }
 
     size_t length = List_length(list);
-    Error discard;
 
     for (size_t added = 0; Iterator_has_next(it); ++added) {
-        List_add(list, Iterator_next(it, &discard), error);
+        List_add(list, Iterator_next(it, NULL), error);
 
         if (Error_has(error)) {
             for (; added > 0; --added) {
-                List_remove(list, length + added - 1, &discard);
+                List_remove(list, length + added - 1, NULL);
             }
 
             Iterator_delete(it);
@@ -134,8 +133,7 @@ List List_literal(List_Impl implementation, Error* error, ...) {
 
         if (Error_has(error)) {
             va_end(args);
-            Error discard;
-            List_delete(list, &discard);
+            List_delete(list, NULL);
             return NULL;
         }
     }

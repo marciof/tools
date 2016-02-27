@@ -60,10 +60,9 @@ List Map_keys(Map map, Error* error) {
     
     while (Iterator_has_next(keys_iterator)) {
         intptr_t key = Iterator_next(keys_iterator, error);
-        Error discard;
 
         if (Error_has(error)) {
-            List_delete(keys, &discard);
+            List_delete(keys, NULL);
             Iterator_delete(keys_iterator);
             return NULL;
         }
@@ -71,7 +70,7 @@ List Map_keys(Map map, Error* error) {
         List_add(keys, key, error);
         
         if (Error_has(error)) {
-            List_delete(keys, &discard);
+            List_delete(keys, NULL);
             Iterator_delete(keys_iterator);
             return NULL;
         }
@@ -138,10 +137,9 @@ List Map_values(Map map, Error* error) {
     }
     
     Iterator keys_iterator = Map_keys_iterator(map, error);
-    Error discard;
 
     if (Error_has(error)) {
-        List_delete(values, &discard);
+        List_delete(values, NULL);
         return NULL;
     }
     
@@ -149,15 +147,15 @@ List Map_values(Map map, Error* error) {
         intptr_t key = Iterator_next(keys_iterator, error);
 
         if (Error_has(error)) {
-            List_delete(values, &discard);
+            List_delete(values, NULL);
             Iterator_delete(keys_iterator);
             return NULL;
         }
 
-        List_add(values, Map_get(map, key, &discard), error);
+        List_add(values, Map_get(map, key, NULL), error);
         
         if (Error_has(error)) {
-            List_delete(values, &discard);
+            List_delete(values, NULL);
             Iterator_delete(keys_iterator);
             return NULL;
         }

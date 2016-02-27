@@ -564,9 +564,8 @@ static void* create_for_string_keys(Error* error) {
         return NULL;
     }
 
-    Error discard;
-    set_property(map, HASH_MAP_EQUAL, (intptr_t) Hash_Map_str_equal, &discard);
-    set_property(map, HASH_MAP_HASH, (intptr_t) Hash_Map_str_hash, &discard);
+    set_property(map, HASH_MAP_EQUAL, (intptr_t) Hash_Map_str_equal, NULL);
+    set_property(map, HASH_MAP_HASH, (intptr_t) Hash_Map_str_hash, NULL);
 
     return map;
 }

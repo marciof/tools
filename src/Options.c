@@ -161,8 +161,7 @@ List Options_parse(
             ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
 
             if (pos >= 0) {
-                Error discard;
-                List_delete(plugins[pos]->options, &discard);
+                List_delete(plugins[pos]->options, NULL);
                 plugins[pos] = NULL;
             }
             else {
@@ -198,8 +197,7 @@ List Options_parse(
         List_add(args, (intptr_t) argv[i], error);
 
         if (Error_has(error)) {
-            Error discard;
-            List_delete(args, &discard);
+            List_delete(args, NULL);
             return NULL;
         }
     }

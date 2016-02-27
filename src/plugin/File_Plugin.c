@@ -19,7 +19,12 @@ static int open_file(char* path, Error* error) {
     struct stat path_stat;
 
     if (stat(path, &path_stat) == -1) {
-        Error_set(error, errno == ENOENT ? NULL : strerror(errno));
+        if (errno == ENOENT) {
+            Error_clear(error);
+        }
+        else {
+            Error_set(error, strerror(errno));
+        }
         return -1;
     }
 
@@ -43,31 +48,30 @@ static int open_file(char* path, Error* error) {
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     if (List_length(args) == 0) {
         Error_clear(error);
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     Iterator it = List_iterator(args, error);
 
     if (Error_has(error)) {
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     List new_args = List_create(error);
 
     if (Error_has(error)) {
         Iterator_delete(it);
-        return NULL_PLUGIN_RESULT;
+        return NO_PLUGIN_RESULT;
     }
 
     while (Iterator_has_next(it)) {
-        Error discard;
-        char* arg = (char*) Iterator_next(it, &discard);
+        char* arg = (char*) Iterator_next(it, NULL);
         int fd_in = open_file(arg, error);
 
         if (Error_has(error)) {
             Iterator_delete(it);
-            List_delete(new_args, &discard);
-            return NULL_PLUGIN_RESULT;
+            List_delete(new_args, NULL);
+            return NO_PLUGIN_RESULT;
         }
 
         if (fd_in == -1) {
@@ -75,8 +79,8 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
             if (Error_has(error)) {
                 Iterator_delete(it);
-                List_delete(new_args, &discard);
-                return NULL_PLUGIN_RESULT;
+                List_delete(new_args, NULL);
+                return NO_PLUGIN_RESULT;
             }
 
             continue;
@@ -86,8 +90,8 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
         if (Error_has(error)) {
             Iterator_delete(it);
-            List_delete(new_args, &discard);
-            return NULL_PLUGIN_RESULT;
+            List_delete(new_args, NULL);
+            return NO_PLUGIN_RESULT;
         }
     }
 

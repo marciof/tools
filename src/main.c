@@ -57,13 +57,8 @@ int main(int argc, char* argv[]) {
     List args = Options_parse(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
-    if (error) {
-        cleanup(NULL, NULL, error);
-        return EXIT_FAILURE;
-    }
-
     if (args == NULL) {
-        cleanup(NULL, NULL, NULL);
+        cleanup(NULL, NULL, error ? error : NULL);
         return EXIT_SUCCESS;
     }
 
