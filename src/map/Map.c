@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../list/Array_List.h"
 #include "Map.h"
 
 
@@ -45,7 +44,7 @@ bool Map_has_key(Map map, intptr_t key) {
 
 
 List Map_keys(Map map, Error* error) {
-    List keys = List_new(Array_List, error);
+    List keys = List_create(error);
 
     if (*error) {
         return NULL;
@@ -132,7 +131,7 @@ size_t Map_size(Map map) {
 
 
 List Map_values(Map map, Error* error) {
-    List values = List_new(Array_List, error);
+    List values = List_create(error);
 
     if (*error) {
         return NULL;

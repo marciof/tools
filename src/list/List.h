@@ -40,6 +40,16 @@ void List_add(List list, intptr_t element, Error* error);
 
 
 /**
+ * Create a list, using the most appropriate implementation.
+ *
+ * @param error error message, if any
+ * @return new empty list or `NULL` on error
+ * @exception ENOMEM not enough memory
+ */
+List List_create(Error* error);
+
+
+/**
  * Delete a list.
  *
  * @param list list to delete, unless `NULL`

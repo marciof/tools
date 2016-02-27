@@ -4,7 +4,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "../list/Array_List.h"
 #include "../std/Error.h"
 #include "Pipe_Plugin.h"
 
@@ -38,7 +37,7 @@ static const char* get_name() {
 
 
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
-    List new_fds_in = List_new(Array_List, error);
+    List new_fds_in = List_create(error);
 
     if (*error) {
         return NULL_PLUGIN_RESULT;

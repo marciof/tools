@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Array_List.h"
 #include "List.h"
 
 
@@ -35,6 +36,11 @@ static int default_comparison(intptr_t a, intptr_t b) {
 
 void List_add(List list, intptr_t element, Error* error) {
     List_insert(list, element, List_length(list), error);
+}
+
+
+List List_create(Error* error) {
+    return List_new(Array_List, error);
 }
 
 

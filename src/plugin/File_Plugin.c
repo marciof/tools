@@ -3,7 +3,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "File_Plugin.h"
-#include "../list/Array_List.h"
 
 
 static const char* get_description() {
@@ -53,7 +52,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         return NULL_PLUGIN_RESULT;
     }
 
-    List new_args = List_new(Array_List, error);
+    List new_args = List_create(error);
 
     if (*error) {
         Iterator_delete(it);

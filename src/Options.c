@@ -188,7 +188,7 @@ List Options_parse(
         }
     }
 
-    List args = List_new(Array_List, error);
+    List args = List_create(error);
 
     if (*error) {
         return NULL;

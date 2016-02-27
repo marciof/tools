@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "list/Array_List.h"
 #include "Options.h"
 #include "plugin/File_Plugin.h"
 #include "plugin/Ls_Plugin.h"
@@ -37,7 +36,7 @@ static void cleanup(List args, List fds_in, Error error) {
 
 
 static List list_input_fds(Error* error) {
-    List fds_in = List_new(Array_List, error);
+    List fds_in = List_create(error);
 
     if (*error) {
         return NULL;
