@@ -5,7 +5,7 @@
 
 void Error_clear(Error* error) {
     if (error != NULL) {
-        *error = NULL;
+        Error_clear(error);
     }
 }
 

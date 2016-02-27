@@ -183,7 +183,7 @@ static void* create(Error* error) {
     list->length = 0;
     list->iterators = 0;
     
-    *error = NULL;
+    Error_clear(error);
     return list;
 }
 
@@ -218,7 +218,7 @@ static intptr_t get(void* l, size_t position, Error* error) {
         return 0;
     }
     
-    *error = NULL;
+    Error_clear(error);
     return List_Element_get(list, position)->value;
 }
 
@@ -280,7 +280,7 @@ static void insert(void* l, intptr_t value, size_t position, Error* error) {
     
     ++list->length;
     element->value = value;
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -326,7 +326,7 @@ static intptr_t remove(void* l, size_t position, Error* error) {
     free(element);
     --list->length;
     
-    *error = NULL;
+    Error_clear(error);
     return previous_value;
 }
 
@@ -345,7 +345,7 @@ static intptr_t replace(
     intptr_t previous_value = element->value;
 
     element->value = value;
-    *error = NULL;
+    Error_clear(error);
     return previous_value;
 }
 
@@ -372,7 +372,7 @@ static void reverse(void* l, Error* error) {
         element = next;
     }
 
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -391,7 +391,7 @@ static void sort(void* l, int (* compare)(intptr_t, intptr_t), Error* error) {
     }
     else {
         merge_sort(list, compare);
-        *error = NULL;
+        Error_clear(error);
     }
 }
 
@@ -434,7 +434,7 @@ static void* iterator_create(void* collection, Error* error) {
     ++list->iterators;
 
     iterator_to_start(iterator);
-    *error = NULL;
+    Error_clear(error);
     return iterator;
 }
 
@@ -515,7 +515,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
         iterator_to_start(iterator);
     }
     
-    *error = NULL;
+    Error_clear(error);
     return value;
 }
 

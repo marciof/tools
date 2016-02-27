@@ -21,7 +21,7 @@ static bool has_input(int fd_in, Error* error) {
         return false;
     }
 
-    *error = NULL;
+    Error_clear(error);
     return nr_fds == 1;
 }
 
@@ -86,7 +86,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
     Plugin_Result result = {args, new_fds_in};
     Iterator_delete(it);
-    *error = NULL;
+    Error_clear(error);
     return result;
 }
 

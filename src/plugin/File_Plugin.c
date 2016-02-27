@@ -24,7 +24,7 @@ static int open_file(char* path, Error* error) {
     }
 
     if (S_ISDIR(path_stat.st_mode)) {
-        *error = NULL;
+        Error_clear(error);
         return -1;
     }
 
@@ -35,14 +35,14 @@ static int open_file(char* path, Error* error) {
         return -1;
     }
 
-    *error = NULL;
+    Error_clear(error);
     return file;
 }
 
 
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     if (List_length(args) == 0) {
-        *error = NULL;
+        Error_clear(error);
         return NULL_PLUGIN_RESULT;
     }
 
@@ -93,7 +93,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
     Plugin_Result result = {new_args, fds_in};
     Iterator_delete(it);
-    *error = NULL;
+    Error_clear(error);
     return result;
 }
 

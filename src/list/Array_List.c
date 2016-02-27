@@ -232,7 +232,7 @@ static void change_capacity(Array list, size_t capacity, Error* error) {
     
     list->array = array;
     list->capacity = capacity;
-    *error = NULL;
+    Error_clear(error);
     return;
 }
 
@@ -288,7 +288,7 @@ static void* create(Error* error) {
         return NULL;
     }
     
-    *error = NULL;
+    Error_clear(error);
     return list;
 }
 
@@ -316,7 +316,7 @@ static intptr_t get(void* l, size_t position, Error* error) {
         return 0;
     }
     
-    *error = NULL;
+    Error_clear(error);
     return list->array[position];
 }
 
@@ -326,7 +326,7 @@ static intptr_t get_property(void* l, size_t property, Error* error) {
     
     switch (property) {
     case ARRAY_LIST_CAPACITY:
-        *error = NULL;
+        Error_clear(error);
         return list->capacity;
     default:
         *error = strerror(EINVAL);
@@ -364,7 +364,7 @@ static void insert(void* l, intptr_t element, size_t position, Error* error) {
     
     ++list->length;
     list->array[position] = element;
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -395,7 +395,7 @@ static intptr_t remove(void* l, size_t position, Error* error) {
         }
     }
     
-    *error = NULL;
+    Error_clear(error);
     return element;
 }
 
@@ -413,7 +413,7 @@ static intptr_t replace(
     intptr_t previous_element = list->array[position];
     list->array[position] = element;
     
-    *error = NULL;
+    Error_clear(error);
     return previous_element;
 }
 
@@ -434,7 +434,7 @@ static void reverse(void* l, Error* error) {
         list->array[right] = element;
     }
 
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -460,7 +460,7 @@ static void sort(void* l, Comparator compare, Error* error) {
     }
     else {
         merge_sort(list, compare, 0, list->length);
-        *error = NULL;
+        Error_clear(error);
     }
 }
 
@@ -503,7 +503,7 @@ static void* iterator_create(void* collection, Error* error) {
     ++list->iterators;
 
     iterator_to_start(iterator);
-    *error = NULL;
+    Error_clear(error);
     return iterator;
 }
 
@@ -584,7 +584,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
         iterator_to_start(iterator);
     }
     
-    *error = NULL;
+    Error_clear(error);
     return element;
 }
 

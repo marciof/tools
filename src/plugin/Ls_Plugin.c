@@ -45,7 +45,7 @@ static char** create_exec_argv(List args, List options, Error* error) {
         return NULL;
     }
 
-    *error = NULL;
+    Error_clear(error);
     return argv;
 }
 
@@ -67,7 +67,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     }
     else if (child_pid != 0) {
         close(saved_stderr);
-        *error = NULL;
+        Error_clear(error);
         return child_fd_out;
     }
 
@@ -98,7 +98,7 @@ static const char* get_name() {
 
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
     if ((List_length(fds_in) > 0) && (List_length(args) == 0)) {
-        *error = NULL;
+        Error_clear(error);
         return NULL_PLUGIN_RESULT;
     }
 
@@ -121,7 +121,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         return NULL_PLUGIN_RESULT;
     }
 
-    *error = NULL;
+    Error_clear(error);
     return NULL_PLUGIN_RESULT;
 }
 

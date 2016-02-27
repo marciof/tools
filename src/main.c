@@ -47,7 +47,7 @@ static List list_input_fds(Error* error) {
         return NULL;
     }
 
-    *error = NULL;
+    Error_clear(error);
     return fds_in;
 }
 

@@ -52,7 +52,7 @@ char* strjoin(
     }
     
     strcpy(s, strings[length - 1]);
-    *error = NULL;
+    Error_clear(error);
     return string;
 }
 
@@ -67,7 +67,7 @@ char* strncopy(const char* string, size_t length, Error* error) {
     
     strncpy(copy, string, length);
     copy[length] = '\0';
-    *error = NULL;
+    Error_clear(error);
     return copy;
 }
 
@@ -136,7 +136,7 @@ char** strsplit(
     }
     
     tokens[tokens_length] = NULL;
-    *error = NULL;
+    Error_clear(error);
     return tokens;
 }
 
@@ -187,7 +187,7 @@ char* strvformat(const char* format, va_list arguments, Error* error) {
         }
         else {
             string[count] = '\0';
-            *error = NULL;
+            Error_clear(error);
             return string;
         }
     }

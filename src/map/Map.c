@@ -22,7 +22,7 @@ void Map_delete(Map map, Error* error) {
         free(map);
     }
     
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -78,7 +78,7 @@ List Map_keys(Map map, Error* error) {
     }
 
     Iterator_delete(keys_iterator);
-    *error = NULL;
+    Error_clear(error);
     return keys;
 }
 
@@ -104,7 +104,7 @@ Map Map_new(Map_Impl implementation, Error* error) {
         return NULL;
     }
     
-    *error = NULL;
+    Error_clear(error);
     return map;
 }
 
@@ -164,6 +164,6 @@ List Map_values(Map map, Error* error) {
     }
 
     Iterator_delete(keys_iterator);
-    *error = NULL;
+    Error_clear(error);
     return values;
 }

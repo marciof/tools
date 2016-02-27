@@ -311,7 +311,7 @@ static bool get_previous(
  */
 static void initialize(Hash map, Error* error) {
     if (map->table != NULL) {
-        *error = NULL;
+        Error_clear(error);
         return;
     }
 
@@ -330,7 +330,7 @@ static void initialize(Hash map, Error* error) {
     }
     
     map->table = table;
-    *error = NULL;
+    Error_clear(error);
     return;
 }
 
@@ -354,7 +354,7 @@ static intptr_t put_key(Hash map, intptr_t key, intptr_t value, Error* error) {
             intptr_t previous_value = e->value;
             e->value = value;
             
-            *error = NULL;
+            Error_clear(error);
             return previous_value;
         }
     }
@@ -373,7 +373,7 @@ static intptr_t put_key(Hash map, intptr_t key, intptr_t value, Error* error) {
     *bucket = e;
     ++map->size;
     
-    *error = NULL;
+    Error_clear(error);
     return 0;
 }
 
@@ -404,7 +404,7 @@ static intptr_t remove_key(Hash map, intptr_t key, Error* error) {
             free(e);
             --map->size;
             
-            *error = NULL;
+            Error_clear(error);
             return value;
         }
     }
@@ -430,7 +430,7 @@ static void* create(Error* error) {
     map->table = NULL;
     map->load_factor = DEFAULT_LOAD_FACTOR;
     
-    *error = NULL;
+    Error_clear(error);
     return map;
 }
 
@@ -449,7 +449,7 @@ static void destroy(void* m, Error* error) {
 
     memset(map, 0, sizeof(struct _Hash));
     free(map);
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -463,7 +463,7 @@ static intptr_t get(void* m, intptr_t key, Error* error) {
 
     for (Hash_Bucket e = *bucket_of(map, key); e != NULL; e = e->next) {
         if (map->equals(e->key, key)) {
-            *error = NULL;
+            Error_clear(error);
             return e->value;
         }
     }
@@ -478,10 +478,10 @@ static intptr_t get_property(void* m, size_t property, Error* error) {
     
     switch (property) {
     case HASH_MAP_EQUAL:
-        *error = NULL;
+        Error_clear(error);
         return (intptr_t) (map->equals == default_equals ? NULL : map->equals);
     case HASH_MAP_HASH:
-        *error = NULL;
+        Error_clear(error);
         return (intptr_t) (map->hash == default_hash ? NULL : map->hash);
     default:
         *error = strerror(EINVAL);
@@ -539,11 +539,11 @@ static void set_property(
     switch (property) {
     case HASH_MAP_EQUAL:
         map->equals = value ? (Hash_Map_Equal) value : default_equals;
-        *error = NULL;
+        Error_clear(error);
         break;
     case HASH_MAP_HASH:
         map->hash = value ? (Hash_Map_Hash) value : default_hash;
-        *error = NULL;
+        Error_clear(error);
         break;
     default:
         *error = strerror(EINVAL);
@@ -612,7 +612,7 @@ static void* iterator_create(void* collection, Error* error) {
     ++map->iterators;
 
     iterator_to_start(iterator);
-    *error = NULL;
+    Error_clear(error);
     return iterator;
 }
 
@@ -693,7 +693,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
         iterator_to_start(iterator);
     }
     
-    *error = NULL;
+    Error_clear(error);
     return key;
 }
 

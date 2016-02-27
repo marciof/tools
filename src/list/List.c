@@ -84,7 +84,7 @@ void List_extend(List list, List elements, Error* error) {
     }
 
     Iterator_delete(it);
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -141,7 +141,7 @@ List List_literal(List_Impl implementation, Error* error, ...) {
     }
 
     va_end(args);
-    *error = NULL;
+    Error_clear(error);
     return list;
 }
 
@@ -162,7 +162,7 @@ List List_new(List_Impl implementation, Error* error) {
         return NULL;
     }
     
-    *error = NULL;
+    Error_clear(error);
     return list;
 }
 
@@ -236,6 +236,6 @@ void* List_to_array(List list, size_t data_size, Error* error) {
     }
     
     Iterator_delete(it);
-    *error = NULL;
+    Error_clear(error);
     return array;
 }

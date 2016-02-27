@@ -45,7 +45,7 @@ Iterator Iterator_new(Iterator_Impl impl, void* collection, Error* error) {
         return NULL;
     }
     
-    *error = NULL;
+    Error_clear(error);
     return iterator;
 }
 

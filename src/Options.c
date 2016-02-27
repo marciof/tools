@@ -143,7 +143,7 @@ static void parse_plugin_option(
         }
     }
 
-    *error = NULL;
+    Error_clear(error);
 }
 
 
@@ -172,7 +172,7 @@ List Options_parse(
         }
         else if (option == *HELP_OPT) {
             display_help(plugins, nr_plugins);
-            *error = NULL;
+            Error_clear(error);
             return NULL;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
@@ -204,6 +204,6 @@ List Options_parse(
         }
     }
 
-    *error = NULL;
+    Error_clear(error);
     return args;
 }
