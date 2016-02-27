@@ -20,7 +20,7 @@ static int open_file(char* path, Error* error) {
     struct stat path_stat;
 
     if (stat(path, &path_stat) == -1) {
-        *error = strerror(errno);
+        *error = errno == ENOENT ? NULL : strerror(errno);
         return -1;
     }
 
