@@ -54,7 +54,7 @@ List Map_keys(Map map, Error* error) {
     
     if (Error_has(error)) {
         List_delete(keys, error);
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
@@ -91,7 +91,7 @@ Map Map_new(Map_Impl implementation, Error* error) {
     Map map = (Map) malloc(sizeof(struct _Map));
 
     if (map == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     

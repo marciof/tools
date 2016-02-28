@@ -218,7 +218,7 @@ static void merge(
  */
 static void change_capacity(Array list, size_t capacity, Error* error) {
     if (capacity < list->length) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return;
     }
     
@@ -226,7 +226,7 @@ static void change_capacity(Array list, size_t capacity, Error* error) {
         list->array, capacity * sizeof(intptr_t));
     
     if (array == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return;
     }
     
@@ -273,7 +273,7 @@ static void* create(Error* error) {
     Array list = (Array) malloc(sizeof(struct _Array));
     
     if (list == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
@@ -284,7 +284,7 @@ static void* create(Error* error) {
     
     if (list->array == NULL) {
         free(list);
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
@@ -297,7 +297,7 @@ static void destroy(void* l, Error* error) {
     Array list = (Array) l;
     
     if (list->iterators > 0) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return;
     }
     
@@ -312,7 +312,7 @@ static intptr_t get(void* l, size_t position, Error* error) {
     Array list = (Array) l;
     
     if (position >= list->length) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return 0;
     }
     
@@ -329,7 +329,7 @@ static intptr_t get_property(void* l, size_t property, Error* error) {
         Error_clear(error);
         return list->capacity;
     default:
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return 0;
     }
 }
@@ -339,12 +339,12 @@ static void insert(void* l, intptr_t element, size_t position, Error* error) {
     Array list = (Array) l;
     
     if (position > list->length) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return;
     }
 
     if ((list->length == SIZE_MAX) || (list->iterators > 0)) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return;
     }
     
@@ -377,12 +377,12 @@ static intptr_t remove(void* l, size_t position, Error* error) {
     Array list = (Array) l;
 
     if (position >= list->length) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return 0;
     }
 
     if (list->iterators > 0) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return 0;
     }
     
@@ -406,7 +406,7 @@ static intptr_t replace(
     Array list = (Array) l;
 
     if (position >= list->length) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return 0;
     }
     
@@ -422,7 +422,7 @@ static void reverse(void* l, Error* error) {
     Array list = (Array) l;
     
     if (list->iterators > 0) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return;
     }
 
@@ -446,7 +446,7 @@ static void set_property(
         change_capacity((Array) l, (size_t) value, error);
         break;
     default:
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         break;
     }
 }
@@ -456,7 +456,7 @@ static void sort(void* l, Comparator compare, Error* error) {
     Array list = (Array) l;
     
     if (list->iterators > 0) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
     }
     else {
         merge_sort(list, compare, 0, list->length);
@@ -487,7 +487,7 @@ static void* iterator_create(void* collection, Error* error) {
     Array list = (Array) collection;
 
     if (list->iterators == SIZE_MAX) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return NULL;
     }
     
@@ -495,7 +495,7 @@ static void* iterator_create(void* collection, Error* error) {
         sizeof(struct _Array_Iterator));
     
     if (iterator == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
@@ -531,7 +531,7 @@ static intptr_t iterator_next(void* it, Error* error) {
     Array_Iterator iterator = (Array_Iterator) it;
 
     if (!iterator_has_next(it)) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return 0;
     }
     
@@ -562,7 +562,7 @@ static intptr_t iterator_previous(void* it, Error* error) {
     Array_Iterator iterator = (Array_Iterator) it;
 
     if (!iterator_has_previous(it)) {
-        Error_set(error, strerror(EPERM));
+        Error_errno(error, EPERM);
         return 0;
     }
     

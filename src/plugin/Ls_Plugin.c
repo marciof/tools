@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <pty.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include "../list/Array_List.h"
 #include "Ls_Plugin.h"
@@ -53,7 +52,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     int saved_stderr = dup(STDERR_FILENO);
 
     if (saved_stderr == -1) {
-        Error_set(error, strerror(errno));
+        Error_errno(error, errno);
         return -1;
     }
 
@@ -61,7 +60,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
-        Error_set(error, strerror(errno));
+        Error_errno(error, errno);
         return -1;
     }
     else if (child_pid != 0) {
@@ -71,12 +70,12 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
     }
 
     if (dup2(saved_stderr, STDERR_FILENO) == -1) {
-        Error_set(error, strerror(errno));
+        Error_errno(error, errno);
         return -1;
     }
 
     if (execvp(file, argv) == -1) {
-        Error_set(error, strerror(errno));
+        Error_errno(error, errno);
         return -1;
     }
     else {

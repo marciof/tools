@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
 #include <sys/stat.h>
 #include "File_Plugin.h"
 
@@ -23,7 +22,7 @@ static int open_file(char* path, Error* error) {
             Error_clear(error);
         }
         else {
-            Error_set(error, strerror(errno));
+            Error_errno(error, errno);
         }
         return -1;
     }
@@ -36,7 +35,7 @@ static int open_file(char* path, Error* error) {
     int file = open(path, O_RDONLY);
 
     if (file == -1) {
-        Error_set(error, strerror(errno));
+        Error_errno(error, errno);
         return -1;
     }
 

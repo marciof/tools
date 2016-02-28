@@ -33,7 +33,7 @@ Iterator Iterator_new(Iterator_Impl impl, void* collection, Error* error) {
     Iterator iterator = (Iterator) malloc(sizeof(struct _Iterator));
 
     if (iterator == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
