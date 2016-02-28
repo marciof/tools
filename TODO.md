@@ -7,7 +7,7 @@
 - Put directories from `stdin` into `args`.
 - Preserve arguments order when reading files and listing directories.
 - Make the "pipe" plugin responsible for `stdin`.
-- Allow removing list elements while iterating.
+- Allow inserting and removing list elements while iterating.
 
 Simplify code:
 - Start with an empty list of fds-in.

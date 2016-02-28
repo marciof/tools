@@ -37,7 +37,7 @@ static const char* get_name() {
 
 
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
-    List new_fds_in = List_create(error);
+    List new_fds_in = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;

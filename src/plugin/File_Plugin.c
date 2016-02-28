@@ -57,7 +57,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         return NO_PLUGIN_RESULT;
     }
 
-    List new_args = List_create(error);
+    List new_args = List_new(error, NULL);
 
     if (Error_has(error)) {
         Iterator_delete(it);

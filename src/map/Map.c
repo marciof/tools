@@ -44,7 +44,7 @@ bool Map_has_key(Map map, intptr_t key) {
 
 
 List Map_keys(Map map, Error* error) {
-    List keys = List_create(error);
+    List keys = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
@@ -130,7 +130,7 @@ size_t Map_size(Map map) {
 
 
 List Map_values(Map map, Error* error) {
-    List values = List_create(error);
+    List values = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;

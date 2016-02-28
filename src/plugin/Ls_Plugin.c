@@ -8,7 +8,7 @@
 
 
 static char** create_exec_argv(List args, List options, Error* error) {
-    List argv_list = List_literal(Array_List, error, "ls", NULL);
+    List argv_list = List_new(error, "ls", NULL);
 
     if (Error_has(error)) {
         return NULL;

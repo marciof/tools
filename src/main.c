@@ -34,7 +34,7 @@ static void cleanup(List args, List fds_in, Error error) {
 
 
 static List list_input_fds(Error* error) {
-    List fds_in = List_create(error);
+    List fds_in = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
