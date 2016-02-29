@@ -29,7 +29,7 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "Options:\n"
         "  -%c              display this help and exit\n"
         "  -%c PLUGIN:OPT   pass an option to a plugin\n"
-        "  -%c PLUGIN       disable plugin\n",
+        "  -%c PLUGIN       disable a plugin\n",
         *HELP_OPT,
         *PLUGIN_OPTION_OPT,
         *DISABLE_PLUGIN_OPT);
