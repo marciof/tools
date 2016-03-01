@@ -1,5 +1,6 @@
 - https://github.com/andrewrk/malcheck
 - https://matt.sh/howto-c
+- Simplify array list usage, and move C library back.
 - Tests with coverage.
 - Continuous integration.
 - Allow iterating using only callbacks to avoid allocating memory and to be faster?
