@@ -84,28 +84,32 @@ void List_delete(List list, Error* error) {
 
 
 void List_extend(List list, List elements, Error* error) {
-    Iterator it = List_iterator(elements, error);
+    size_t length = List_length(list);
+    size_t nr_to_add = List_length(elements);
+    size_t nr_added = 0;
 
-    if (Error_has(error)) {
+    for (size_t i = 0; i < nr_to_add; ++i, ++nr_added) {
+        intptr_t element = List_get(elements, i, error);
+
+        if (Error_has(error)) {
+            goto ERROR;
+        }
+
+        List_add(list, element, error);
+
+        if (Error_has(error)) {
+            goto ERROR;
+        }
+
+        continue;
+
+        ERROR:
+        for (; nr_added > 0; --nr_added) {
+            List_remove(list, length + nr_added - 1, NULL);
+        }
         return;
     }
 
-    size_t length = List_length(list);
-
-    for (size_t added = 0; Iterator_has_next(it); ++added) {
-        List_add(list, Iterator_next(it, NULL), error);
-
-        if (Error_has(error)) {
-            for (; added > 0; --added) {
-                List_remove(list, length + added - 1, NULL);
-            }
-
-            Iterator_delete(it);
-            return;
-        }
-    }
-
-    Iterator_delete(it);
     Error_clear(error);
 }
 
@@ -122,11 +126,6 @@ intptr_t List_get_property(List list, size_t prop, Error* error) {
 
 void List_insert(List list, intptr_t element, size_t position, Error* error) {
     list->impl->insert(list->list, element, position, error);
-}
-
-
-Iterator List_iterator(List list, Error* error) {
-    return Iterator_new(list->impl->iterator, list->list, error);
 }
 
 
@@ -196,7 +195,9 @@ void List_sort(List list, int (*compare)(intptr_t, intptr_t), Error* error) {
 
 
 void* List_to_array(List list, size_t data_size, Error* error) {
-    if (List_length(list) == 0) {
+    size_t length = List_length(list);
+
+    if (length == 0) {
         Error_errno(error, EINVAL);
         return NULL;
     }
@@ -213,14 +214,12 @@ void* List_to_array(List list, size_t data_size, Error* error) {
         return NULL;
     }
     
-    Iterator it = List_iterator(list, error);
     uint8_t* location = (uint8_t*) array;
 
-    while (Iterator_has_next(it)) {
-        intptr_t element = Iterator_next(it, error);
+    for (size_t i = 0; i < length; ++i) {
+        intptr_t element = List_get(list, i, error);
 
         if (Error_has(error)) {
-            Iterator_delete(it);
             free(array);
             return NULL;
         }
@@ -229,7 +228,6 @@ void* List_to_array(List list, size_t data_size, Error* error) {
         location += data_size;
     }
     
-    Iterator_delete(it);
     Error_clear(error);
     return array;
 }

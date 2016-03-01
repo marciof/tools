@@ -3,13 +3,11 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "Error.h"
-#include "Iterator.h"
 
 
 typedef struct _List* List;
 
 typedef struct _List_Impl {
-    Iterator_Impl iterator;
     void* (*create)(Error* error);
     void (*destroy)(void* list, Error* error);
     intptr_t (*get)(void* list, size_t position, Error* error);
@@ -121,18 +119,6 @@ intptr_t List_get_property(List list, size_t property, Error* error);
  * @exception EPERM maximum number of elements (`SIZE_MAX`) reached
  */
 void List_insert(List list, intptr_t element, size_t position, Error* error);
-
-
-/**
- * Create an iterator for a list.
- *
- * @param list list for which to create an iterator
- * @param error error message, if any
- * @return new iterator for the given list or `NULL` on error
- * @exception ENOMEM not enough memory
- * @exception EPERM maximum number of iterators (`SIZE_MAX`) reached
- */
-Iterator List_iterator(List list, Error* error);
 
 
 /**

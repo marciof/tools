@@ -42,16 +42,13 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         return NO_PLUGIN_RESULT;
     }
 
-    Iterator it = List_iterator(fds_in, error);
-
-    while (Iterator_has_next(it)) {
-        int fd_in = (int) Iterator_next(it, NULL);
+    for (size_t i = 0; i < List_length(fds_in); ++i) {
+        int fd_in = (int) List_get(fds_in, i, NULL);
         struct stat fd_in_stat;
 
         if (fstat(fd_in, &fd_in_stat) == -1) {
             Error_errno(error, errno);
             List_delete(new_fds_in, NULL);
-            Iterator_delete(it);
             return NO_PLUGIN_RESULT;
         }
 
@@ -64,7 +61,6 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
             if (Error_has(error)) {
                 List_delete(new_fds_in, NULL);
-                Iterator_delete(it);
                 return NO_PLUGIN_RESULT;
             }
 
@@ -77,13 +73,11 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
 
         if (Error_has(error)) {
             List_delete(new_fds_in, NULL);
-            Iterator_delete(it);
             return NO_PLUGIN_RESULT;
         }
     }
 
     Plugin_Result result = {args, new_fds_in};
-    Iterator_delete(it);
     Error_clear(error);
     return result;
 }

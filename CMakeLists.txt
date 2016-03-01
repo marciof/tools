@@ -8,8 +8,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 add_executable(${PROJECT_NAME}
-    src/Iterator.c src/Iterator.h src/Array_List.c
-    src/Array_List.h
+    src/Array_List.c src/Array_List.h
     src/List.c src/List.h src/plugin/Pipe_Plugin.c
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
     src/plugin/Plugin.h src/array.h src/Error.h
@@ -18,8 +17,7 @@ add_executable(${PROJECT_NAME}
     src/Error.c)
 
 add_executable(${PROJECT_NAME}-test
-    src/Iterator.c src/Iterator.h src/Array_List.c
-    src/Array_List.h
+    src/Array_List.c src/Array_List.h
     src/List.c src/List.h src/plugin/Pipe_Plugin.c
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
     src/plugin/Plugin.h src/array.h src/Error.h

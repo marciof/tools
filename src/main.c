@@ -97,15 +97,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    Iterator it = List_iterator(fds_in, &error);
-
-    if (error) {
-        cleanup(args, fds_in, error);
-        return EXIT_FAILURE;
-    }
-
-    while (Iterator_has_next(it)) {
-        int fd_in = (int) Iterator_next(it, NULL);
+    for (size_t i = 0; i < List_length(fds_in); ++i) {
+        int fd_in = (int) List_get(fds_in, i, NULL);
         ssize_t nr_bytes_read;
         const int BUFFER_SIZE = 256;
         char buffer[BUFFER_SIZE + 1];
@@ -116,7 +109,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    Iterator_delete(it);
     cleanup(args, fds_in, NULL);
     return EXIT_SUCCESS;
 }

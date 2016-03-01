@@ -9,32 +9,14 @@
 #define INSERTION_SORT_THRESHOLD ((size_t) 12)
 
 
-enum Array_Iterator_Direction {
-    BACKWARD, FORWARD
-};
-
-enum Array_Iterator_Location {
-    END, MIDDLE, START
-};
-
-
 typedef int (*Comparator)(intptr_t, intptr_t);
 
 
 typedef struct _Array {
     intptr_t* array;
-    size_t iterators;
     size_t length;
     size_t capacity;
-} * Array;
-
-
-typedef struct _Array_Iterator {
-    Array list;
-    size_t position;
-    unsigned int direction : 1;
-    unsigned int location : 2;
-}* Array_Iterator;
+}* Array;
 
 
 static void insertion_sort(
@@ -277,7 +259,6 @@ static void* create(Error* error) {
         return NULL;
     }
     
-    list->iterators = 0;
     list->length = 0;
     list->capacity = DEFAULT_INITIAL_CAPACITY;
     list->array = (intptr_t*) malloc(list->capacity * sizeof(intptr_t));
@@ -296,14 +277,10 @@ static void* create(Error* error) {
 static void destroy(void* l, Error* error) {
     Array list = (Array) l;
     
-    if (list->iterators > 0) {
-        Error_errno(error, EPERM);
-        return;
-    }
-    
     free(list->array);
     memset(list, 0, sizeof(struct _Array));
     free(list);
+
     Error_clear(error);
 }
 
@@ -343,7 +320,7 @@ static void insert(void* l, intptr_t element, size_t position, Error* error) {
         return;
     }
 
-    if ((list->length == SIZE_MAX) || (list->iterators > 0)) {
+    if (list->length == SIZE_MAX) {
         Error_errno(error, EPERM);
         return;
     }
@@ -381,11 +358,6 @@ static intptr_t remove(void* l, size_t position, Error* error) {
         return 0;
     }
 
-    if (list->iterators > 0) {
-        Error_errno(error, EPERM);
-        return 0;
-    }
-    
     --list->length;
     intptr_t element = list->array[position];
     
@@ -421,11 +393,6 @@ static intptr_t replace(
 static void reverse(void* l, Error* error) {
     Array list = (Array) l;
     
-    if (list->iterators > 0) {
-        Error_errno(error, EPERM);
-        return;
-    }
-
     for (size_t left = 0; left < (list->length / 2); ++left) {
         intptr_t element = list->array[left];
         size_t right = list->length - left - 1;
@@ -455,154 +422,12 @@ static void set_property(
 static void sort(void* l, Comparator compare, Error* error) {
     Array list = (Array) l;
     
-    if (list->iterators > 0) {
-        Error_errno(error, EPERM);
-    }
-    else {
-        merge_sort(list, compare, 0, list->length);
-        Error_clear(error);
-    }
-}
-
-
-static void iterator_to_end(void* it) {
-    Array_Iterator iterator = (Array_Iterator) it;
-    
-    iterator->position = (size_t) NULL;
-    iterator->direction = BACKWARD;
-    iterator->location = END;
-}
-
-
-static void iterator_to_start(void* it) {
-    Array_Iterator iterator = (Array_Iterator) it;
-    
-    iterator->position = (size_t) NULL;
-    iterator->direction = FORWARD;
-    iterator->location = START;
-}
-
-
-static void* iterator_create(void* collection, Error* error) {
-    Array list = (Array) collection;
-
-    if (list->iterators == SIZE_MAX) {
-        Error_errno(error, EPERM);
-        return NULL;
-    }
-    
-    Array_Iterator iterator = (Array_Iterator) malloc(
-        sizeof(struct _Array_Iterator));
-    
-    if (iterator == NULL) {
-        Error_errno(error, ENOMEM);
-        return NULL;
-    }
-    
-    iterator->list = list;
-    ++list->iterators;
-
-    iterator_to_start(iterator);
+    merge_sort(list, compare, 0, list->length);
     Error_clear(error);
-    return iterator;
 }
-
-
-static void iterator_destroy(void* it) {
-    --((Array_Iterator) it)->list->iterators;
-    memset(it, 0, sizeof(struct _Array_Iterator));
-    free(it);
-}
-
-
-static bool iterator_has_next(void* it) {
-    Array_Iterator iterator = (Array_Iterator) it;
-    return (iterator->list->length > 0) && (iterator->location != END);
-}
-
-
-static bool iterator_has_previous(void* it) {
-    Array_Iterator iterator = (Array_Iterator) it;
-    return (iterator->list->length > 0) && (iterator->location != START);
-}
-
-
-static intptr_t iterator_next(void* it, Error* error) {
-    Array_Iterator iterator = (Array_Iterator) it;
-
-    if (!iterator_has_next(it)) {
-        Error_errno(error, EPERM);
-        return 0;
-    }
-    
-    if (iterator->location == START) {
-        iterator->position = 0;
-        iterator->direction = FORWARD;
-        iterator->location = MIDDLE;
-    }
-    else if (iterator->direction == BACKWARD) {
-        iterator->direction = FORWARD;
-    }
-    else {
-        ++iterator->position;
-    }
-    
-    intptr_t element = iterator->list->array[iterator->position];
-    
-    if (iterator->position == (iterator->list->length - 1)) {
-        iterator_to_end(iterator);
-    }
-    
-    Error_clear(error);
-    return element;
-}
-
-
-static intptr_t iterator_previous(void* it, Error* error) {
-    Array_Iterator iterator = (Array_Iterator) it;
-
-    if (!iterator_has_previous(it)) {
-        Error_errno(error, EPERM);
-        return 0;
-    }
-    
-    if (iterator->location == END) {
-        iterator->position = iterator->list->length - 1;
-        iterator->direction = BACKWARD;
-        iterator->location = MIDDLE;
-    }
-    else if (iterator->direction == FORWARD) {
-        iterator->direction = BACKWARD;
-    }
-    else {
-        --iterator->position;
-    }
-    
-    intptr_t element = iterator->list->array[iterator->position];
-    
-    if (iterator->position == 0) {
-        iterator_to_start(iterator);
-    }
-    
-    Error_clear(error);
-    return element;
-}
-
-
-static const struct _Iterator_Impl iterator_impl = {
-    iterator_create,
-    iterator_destroy,
-    iterator_to_end,
-    iterator_to_start,
-    iterator_has_next,
-    iterator_has_previous,
-    iterator_next,
-    iterator_previous
-};
 
 
 static const struct _List_Impl impl = {
-    (Iterator_Impl) &iterator_impl,
     create,
     destroy,
     get,
