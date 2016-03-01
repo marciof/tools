@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org).
 
 ## Build ##
 
-- [CMake](https://cmake.org)
+- [CMake](https://cmake.org) >= 3.4
 
 ## Test ##
 

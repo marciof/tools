@@ -45,6 +45,20 @@ START_TEST(test_empty_is_prefix_of_non_empty_string)
 END_TEST
 
 
+START_TEST(test_empty_is_suffix_of_empty_string)
+{
+    ck_assert(strsuffix("", ""));
+}
+END_TEST
+
+
+START_TEST(test_empty_is_suffix_of_non_empty_string)
+{
+    ck_assert(strsuffix("123", ""));
+}
+END_TEST
+
+
 START_TEST(test_format_empty_string)
 {
     Error error;
@@ -279,12 +293,29 @@ START_TEST(test_string_is_not_prefix_of_empty_string)
 END_TEST
 
 
+START_TEST(test_string_is_not_suffix_of_empty_string)
+{
+    ck_assert(!strsuffix("", "123"));
+}
+END_TEST
+
+
 START_TEST(test_string_prefixes)
 {
     ck_assert(!strprefix("123", "45"));
     ck_assert(!strprefix("123", "12345"));
     ck_assert(strprefix("123", "123"));
     ck_assert(strprefix("123", "1"));
+}
+END_TEST
+
+
+START_TEST(test_string_suffixes)
+{
+    ck_assert(!strsuffix("123", "45"));
+    ck_assert(!strsuffix("123", "12345"));
+    ck_assert(strsuffix("123", "123"));
+    ck_assert(strsuffix("123", "3"));
 }
 END_TEST
 
@@ -298,6 +329,7 @@ Suite* std_string_suite() {
     TCase* strncopy_tcase = tcase_create("strncopy");
     TCase* strprefix_tcase = tcase_create("strprefix");
     TCase* strsplit_tcase = tcase_create("strsplit");
+    TCase* strsuffix_tcase = tcase_create("strsuffix");
 
     tcase_add_test(strcopy_tcase, test_copy_empty_string);
     tcase_add_test(strcopy_tcase, test_copy_non_empty_string);
@@ -325,12 +357,18 @@ Suite* std_string_suite() {
     tcase_add_test(strsplit_tcase, test_split_string_with_empty_separator);
     tcase_add_test(strsplit_tcase, test_split_string_without_separator);
 
+    tcase_add_test(strsuffix_tcase, test_empty_is_suffix_of_empty_string);
+    tcase_add_test(strsuffix_tcase, test_empty_is_suffix_of_non_empty_string);
+    tcase_add_test(strsuffix_tcase, test_string_is_not_suffix_of_empty_string);
+    tcase_add_test(strsuffix_tcase, test_string_suffixes);
+
     suite_add_tcase(suite, strcopy_tcase);
     suite_add_tcase(suite, strformat_tcase);
     suite_add_tcase(suite, strjoin_tcase);
     suite_add_tcase(suite, strncopy_tcase);
     suite_add_tcase(suite, strprefix_tcase);
     suite_add_tcase(suite, strsplit_tcase);
+    suite_add_tcase(suite, strsuffix_tcase);
 
     return suite;
 }
