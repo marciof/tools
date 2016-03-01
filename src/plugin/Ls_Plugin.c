@@ -2,7 +2,7 @@
 #include <pty.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../list/Array_List.h"
+#include "../Array_List.h"
 #include "Ls_Plugin.h"
 
 

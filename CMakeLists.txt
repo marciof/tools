@@ -8,27 +8,25 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 add_executable(${PROJECT_NAME}
-    src/iterator/Iterator.c src/iterator/Iterator.h src/list/Array_List.c
-    src/list/Array_List.h src/list/Linked_List.c src/list/Linked_List.h
-    src/list/List.c src/list/List.h src/map/Hash_Map.c src/map/Hash_Map.h
-    src/map/Map.c src/map/Map.h src/plugin/Pipe_Plugin.c
+    src/Iterator.c src/Iterator.h src/Array_List.c
+    src/Array_List.h
+    src/List.c src/List.h src/plugin/Pipe_Plugin.c
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
-    src/plugin/Plugin.h src/std/array.h src/std/Error.h src/std/string.c
-    src/std/string.h src/main.c src/Options.c src/Options.h
+    src/plugin/Plugin.h src/array.h src/Error.h
+    src/main.c src/Options.c src/Options.h
     src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
-    src/std/Error.c)
+    src/Error.c)
 
 add_executable(${PROJECT_NAME}-test
-    src/iterator/Iterator.c src/iterator/Iterator.h src/list/Array_List.c
-    src/list/Array_List.h src/list/Linked_List.c src/list/Linked_List.h
-    src/list/List.c src/list/List.h src/map/Hash_Map.c src/map/Hash_Map.h
-    src/map/Map.c src/map/Map.h src/plugin/Pipe_Plugin.c
+    src/Iterator.c src/Iterator.h src/Array_List.c
+    src/Array_List.h
+    src/List.c src/List.h src/plugin/Pipe_Plugin.c
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
-    src/plugin/Plugin.h src/std/array.h src/std/Error.h src/std/string.c
-    src/std/string.h src/Options.c src/Options.h
+    src/plugin/Plugin.h src/array.h src/Error.h
+    src/Options.c src/Options.h
     src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
-    test/main.test.c test/std/array.test.c test/std/array.test.h
-    test/std/string.test.c test/std/string.test.h src/std/Error.c)
+    test/main.test.c test/array.test.c test/array.test.h
+    src/Error.c)
 
 set(libraries m util)
 target_link_libraries(${PROJECT_NAME} ${libraries})

@@ -1,6 +1,6 @@
 #pragma once
-#include "../list/List.h"
-#include "../std/Error.h"
+#include "../Error.h"
+#include "../List.h"
 
 
 typedef struct {

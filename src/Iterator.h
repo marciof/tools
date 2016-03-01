@@ -1,7 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
-#include "../std/Error.h"
+#include "Error.h"
 
 
 typedef struct _Iterator* Iterator;

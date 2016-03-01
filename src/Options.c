@@ -1,11 +1,11 @@
 #include <getopt.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
-#include "list/Array_List.h"
+#include "array.h"
+#include "Array_List.h"
 #include "Options.h"
-#include "std/array.h"
-#include "std/string.h"
 
 
 #define HELP_OPT "h"

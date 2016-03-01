@@ -1,11 +1,11 @@
 - https://github.com/andrewrk/malcheck
 - https://matt.sh/howto-c
-- Simplify array list usage, and move C library back.
 - Tests with coverage.
 - Continuous integration.
 - Plugin for `git show`.
 
 Simplify code:
+- Simplify array list usage, and move C library back.
 - Allow inserting and removing list elements while iterating.
 - Remove the need for `Plugin_Result`
 - Start with an empty list of `fds-in`.

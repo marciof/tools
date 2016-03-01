@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "../iterator/Iterator.h"
-#include "../std/Error.h"
+#include "Error.h"
+#include "Iterator.h"
 
 
 typedef struct _List* List;
