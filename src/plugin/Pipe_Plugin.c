@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <poll.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../std/Error.h"
@@ -17,7 +16,7 @@ static bool has_input(int fd_in, Error* error) {
     int nr_fds = poll(&fds, 1, 0);
 
     if (nr_fds < 0) {
-        Error_set(error, strerror(errno));
+        Error_errno(error, errno);
         return false;
     }
 
@@ -37,7 +36,7 @@ static const char* get_name() {
 
 
 static Plugin_Result run(List args, List options, List fds_in, Error* error) {
-    List new_fds_in = List_create(error);
+    List new_fds_in = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;
@@ -50,7 +49,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
         struct stat fd_in_stat;
 
         if (fstat(fd_in, &fd_in_stat) == -1) {
-            Error_set(error, strerror(errno));
+            Error_errno(error, errno);
             List_delete(new_fds_in, NULL);
             Iterator_delete(it);
             return NO_PLUGIN_RESULT;

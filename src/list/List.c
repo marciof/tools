@@ -46,8 +46,24 @@ void List_clear(List list, Error* error) {
 }
 
 
-List List_create(Error* error) {
-    return List_new(Array_List, error);
+List List_create(List_Impl implementation, Error* error) {
+    List list = (List) malloc(sizeof(struct _List));
+
+    if (list == NULL) {
+        Error_errno(error, ENOMEM);
+        return NULL;
+    }
+
+    list->impl = implementation;
+    list->list = implementation->create(error);
+
+    if (Error_has(error)) {
+        free(list);
+        return NULL;
+    }
+
+    Error_clear(error);
+    return list;
 }
 
 
@@ -119,8 +135,8 @@ size_t List_length(List list) {
 }
 
 
-List List_literal(List_Impl implementation, Error* error, ...) {
-    List list = List_new(implementation, error);
+List List_new(Error* error, ...) {
+    List list = List_create(Array_List, error);
 
     if (Error_has(error)) {
         return NULL;
@@ -129,13 +145,7 @@ List List_literal(List_Impl implementation, Error* error, ...) {
     va_list args;
     va_start(args, error);
 
-    while (true) {
-        intptr_t arg = va_arg(args, intptr_t);
-
-        if (arg == 0) {
-            break;
-        }
-
+    for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL;) {
         List_add(list, arg, error);
 
         if (Error_has(error)) {
@@ -146,27 +156,6 @@ List List_literal(List_Impl implementation, Error* error, ...) {
     }
 
     va_end(args);
-    Error_clear(error);
-    return list;
-}
-
-
-List List_new(List_Impl implementation, Error* error) {
-    List list = (List) malloc(sizeof(struct _List));
-
-    if (list == NULL) {
-        Error_set(error, strerror(ENOMEM));
-        return NULL;
-    }
-    
-    list->impl = implementation;
-    list->list = implementation->create(error);
-    
-    if (Error_has(error)) {
-        free(list);
-        return NULL;
-    }
-    
     Error_clear(error);
     return list;
 }
@@ -208,19 +197,19 @@ void List_sort(List list, int (*compare)(intptr_t, intptr_t), Error* error) {
 
 void* List_to_array(List list, size_t data_size, Error* error) {
     if (List_length(list) == 0) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return NULL;
     }
     
     if (data_size == 0) {
-        Error_set(error, strerror(EINVAL));
+        Error_errno(error, EINVAL);
         return NULL;
     }
     
     void* array = malloc(data_size * List_length(list));
     
     if (array == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     

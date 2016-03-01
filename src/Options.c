@@ -29,7 +29,7 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "Options:\n"
         "  -%c              display this help and exit\n"
         "  -%c PLUGIN:OPT   pass an option to a plugin\n"
-        "  -%c PLUGIN       disable plugin\n",
+        "  -%c PLUGIN       disable a plugin\n",
         *HELP_OPT,
         *PLUGIN_OPTION_OPT,
         *DISABLE_PLUGIN_OPT);
@@ -129,7 +129,7 @@ static void parse_plugin_option(
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
     if (plugin->options == NULL) {
-        plugin->options = List_literal(Array_List, error, value, NULL);
+        plugin->options = List_new(error, value, NULL);
 
         if (Error_has(error)) {
             return;
@@ -187,7 +187,7 @@ List Options_parse(
         }
     }
 
-    List args = List_create(error);
+    List args = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;

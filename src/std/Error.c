@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "Error.h"
 
 
@@ -7,6 +8,11 @@ void Error_clear(Error* error) {
     if (error != NULL) {
         *error = NULL;
     }
+}
+
+
+void Error_errno(Error* error, int code) {
+    Error_set(error, strerror(code));
 }
 
 

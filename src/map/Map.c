@@ -44,7 +44,7 @@ bool Map_has_key(Map map, intptr_t key) {
 
 
 List Map_keys(Map map, Error* error) {
-    List keys = List_create(error);
+    List keys = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
@@ -54,7 +54,7 @@ List Map_keys(Map map, Error* error) {
     
     if (Error_has(error)) {
         List_delete(keys, error);
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
@@ -91,7 +91,7 @@ Map Map_new(Map_Impl implementation, Error* error) {
     Map map = (Map) malloc(sizeof(struct _Map));
 
     if (map == NULL) {
-        Error_set(error, strerror(ENOMEM));
+        Error_errno(error, ENOMEM);
         return NULL;
     }
     
@@ -130,7 +130,7 @@ size_t Map_size(Map map) {
 
 
 List Map_values(Map map, Error* error) {
-    List values = List_create(error);
+    List values = List_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
