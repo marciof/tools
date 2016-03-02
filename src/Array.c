@@ -1,445 +1,156 @@
 #include <errno.h>
-#include <stdint.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "Array.h"
 
 
 #define DEFAULT_INITIAL_CAPACITY ((size_t) 8)
-#define INSERTION_SORT_THRESHOLD ((size_t) 12)
+#define DEFAULT_CAPACITY_INCREASE_FACTOR (1.5)
 
 
-typedef int (*Comparator)(intptr_t, intptr_t);
-
-
-typedef struct _Array {
-    intptr_t* array;
-    size_t length;
-    size_t capacity;
-}* Array;
-
-
-static void insertion_sort(
-    Array list,
-    Comparator compare,
-    size_t low,
-    size_t high)
-{
-    for (size_t i = low + 1; i < high; ++i) {
-        for (size_t j = i; j > low; --j) {
-            if (compare(list->array[j], list->array[j - 1]) < 0) {
-                intptr_t element = list->array[j];
-                
-                list->array[j] = list->array[j - 1];
-                list->array[j - 1] = element;
-            }
-            else {
-                break;
-            }
-        }
-    }
-}
-
-
-static size_t lower(
-    Array list,
-    Comparator compare,
-    size_t low,
-    size_t high,
-    size_t i)
-{
-    for (size_t length = high - low; length > 0;) {
-        size_t half = length / 2;
-        size_t middle = low + half;
-        
-        if (compare(list->array[middle], list->array[i]) < 0) {
-            low = middle + 1;
-            length = length - half -1;
-        }
-        else {
-            length = half;
-        }
-    }
-    
-    return low;
-}
-
-
-static size_t upper(
-    Array list,
-    Comparator compare,
-    size_t low,
-    size_t high,
-    size_t i)
-{
-    for (size_t length = high - low; length > 0;) {
-        size_t half = length / 2;
-        size_t middle = low + half;
-        
-        if (compare(list->array[i], list->array[middle]) < 0) {
-            length = half;
-        }
-        else {
-            low = middle + 1;
-            length = length - half -1;
-        }
-    }
-    
-    return low;
-}
-
-
-static size_t gcd(size_t x, size_t y) {
-    while (y != 0) {
-        size_t temp = x % y;
-        
-        x = y;
-        y = temp;
-    }
-    
-    return x;
-}
-
-
-static void rotate(Array list, size_t low, size_t pivot, size_t high) {
-    // Less sophisticated but costlier version:
-    //
-    // merge_reverse(list, low, pivot - 1);
-    // merge_reverse(list, mid, high - 1);
-    // merge_reverse(list, low, high - 1);
-    //
-    // static void merge_reverse(List list, size_t low, size_t high) {
-    //     for (; low < high; ++low, --high) {
-    //         intptr_t temp = list->array[low];
-    //
-    //         list->array[low] = list->array[high];
-    //         list->array[high] = temp;
-    //     }
-    // }
-
-    if ((low == pivot) || (pivot == high)) {
-        return;
-    }
-    
-    for (size_t n = gcd(high - low, pivot - low); n-- != 0;) {
-        intptr_t element = list->array[low + n];
-        size_t shift = pivot - low;
-        size_t p1 = low + n;
-        size_t p2 = low + n + shift;
-        
-        while (p2 != (low + n)) {
-            list->array[p1] = list->array[p2];
-            p1 = p2;
-            
-            if ((high - p2) > shift) {
-                p2 += shift;
-            }
-            else {
-                p2 = low + (shift - (high - p2));
-            }
-        }
-        
-        list->array[p1] = element;
-    }
-}
-
-
-static void merge(
-    Array list,
-    Comparator compare,
-    size_t low,
-    size_t pivot,
-    size_t high,
-    size_t length_1,
-    size_t length_2)
-{
-    size_t first_cut, second_cut, len_1, len_2;
-    
-    if ((length_1 == 0) || (length_2 == 0)) {
-        return;
-    }
-    
-    if ((length_1 + length_2) == 2) {
-        if (compare(list->array[pivot], list->array[low]) < 0) {
-            intptr_t element = list->array[pivot];
-            
-            list->array[pivot] = list->array[low];
-            list->array[low] = element;
-        }
-        return;
-    }
-    
-    if (length_1 > length_2) {
-        len_1 = length_1 / 2;
-        first_cut = low + len_1;
-        second_cut = lower(list, compare, pivot, high, first_cut);
-        len_2 = second_cut - pivot;
-    }
-    else {
-        len_2 = length_2 / 2;
-        second_cut = pivot + len_2;
-        first_cut = upper(list, compare, low, pivot, second_cut);
-        len_1 = first_cut - low;
-    }
-    
-    size_t new_mid = first_cut + len_2;
-    
-    rotate(list, first_cut, pivot, second_cut);
-    merge(list, compare, low, first_cut, new_mid, len_1, len_2);
-    merge(list, compare, new_mid, second_cut, high,
-        length_1 - len_1, length_2 - len_2);
-}
-
-
-/**
- * Change the list capacity.
- *
- * @param list list to modify
- * @param capacity new capacity
- * @param error error message, if any
- */
-static void change_capacity(Array list, size_t capacity, Error* error) {
-    if (capacity < list->length) {
+static void change_capacity(Array array, size_t capacity, Error* error) {
+    if (capacity < array->length) {
         Error_errno(error, EINVAL);
         return;
     }
     
-    intptr_t* array = (intptr_t*) realloc(
-        list->array, capacity * sizeof(intptr_t));
+    intptr_t* data = (intptr_t*) realloc(
+        array->data, capacity * sizeof(intptr_t));
     
-    if (array == NULL) {
-        Error_errno(error, ENOMEM);
+    if (data == NULL) {
+        Error_errno(error, errno);
         return;
     }
     
-    list->array = array;
-    list->capacity = capacity;
+    array->data = data;
+    array->capacity = capacity;
+
     Error_clear(error);
     return;
 }
 
 
-/**
- * Sort a list using the merge sort algorithm.
- *
- * @param list list to sort
- * @param compare comparison function that returns a negative number, zero,
- *        or a positive number if the first argument is considered to be
- *        respectively less than, equal to, or greater than the second
- * @param low index where to begin sorting
- * @param high index where to end sorting
- * @author Thomas Baudel
- * @see http://thomas.baudel.name/Visualisation/VisuTri/inplacestablesort.html
- */
-static void merge_sort(
-    Array list,
-    Comparator compare,
-    size_t low,
-    size_t high)
-{
-    if ((high - low) < INSERTION_SORT_THRESHOLD) {
-        insertion_sort(list, compare, low, high);
-    }
-    else {
-        // Prevent possible overflow instead of using "(low + high) / 2".
-        size_t middle = low + (high - low) / 2;
-        
-        merge_sort(list, compare, low, middle);
-        merge_sort(list, compare, middle, high);
-        merge(list, compare, low, middle, high, middle - low, high - middle);
+void Array_add(Array array, intptr_t element, Error* error) {
+    Array_insert(array, element, array->length, error);
+}
+
+
+void Array_delete(Array array) {
+    if (array != NULL) {
+        free(array->data);
+        memset(array, 0, sizeof(*array));
+        free(array);
     }
 }
 
 
-static void* create(Error* error) {
-    Array list = (Array) malloc(sizeof(struct _Array));
-    
-    if (list == NULL) {
-        Error_errno(error, ENOMEM);
-        return NULL;
-    }
-    
-    list->length = 0;
-    list->capacity = DEFAULT_INITIAL_CAPACITY;
-    list->array = (intptr_t*) malloc(list->capacity * sizeof(intptr_t));
-    
-    if (list->array == NULL) {
-        free(list);
-        Error_errno(error, ENOMEM);
-        return NULL;
-    }
-    
-    Error_clear(error);
-    return list;
-}
-
-
-static void destroy(void* l, Error* error) {
-    Array list = (Array) l;
-    
-    free(list->array);
-    memset(list, 0, sizeof(struct _Array));
-    free(list);
-
-    Error_clear(error);
-}
-
-
-static intptr_t get(void* l, size_t position, Error* error) {
-    Array list = (Array) l;
-    
-    if (position >= list->length) {
-        Error_errno(error, EINVAL);
-        return 0;
-    }
-    
-    Error_clear(error);
-    return list->array[position];
-}
-
-
-static intptr_t get_property(void* l, size_t property, Error* error) {
-    Array list = (Array) l;
-    
-    switch (property) {
-    case ARRAY_LIST_CAPACITY:
+void Array_extend(Array list, Array elements, Error* error) {
+    if (elements->length == 0) {
         Error_clear(error);
-        return list->capacity;
-    default:
-        Error_errno(error, EINVAL);
-        return 0;
+        return;
     }
+
+    change_capacity(list, list->length + elements->length, error);
+
+    if (Error_has(error)) {
+        return;
+    }
+
+    for (size_t i = 0; i < elements->length; ++i, ++list->length) {
+        list->data[list->length] = elements->data[i];
+    }
+
+    Error_clear(error);
 }
 
 
-static void insert(void* l, intptr_t element, size_t position, Error* error) {
-    Array list = (Array) l;
-    
-    if (position > list->length) {
+void Array_insert(Array array, intptr_t element, size_t position, Error* error) {
+    if (position > array->length) {
         Error_errno(error, EINVAL);
         return;
     }
 
-    if (list->length == SIZE_MAX) {
+    if (array->length == SIZE_MAX) {
         Error_errno(error, EPERM);
         return;
     }
-    
-    if (list->length >= list->capacity) {
-        change_capacity(list, (size_t) (list->capacity * 1.5 + 1), error);
-        
+
+    if (array->length >= array->capacity) {
+        change_capacity(
+            array,
+            (size_t) (array->capacity * DEFAULT_CAPACITY_INCREASE_FACTOR + 1),
+            error);
+
         if (Error_has(error)) {
             return;
         }
     }
-    
-    if (position < list->length) {
-        for (size_t i = list->length; i > position; --i) {
-            list->array[i] = list->array[i - 1];
+
+    if (position < array->length) {
+        for (size_t i = array->length; i > position; --i) {
+            array->data[i] = array->data[i - 1];
         }
     }
-    
-    ++list->length;
-    list->array[position] = element;
+
+    ++array->length;
+    array->data[position] = element;
     Error_clear(error);
 }
 
 
-static size_t length(void* l) {
-    return ((Array) l)->length;
+Array Array_new(Error* error, ...) {
+    Array array = (Array) malloc(sizeof(*array));
+
+    if (array == NULL) {
+        Error_errno(error, errno);
+        return NULL;
+    }
+
+    array->length = 0;
+    array->capacity = DEFAULT_INITIAL_CAPACITY;
+    array->data = (intptr_t*) malloc(array->capacity * sizeof(intptr_t));
+
+    if (array->data == NULL) {
+        free(array);
+        Error_errno(error, errno);
+        return NULL;
+    }
+
+    va_list args;
+    va_start(args, error);
+
+    for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL; ) {
+        Array_add(array, arg, error);
+
+        if (Error_has(error)) {
+            va_end(args);
+            Array_delete(array);
+            return NULL;
+        }
+    }
+
+    va_end(args);
+    Error_clear(error);
+    return array;
 }
 
 
-static intptr_t remove(void* l, size_t position, Error* error) {
-    Array list = (Array) l;
-
-    if (position >= list->length) {
+intptr_t Array_remove(Array array, size_t position, Error* error) {
+    if (position >= array->length) {
         Error_errno(error, EINVAL);
         return 0;
     }
 
-    --list->length;
-    intptr_t element = list->array[position];
-    
-    if (position < list->length) {
-        for (size_t i = position; i < list->length; ++i) {
-            list->array[i] = list->array[i + 1];
+    --array->length;
+    intptr_t element = array->data[position];
+
+    if (position < array->length) {
+        for (size_t i = position; i < array->length; ++i) {
+            array->data[i] = array->data[i + 1];
         }
     }
-    
+
     Error_clear(error);
     return element;
 }
-
-
-static intptr_t replace(
-        void* l, intptr_t element, size_t position, Error* error) {
-
-    Array list = (Array) l;
-
-    if (position >= list->length) {
-        Error_errno(error, EINVAL);
-        return 0;
-    }
-    
-    intptr_t previous_element = list->array[position];
-    list->array[position] = element;
-    
-    Error_clear(error);
-    return previous_element;
-}
-
-
-static void reverse(void* l, Error* error) {
-    Array list = (Array) l;
-    
-    for (size_t left = 0; left < (list->length / 2); ++left) {
-        intptr_t element = list->array[left];
-        size_t right = list->length - left - 1;
-
-        list->array[left] = list->array[right];
-        list->array[right] = element;
-    }
-
-    Error_clear(error);
-}
-
-
-static void set_property(
-        void* l, size_t property, intptr_t value, Error* error) {
-
-    switch (property) {
-    case ARRAY_LIST_CAPACITY:
-        change_capacity((Array) l, (size_t) value, error);
-        break;
-    default:
-        Error_errno(error, EINVAL);
-        break;
-    }
-}
-
-
-static void sort(void* l, Comparator compare, Error* error) {
-    Array list = (Array) l;
-    
-    merge_sort(list, compare, 0, list->length);
-    Error_clear(error);
-}
-
-
-static const struct _List_Impl impl = {
-    create,
-    destroy,
-    get,
-    get_property,
-    insert,
-    length,
-    remove,
-    replace,
-    reverse,
-    set_property,
-    sort
-};
-
-
-const List_Impl Array_List = (List_Impl) &impl;

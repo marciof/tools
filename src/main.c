@@ -16,34 +16,34 @@ Plugin* plugins[] = {
 };
 
 
-static void cleanup(List args, List fds_in, Error error) {
+static void cleanup(Array args, Array fds_in, Error error) {
     if (error) {
         fprintf(stderr, "%s\n", error);
     }
 
-    List_delete(args, NULL);
-    List_delete(fds_in, NULL);
+    Array_delete(args);
+    Array_delete(fds_in);
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i]) {
-            List_delete(plugins[i]->options, NULL);
+            Array_delete(plugins[i]->options);
             plugins[i] = NULL;
         }
     }
 }
 
 
-static List list_input_fds(Error* error) {
-    List fds_in = List_new(error, NULL);
+static Array list_input_fds(Error* error) {
+    Array fds_in = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
     }
 
-    List_add(fds_in, STDIN_FILENO, error);
+    Array_add(fds_in, STDIN_FILENO, error);
 
     if (Error_has(error)) {
-        List_delete(fds_in, error);
+        Array_delete(fds_in);
         return NULL;
     }
 
@@ -54,7 +54,7 @@ static List list_input_fds(Error* error) {
 
 int main(int argc, char* argv[]) {
     Error error;
-    List args = Options_parse(
+    Array args = Options_parse(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (args == NULL) {
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    List fds_in = list_input_fds(&error);
+    Array fds_in = list_input_fds(&error);
 
     if (error) {
         cleanup(args, NULL, error);
@@ -87,18 +87,18 @@ int main(int argc, char* argv[]) {
         }
 
         if ((result.args != NULL) && (result.args != args)) {
-            List_delete(args, NULL);
+            Array_delete(args);
             args = result.args;
         }
 
         if ((result.fds_in != NULL) && (result.fds_in != fds_in)) {
-            List_delete(fds_in, NULL);
+            Array_delete(fds_in);
             fds_in = result.fds_in;
         }
     }
 
-    for (size_t i = 0; i < List_length(fds_in); ++i) {
-        int fd_in = (int) List_get(fds_in, i, NULL);
+    for (size_t i = 0; i < fds_in->length; ++i) {
+        int fd_in = (int) fds_in->data[i];
         ssize_t nr_bytes_read;
         const int BUFFER_SIZE = 256;
         char buffer[BUFFER_SIZE + 1];

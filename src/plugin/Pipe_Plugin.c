@@ -2,7 +2,7 @@
 #include <poll.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include "../Array.h"
 #include "../Error.h"
 #include "Pipe_Plugin.h"
 
@@ -35,20 +35,20 @@ static const char* get_name() {
 }
 
 
-static Plugin_Result run(List args, List options, List fds_in, Error* error) {
-    List new_fds_in = List_new(error, NULL);
+static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) {
+    Array new_fds_in = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;
     }
 
-    for (size_t i = 0; i < List_length(fds_in); ++i) {
-        int fd_in = (int) List_get(fds_in, i, NULL);
+    for (size_t i = 0; i < fds_in->length; ++i) {
+        int fd_in = (int) fds_in->data[i];
         struct stat fd_in_stat;
 
         if (fstat(fd_in, &fd_in_stat) == -1) {
             Error_errno(error, errno);
-            List_delete(new_fds_in, NULL);
+            Array_delete(new_fds_in);
             return NO_PLUGIN_RESULT;
         }
 
@@ -60,7 +60,7 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
             bool has_fd_input = has_input(fd_in, error);
 
             if (Error_has(error)) {
-                List_delete(new_fds_in, NULL);
+                Array_delete(new_fds_in);
                 return NO_PLUGIN_RESULT;
             }
 
@@ -69,10 +69,10 @@ static Plugin_Result run(List args, List options, List fds_in, Error* error) {
             }
         }
 
-        List_add(new_fds_in, (intptr_t) fd_in, error);
+        Array_add(new_fds_in, (intptr_t) fd_in, error);
 
         if (Error_has(error)) {
-            List_delete(new_fds_in, NULL);
+            Array_delete(new_fds_in);
             return NO_PLUGIN_RESULT;
         }
     }

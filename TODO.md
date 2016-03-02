@@ -1,3 +1,4 @@
+- http://rr-project.org
 - https://github.com/andrewrk/malcheck
 - https://matt.sh/howto-c
 - Tests with coverage.
@@ -5,7 +6,6 @@
 - Plugin for `git show`.
 
 Simplify code:
-- Simplify array list usage (and allow modifications while traversing it).
 - Remove the need for `Plugin_Result`
 - Start with an empty list of `fds-in`.
   - Make the "pipe" plugin responsible for `stdin`.

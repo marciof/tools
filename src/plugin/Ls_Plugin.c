@@ -6,40 +6,33 @@
 #include "Ls_Plugin.h"
 
 
-static char** create_exec_argv(List args, List options, Error* error) {
-    List argv_list = List_new(error, "ls", NULL);
+static Array create_exec_argv(Array args, Array options, Error* error) {
+    Array argv = Array_new(error, "ls", NULL);
 
     if (Error_has(error)) {
         return NULL;
     }
 
     if (options != NULL) {
-        List_extend(argv_list, options, error);
+        Array_extend(argv, options, error);
 
         if (Error_has(error)) {
-            List_delete(argv_list, NULL);
+            Array_delete(argv);
             return NULL;
         }
     }
 
-    List_extend(argv_list, args, error);
+    Array_extend(argv, args, error);
 
     if (Error_has(error)) {
-        List_delete(argv_list, NULL);
+        Array_delete(argv);
         return NULL;
     }
 
-    List_add(argv_list, (intptr_t) NULL, error);
+    Array_add(argv, (intptr_t) NULL, error);
 
     if (Error_has(error)) {
-        List_delete(argv_list, NULL);
-        return NULL;
-    }
-
-    char** argv = (char**) List_to_array(argv_list, sizeof(char*), error);
-    List_delete(argv_list, NULL);
-
-    if (Error_has(error)) {
+        Array_delete(argv);
         return NULL;
     }
 
@@ -94,32 +87,31 @@ static const char* get_name() {
 }
 
 
-static Plugin_Result run(List args, List options, List fds_in, Error* error) {
-    if ((List_length(fds_in) > 0) && (List_length(args) == 0)) {
+static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) {
+    if ((fds_in->length > 0) && (args->length == 0)) {
         Error_clear(error);
         return NO_PLUGIN_RESULT;
     }
 
-    char** argv = create_exec_argv(args, options, error);
+    Array argv = create_exec_argv(args, options, error);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;
     }
 
-    int fd_out = exec_forkpty(argv[0], argv, error);
-    free(argv);
+    int fd_out = exec_forkpty((char*) argv->data[0], (char**) argv->data, error);
+    Array_delete(argv);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;
     }
 
-    List_add(fds_in, (intptr_t) fd_out, error);
+    Array_add(fds_in, (intptr_t) fd_out, error);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;
     }
 
-    List_clear(args, NULL);
     Error_clear(error);
     return NO_PLUGIN_RESULT;
 }

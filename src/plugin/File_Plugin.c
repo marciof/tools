@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include "../Array.h"
 #include "File_Plugin.h"
 
 
@@ -44,42 +45,42 @@ static int open_file(char* path, Error* error) {
 }
 
 
-static Plugin_Result run(List args, List options, List fds_in, Error* error) {
-    if (List_length(args) == 0) {
+static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) {
+    if (args->length == 0) {
         Error_clear(error);
         return NO_PLUGIN_RESULT;
     }
 
-    List new_args = List_new(error, NULL);
+    Array new_args = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NO_PLUGIN_RESULT;
     }
 
-    for (size_t i = 0; i < List_length(args); ++i) {
-        char* arg = (char*) List_get(args, i, NULL);
+    for (size_t i = 0; i < args->length; ++i) {
+        char* arg = (char*) args->data[i];
         int fd_in = open_file(arg, error);
 
         if (Error_has(error)) {
-            List_delete(new_args, NULL);
+            Array_delete(new_args);
             return NO_PLUGIN_RESULT;
         }
 
         if (fd_in == -1) {
-            List_add(new_args, (intptr_t) arg, error);
+            Array_add(new_args, (intptr_t) arg, error);
 
             if (Error_has(error)) {
-                List_delete(new_args, NULL);
+                Array_delete(new_args);
                 return NO_PLUGIN_RESULT;
             }
 
             continue;
         }
 
-        List_add(fds_in, (intptr_t) fd_in, error);
+        Array_add(fds_in, (intptr_t) fd_in, error);
 
         if (Error_has(error)) {
-            List_delete(new_args, NULL);
+            Array_delete(new_args);
             return NO_PLUGIN_RESULT;
         }
     }

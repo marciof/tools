@@ -1,19 +1,20 @@
 #pragma once
+#include <stddef.h>
+#include "../Array.h"
 #include "../Error.h"
-#include "../List.h"
 
 
 typedef struct {
-    List args;
-    List fds_in;
+    Array args;
+    Array fds_in;
 } Plugin_Result;
 
 
 typedef struct {
-    List options;
+    Array options;
     const char* (*get_description)();
     const char* (*get_name)();
-    Plugin_Result (*run)(List args, List options, List fds_in, Error* error);
+    Plugin_Result (*run)(Array args, Array options, Array fds_in, Error* error);
 } Plugin;
 
 

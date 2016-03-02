@@ -128,14 +128,14 @@ static void parse_plugin_option(
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
     if (plugin->options == NULL) {
-        plugin->options = List_new(error, value, NULL);
+        plugin->options = Array_new(error, value, NULL);
 
         if (Error_has(error)) {
             return;
         }
     }
     else {
-        List_add(plugin->options, (intptr_t) value, error);
+        Array_add(plugin->options, (intptr_t) value, error);
 
         if (Error_has(error)) {
             return;
@@ -146,7 +146,7 @@ static void parse_plugin_option(
 }
 
 
-List Options_parse(
+Array Options_parse(
         int argc,
         char* argv[],
         Plugin* plugins[],
@@ -160,7 +160,7 @@ List Options_parse(
             ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
 
             if (pos >= 0) {
-                List_delete(plugins[pos]->options, NULL);
+                Array_delete(plugins[pos]->options);
                 plugins[pos] = NULL;
             }
             else {
@@ -186,17 +186,17 @@ List Options_parse(
         }
     }
 
-    List args = List_new(error, NULL);
+    Array args = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
-        List_add(args, (intptr_t) argv[i], error);
+        Array_add(args, (intptr_t) argv[i], error);
 
         if (Error_has(error)) {
-            List_delete(args, NULL);
+            Array_delete(args);
             return NULL;
         }
     }
