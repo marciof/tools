@@ -5,8 +5,7 @@
 - Plugin for `git show`.
 
 Simplify code:
-- Simplify array list usage.
-- Allow inserting and removing list elements while iterating.
+- Simplify array list usage (and allow modifications while traversing it).
 - Remove the need for `Plugin_Result`
 - Start with an empty list of `fds-in`.
   - Make the "pipe" plugin responsible for `stdin`.

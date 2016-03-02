@@ -8,22 +8,22 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 add_executable(${PROJECT_NAME}
-    src/Array_List.c src/Array_List.h
+    src/Array.c src/Array.h
     src/List.c src/List.h src/plugin/Pipe_Plugin.c
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
-    src/plugin/Plugin.h src/array.h src/Error.h
+    src/plugin/Plugin.h src/Error.h
     src/main.c src/Options.c src/Options.h
     src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
     src/Error.c)
 
 add_executable(${PROJECT_NAME}-test
-    src/Array_List.c src/Array_List.h
+    src/Array.c src/Array.h
     src/List.c src/List.h src/plugin/Pipe_Plugin.c
     src/plugin/Pipe_Plugin.h src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h
-    src/plugin/Plugin.h src/array.h src/Error.h
+    src/plugin/Plugin.h src/Error.h
     src/Options.c src/Options.h
     src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
-    test/main.test.c test/array.test.c test/array.test.h
+    test/main.test.c test/Array.test.c test/Array.test.h
     src/Error.c)
 
 set(libraries m util)

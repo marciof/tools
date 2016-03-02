@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include "array.h"
-#include "Array_List.h"
+#include "Array.h"
 #include "Options.h"
 
 

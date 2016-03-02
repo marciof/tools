@@ -1,5 +1,5 @@
-#include "array.h"
-#include "array.test.h"
+#include "Array.h"
+#include "Array.test.h"
 
 
 START_TEST(test_array)

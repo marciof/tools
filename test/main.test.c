@@ -1,6 +1,6 @@
 #include <check.h>
 #include <stdlib.h>
-#include "array.test.h"
+#include "Array.test.h"
 
 
 int main() {

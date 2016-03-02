@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Array_List.h"
+#include "Array.h"
 
 
 #define DEFAULT_INITIAL_CAPACITY ((size_t) 8)

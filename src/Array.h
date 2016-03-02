@@ -2,6 +2,10 @@
 #include "List.h"
 
 
+#define STATIC_ARRAY_LENGTH(array) \
+    (sizeof(array) / sizeof((array)[0]))
+
+
 enum Array_List_Properties {
     /**
      * Maximum number of elements the array can hold before actually resizing.

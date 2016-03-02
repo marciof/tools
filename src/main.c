@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "array.h"
+#include "Array.h"
 #include "Options.h"
 #include "plugin/File_Plugin.h"
 #include "plugin/Ls_Plugin.h"
