@@ -6,6 +6,7 @@
 - Plugin for `git show`.
 
 Simplify code:
+- Fix "ls" redirection to a plain text file, it's including color escapes.
 - Remove the need for `Plugin_Result`
 - Start with an empty list of `fds-in`.
   - Make the "pipe" plugin responsible for `stdin`.
