@@ -78,7 +78,7 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
 
 
 static const char* get_description() {
-    return "`ls` POSIX command";
+    return "list directories via `ls`";
 }
 
 

@@ -8,8 +8,8 @@
 
 # 0.2.0 - 2016-02-20 #
 
-- Disable plugin option.
+- Option to disable specific plugins.
 
 # 0.1.0 - 2016-02-13 #
 
-- Plugin "ls": `ls` POSIX command.
+- Plugin "ls": list directories via `ls`.

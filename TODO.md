@@ -3,11 +3,8 @@
 - https://matt.sh/howto-c
 - Tests with coverage.
 - Continuous integration.
-- Plugin for `git show`.
-
-Simplify code:
 - Fix "ls" redirection to a plain text file, it's including color escapes.
-- Put directories from `stdin` into `args` or let it be? Let other plugins handle it either way.
+- Plugin for `git show`.
 - Do / While has `args`:
   - Run plugins (each consumes from `args` and puts into the fds-in list when appropriate).
   - Print all in the `fds-in` list.
