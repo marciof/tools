@@ -87,33 +87,33 @@ static const char* get_name() {
 }
 
 
-static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) {
+static Array run(Array args, Array options, Array fds_in, Error* error) {
     if ((fds_in->length > 0) && (args->length == 0)) {
         Error_clear(error);
-        return NO_PLUGIN_RESULT;
+        return args;
     }
 
     Array argv = create_exec_argv(args, options, error);
 
     if (Error_has(error)) {
-        return NO_PLUGIN_RESULT;
+        return NULL;
     }
 
     int fd_out = exec_forkpty((char*) argv->data[0], (char**) argv->data, error);
     Array_delete(argv);
 
     if (Error_has(error)) {
-        return NO_PLUGIN_RESULT;
+        return NULL;
     }
 
     Array_add(fds_in, (intptr_t) fd_out, error);
 
     if (Error_has(error)) {
-        return NO_PLUGIN_RESULT;
+        return NULL;
     }
 
     Error_clear(error);
-    return NO_PLUGIN_RESULT;
+    return args;
 }
 
 

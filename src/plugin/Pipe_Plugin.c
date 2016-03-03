@@ -36,42 +36,41 @@ static const char* get_name() {
 }
 
 
-static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) {
+static Array run(Array args, Array options, Array fds_in, Error* error) {
     int fd_in = STDIN_FILENO;
     struct stat fd_in_stat;
 
     if (fstat(fd_in, &fd_in_stat) == -1) {
         Error_errno(error, errno);
-        return NO_PLUGIN_RESULT;
+        return NULL;
     }
 
     if (S_ISDIR(fd_in_stat.st_mode)) {
         Error_clear(error);
-        return NO_PLUGIN_RESULT;
+        return args;
     }
 
     if (!S_ISFIFO(fd_in_stat.st_mode)) {
         bool has_fd_input = has_input(fd_in, error);
 
         if (Error_has(error)) {
-            return NO_PLUGIN_RESULT;
+            return NULL;
         }
 
         if (!has_fd_input) {
             Error_clear(error);
-            return NO_PLUGIN_RESULT;
+            return args;
         }
     }
 
     Array_add(fds_in, (intptr_t) fd_in, error);
 
     if (Error_has(error)) {
-        return NO_PLUGIN_RESULT;
+        return NULL;
     }
 
-    Plugin_Result result = {args, fds_in};
     Error_clear(error);
-    return result;
+    return args;
 }
 
 

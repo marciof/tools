@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "../Array.h"
 #include "File_Plugin.h"
 
 
@@ -45,16 +44,16 @@ static int open_file(char* path, Error* error) {
 }
 
 
-static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) {
+static Array run(Array args, Array options, Array fds_in, Error* error) {
     if (args->length == 0) {
         Error_clear(error);
-        return NO_PLUGIN_RESULT;
+        return args;
     }
 
     Array new_args = Array_new(error, NULL);
 
     if (Error_has(error)) {
-        return NO_PLUGIN_RESULT;
+        return NULL;
     }
 
     for (size_t i = 0; i < args->length; ++i) {
@@ -63,7 +62,7 @@ static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) 
 
         if (Error_has(error)) {
             Array_delete(new_args);
-            return NO_PLUGIN_RESULT;
+            return NULL;
         }
 
         if (fd_in == -1) {
@@ -71,7 +70,7 @@ static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) 
 
             if (Error_has(error)) {
                 Array_delete(new_args);
-                return NO_PLUGIN_RESULT;
+                return NULL;
             }
 
             continue;
@@ -81,13 +80,12 @@ static Plugin_Result run(Array args, Array options, Array fds_in, Error* error) 
 
         if (Error_has(error)) {
             Array_delete(new_args);
-            return NO_PLUGIN_RESULT;
+            return NULL;
         }
     }
 
-    Plugin_Result result = {new_args, fds_in};
     Error_clear(error);
-    return result;
+    return new_args;
 }
 
 

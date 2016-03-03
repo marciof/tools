@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        Plugin_Result result = plugins[i]->run(
+        Array new_args = plugins[i]->run(
             args,
             plugins[i]->options,
             fds_in,
@@ -67,14 +67,9 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
         }
 
-        if ((result.args != NULL) && (result.args != args)) {
+        if ((new_args != NULL) && (new_args != args)) {
             Array_delete(args);
-            args = result.args;
-        }
-
-        if ((result.fds_in != NULL) && (result.fds_in != fds_in)) {
-            Array_delete(fds_in);
-            fds_in = result.fds_in;
+            args = new_args;
         }
     }
 
