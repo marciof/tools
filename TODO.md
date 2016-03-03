@@ -7,10 +7,8 @@
 
 Simplify code:
 - Fix "ls" redirection to a plain text file, it's including color escapes.
-- Remove the need for `Plugin_Result`
-- Start with an empty list of `fds-in`.
-  - Make the "pipe" plugin responsible for `stdin`.
-  - Put directories from `stdin` into `args`.
+- Remove the need for `Plugin_Result`.
+- Put directories from `stdin` into `args` or let it be? Let other plugins handle it either way.
 - Do / While has `args`:
   - Run plugins (each consumes from `args` and puts into the fds-in list when appropriate).
   - Print all in the `fds-in` list.

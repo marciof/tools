@@ -33,25 +33,6 @@ static void cleanup(Array args, Array fds_in, Error error) {
 }
 
 
-static Array list_input_fds(Error* error) {
-    Array fds_in = Array_new(error, NULL);
-
-    if (Error_has(error)) {
-        return NULL;
-    }
-
-    Array_add(fds_in, STDIN_FILENO, error);
-
-    if (Error_has(error)) {
-        Array_delete(fds_in);
-        return NULL;
-    }
-
-    Error_clear(error);
-    return fds_in;
-}
-
-
 int main(int argc, char* argv[]) {
     Error error;
     Array args = Options_parse(
@@ -62,7 +43,7 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    Array fds_in = list_input_fds(&error);
+    Array fds_in = Array_new(&error, NULL);
 
     if (error) {
         cleanup(args, NULL, error);
