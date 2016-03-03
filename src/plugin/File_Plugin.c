@@ -44,48 +44,29 @@ static int open_file(char* path, Error* error) {
 }
 
 
-static Array run(Array args, Array options, Array fds_in, Error* error) {
-    if (args->length == 0) {
-        Error_clear(error);
-        return args;
-    }
-
-    Array new_args = Array_new(error, NULL);
-
-    if (Error_has(error)) {
-        return NULL;
-    }
-
-    for (size_t i = 0; i < args->length; ++i) {
+static void run(Array args, Array options, Array fds_in, Error* error) {
+    for (size_t i = 0; i < args->length;) {
         char* arg = (char*) args->data[i];
         int fd_in = open_file(arg, error);
 
         if (Error_has(error)) {
-            Array_delete(new_args);
-            return NULL;
+            return;
         }
 
         if (fd_in == -1) {
-            Array_add(new_args, (intptr_t) arg, error);
-
-            if (Error_has(error)) {
-                Array_delete(new_args);
-                return NULL;
-            }
-
+            ++i;
             continue;
         }
 
+        Array_remove(args, i, NULL);
         Array_add(fds_in, (intptr_t) fd_in, error);
 
         if (Error_has(error)) {
-            Array_delete(new_args);
-            return NULL;
+            return;
         }
     }
 
     Error_clear(error);
-    return new_args;
 }
 
 

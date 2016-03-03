@@ -36,41 +36,34 @@ static const char* get_name() {
 }
 
 
-static Array run(Array args, Array options, Array fds_in, Error* error) {
+static void run(Array args, Array options, Array fds_in, Error* error) {
     int fd_in = STDIN_FILENO;
     struct stat fd_in_stat;
 
     if (fstat(fd_in, &fd_in_stat) == -1) {
         Error_errno(error, errno);
-        return NULL;
+        return;
     }
 
     if (S_ISDIR(fd_in_stat.st_mode)) {
         Error_clear(error);
-        return args;
+        return;
     }
 
     if (!S_ISFIFO(fd_in_stat.st_mode)) {
         bool has_fd_input = has_input(fd_in, error);
 
         if (Error_has(error)) {
-            return NULL;
+            return;
         }
 
         if (!has_fd_input) {
             Error_clear(error);
-            return args;
+            return;
         }
     }
 
     Array_add(fds_in, (intptr_t) fd_in, error);
-
-    if (Error_has(error)) {
-        return NULL;
-    }
-
-    Error_clear(error);
-    return args;
 }
 
 

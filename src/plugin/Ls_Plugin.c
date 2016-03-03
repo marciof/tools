@@ -87,33 +87,26 @@ static const char* get_name() {
 }
 
 
-static Array run(Array args, Array options, Array fds_in, Error* error) {
+static void run(Array args, Array options, Array fds_in, Error* error) {
     if ((fds_in->length > 0) && (args->length == 0)) {
         Error_clear(error);
-        return args;
+        return;
     }
 
     Array argv = create_exec_argv(args, options, error);
 
     if (Error_has(error)) {
-        return NULL;
+        return;
     }
 
     int fd_out = exec_forkpty((char*) argv->data[0], (char**) argv->data, error);
     Array_delete(argv);
 
     if (Error_has(error)) {
-        return NULL;
+        return;
     }
 
     Array_add(fds_in, (intptr_t) fd_out, error);
-
-    if (Error_has(error)) {
-        return NULL;
-    }
-
-    Error_clear(error);
-    return args;
 }
 
 

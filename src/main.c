@@ -51,25 +51,14 @@ int main(int argc, char* argv[]) {
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        if (!plugins[i]) {
-            continue;
-        }
+        if (plugins[i]) {
+            plugins[i]->run(args, plugins[i]->options, fds_in, &error);
 
-        Array new_args = plugins[i]->run(
-            args,
-            plugins[i]->options,
-            fds_in,
-            &error);
-
-        if (error) {
-            fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
-            cleanup(args, fds_in, NULL);
-            return EXIT_FAILURE;
-        }
-
-        if ((new_args != NULL) && (new_args != args)) {
-            Array_delete(args);
-            args = new_args;
+            if (error) {
+                fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
+                cleanup(args, fds_in, NULL);
+                return EXIT_FAILURE;
+            }
         }
     }
 
