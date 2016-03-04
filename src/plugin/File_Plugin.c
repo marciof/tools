@@ -24,19 +24,19 @@ static int open_file(char* path, Error* error) {
         else {
             Error_errno(error, errno);
         }
-        return -1;
+        return RESOURCE_NO_FD;
     }
 
     if (S_ISDIR(path_stat.st_mode)) {
         Error_clear(error);
-        return -1;
+        return RESOURCE_NO_FD;
     }
 
     int file = open(path, O_RDONLY);
 
     if (file == -1) {
         Error_errno(error, errno);
-        return -1;
+        return RESOURCE_NO_FD;
     }
 
     Error_clear(error);
@@ -44,25 +44,16 @@ static int open_file(char* path, Error* error) {
 }
 
 
-static void run(Array args, Array options, Array fds_in, Error* error) {
-    for (size_t i = 0; i < args->length;) {
-        char* arg = (char*) args->data[i];
-        int fd_in = open_file(arg, error);
+static void run(Array resources, Array options, Error* error) {
+    for (size_t i = 0; i < resources->length; ++i) {
+        Resource resource = (Resource) resources->data[i];
 
-        if (Error_has(error)) {
-            return;
-        }
+        if (resource->fd == RESOURCE_NO_FD) {
+            resource->fd = open_file(resource->name, error);
 
-        if (fd_in == -1) {
-            ++i;
-            continue;
-        }
-
-        Array_remove(args, i, NULL);
-        Array_add(fds_in, (intptr_t) fd_in, error);
-
-        if (Error_has(error)) {
-            return;
+            if (Error_has(error)) {
+                return;
+            }
         }
     }
 

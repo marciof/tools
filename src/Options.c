@@ -37,22 +37,20 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         bool needs_header = true;
 
         for (size_t i = 0; i < nr_plugins; ++i) {
-            if (!plugins[i]) {
-                continue;
+            if (plugins[i] != NULL) {
+                if (needs_header) {
+                    needs_header = false;
+
+                    fputs(
+                        "\n"
+                        "Plugins:\n",
+                        stderr);
+                }
+
+                fprintf(stderr, "  %-16s%s\n",
+                    plugins[i]->get_name(),
+                    plugins[i]->get_description());
             }
-
-            if (needs_header) {
-                needs_header = false;
-
-                fputs(
-                    "\n"
-                    "Plugins:\n",
-                    stderr);
-            }
-
-            fprintf(stderr, "  %-16s%s\n",
-                plugins[i]->get_name(),
-                plugins[i]->get_description());
         }
     }
 }
@@ -65,7 +63,7 @@ static ssize_t find_plugin(
         size_t nr_plugins) {
 
     for (size_t i = 0; i < nr_plugins; ++i) {
-        if (plugins[i]) {
+        if (plugins[i] != NULL) {
             const char* other = plugins[i]->get_name();
 
             if (name_length == 0) {
@@ -186,21 +184,29 @@ Array Options_parse(
         }
     }
 
-    Array args = Array_new(error, NULL);
+    Array resources = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
-        Array_add(args, (intptr_t) argv[i], error);
+        Resource resource = Resource_new(argv[i], RESOURCE_NO_FD, error);
 
         if (Error_has(error)) {
-            Array_delete(args);
+            Array_delete(resources);
+            return NULL;
+        }
+
+        Array_add(resources, (intptr_t) resource, error);
+
+        if (Error_has(error)) {
+            Resource_delete(resource);
+            Array_delete(resources);
             return NULL;
         }
     }
 
     Error_clear(error);
-    return args;
+    return resources;
 }

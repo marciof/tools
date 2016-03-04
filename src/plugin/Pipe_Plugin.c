@@ -59,10 +59,10 @@ static char* get_fd_dir_path(int fd, Error* error) {
 }
 
 
-static bool has_input(int fd_in, Error* error) {
+static bool has_input(int fd, Error* error) {
     struct pollfd fds;
 
-    fds.fd = fd_in;
+    fds.fd = fd;
     fds.events = POLLIN;
 
     int nr_fds = poll(&fds, 1, 0);
@@ -87,27 +87,38 @@ static const char* get_name() {
 }
 
 
-static void run(Array args, Array options, Array fds_in, Error* error) {
-    int fd_in = STDIN_FILENO;
-    struct stat fd_in_stat;
+static void run(Array resources, Array options, Error* error) {
+    int fd = STDIN_FILENO;
+    struct stat fd_stat;
 
-    if (fstat(fd_in, &fd_in_stat) == -1) {
+    if (fstat(fd, &fd_stat) == -1) {
         Error_errno(error, errno);
         return;
     }
 
-    if (S_ISDIR(fd_in_stat.st_mode)) {
-        char* path = get_fd_dir_path(fd_in, error);
+    if (S_ISDIR(fd_stat.st_mode)) {
+        char* path = get_fd_dir_path(fd, error);
 
-        if (!Error_has(error)) {
-            Array_insert(args, (intptr_t) path, 0, error);
+        if (Error_has(error)) {
+            return;
         }
 
+        Resource resource = Resource_new(path, RESOURCE_NO_FD, error);
+
+        if (Error_has(error)) {
+            return;
+        }
+
+        Array_insert(resources, (intptr_t) resource, 0, error);
+
+        if (Error_has(error)) {
+            Resource_delete(resource);
+        }
         return;
     }
 
-    if (!S_ISFIFO(fd_in_stat.st_mode)) {
-        bool has_fd_input = has_input(fd_in, error);
+    if (!S_ISFIFO(fd_stat.st_mode)) {
+        bool has_fd_input = has_input(fd, error);
 
         if (Error_has(error)) {
             return;
@@ -119,7 +130,17 @@ static void run(Array args, Array options, Array fds_in, Error* error) {
         }
     }
 
-    Array_add(fds_in, (intptr_t) fd_in, error);
+    Resource resource = Resource_new(NULL, fd, error);
+
+    if (Error_has(error)) {
+        return;
+    }
+
+    Array_insert(resources, (intptr_t) resource, 0, error);
+
+    if (Error_has(error)) {
+        Resource_delete(resource);
+    }
 }
 
 

@@ -16,16 +16,20 @@ Plugin* plugins[] = {
 };
 
 
-static void cleanup(Array args, Array fds_in, Error error) {
+static void cleanup(Array resources, Error error) {
     if (error) {
         fprintf(stderr, "%s\n", error);
     }
 
-    Array_delete(args);
-    Array_delete(fds_in);
+    if (resources != NULL) {
+        for (size_t i = 0; i < resources->length; ++i) {
+            Resource_delete((Resource) resources->data[i]);
+        }
+        Array_delete(resources);
+    }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        if (plugins[i]) {
+        if (plugins[i] != NULL) {
             Array_delete(plugins[i]->options);
             plugins[i] = NULL;
         }
@@ -35,45 +39,44 @@ static void cleanup(Array args, Array fds_in, Error error) {
 
 int main(int argc, char* argv[]) {
     Error error;
-    Array args = Options_parse(
+    Array resources = Options_parse(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
-    if (args == NULL) {
-        cleanup(NULL, NULL, error ? error : NULL);
+    if (resources == NULL) {
+        cleanup(NULL, error ? error : NULL);
         return EXIT_SUCCESS;
     }
 
-    Array fds_in = Array_new(&error, NULL);
-
-    if (error) {
-        cleanup(args, NULL, error);
-        return EXIT_FAILURE;
-    }
-
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        if (plugins[i]) {
-            plugins[i]->run(args, plugins[i]->options, fds_in, &error);
+        if (plugins[i] != NULL) {
+            plugins[i]->run(resources, plugins[i]->options, &error);
 
             if (error) {
                 fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
-                cleanup(args, fds_in, NULL);
+                cleanup(resources, NULL);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    for (size_t i = 0; i < fds_in->length; ++i) {
-        int fd_in = (int) fds_in->data[i];
-        ssize_t nr_bytes_read;
-        const int BUFFER_SIZE = 256;
-        char buffer[BUFFER_SIZE + 1];
+    for (size_t i = 0; i < resources->length; ++i) {
+        Resource resource = (Resource) resources->data[i];
+        int fd = resource->fd;
 
-        while ((nr_bytes_read = read(fd_in, buffer, BUFFER_SIZE)) > 0) {
-            buffer[nr_bytes_read] = '\0';
-            fputs(buffer, stdout);
+        if (fd != RESOURCE_NO_FD) {
+            ssize_t nr_bytes_read;
+            const int BUFFER_SIZE = 256;
+            char buffer[BUFFER_SIZE];
+
+            while ((nr_bytes_read = read(fd, buffer, BUFFER_SIZE - 1)) > 0) {
+                buffer[nr_bytes_read] = '\0';
+                fputs(buffer, stdout);
+            }
+
+            close(fd);
         }
     }
 
-    cleanup(args, fds_in, NULL);
+    cleanup(resources, NULL);
     return EXIT_SUCCESS;
 }

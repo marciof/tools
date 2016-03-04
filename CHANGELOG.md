@@ -1,6 +1,7 @@
-# 0.4.0 - YYYY-MM-DD #
+# 0.4.0 - 2016-03-04 #
 
 - Plugin "file": read files.
+- List directories piped through `stdin`.
 
 # 0.3.0 - 2016-02-25 #
 
