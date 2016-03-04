@@ -7,18 +7,31 @@ if(CMAKE_COMPILER_IS_GNUCC)
         -std=c99 -pedantic-errors -Wall -Wextra -Wno-unused-parameter -O2)
 endif()
 
+set(sources
+    src/Array.c
+    src/Array.h
+    src/plugin/Pipe_Plugin.c
+    src/plugin/Pipe_Plugin.h
+    src/plugin/Ls_Plugin.c
+    src/plugin/Ls_Plugin.h
+    src/Error.c
+    src/Error.h
+    src/Options.c
+    src/Options.h
+    src/plugin/File_Plugin.c
+    src/plugin/File_Plugin.h
+    src/plugin/Plugin.c
+    src/plugin/Plugin.h)
+
 add_executable(${PROJECT_NAME}
-    src/Array.c src/Array.h src/plugin/Pipe_Plugin.c src/plugin/Pipe_Plugin.h
-    src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h src/Error.c
-    src/plugin/Plugin.h src/Error.h src/main.c src/Options.c src/Options.h
-    src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c)
+    ${sources}
+    src/main.c)
 
 add_executable(${PROJECT_NAME}-test
-    src/Array.c src/Array.h src/plugin/Pipe_Plugin.c src/plugin/Pipe_Plugin.h
-    src/plugin/Ls_Plugin.c src/plugin/Ls_Plugin.h src/Error.c
-    src/plugin/Plugin.h src/Error.h src/Options.c src/Options.h
-    src/plugin/File_Plugin.c src/plugin/File_Plugin.h src/plugin/Plugin.c
-    test/main.test.c test/Array.test.c test/Array.test.h)
+    ${sources}
+    test/main.test.c
+    test/Array.test.c
+    test/Array.test.h)
 
 set(libraries m util)
 target_link_libraries(${PROJECT_NAME} ${libraries})
