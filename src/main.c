@@ -9,7 +9,7 @@
 #include "plugin/Pipe_Plugin.h"
 
 
-Plugin* plugins[] = {
+static Plugin* plugins[] = {
     &Pipe_Plugin,
     &File_Plugin,
     &Ls_Plugin,

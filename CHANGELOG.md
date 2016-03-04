@@ -1,3 +1,7 @@
+# 0.5.0 - YYYY-MM-DD #
+
+- Plugin "git": show Git objects via `git show`.
+
 # 0.4.0 - 2016-03-04 #
 
 - Plugin "file": read files.
