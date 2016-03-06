@@ -6,3 +6,4 @@
 - Tests with coverage.
 - Continuous integration.
 - Fix "ls" redirection to a plain text file, it's including color escapes.
+- Profile each commit.
