@@ -6,4 +6,5 @@
 - Tests with coverage.
 - Continuous integration.
 - Fix "ls" redirection to a plain text file, it's including color escapes.
+- In the "ls" plugin, remove resources and add to argv as it loops for performance? 
 - Profile each commit.
