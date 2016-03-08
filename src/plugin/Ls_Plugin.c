@@ -9,7 +9,41 @@
 #define LS_PROGRAM_NAME "ls"
 
 
-static int exec_forkpty(char* file, char* argv[], Error* error) {
+static int fork_exec_pipe(char* file, char* argv[], Error* error) {
+    int read_write_fds[2];
+
+    if (pipe(read_write_fds) == -1) {
+        Error_errno(error, errno);
+        return RESOURCE_NO_FD;
+    }
+
+    int child_pid = fork();
+
+    if (child_pid == -1) {
+        Error_errno(error, errno);
+        return RESOURCE_NO_FD;
+    }
+    else if (child_pid != 0) {
+        close(read_write_fds[1]);
+        Error_clear(error);
+        return read_write_fds[0];
+    }
+
+    if (dup2(read_write_fds[1], STDOUT_FILENO) == -1) {
+        Error_errno(error, errno);
+        return RESOURCE_NO_FD;
+    }
+
+    close(read_write_fds[1]);
+    close(read_write_fds[0]);
+
+    execvp(file, argv);
+    Error_errno(error, errno);
+    return RESOURCE_NO_FD;
+}
+
+
+static int fork_exec_pty(char* file, char* argv[], Error* error) {
     int saved_stderr = dup(STDERR_FILENO);
 
     if (saved_stderr == -1) {
@@ -35,12 +69,18 @@ static int exec_forkpty(char* file, char* argv[], Error* error) {
         return RESOURCE_NO_FD;
     }
 
-    if (execvp(file, argv) == -1) {
-        Error_errno(error, errno);
-        return RESOURCE_NO_FD;
+    execvp(file, argv);
+    Error_errno(error, errno);
+    return RESOURCE_NO_FD;
+}
+
+
+static int fork_exec(char* file, char* argv[], Error* error) {
+    if (isatty(STDOUT_FILENO)) {
+        return fork_exec_pty(file, argv, error);
     }
     else {
-        exit(EXIT_SUCCESS);
+        return fork_exec_pipe(file, argv, error);
     }
 }
 
@@ -68,8 +108,7 @@ static void open_default_resource(Array resources, Array argv, Error* error) {
         return;
     }
 
-    resource->fd = exec_forkpty(
-        (char*) argv->data[0], (char**) argv->data, error);
+    resource->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
 
     if (Error_has(error)) {
         Resource_delete(resource);
@@ -85,7 +124,7 @@ static void open_default_resource(Array resources, Array argv, Error* error) {
 }
 
 
-static void open_merge_resources(
+static void open_resources(
         Array resources,
         Array argv,
         size_t next_open_resource,
@@ -107,8 +146,7 @@ static void open_merge_resources(
         resources->data[next_open_resource - nr_args];
 
     resource->name = NULL;
-    resource->fd = exec_forkpty(
-        (char*) argv->data[0], (char**) argv->data, error);
+    resource->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
 
     if (Error_has(error)) {
         Array_remove(resources, next_open_resource - nr_args, NULL);
@@ -170,7 +208,7 @@ static void run(Array resources, Array options, Error* error) {
             ++nr_args;
         }
         else if (nr_args > 0) {
-            open_merge_resources(resources, argv, i, nr_args, error);
+            open_resources(resources, argv, i, nr_args, error);
 
             if (Error_has(error)) {
                 Array_delete(argv);
@@ -186,8 +224,7 @@ static void run(Array resources, Array options, Error* error) {
     }
 
     if (nr_args > 0) {
-        open_merge_resources(
-            resources, argv, resources->length, nr_args, error);
+        open_resources(resources, argv, resources->length, nr_args, error);
     }
     else {
         Error_clear(error);

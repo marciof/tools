@@ -1,10 +1,10 @@
-- http://rr-project.org
-- https://github.com/andrewrk/malcheck
-- https://autotest.github.io
-- http://geoff.greer.fm/ag/speed/
-- https://matt.sh/howto-c
 - Tests with coverage.
-- Continuous integration.
-- Fix "ls" redirection to a plain text file, it's including color escapes.
-- In the "ls" plugin, remove resources and add to argv as it loops for performance? 
+  - http://rr-project.org
+  - https://autotest.github.io
+  - https://github.com/andrewrk/malcheck
 - Profile each commit.
+  - http://geoff.greer.fm/ag/speed/
+- Continuous integration.
+  - https://scan.coverity.com
+  - https://travis-ci.org
+- In the "ls" plugin, remove resources and add to argv as it loops for performance?
