@@ -136,7 +136,7 @@ static void run(Array resources, Array options, Error* error) {
         return;
     }
 
-    Array_insert(resources, (intptr_t) resource, 0, error);
+    Array_add(resources, (intptr_t) resource, error);
 
     if (Error_has(error)) {
         Resource_delete(resource);
