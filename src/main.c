@@ -61,6 +61,11 @@ int main(int argc, char* argv[]) {
 
     for (size_t i = 0; i < resources->length; ++i) {
         Resource resource = (Resource) resources->data[i];
+
+        if (resource == NULL) {
+            continue;
+        }
+
         int fd = resource->fd;
 
         if (fd != RESOURCE_NO_FD) {

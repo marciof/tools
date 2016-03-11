@@ -48,7 +48,7 @@ static void run(Array resources, Array options, Error* error) {
     for (size_t i = 0; i < resources->length; ++i) {
         Resource resource = (Resource) resources->data[i];
 
-        if (resource->fd == RESOURCE_NO_FD) {
+        if ((resource != NULL) && (resource->fd == RESOURCE_NO_FD)) {
             resource->fd = open_file(resource->name, error);
 
             if (Error_has(error)) {

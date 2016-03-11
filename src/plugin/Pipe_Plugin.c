@@ -90,34 +90,29 @@ static const char* get_name() {
 static void run(Array resources, Array options, Error* error) {
     int fd = STDIN_FILENO;
     struct stat fd_stat;
+    Resource resource;
+    size_t position;
 
     if (fstat(fd, &fd_stat) == -1) {
         Error_errno(error, errno);
         return;
     }
 
-    if (S_ISDIR(fd_stat.st_mode)) {
+    if (S_ISFIFO(fd_stat.st_mode)) {
+        resource = Resource_new(NULL, fd, error);
+        position = 0;
+    }
+    else if (S_ISDIR(fd_stat.st_mode)) {
         char* path = get_fd_dir_path(fd, error);
 
         if (Error_has(error)) {
             return;
         }
 
-        Resource resource = Resource_new(path, RESOURCE_NO_FD, error);
-
-        if (Error_has(error)) {
-            return;
-        }
-
-        Array_insert(resources, (intptr_t) resource, 0, error);
-
-        if (Error_has(error)) {
-            Resource_delete(resource);
-        }
-        return;
+        resource = Resource_new(path, RESOURCE_NO_FD, error);
+        position = resources->length;
     }
-
-    if (!S_ISFIFO(fd_stat.st_mode)) {
+    else {
         bool has_fd_input = has_input(fd, error);
 
         if (Error_has(error)) {
@@ -128,15 +123,16 @@ static void run(Array resources, Array options, Error* error) {
             Error_clear(error);
             return;
         }
-    }
 
-    Resource resource = Resource_new(NULL, fd, error);
+        resource = Resource_new(NULL, fd, error);
+        position = resources->length;
+    }
 
     if (Error_has(error)) {
         return;
     }
 
-    Array_add(resources, (intptr_t) resource, error);
+    Array_insert(resources, (intptr_t) resource, position, error);
 
     if (Error_has(error)) {
         Resource_delete(resource);

@@ -95,7 +95,12 @@ static const char* get_name() {
 }
 
 
-static void open_default_resource(Array resources, Array argv, Error* error) {
+static void open_resources(
+        Array resources,
+        Array argv,
+        size_t pos,
+        Error* error) {
+
     Array_add(argv, (intptr_t) NULL, error);
 
     if (Error_has(error)) {
@@ -108,54 +113,20 @@ static void open_default_resource(Array resources, Array argv, Error* error) {
         return;
     }
 
-    resource->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
+    Array_insert(resources, (intptr_t) resource, pos, error);
 
     if (Error_has(error)) {
         Resource_delete(resource);
         return;
     }
 
-    Array_add(resources, (intptr_t) resource, error);
+    resource->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
 
     if (Error_has(error)) {
         close(resource->fd);
+        Array_remove(resources, pos, NULL);
         Resource_delete(resource);
     }
-}
-
-
-static void open_resources(
-        Array resources,
-        Array argv,
-        size_t next_open_resource,
-        size_t nr_args,
-        Error* error) {
-
-    Array_add(argv, (intptr_t) NULL, error);
-
-    if (Error_has(error)) {
-        return;
-    }
-
-    for (size_t i = 1; i < nr_args; ++i) {
-        Resource_delete((Resource)
-            Array_remove(resources, next_open_resource - nr_args, NULL));
-    }
-
-    Resource resource = (Resource)
-        resources->data[next_open_resource - nr_args];
-
-    resource->name = NULL;
-    resource->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
-
-    if (Error_has(error)) {
-        Array_remove(resources, next_open_resource - nr_args, NULL);
-        Resource_delete(resource);
-        return;
-    }
-
-    argv->length -= nr_args + 1;
-    Error_clear(error);
 }
 
 
@@ -189,13 +160,18 @@ static void run(Array resources, Array options, Error* error) {
     }
 
     if (resources->length == 0) {
-        open_default_resource(resources, argv, error);
+        open_resources(resources, argv, resources->length, error);
         Array_delete(argv);
         return;
     }
 
     for (size_t i = 0; i < resources->length;) {
         Resource resource = (Resource) resources->data[i];
+
+        if (resource == NULL) {
+            ++i;
+            continue;
+        }
 
         if ((resource->name != NULL) && (resource->fd == RESOURCE_NO_FD)) {
             Array_add(argv, (intptr_t) resource->name, error);
@@ -206,25 +182,28 @@ static void run(Array resources, Array options, Error* error) {
             }
 
             ++nr_args;
+            resources->data[i] = (intptr_t) NULL;
+            Resource_delete(resource);
         }
         else if (nr_args > 0) {
-            open_resources(resources, argv, i, nr_args, error);
+            open_resources(resources, argv, i, error);
 
             if (Error_has(error)) {
                 Array_delete(argv);
                 return;
             }
 
-            i -= nr_args - 1;
+            argv->length -= nr_args + 1;
             nr_args = 0;
-            continue;
+            ++i;
         }
-
-        ++i;
+        else {
+            ++i;
+        }
     }
 
     if (nr_args > 0) {
-        open_resources(resources, argv, resources->length, nr_args, error);
+        open_resources(resources, argv, resources->length, error);
     }
     else {
         Error_clear(error);

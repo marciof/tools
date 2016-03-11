@@ -7,4 +7,3 @@
 - Continuous integration.
   - https://scan.coverity.com
   - https://travis-ci.org
-- In the "ls" plugin, remove resources and add to argv as it loops for performance?
