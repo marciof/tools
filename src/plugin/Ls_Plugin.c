@@ -6,7 +6,7 @@
 #include "Ls_Plugin.h"
 
 
-#define LS_PROGRAM_NAME "ls"
+#define EXTERNAL_BINARY "ls"
 
 
 static int fork_exec_pipe(char* file, char* argv[], Error* error) {
@@ -86,12 +86,12 @@ static int fork_exec(char* file, char* argv[], Error* error) {
 
 
 static const char* get_description() {
-    return "list directories via `" LS_PROGRAM_NAME "`";
+    return "list directories via `" EXTERNAL_BINARY "`";
 }
 
 
 static const char* get_name() {
-    return LS_PROGRAM_NAME;
+    return EXTERNAL_BINARY;
 }
 
 
@@ -131,7 +131,7 @@ static void open_resources(
 
 
 static Array prepare_argv(Array options, Error* error) {
-    Array argv = Array_new(error, LS_PROGRAM_NAME, NULL);
+    Array argv = Array_new(error, EXTERNAL_BINARY, NULL);
 
     if (Error_has(error)) {
         return NULL;
