@@ -1,2 +1,2 @@
 #!/bin/sh
-perf stat -r 10 show $@
+perf stat --sync -r 10 "${BIN:-show}" $@
