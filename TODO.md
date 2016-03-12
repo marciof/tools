@@ -8,4 +8,3 @@
 - Continuous integration.
   - https://scan.coverity.com
   - https://travis-ci.org
-- Check `read` call for errors.

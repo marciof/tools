@@ -64,7 +64,12 @@ static void flush_input(int input_fd, int output_fd, Error* error) {
         }
     }
 
-    Error_clear(error);
+    if (errno != EIO) {
+        Error_errno(error, errno);
+    }
+    else {
+        Error_clear(error);
+    }
 }
 
 
