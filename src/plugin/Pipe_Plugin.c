@@ -78,7 +78,7 @@ static bool has_input(int fd, Error* error) {
 
 
 static const char* get_description() {
-    return "pipe `stdin`";
+    return "pipe input";
 }
 
 
@@ -87,10 +87,10 @@ static const char* get_name() {
 }
 
 
-static void run(Array resources, Array options, Error* error) {
+static void run(Array inputs, Array options, int* output_fd, Error* error) {
     int fd = STDIN_FILENO;
     struct stat fd_stat;
-    Resource resource;
+    Resource input;
     size_t position;
 
     if (fstat(fd, &fd_stat) == -1) {
@@ -99,7 +99,7 @@ static void run(Array resources, Array options, Error* error) {
     }
 
     if (S_ISFIFO(fd_stat.st_mode)) {
-        resource = Resource_new(NULL, fd, error);
+        input = Resource_new(NULL, fd, error);
         position = 0;
     }
     else if (S_ISDIR(fd_stat.st_mode)) {
@@ -109,8 +109,8 @@ static void run(Array resources, Array options, Error* error) {
             return;
         }
 
-        resource = Resource_new(path, RESOURCE_NO_FD, error);
-        position = resources->length;
+        input = Resource_new(path, RESOURCE_NO_FD, error);
+        position = inputs->length;
     }
     else {
         bool has_fd_input = has_input(fd, error);
@@ -124,18 +124,18 @@ static void run(Array resources, Array options, Error* error) {
             return;
         }
 
-        resource = Resource_new(NULL, fd, error);
-        position = resources->length;
+        input = Resource_new(NULL, fd, error);
+        position = inputs->length;
     }
 
     if (Error_has(error)) {
         return;
     }
 
-    Array_insert(resources, (intptr_t) resource, position, error);
+    Array_insert(inputs, (intptr_t) input, position, error);
 
     if (Error_has(error)) {
-        Resource_delete(resource);
+        Resource_delete(input);
     }
 }
 

@@ -17,7 +17,7 @@ typedef struct {
     Array options;
     const char* (*get_description)();
     const char* (*get_name)();
-    void (*run)(Array resources, Array options, Error* error);
+    void (*run)(Array inputs, Array options, int* output_fd, Error* error);
 } Plugin;
 
 

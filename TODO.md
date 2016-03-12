@@ -4,6 +4,8 @@
   - https://github.com/andrewrk/malcheck
 - Profile each commit.
   - http://geoff.greer.fm/ag/speed/
+  - Reduce memory allocation.
 - Continuous integration.
   - https://scan.coverity.com
   - https://travis-ci.org
+- Check `read` call for errors.

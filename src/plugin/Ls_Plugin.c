@@ -10,9 +10,9 @@
 
 
 static int fork_exec_pipe(char* file, char* argv[], Error* error) {
-    int read_write_fds[2];
+    int stdout_read_write_fds[2];
 
-    if (pipe(read_write_fds) == -1) {
+    if (pipe(stdout_read_write_fds) == -1) {
         Error_errno(error, errno);
         return RESOURCE_NO_FD;
     }
@@ -24,18 +24,18 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
         return RESOURCE_NO_FD;
     }
     else if (child_pid != 0) {
-        close(read_write_fds[1]);
+        close(stdout_read_write_fds[1]);
         Error_clear(error);
-        return read_write_fds[0];
+        return stdout_read_write_fds[0];
     }
 
-    if (dup2(read_write_fds[1], STDOUT_FILENO) == -1) {
+    if (dup2(stdout_read_write_fds[1], STDOUT_FILENO) == -1) {
         Error_errno(error, errno);
         return RESOURCE_NO_FD;
     }
 
-    close(read_write_fds[1]);
-    close(read_write_fds[0]);
+    close(stdout_read_write_fds[1]);
+    close(stdout_read_write_fds[0]);
 
     execvp(file, argv);
     Error_errno(error, errno);
@@ -95,37 +95,32 @@ static const char* get_name() {
 }
 
 
-static void open_resources(
-        Array resources,
-        Array argv,
-        size_t pos,
-        Error* error) {
-
+static void open_inputs(Array inputs, Array argv, size_t pos, Error* error) {
     Array_add(argv, (intptr_t) NULL, error);
 
     if (Error_has(error)) {
         return;
     }
 
-    Resource resource = Resource_new(NULL, RESOURCE_NO_FD, error);
+    Resource input = Resource_new(NULL, RESOURCE_NO_FD, error);
 
     if (Error_has(error)) {
         return;
     }
 
-    Array_insert(resources, (intptr_t) resource, pos, error);
+    Array_insert(inputs, (intptr_t) input, pos, error);
 
     if (Error_has(error)) {
-        Resource_delete(resource);
+        Resource_delete(input);
         return;
     }
 
-    resource->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
+    input->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
 
     if (Error_has(error)) {
-        close(resource->fd);
-        Array_remove(resources, pos, NULL);
-        Resource_delete(resource);
+        close(input->fd);
+        Array_remove(inputs, pos, NULL);
+        Resource_delete(input);
     }
 }
 
@@ -151,7 +146,7 @@ static Array prepare_argv(Array options, Error* error) {
 }
 
 
-static void run(Array resources, Array options, Error* error) {
+static void run(Array inputs, Array options, int* output_fd, Error* error) {
     Array argv = prepare_argv(options, error);
     size_t nr_args = 0;
 
@@ -159,22 +154,22 @@ static void run(Array resources, Array options, Error* error) {
         return;
     }
 
-    if (resources->length == 0) {
-        open_resources(resources, argv, resources->length, error);
+    if (inputs->length == 0) {
+        open_inputs(inputs, argv, inputs->length, error);
         Array_delete(argv);
         return;
     }
 
-    for (size_t i = 0; i < resources->length;) {
-        Resource resource = (Resource) resources->data[i];
+    for (size_t i = 0; i < inputs->length;) {
+        Resource input = (Resource) inputs->data[i];
 
-        if (resource == NULL) {
+        if (input == NULL) {
             ++i;
             continue;
         }
 
-        if ((resource->name != NULL) && (resource->fd == RESOURCE_NO_FD)) {
-            Array_add(argv, (intptr_t) resource->name, error);
+        if ((input->name != NULL) && (input->fd == RESOURCE_NO_FD)) {
+            Array_add(argv, (intptr_t) input->name, error);
 
             if (Error_has(error)) {
                 Array_delete(argv);
@@ -182,11 +177,11 @@ static void run(Array resources, Array options, Error* error) {
             }
 
             ++nr_args;
-            resources->data[i] = (intptr_t) NULL;
-            Resource_delete(resource);
+            inputs->data[i] = (intptr_t) NULL;
+            Resource_delete(input);
         }
         else if (nr_args > 0) {
-            open_resources(resources, argv, i, error);
+            open_inputs(inputs, argv, i, error);
 
             if (Error_has(error)) {
                 Array_delete(argv);
@@ -203,7 +198,7 @@ static void run(Array resources, Array options, Error* error) {
     }
 
     if (nr_args > 0) {
-        open_resources(resources, argv, resources->length, error);
+        open_inputs(inputs, argv, inputs->length, error);
     }
     else {
         Error_clear(error);

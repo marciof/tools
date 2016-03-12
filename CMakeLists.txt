@@ -33,8 +33,8 @@ add_executable(${PROJECT_NAME}-test
     test/Array.test.c
     test/Array.test.h)
 
-set(libraries m util)
+set(libraries util)
 target_link_libraries(${PROJECT_NAME} ${libraries})
-target_link_libraries(${PROJECT_NAME}-test check rt pthread ${libraries})
+target_link_libraries(${PROJECT_NAME}-test check m pthread rt ${libraries})
 
 target_include_directories(${PROJECT_NAME}-test PUBLIC src/)

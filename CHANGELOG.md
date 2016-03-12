@@ -1,15 +1,15 @@
 # 0.5.0 - YYYY-MM-DD #
 
-- Plugin "git": show Git revisions via `git show`.
+- Plugin "pager": page output via `pager`.
 
 # 0.4.0 - 2016-03-04 #
 
 - Plugin "file": read files.
-- List directories piped through `stdin`.
+- List directories piped through input.
 
 # 0.3.0 - 2016-02-25 #
 
-- Plugin "pipe": pipe `stdin`.
+- Plugin "pipe": pipe input.
 
 # 0.2.0 - 2016-02-20 #
 

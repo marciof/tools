@@ -44,12 +44,12 @@ static int open_file(char* path, Error* error) {
 }
 
 
-static void run(Array resources, Array options, Error* error) {
-    for (size_t i = 0; i < resources->length; ++i) {
-        Resource resource = (Resource) resources->data[i];
+static void run(Array inputs, Array options, int* output_fd, Error* error) {
+    for (size_t i = 0; i < inputs->length; ++i) {
+        Resource input = (Resource) inputs->data[i];
 
-        if ((resource != NULL) && (resource->fd == RESOURCE_NO_FD)) {
-            resource->fd = open_file(resource->name, error);
+        if ((input != NULL) && (input->fd == RESOURCE_NO_FD)) {
+            input->fd = open_file(input->name, error);
 
             if (Error_has(error)) {
                 return;
