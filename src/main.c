@@ -21,7 +21,7 @@ static Plugin* plugins[] = {
 
 
 static void cleanup(Array resources, Error* error) {
-    if (error) {
+    if (error != NULL) {
         fprintf(stderr, "%s\n", *error);
     }
 
@@ -64,11 +64,11 @@ static void flush_input(int input_fd, int output_fd, Error* error) {
         }
     }
 
-    if (errno != EIO) {
-        Error_errno(error, errno);
+    if ((errno == 0) || (errno == EIO) || (errno == ENOTTY)) {
+        Error_clear(error);
     }
     else {
-        Error_clear(error);
+        Error_errno(error, errno);
     }
 }
 
