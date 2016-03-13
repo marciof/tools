@@ -8,3 +8,5 @@
 - Continuous integration.
   - https://scan.coverity.com
   - https://travis-ci.org
+- Lint and static analysis?
+  - http://clang-analyzer.llvm.org
