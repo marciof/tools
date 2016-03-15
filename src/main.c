@@ -103,7 +103,10 @@ int main(int argc, char* argv[]) {
         if (input != NULL) {
             int input_fd = input->fd;
 
-            if (input_fd != RESOURCE_NO_FD) {
+            if (input_fd == RESOURCE_NO_FD) {
+                fprintf(stderr, "Unsupported resource: %s\n", input->name);
+            }
+            else {
                 flush_input(input_fd, output_fd, &error);
                 close(input_fd);
 
