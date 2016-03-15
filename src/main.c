@@ -64,7 +64,7 @@ static void flush_input(int input_fd, int output_fd, Error* error) {
         }
     }
 
-    if ((errno == 0) || (errno == EIO) || (errno == ENOTTY)) {
+    if ((bytes_read >= 0) || (errno == EIO)) {
         Error_clear(error);
     }
     else {
