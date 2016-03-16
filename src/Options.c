@@ -23,7 +23,7 @@
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
         "Usage: show [OPTION]... [RESOURCE]...\n"
-        "Version: 0.5.0\n"
+        "Version: 0.6.0\n"
         "\n"
         "Options:\n"
         "  -%c              display this help and exit\n"
@@ -144,7 +144,7 @@ static void parse_plugin_option(
 }
 
 
-Array Options_parse(
+Array* Options_parse(
         int argc,
         char* argv[],
         Plugin* plugins[],
@@ -184,14 +184,14 @@ Array Options_parse(
         }
     }
 
-    Array resources = Array_new(error, NULL);
+    Array* resources = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
-        Resource resource = Resource_new(argv[i], RESOURCE_NO_FD, error);
+        Resource* resource = Resource_new(argv[i], RESOURCE_NO_FD, error);
 
         if (Error_has(error)) {
             Array_delete(resources);

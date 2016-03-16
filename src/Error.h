@@ -1,7 +1,6 @@
 #pragma once
 #include <stdbool.h>
 
-
 typedef const char* Error;
 
 void Error_clear(Error* error);

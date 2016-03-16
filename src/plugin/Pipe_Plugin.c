@@ -87,10 +87,10 @@ static const char* get_name() {
 }
 
 
-static void run(Array inputs, Array options, int* output_fd, Error* error) {
+static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     int fd = STDIN_FILENO;
     struct stat fd_stat;
-    Resource input;
+    Resource* input;
     size_t position;
 
     if (fstat(fd, &fd_stat) == -1) {

@@ -95,14 +95,14 @@ static const char* get_name() {
 }
 
 
-static void open_inputs(Array inputs, Array argv, size_t pos, Error* error) {
+static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     Array_add(argv, (intptr_t) NULL, error);
 
     if (Error_has(error)) {
         return;
     }
 
-    Resource input = Resource_new(NULL, RESOURCE_NO_FD, error);
+    Resource* input = Resource_new(NULL, RESOURCE_NO_FD, error);
 
     if (Error_has(error)) {
         return;
@@ -125,8 +125,8 @@ static void open_inputs(Array inputs, Array argv, size_t pos, Error* error) {
 }
 
 
-static Array prepare_argv(Array options, Error* error) {
-    Array argv = Array_new(error, EXTERNAL_BINARY, NULL);
+static Array* prepare_argv(Array* options, Error* error) {
+    Array* argv = Array_new(error, EXTERNAL_BINARY, NULL);
 
     if (Error_has(error)) {
         return NULL;
@@ -146,8 +146,8 @@ static Array prepare_argv(Array options, Error* error) {
 }
 
 
-static void run(Array inputs, Array options, int* output_fd, Error* error) {
-    Array argv = prepare_argv(options, error);
+static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
+    Array* argv = prepare_argv(options, error);
     size_t nr_args = 0;
 
     if (Error_has(error)) {
@@ -161,7 +161,7 @@ static void run(Array inputs, Array options, int* output_fd, Error* error) {
     }
 
     for (size_t i = 0; i < inputs->length;) {
-        Resource input = (Resource) inputs->data[i];
+        Resource* input = (Resource*) inputs->data[i];
 
         if (input == NULL) {
             ++i;

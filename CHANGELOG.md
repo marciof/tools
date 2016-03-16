@@ -1,6 +1,10 @@
-# 0.5.0 - YYYY-MM-DD #
+# 0.6.0 - YYYY-MM-DD #
 
 - Plugin "pager": page output via `pager`.
+
+# 0.5.0 - 2016-03-16 #
+
+- Fix plugin "ls" redirection to honor the output type: TTY and non-TTY.
 
 # 0.4.0 - 2016-03-04 #
 

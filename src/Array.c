@@ -9,7 +9,7 @@
 #define DEFAULT_CAPACITY_INCREASE_FACTOR (1.5)
 
 
-static void change_capacity(Array array, size_t capacity, Error* error) {
+static void change_capacity(Array* array, size_t capacity, Error* error) {
     if (capacity < array->length) {
         Error_errno(error, EINVAL);
         return;
@@ -31,12 +31,12 @@ static void change_capacity(Array array, size_t capacity, Error* error) {
 }
 
 
-void Array_add(Array array, intptr_t element, Error* error) {
+void Array_add(Array* array, intptr_t element, Error* error) {
     Array_insert(array, element, array->length, error);
 }
 
 
-void Array_delete(Array array) {
+void Array_delete(Array* array) {
     if (array != NULL) {
         free(array->data);
         memset(array, 0, sizeof(*array));
@@ -45,7 +45,7 @@ void Array_delete(Array array) {
 }
 
 
-void Array_extend(Array list, Array elements, Error* error) {
+void Array_extend(Array* list, Array* elements, Error* error) {
     if (elements->length == 0) {
         Error_clear(error);
         return;
@@ -65,7 +65,7 @@ void Array_extend(Array list, Array elements, Error* error) {
 }
 
 
-void Array_insert(Array array, intptr_t element, size_t position, Error* error) {
+void Array_insert(Array* array, intptr_t element, size_t position, Error* error) {
     if (position > array->length) {
         Error_errno(error, EINVAL);
         return;
@@ -99,8 +99,8 @@ void Array_insert(Array array, intptr_t element, size_t position, Error* error) 
 }
 
 
-Array Array_new(Error* error, ...) {
-    Array array = (Array) malloc(sizeof(*array));
+Array* Array_new(Error* error, ...) {
+    Array* array = (Array*) malloc(sizeof(*array));
 
     if (array == NULL) {
         Error_errno(error, errno);
@@ -136,7 +136,7 @@ Array Array_new(Error* error, ...) {
 }
 
 
-intptr_t Array_remove(Array array, size_t position, Error* error) {
+intptr_t Array_remove(Array* array, size_t position, Error* error) {
     if (position >= array->length) {
         Error_errno(error, EINVAL);
         return 0;

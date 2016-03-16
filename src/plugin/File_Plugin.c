@@ -44,9 +44,9 @@ static int open_file(char* path, Error* error) {
 }
 
 
-static void run(Array inputs, Array options, int* output_fd, Error* error) {
+static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     for (size_t i = 0; i < inputs->length; ++i) {
-        Resource input = (Resource) inputs->data[i];
+        Resource* input = (Resource*) inputs->data[i];
 
         if ((input != NULL) && (input->fd == RESOURCE_NO_FD)) {
             input->fd = open_file(input->name, error);

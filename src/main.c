@@ -20,14 +20,14 @@ static Plugin* plugins[] = {
 };
 
 
-static void cleanup(Array resources, Error* error) {
+static void cleanup(Array* resources, Error* error) {
     if (error != NULL) {
         fprintf(stderr, "%s\n", *error);
     }
 
     if (resources != NULL) {
         for (size_t i = 0; i < resources->length; ++i) {
-            Resource_delete((Resource) resources->data[i]);
+            Resource_delete((Resource*) resources->data[i]);
         }
 
         Array_delete(resources);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     Error error;
     int output_fd = STDOUT_FILENO;
 
-    Array inputs = Options_parse(
+    Array* inputs = Options_parse(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (inputs == NULL) {
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     }
 
     for (size_t i = 0; i < inputs->length; ++i) {
-        Resource input = (Resource) inputs->data[i];
+        Resource* input = (Resource*) inputs->data[i];
 
         if (input != NULL) {
             int input_fd = input->fd;
