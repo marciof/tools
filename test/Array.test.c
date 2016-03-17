@@ -1,7 +1,6 @@
 #include "Array.h"
 #include "Array.test.h"
 
-
 START_TEST(test_array)
 {
     int numbers[] = {-1, 0, 1};
@@ -9,14 +8,12 @@ START_TEST(test_array)
 }
 END_TEST
 
-
 START_TEST(test_string)
 {
     char text[] = "abc";
     ck_assert_int_eq(STATIC_ARRAY_LENGTH(text), 3 + 1);
 }
 END_TEST
-
 
 Suite* std_array_suite() {
     Suite* suite = suite_create("std/array");

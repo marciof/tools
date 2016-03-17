@@ -20,6 +20,8 @@ set(sources
     src/Options.h
     src/plugin/File_Plugin.c
     src/plugin/File_Plugin.h
+    src/plugin/Pager_Plugin.c
+    src/plugin/Pager_Plugin.h
     src/plugin/Plugin.c
     src/plugin/Plugin.h)
 

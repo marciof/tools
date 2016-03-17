@@ -4,10 +4,8 @@
 #include <string.h>
 #include "Array.h"
 
-
 #define DEFAULT_INITIAL_CAPACITY ((size_t) 8)
 #define DEFAULT_CAPACITY_INCREASE_FACTOR (1.5)
-
 
 static void change_capacity(Array* array, size_t capacity, Error* error) {
     if (capacity < array->length) {
@@ -30,11 +28,9 @@ static void change_capacity(Array* array, size_t capacity, Error* error) {
     return;
 }
 
-
 void Array_add(Array* array, intptr_t element, Error* error) {
     Array_insert(array, element, array->length, error);
 }
-
 
 void Array_delete(Array* array) {
     if (array != NULL) {
@@ -43,7 +39,6 @@ void Array_delete(Array* array) {
         free(array);
     }
 }
-
 
 void Array_extend(Array* list, Array* elements, Error* error) {
     if (elements->length == 0) {
@@ -63,7 +58,6 @@ void Array_extend(Array* list, Array* elements, Error* error) {
 
     Error_clear(error);
 }
-
 
 void Array_insert(Array* array, intptr_t element, size_t position, Error* error) {
     if (position > array->length) {
@@ -97,7 +91,6 @@ void Array_insert(Array* array, intptr_t element, size_t position, Error* error)
     array->data[position] = element;
     Error_clear(error);
 }
-
 
 Array* Array_new(Error* error, ...) {
     Array* array = (Array*) malloc(sizeof(*array));
@@ -134,7 +127,6 @@ Array* Array_new(Error* error, ...) {
     Error_clear(error);
     return array;
 }
-
 
 intptr_t Array_remove(Array* array, size_t position, Error* error) {
     if (position >= array->length) {

@@ -1,5 +1,4 @@
 #define _POSIX_C_SOURCE 200809L
-
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,15 +9,15 @@
 #include "Options.h"
 #include "plugin/File_Plugin.h"
 #include "plugin/Ls_Plugin.h"
+#include "plugin/Pager_Plugin.h"
 #include "plugin/Pipe_Plugin.h"
-
 
 static Plugin* plugins[] = {
     &Pipe_Plugin,
     &File_Plugin,
     &Ls_Plugin,
+    &Pager_Plugin,
 };
-
 
 static void cleanup(Array* resources, Error* error) {
     if (error != NULL) {
@@ -40,7 +39,6 @@ static void cleanup(Array* resources, Error* error) {
         }
     }
 }
-
 
 static void flush_input(int input_fd, int output_fd, Error* error) {
     ssize_t bytes_read;
@@ -71,7 +69,6 @@ static void flush_input(int input_fd, int output_fd, Error* error) {
         Error_errno(error, errno);
     }
 }
-
 
 int main(int argc, char* argv[]) {
     Error error;

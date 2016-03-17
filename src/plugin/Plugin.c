@@ -3,14 +3,12 @@
 #include <string.h>
 #include "Plugin.h"
 
-
 void Resource_delete(Resource* resource) {
     if (resource != NULL) {
         memset(resource, 0, sizeof(*resource));
         free(resource);
     }
 }
-
 
 Resource* Resource_new(char* name, int fd, Error* error) {
     Resource* resource = (Resource*) malloc(sizeof(*resource));

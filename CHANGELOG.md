@@ -1,4 +1,4 @@
-# 0.6.0 - YYYY-MM-DD #
+# 0.6.0 - UNRELEASED #
 
 - Plugin "pager": page output via `pager`.
 

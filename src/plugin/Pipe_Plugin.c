@@ -1,5 +1,4 @@
 #define _POSIX_C_SOURCE 200809L
-
 #include <dirent.h>
 #include <errno.h>
 #include <poll.h>
@@ -11,9 +10,7 @@
 #include "../Error.h"
 #include "Pipe_Plugin.h"
 
-
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
-
 
 static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
@@ -58,7 +55,6 @@ static char* get_fd_dir_path(int fd, Error* error) {
     return fd_dir_name;
 }
 
-
 static bool has_input(int fd, Error* error) {
     struct pollfd fds;
 
@@ -76,16 +72,13 @@ static bool has_input(int fd, Error* error) {
     return nr_fds == 1;
 }
 
-
 static const char* get_description() {
     return "pipe input";
 }
 
-
 static const char* get_name() {
     return "pipe";
 }
-
 
 static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     int fd = STDIN_FILENO;
@@ -138,7 +131,6 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
         Resource_delete(input);
     }
 }
-
 
 Plugin Pipe_Plugin = {
     NULL,

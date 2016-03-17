@@ -5,9 +5,7 @@
 #include "../Array.h"
 #include "Ls_Plugin.h"
 
-
 #define EXTERNAL_BINARY "ls"
-
 
 static int fork_exec_pipe(char* file, char* argv[], Error* error) {
     int stdout_read_write_fds[2];
@@ -42,7 +40,6 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
     return RESOURCE_NO_FD;
 }
 
-
 static int fork_exec_pty(char* file, char* argv[], Error* error) {
     int saved_stderr = dup(STDERR_FILENO);
 
@@ -74,7 +71,6 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
     return RESOURCE_NO_FD;
 }
 
-
 static int fork_exec(char* file, char* argv[], Error* error) {
     if (isatty(STDOUT_FILENO)) {
         return fork_exec_pty(file, argv, error);
@@ -84,16 +80,13 @@ static int fork_exec(char* file, char* argv[], Error* error) {
     }
 }
 
-
 static const char* get_description() {
     return "list directories via `" EXTERNAL_BINARY "`";
 }
 
-
 static const char* get_name() {
     return EXTERNAL_BINARY;
 }
-
 
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     Array_add(argv, (intptr_t) NULL, error);
@@ -124,7 +117,6 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 }
 
-
 static Array* prepare_argv(Array* options, Error* error) {
     Array* argv = Array_new(error, EXTERNAL_BINARY, NULL);
 
@@ -144,7 +136,6 @@ static Array* prepare_argv(Array* options, Error* error) {
     Error_clear(error);
     return argv;
 }
-
 
 static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     Array* argv = prepare_argv(options, error);
@@ -206,7 +197,6 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
 
     Array_delete(argv);
 }
-
 
 Plugin Ls_Plugin = {
     NULL,

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "Array.test.h"
 
-
 int main() {
     SRunner* runner = srunner_create(NULL);
 

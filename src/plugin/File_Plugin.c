@@ -3,16 +3,13 @@
 #include <sys/stat.h>
 #include "File_Plugin.h"
 
-
 static const char* get_description() {
     return "read files";
 }
 
-
 static const char* get_name() {
     return "file";
 }
-
 
 static int open_file(char* path, Error* error) {
     struct stat path_stat;
@@ -43,7 +40,6 @@ static int open_file(char* path, Error* error) {
     return file;
 }
 
-
 static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     for (size_t i = 0; i < inputs->length; ++i) {
         Resource* input = (Resource*) inputs->data[i];
@@ -59,7 +55,6 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
 
     Error_clear(error);
 }
-
 
 Plugin File_Plugin = {
     NULL,

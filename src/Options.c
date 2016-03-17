@@ -6,7 +6,6 @@
 #include "Array.h"
 #include "Options.h"
 
-
 #define HELP_OPT "h"
 #define DISABLE_PLUGIN_OPT "x:"
 #define PLUGIN_OPTION_OPT "p:"
@@ -18,7 +17,6 @@
 )
 
 #define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled."
-
 
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
@@ -55,7 +53,6 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
     }
 }
 
-
 static ssize_t find_plugin(
         char* name,
         size_t name_length,
@@ -89,7 +86,6 @@ static ssize_t find_plugin(
 
     return -1;
 }
-
 
 static void parse_plugin_option(
         char* option,
@@ -142,7 +138,6 @@ static void parse_plugin_option(
 
     Error_clear(error);
 }
-
 
 Array* Options_parse(
         int argc,

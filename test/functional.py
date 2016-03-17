@@ -4,9 +4,7 @@ import os
 import subprocess
 import unittest
 
-
 BINARY = './show'
-
 
 def popen(args, stdout = subprocess.PIPE, stdin = None):
     if isinstance(stdin, subprocess.Popen):
@@ -17,17 +15,13 @@ def popen(args, stdout = subprocess.PIPE, stdin = None):
         stdout = stdout,
         stderr = subprocess.PIPE)
 
-
 def get_test_directory():
     return '/'
-
 
 def get_test_file():
     return __file__
 
-
 class TestPipePlugin (unittest.TestCase):
-
     def test_directory(self):
         directory = get_test_directory()
         directory_fd = os.open(directory, os.O_RDONLY)
@@ -48,7 +42,6 @@ class TestPipePlugin (unittest.TestCase):
         finally:
             os.close(directory_fd)
 
-
     def test_file(self):
         with open(get_test_file(), 'rb') as f:
             text = f.read()
@@ -60,7 +53,6 @@ class TestPipePlugin (unittest.TestCase):
             self.assertEqual(process.returncode, 0)
             self.assertEqual(out, text)
             self.assertEqual(err, b'')
-
 
     def test_pipe(self):
         cat = popen(['cat', get_test_file()])
@@ -77,7 +69,6 @@ class TestPipePlugin (unittest.TestCase):
 
         with open(get_test_file(), 'rb') as f:
             self.assertEqual(out, f.read())
-
 
 if __name__ == '__main__':
     unittest.main()
