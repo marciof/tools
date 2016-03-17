@@ -1,4 +1,4 @@
-- Install [Docker](http://www.docker.com).
+- Install [Docker](http://www.docker.com) and [Docker Compose](https://docs.docker.com/compose/install/).
 - Enable X forwarding: `xhost +`
 - Build image: `docker-compose build`
 - Run image: `docker-compose up`
