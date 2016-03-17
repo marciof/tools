@@ -16,8 +16,8 @@ set(sources
     src/plugin/Ls_Plugin.h
     src/Error.c
     src/Error.h
-    src/Options.c
-    src/Options.h
+    src/options.c
+    src/options.h
     src/plugin/File_Plugin.c
     src/plugin/File_Plugin.h
     src/plugin/Pager_Plugin.c

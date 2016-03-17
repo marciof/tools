@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "Array.h"
-#include "Options.h"
+#include "options.h"
 
 #define HELP_OPT "h"
 #define DISABLE_PLUGIN_OPT "x:"
@@ -139,12 +139,12 @@ static void parse_plugin_option(
     Error_clear(error);
 }
 
-Array* Options_parse(
+Array* parse_options(
         int argc,
-        char* argv[],
-        Plugin* plugins[],
+        char **argv,
+        Plugin **plugins,
         size_t nr_plugins,
-        Error* error) {
+        Error *error) {
 
     int option;
 

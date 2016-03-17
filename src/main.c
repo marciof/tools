@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "Array.h"
-#include "Options.h"
+#include "options.h"
 #include "plugin/File_Plugin.h"
 #include "plugin/Ls_Plugin.h"
 #include "plugin/Pager_Plugin.h"
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
     Error error;
     int output_fd = STDOUT_FILENO;
 
-    Array* inputs = Options_parse(
+    Array* inputs = parse_options(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (inputs == NULL) {
