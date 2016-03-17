@@ -23,7 +23,9 @@ set(sources
     src/plugin/Pager_Plugin.c
     src/plugin/Pager_Plugin.h
     src/plugin/Plugin.c
-    src/plugin/Plugin.h)
+    src/plugin/Plugin.h
+    src/fork_exec.c
+    src/fork_exec.h)
 
 add_executable(${PROJECT_NAME}
     ${sources}
