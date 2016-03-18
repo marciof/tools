@@ -8,3 +8,4 @@ services:
     volumes:
     - /tmp/.X11-unix:/tmp/.X11-unix:ro
     - ~:/mnt/home
+    - ~/.clion-docker:/home/dev/.CLion2016.1
