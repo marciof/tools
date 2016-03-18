@@ -1,5 +1,4 @@
 FROM debian:jessie
-MAINTAINER Márcio Faustino
 
 # base
 RUN apt-get update
@@ -10,11 +9,8 @@ RUN apt-get install -y nano sudo wget
 # X11
 RUN apt-get install -y libx11-6 libxext-dev libxrender-dev libxtst-dev
 
-# toolchain
-RUN apt-get install -y make gcc g++ git
-
-# fonts
-RUN apt-get install -y fontconfig
+# dependencies
+RUN apt-get install -y fontconfig make gcc g++ git
 
 # user
 ENV USER dev
@@ -25,8 +21,8 @@ USER $USER
 WORKDIR /home/$USER
 
 # CLion
-RUN mkdir -p opt/clion
-RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.tar.gz | tar zx --strip-components=1 -C opt/clion
-RUN echo 'export PATH=$PATH:$HOME/opt/clion/bin' | tee -a .profile
+RUN mkdir clion/
+RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.tar.gz | tar zx --strip-components=1 -C clion/
+RUN echo 'export PATH=$PATH:$HOME/clion/bin' | tee -a .profile
 
-CMD opt/clion/bin/clion.sh
+CMD clion/bin/clion.sh
