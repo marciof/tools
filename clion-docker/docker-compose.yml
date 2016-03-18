@@ -5,6 +5,7 @@ services:
     image: docker.io/marciof/clion
     environment:
       DISPLAY:
+      TERM:
     volumes:
     - /tmp/.X11-unix:/tmp/.X11-unix:ro
     - ~:/mnt/home
