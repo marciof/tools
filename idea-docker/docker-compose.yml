@@ -1,0 +1,10 @@
+version: '2'
+services:
+  idea:
+    build: .
+    image: docker.io/marciof/idea
+    environment:
+      DISPLAY:
+    volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    - ~:/mnt/home
