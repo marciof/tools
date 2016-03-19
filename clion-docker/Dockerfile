@@ -23,6 +23,5 @@ WORKDIR /home/$USER
 # CLion
 RUN mkdir clion/
 RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.tar.gz | tar zx --strip-components=1 -C clion/
-RUN echo 'export PATH=$PATH:$HOME/clion/bin' | tee -a .profile
 
-CMD clion/bin/clion.sh
+ENTRYPOINT ["clion/bin/clion.sh"]
