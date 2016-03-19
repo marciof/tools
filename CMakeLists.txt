@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 2.8)
 project(show C)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    add_compile_options(
-        -std=c99 -pedantic-errors -Wall -Wextra -Wno-unused-parameter -O2)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic-errors -Wall -Wextra -Wno-unused-parameter -O2")
 endif()
 
 set(sources
