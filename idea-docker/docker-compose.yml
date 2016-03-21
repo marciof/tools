@@ -5,6 +5,8 @@ services:
     image: docker.io/marciof/idea
     environment:
       DISPLAY:
+      TERM:
     volumes:
     - /tmp/.X11-unix:/tmp/.X11-unix:ro
     - ~:/mnt/home
+    - ~/.idea-docker:/home/dev/.IntelliJIdea2016.1

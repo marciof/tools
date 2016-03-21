@@ -2,17 +2,16 @@ FROM debian:jessie
 
 # base
 RUN apt-get update
-RUN apt-get install -y apt-utils
-RUN apt-get upgrade -y
-RUN apt-get install -y nano sudo wget
+RUN apt-get install -y apt-utils wget
 
 # X11
 RUN apt-get install -y libx11-6 libxext-dev libxrender-dev libxtst-dev
 
 # dependencies
-RUN apt-get install -y fontconfig make gcc g++ git
+RUN apt-get install -y fontconfig git g++ gcc make
 
 # user
+RUN apt-get install -y sudo
 ENV USER dev
 RUN useradd -m -U $USER
 RUN adduser $USER sudo
