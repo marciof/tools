@@ -19,6 +19,8 @@ def reverse(array):
         start += 1
         end -= 1
 
+    return array
+
 class Test (unittest.TestCase):
     def test_empty_array(self):
         array = []
