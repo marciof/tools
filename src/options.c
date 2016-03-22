@@ -76,7 +76,6 @@ static ssize_t find_plugin(
                         break;
                     }
                 }
-
                 if (j == name_length) {
                     return i;
                 }

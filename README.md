@@ -30,3 +30,4 @@ This project adheres to [Semantic Versioning](http://semver.org).
   - https://travis-ci.org
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
+- Use `libpipeline` to simplify the code?

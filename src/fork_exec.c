@@ -30,8 +30,8 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
         return NO_FD;
     }
 
-    close(stdout_read_write_fds[1]);
     close(stdout_read_write_fds[0]);
+    close(stdout_read_write_fds[1]);
 
     execvp(file, argv);
     Error_errno(error, errno);
