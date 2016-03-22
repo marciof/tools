@@ -30,6 +30,8 @@ add_executable(${PROJECT_NAME}
     ${sources}
     src/main.c)
 
+include_directories(src/)
+
 add_executable(${PROJECT_NAME}-test
     ${sources}
     test/main.test.c
@@ -39,5 +41,3 @@ add_executable(${PROJECT_NAME}-test
 set(libraries util)
 target_link_libraries(${PROJECT_NAME} ${libraries})
 target_link_libraries(${PROJECT_NAME}-test check m pthread rt ${libraries})
-
-target_include_directories(${PROJECT_NAME}-test PUBLIC src/)
