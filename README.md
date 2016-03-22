@@ -20,6 +20,8 @@ This project adheres to [Semantic Versioning](http://semver.org).
   - http://rr-project.org
   - https://autotest.github.io
   - https://github.com/andrewrk/malcheck
+  - https://github.com/google/sanitizers
+  - Valgrind
 - Profile each commit.
   - http://geoff.greer.fm/ag/speed/
   - Reduce memory allocation.
