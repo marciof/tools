@@ -1,5 +1,4 @@
 language: c
-script: cmake . && make
 addons:
  apt:
    packages:
@@ -11,3 +10,8 @@ addons:
    - check
    - python3
    - valgrind
+script:
+- cmake .
+- make
+- ./show-test
+- ./test/functional.py
