@@ -1,0 +1,13 @@
+language: c
+script: cmake . && make
+addons:
+ apt:
+   packages:
+   # Build.
+   - cmake
+   - make
+   - gcc
+   # Test.
+   - check
+   - python3
+   - valgrind

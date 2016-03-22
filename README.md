@@ -2,17 +2,9 @@ This project adheres to [Semantic Versioning](http://semver.org).
 
 # Dependencies #
 
-## Build ##
+See `.travis.yml` for details.
 
-- [CMake](https://cmake.org) >= 2.8
-
-## Test ##
-
-- [Python](https://www.python.org) >= 3
-- [libcheck](http://libcheck.github.io/check/)
-- [perf](https://perf.wiki.kernel.org)
-- [Valgrind](http://valgrind.org)
-- [Callgrind](https://kcachegrind.github.io)
+Tested on Linux Mint 17.3 Rosa KDE 64-bit.
 
 # To Do #
 
@@ -27,7 +19,6 @@ This project adheres to [Semantic Versioning](http://semver.org).
   - Reduce memory allocation.
 - Continuous integration.
   - https://scan.coverity.com
-  - https://travis-ci.org
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
 - Use `libpipeline` to simplify the code?

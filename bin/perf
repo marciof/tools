@@ -1,2 +1,3 @@
 #!/bin/sh
+# https://perf.wiki.kernel.org
 perf stat --sync -r 10 "${BIN:-show}" $@
