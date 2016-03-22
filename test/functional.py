@@ -4,7 +4,7 @@ import os
 import subprocess
 import unittest
 
-BINARY = './show'
+BINARY = ['valgrind', '-q', '--leak-check=yes', './show']
 
 def popen(args, stdout = subprocess.PIPE, stdin = None):
     if isinstance(stdin, subprocess.Popen):
@@ -27,7 +27,7 @@ class TestPipePlugin (unittest.TestCase):
         directory_fd = os.open(directory, os.O_RDONLY)
 
         try:
-            process = popen([BINARY], stdin = directory_fd)
+            process = popen(BINARY, stdin = directory_fd)
             (out, err) = process.communicate()
 
             ls = popen(['ls', directory])
@@ -47,7 +47,7 @@ class TestPipePlugin (unittest.TestCase):
             text = f.read()
             f.seek(0)
 
-            process = popen([BINARY], stdin = f)
+            process = popen(BINARY, stdin = f)
             (out, err) = process.communicate()
 
             self.assertEqual(process.returncode, 0)
@@ -56,7 +56,7 @@ class TestPipePlugin (unittest.TestCase):
 
     def test_pipe(self):
         cat = popen(['cat', get_test_file()])
-        process = popen([BINARY], stdin = cat)
+        process = popen(BINARY, stdin = cat)
 
         (out, err) = process.communicate()
         (cat_out, cat_err) = cat.communicate()
@@ -71,4 +71,4 @@ class TestPipePlugin (unittest.TestCase):
             self.assertEqual(out, f.read())
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity = 2)
