@@ -4,7 +4,6 @@
 import collections
 import unittest
 
-
 Direction = collections.namedtuple('Direction', ['x', 'y'])
 
 UP = Direction(x = 0, y = +1)
@@ -18,7 +17,6 @@ DOWN_LEFT = Direction(x = -1, y = -1)
 DOWN_RIGHT = Direction(x = +1, y = -1)
 
 MAX_NR_PIECES = 4
-
 
 def is_winner(color, x, y, board):
     """
@@ -61,7 +59,6 @@ def is_winner(color, x, y, board):
                     return True
 
     return False
-
 
 class Test (unittest.TestCase):
     def test_empty_board(self):
@@ -108,7 +105,6 @@ class Test (unittest.TestCase):
             [2, 0, 0, 0, 0],
             [2, 1, 1, 1, 0],
         ]))
-
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)

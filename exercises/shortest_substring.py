@@ -3,7 +3,6 @@
 
 import unittest
 
-
 def find_substring(string, alphabet):
     """
     Find the shortest substring in `string` that contains all letters from
@@ -36,7 +35,6 @@ def find_substring(string, alphabet):
         end = last_pos_by_char[end_char]
         return string[start : end + 1]
 
-
 class Test (unittest.TestCase):
     def test_repeats(self):
         self.assertEqual(
@@ -57,7 +55,6 @@ class Test (unittest.TestCase):
         self.assertEqual(
             find_substring('world', set('rd')),
             'rld')
-
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)

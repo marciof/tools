@@ -3,7 +3,6 @@
 
 import unittest
 
-
 def list_pairs(numbers, target_sum):
     """
     Find all pairs from `numbers` that when added equal `sum`.
@@ -19,7 +18,6 @@ def list_pairs(numbers, target_sum):
             needed_numbers.add(target_sum - n)
     
     return pairs
-
 
 class Test (unittest.TestCase):
     def test_no_numbers(self):
@@ -40,7 +38,6 @@ class Test (unittest.TestCase):
     
     def test_no_pairs_found(self):
         self.assertEqual(list_pairs([1, 2, 3], -1), [])
-
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)

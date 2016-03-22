@@ -3,7 +3,6 @@
 
 import unittest
 
-
 def permutate(string):
     """
     List all permutations of `string`.
@@ -21,7 +20,6 @@ def permutate(string):
             permutations.append(char + permutation)
 
     return permutations
-
 
 class Test (unittest.TestCase):
     def test_empty_string(self):
@@ -49,7 +47,6 @@ class Test (unittest.TestCase):
             'baa',
             'baa',
         ])
-
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)

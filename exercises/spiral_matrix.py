@@ -4,14 +4,12 @@
 import collections
 import unittest
 
-
 Direction = collections.namedtuple('Direction', ['x', 'y'])
 
 UP = Direction(x = 0, y = -1)
 DOWN = Direction(x = 0, y = +1)
 LEFT = Direction(x = -1, y = 0)
 RIGHT = Direction(x = +1, y = 0)
-
 
 def create_spiral(size):
     """
@@ -52,11 +50,9 @@ def create_spiral(size):
 
     return matrix
 
-
 def print_matrix(matrix):
     for row in matrix:
         print(row)
-
 
 class Test (unittest.TestCase):
     def test_empty(self):
@@ -83,7 +79,6 @@ class Test (unittest.TestCase):
                 [6, 1, 2],
                 [5, 4, 3]
             ])
-
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
