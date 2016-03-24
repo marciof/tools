@@ -9,7 +9,9 @@ addons:
    # Test.
    - python-pip
    - valgrind
-install: pip install cram
+install:
+  - export PATH=$HOME/.local/bin:$PATH
+  - pip install --user "`whoami`" cram
 script:
 - cmake .
 - make
