@@ -4,21 +4,16 @@ This project adheres to [Semantic Versioning](http://semver.org).
 
 See `.travis.yml` for details.
 
-Tested on Linux Mint 17.3 Rosa KDE 64-bit.
-
 # To Do #
 
-- Tests with coverage.
-  - http://rr-project.org
-  - https://autotest.github.io
-  - https://github.com/andrewrk/malcheck
-  - https://github.com/google/sanitizers
-  - Valgrind
-- Profile each commit.
-  - http://geoff.greer.fm/ag/speed/
-  - Reduce memory allocation.
 - Continuous integration.
   - https://scan.coverity.com
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
+- Profile each commit.
+  - http://geoff.greer.fm/ag/speed/
+  - Reduce memory allocation.
+- Tests with coverage.
+  - https://github.com/andrewrk/malcheck
+  - https://github.com/google/sanitizers
 - Use `libpipeline` to simplify the code?

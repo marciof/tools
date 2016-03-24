@@ -7,11 +7,10 @@ addons:
    - make
    - gcc
    # Test.
-   - check
-   - python3
+   - python-pip
    - valgrind
+install: pip install cram
 script:
 - cmake .
 - make
-- ./show-test
-- ./test/functional.py
+- cram -v test/
