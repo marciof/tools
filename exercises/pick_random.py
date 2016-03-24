@@ -7,15 +7,17 @@ import unittest
 def pick_random(array, count):
     """
     Pick `count` randomly selected items from `array`.
+
+    (Uses Fisher-Yates shuffle algorithm.)
     """
 
-    if not array or (count <= 0):
+    if (not array) or (count <= 0):
         return []
 
     shuffled = {}
     elements = []
 
-    for i in range(0, len(array) - 1):
+    for i in range(0, len(array)):
         if len(elements) == count:
             return elements
 
@@ -29,7 +31,6 @@ def pick_random(array, count):
 
         elements.append(shuffled.pop(i))
 
-    elements.append(shuffled.pop(len(array) - 1, array[-1]))
     return elements
 
 class Test (unittest.TestCase):
@@ -45,8 +46,8 @@ class Test (unittest.TestCase):
 
     def test_all_elements(self):
         self.assertCountEqual(
-            pick_random(list('example'), 7),
-            'example')
+            pick_random(list('hello world'), 11),
+            'hello world')
 
     def test_more_elements_than_array(self):
         self.assertCountEqual(
