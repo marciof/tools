@@ -8,6 +8,9 @@ class Node:
         self.value = value
         self.next = next
 
+    def __str__(self):
+        return '<%r at %x>' % (self.value, id(self))
+
 def make_list(*values):
     first = None
     previous = None
@@ -42,53 +45,60 @@ def has_cycle(l):
     Detect a cycle in a linked list. (Floyd's "tortoise and hare" algorithm.)
     """
 
+    def step(node):
+        return None if node is None else node.next
+
     slow = l
     fast = l
 
-    while slow and fast:
-        slow = slow.next
-        fast = fast.next
+    while True:
+        slow = step(slow)
+        fast = step(step(fast))
 
         if fast is None:
-            return False
-
-        fast = fast.next
+            return (False, None)
 
         if slow == fast:
-            return True
+            break
 
-    return False
+    slow = l
+
+    while slow != fast:
+        slow = step(slow)
+        fast = step(fast)
+
+    return (True, slow)
 
 class Test (unittest.TestCase):
     def test_empty_list(self):
-        self.assertFalse(has_cycle(None))
+        self.assertEqual(has_cycle(make_list()), (False, None))
 
     def test_single_node(self):
-        self.assertFalse(has_cycle(make_list('a')))
+        self.assertEqual(has_cycle(make_list('a')), (False, None))
 
     def test_multiple_nodes(self):
-        self.assertFalse(has_cycle(make_list('a', 'b', 'c')))
+        self.assertEqual(has_cycle(make_list('a', 'b', 'c')), (False, None))
 
     def test_multiple_repeated_nodes(self):
-        self.assertFalse(has_cycle(make_list('a', 'a', 'a')))
+        self.assertEqual(has_cycle(make_list('a', 'a', 'a')), (False, None))
 
     def test_cycle_with_single_node(self):
-        l = make_list('a')
+        l = make_list('x')
         l.next = l
-        self.assertTrue(has_cycle(l))
+        self.assertEqual(has_cycle(l), (True, l))
 
     def test_cycle_with_multiple_nodes(self):
         l = make_list('a', 'b', 'c')
         c = l.next.next
 
         c.next = l
-        self.assertTrue(has_cycle(l))
+        self.assertEqual(has_cycle(l), (True, l))
 
         c.next = l.next
-        self.assertTrue(has_cycle(l))
+        self.assertEqual(has_cycle(l), (True, l.next))
 
         c.next = l.next.next
-        self.assertTrue(has_cycle(l))
+        self.assertEqual(has_cycle(l), (True, l.next.next))
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
