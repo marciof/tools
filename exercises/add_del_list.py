@@ -21,6 +21,9 @@ class Node:
 def insert(l, position, value):
     """
     Insert in linked-list.
+
+    Time: O(n)
+    Space: O(1)
     """
 
     if position < 0:
@@ -47,6 +50,9 @@ def insert(l, position, value):
 def delete(l, position):
     """
     Delete from linked-list.
+
+    Time: O(n)
+    Space: O(1)
     """
 
     if position < 0:

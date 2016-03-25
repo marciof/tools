@@ -7,8 +7,8 @@ def reverse(array):
     """
     Reverse an `array` in place.
 
-    Time complexity: O(n)
-    Space complexity: O(1)
+    Time: O(n)
+    Space: O(1)
     """
 
     start = 0
