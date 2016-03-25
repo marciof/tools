@@ -1,2 +1,2 @@
 #!/bin/sh
-valgrind -q --leak-check=yes --show-leak-kinds=all show $@
+valgrind -q --leak-check=yes --show-reachable=yes show $@
