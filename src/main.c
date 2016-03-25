@@ -16,7 +16,7 @@ static Plugin* plugins[] = {
     &Pipe_Plugin,
     &File_Plugin,
     &Ls_Plugin,
-    &Pager_Plugin,
+//    &Pager_Plugin,
 };
 
 static void cleanup(Array* resources, Error* error) {

@@ -6,9 +6,9 @@
 #define NO_FD ((int) -1)
 
 static int fork_exec_pipe(char* file, char* argv[], Error* error) {
-    int stdout_read_write_fds[2];
+    int read_write_fds[2];
 
-    if (pipe(stdout_read_write_fds) == -1) {
+    if (pipe(read_write_fds) == -1) {
         Error_errno(error, errno);
         return NO_FD;
     }
@@ -19,19 +19,19 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
         Error_errno(error, errno);
         return NO_FD;
     }
-    else if (child_pid != 0) {
-        close(stdout_read_write_fds[1]);
+    else if (child_pid) {
+        close(read_write_fds[1]);
         Error_clear(error);
-        return stdout_read_write_fds[0];
+        return read_write_fds[0];
     }
 
-    if (dup2(stdout_read_write_fds[1], STDOUT_FILENO) == -1) {
+    if (dup2(read_write_fds[1], STDOUT_FILENO) == -1) {
         Error_errno(error, errno);
         return NO_FD;
     }
 
-    close(stdout_read_write_fds[0]);
-    close(stdout_read_write_fds[1]);
+    close(read_write_fds[0]);
+    close(read_write_fds[1]);
 
     execvp(file, argv);
     Error_errno(error, errno);
@@ -39,13 +39,6 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
 }
 
 static int fork_exec_pty(char* file, char* argv[], Error* error) {
-    int saved_stderr = dup(STDERR_FILENO);
-
-    if (saved_stderr == -1) {
-        Error_errno(error, errno);
-        return NO_FD;
-    }
-
     int child_fd_out;
     int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
@@ -53,15 +46,9 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
         Error_errno(error, errno);
         return NO_FD;
     }
-    else if (child_pid != 0) {
-        close(saved_stderr);
+    else if (child_pid) {
         Error_clear(error);
         return child_fd_out;
-    }
-
-    if (dup2(saved_stderr, STDERR_FILENO) == -1) {
-        Error_errno(error, errno);
-        return NO_FD;
     }
 
     execvp(file, argv);
