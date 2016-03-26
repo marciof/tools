@@ -1,9 +1,13 @@
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include "Pager_Plugin.h"
 
 #define EXTERNAL_BINARY "pager"
+
+static struct winsize terminal;
 
 static Array* create_argv(Array* options, Error* error) {
     Array* argv = Array_new(error, EXTERNAL_BINARY, NULL);
@@ -40,9 +44,24 @@ static const char* get_name() {
     return EXTERNAL_BINARY;
 }
 
+static void get_terminal_size(int num) {
+    signal(SIGWINCH, get_terminal_size);
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &terminal);
+}
+
 static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     if (!isatty(STDOUT_FILENO)) {
         Error_clear(error);
+        return;
+    }
+
+    if (signal(SIGWINCH, get_terminal_size) == SIG_ERR) {
+        Error_errno(error, errno);
+        return;
+    }
+
+    if (ioctl(STDIN_FILENO, TIOCGWINSZ, &terminal) == -1) {
+        Error_errno(error, errno);
         return;
     }
 
