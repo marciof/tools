@@ -19,17 +19,17 @@ static Plugin* plugins[] = {
 //    &Pager_Plugin,
 };
 
-static void cleanup(Array* resources, Error* error) {
+static void cleanup(Array* inputs, Error* error) {
     if (error != NULL) {
         fprintf(stderr, "%s\n", *error);
     }
 
-    if (resources != NULL) {
-        for (size_t i = 0; i < resources->length; ++i) {
-            Resource_delete((Resource*) resources->data[i]);
+    if (inputs != NULL) {
+        for (size_t i = 0; i < inputs->length; ++i) {
+            Input_delete((Input*) inputs->data[i]);
         }
 
-        Array_delete(resources);
+        Array_delete(inputs);
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
@@ -95,13 +95,13 @@ int main(int argc, char* argv[]) {
     }
 
     for (size_t i = 0; i < inputs->length; ++i) {
-        Resource* input = (Resource*) inputs->data[i];
+        Input* input = (Input*) inputs->data[i];
 
         if (input != NULL) {
             int input_fd = input->fd;
 
-            if (input_fd == RESOURCE_NO_FD) {
-                fprintf(stderr, "Unsupported resource: %s\n", input->name);
+            if (input_fd == INPUT_NO_FD) {
+                fprintf(stderr, "Unsupported input: %s\n", input->name);
             }
             else {
                 flush_input(input_fd, output_fd, &error);

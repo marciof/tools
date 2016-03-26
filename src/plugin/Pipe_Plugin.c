@@ -83,7 +83,7 @@ static const char* get_name() {
 static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     int fd = STDIN_FILENO;
     struct stat fd_stat;
-    Resource* input;
+    Input* input;
     size_t position;
 
     if (fstat(fd, &fd_stat) == -1) {
@@ -92,7 +92,7 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     }
 
     if (S_ISFIFO(fd_stat.st_mode)) {
-        input = Resource_new(NULL, fd, error);
+        input = Input_new(NULL, fd, error);
         position = 0;
     }
     else if (S_ISDIR(fd_stat.st_mode)) {
@@ -102,7 +102,7 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
             return;
         }
 
-        input = Resource_new(path, RESOURCE_NO_FD, error);
+        input = Input_new(path, INPUT_NO_FD, error);
         position = inputs->length;
     }
     else {
@@ -117,7 +117,7 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
             return;
         }
 
-        input = Resource_new(NULL, fd, error);
+        input = Input_new(NULL, fd, error);
         position = inputs->length;
     }
 
@@ -128,7 +128,7 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     Array_insert(inputs, (intptr_t) input, position, error);
 
     if (Error_has(error)) {
-        Resource_delete(input);
+        Input_delete(input);
     }
 }
 

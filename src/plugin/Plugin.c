@@ -3,23 +3,23 @@
 #include <string.h>
 #include "Plugin.h"
 
-void Resource_delete(Resource* resource) {
-    if (resource != NULL) {
-        memset(resource, 0, sizeof(*resource));
-        free(resource);
+void Input_delete(Input* input) {
+    if (input != NULL) {
+        memset(input, 0, sizeof(*input));
+        free(input);
     }
 }
 
-Resource* Resource_new(char* name, int fd, Error* error) {
-    Resource* resource = (Resource*) malloc(sizeof(*resource));
+Input* Input_new(char* name, int fd, Error* error) {
+    Input* input = (Input*) malloc(sizeof(*input));
 
-    if (resource == NULL) {
+    if (input == NULL) {
         Error_errno(error, errno);
         return NULL;
     }
 
-    resource->name = name;
-    resource->fd = fd;
+    input->name = name;
+    input->fd = fd;
 
-    return resource;
+    return input;
 }

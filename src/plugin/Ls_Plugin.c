@@ -20,7 +20,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         return;
     }
 
-    Resource* input = Resource_new(NULL, RESOURCE_NO_FD, error);
+    Input* input = Input_new(NULL, INPUT_NO_FD, error);
 
     if (Error_has(error)) {
         return;
@@ -29,7 +29,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     Array_insert(inputs, (intptr_t) input, pos, error);
 
     if (Error_has(error)) {
-        Resource_delete(input);
+        Input_delete(input);
         return;
     }
 
@@ -38,7 +38,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     if (Error_has(error)) {
         close(input->fd);
         Array_remove(inputs, pos, NULL);
-        Resource_delete(input);
+        Input_delete(input);
     }
 }
 
@@ -77,14 +77,14 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
     }
 
     for (size_t i = 0; i < inputs->length;) {
-        Resource* input = (Resource*) inputs->data[i];
+        Input* input = (Input*) inputs->data[i];
 
         if (input == NULL) {
             ++i;
             continue;
         }
 
-        if ((input->name != NULL) && (input->fd == RESOURCE_NO_FD)) {
+        if ((input->name != NULL) && (input->fd == INPUT_NO_FD)) {
             Array_add(argv, (intptr_t) input->name, error);
 
             if (Error_has(error)) {
@@ -94,7 +94,7 @@ static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
 
             ++nr_args;
             inputs->data[i] = (intptr_t) NULL;
-            Resource_delete(input);
+            Input_delete(input);
         }
         else if (nr_args > 0) {
             open_inputs(inputs, argv, i, error);

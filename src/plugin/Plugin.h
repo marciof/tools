@@ -3,12 +3,12 @@
 #include "../Array.h"
 #include "../Error.h"
 
-#define RESOURCE_NO_FD ((int) -1)
+#define INPUT_NO_FD ((int) -1)
 
 typedef struct {
     char* name;
     int fd;
-} Resource;
+} Input;
 
 typedef struct {
     Array* options;
@@ -17,5 +17,5 @@ typedef struct {
     void (*run)(Array* inputs, Array* options, int* output_fd, Error* error);
 } Plugin;
 
-void Resource_delete(Resource* resource);
-Resource* Resource_new(char* name, int fd, Error* error);
+void Input_delete(Input* input);
+Input* Input_new(char* name, int fd, Error* error);

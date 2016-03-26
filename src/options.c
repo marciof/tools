@@ -20,7 +20,7 @@
 
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
-        "Usage: show [OPTION]... [RESOURCE]...\n"
+        "Usage: show [OPTION]... [INPUT]...\n"
         "Version: 0.6.0\n"
         "\n"
         "Options:\n"
@@ -179,29 +179,29 @@ Array* parse_options(
         }
     }
 
-    Array* resources = Array_new(error, NULL);
+    Array* inputs = Array_new(error, NULL);
 
     if (Error_has(error)) {
         return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
-        Resource* resource = Resource_new(argv[i], RESOURCE_NO_FD, error);
+        Input* input = Input_new(argv[i], INPUT_NO_FD, error);
 
         if (Error_has(error)) {
-            Array_delete(resources);
+            Array_delete(inputs);
             return NULL;
         }
 
-        Array_add(resources, (intptr_t) resource, error);
+        Array_add(inputs, (intptr_t) input, error);
 
         if (Error_has(error)) {
-            Resource_delete(resource);
-            Array_delete(resources);
+            Input_delete(input);
+            Array_delete(inputs);
             return NULL;
         }
     }
 
     Error_clear(error);
-    return resources;
+    return inputs;
 }
