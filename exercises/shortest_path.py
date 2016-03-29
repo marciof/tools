@@ -20,6 +20,8 @@ class Inter:
 def shortest_path(start, house):
     """
     Find shortest path from road `start` to a road containing `house` nr.
+
+    https://en.wikipedia.org/wiki/Breadth-first_search
     """
 
     prev_by_road = {start: None}
