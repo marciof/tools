@@ -3,6 +3,7 @@ services:
   clion:
     build: .
     image: docker.io/marciof/clion
+    network_mode: host
     environment:
       DISPLAY:
       TERM:

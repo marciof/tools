@@ -3,6 +3,7 @@ services:
   idea:
     build: .
     image: docker.io/marciof/idea
+    network_mode: host
     environment:
       DISPLAY:
       TERM:
