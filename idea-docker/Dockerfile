@@ -1,8 +1,7 @@
 FROM debian:jessie
 
 # base
-RUN apt-get update
-RUN apt-get install -y apt-utils wget
+RUN apt-get update && apt-get install -y apt-utils wget
 
 # X11
 RUN apt-get install -y libx11-6 libxext-dev libxrender-dev libxtst-dev
