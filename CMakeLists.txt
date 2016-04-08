@@ -24,7 +24,9 @@ set(sources
     src/plugin/Plugin.c
     src/plugin/Plugin.h
     src/fork_exec.c
-    src/fork_exec.h)
+    src/fork_exec.h
+    src/io.c
+    src/io.h)
 
 add_executable(${PROJECT_NAME}
     ${sources}

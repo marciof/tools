@@ -62,7 +62,7 @@ static Array* prepare_argv(Array* options, Error* error) {
     return argv;
 }
 
-static void run(Array* inputs, Array* options, int* output_fd, Error* error) {
+static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     Array* argv = prepare_argv(options, error);
     size_t nr_args = 0;
 

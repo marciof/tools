@@ -6,8 +6,6 @@ See `.travis.yml` for details.
 
 # To Do #
 
-- Continuous integration.
-  - https://scan.coverity.com
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
 - Profile each commit.
