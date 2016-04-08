@@ -47,7 +47,6 @@ void Array_extend(Array* list, Array* elements, Error* error) {
     }
 
     change_capacity(list, list->length + elements->length, error);
-
     if (Error_has(error)) {
         return;
     }
@@ -55,7 +54,6 @@ void Array_extend(Array* list, Array* elements, Error* error) {
     for (size_t i = 0; i < elements->length; ++i, ++list->length) {
         list->data[list->length] = elements->data[i];
     }
-
     Error_clear(error);
 }
 

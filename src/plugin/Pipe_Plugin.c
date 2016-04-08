@@ -1,13 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
 #include <dirent.h>
 #include <errno.h>
-#include <poll.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include "../Array.h"
 #include "../Error.h"
+#include "../io.h"
 #include "Pipe_Plugin.h"
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
@@ -55,23 +54,6 @@ static char* get_fd_dir_path(int fd, Error* error) {
     return fd_dir_name;
 }
 
-static bool has_input(int fd, Error* error) {
-    struct pollfd fds;
-
-    fds.fd = fd;
-    fds.events = POLLIN;
-
-    int nr_fds = poll(&fds, 1, 0);
-
-    if (nr_fds < 0) {
-        Error_errno(error, errno);
-        return false;
-    }
-
-    Error_clear(error);
-    return nr_fds == 1;
-}
-
 static const char* get_description() {
     return "pipe input";
 }
@@ -106,7 +88,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         position = inputs->length;
     }
     else {
-        bool has_fd_input = has_input(fd, error);
+        bool has_fd_input = io_has_input(fd, error);
 
         if (Error_has(error)) {
             return;

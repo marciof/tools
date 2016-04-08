@@ -76,7 +76,6 @@ static ssize_t find_plugin(
                         break;
                     }
                 }
-
                 if (other[j] == '\0') {
                     return i;
                 }
@@ -130,7 +129,6 @@ static void parse_plugin_option(
     }
     else {
         Array_add(plugin->options, (intptr_t) value, error);
-
         if (Error_has(error)) {
             return;
         }
@@ -180,7 +178,6 @@ Array* parse_options(
     }
 
     Array* inputs = Array_new(error, NULL);
-
     if (Error_has(error)) {
         return NULL;
     }

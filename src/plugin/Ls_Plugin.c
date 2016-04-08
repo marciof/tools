@@ -15,13 +15,11 @@ static const char* get_name() {
 
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     Array_add(argv, (intptr_t) NULL, error);
-
     if (Error_has(error)) {
         return;
     }
 
     Input* input = Input_new(NULL, INPUT_NO_FD, error);
-
     if (Error_has(error)) {
         return;
     }

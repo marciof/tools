@@ -104,7 +104,6 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     }
 
     create_output(read_write_fds[1], outputs, error);
-
     if (Error_has(error)) {
         return;
     }
@@ -127,17 +126,14 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     }
 
     Array* argv = create_argv(options, error);
-
     if (Error_has(error)) {
         return;
     }
 
     close(read_write_fds[0]);
     close(read_write_fds[1]);
-
     execvp((char*) argv->data[0], (char**) argv->data);
     Error_errno(error, errno);
-
     Array_delete(argv);
 }
 

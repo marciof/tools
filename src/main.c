@@ -69,7 +69,6 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
 
         if (data != NULL) {
             io_write(STDOUT_FILENO, data, length, error);
-
             if (Error_has(error)) {
                 return;
             }
@@ -86,7 +85,6 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
 
 int main(int argc, char* argv[]) {
     Error error;
-
     Array* inputs = parse_options(
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
