@@ -6,6 +6,8 @@ import unittest
 def permutate(string):
     """
     List all permutations of `string`.
+
+    O(n^2) where n = len(string)
     """
 
     if len(string) <= 1:
