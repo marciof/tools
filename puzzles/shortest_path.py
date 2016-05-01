@@ -6,7 +6,7 @@ import unittest
 
 Road = collections.namedtuple('Road', ['houses', 'inter_a', 'inter_b'])
 
-class Inter:
+class Intersect:
     def __init__(self, name):
         self.name = name
         self.roads = []
@@ -22,6 +22,8 @@ def shortest_path(start, house):
     Find shortest path from road `start` to a road containing `house` nr.
 
     https://en.wikipedia.org/wiki/Breadth-first_search
+
+    Time: O(V+E)
     """
 
     prev_by_road = {start: None}
@@ -50,10 +52,10 @@ def shortest_path(start, house):
 
 class TestMapInvertedA (unittest.TestCase):
     def setUp(self):
-        self.NW_inter = Inter('NW')
-        self.SW_inter = Inter('SW')
-        self.NE_inter = Inter('NE')
-        self.SE_inter = Inter('SE')
+        self.NW_inter = Intersect('NW')
+        self.SW_inter = Intersect('SW')
+        self.NE_inter = Intersect('NE')
+        self.SE_inter = Intersect('SE')
 
         self.NW_road = Road(
             houses = (1, 2, 3),

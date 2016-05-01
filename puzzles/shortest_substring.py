@@ -7,13 +7,15 @@ def find_substring(string, alphabet):
     """
     Find the shortest substring in `string` that contains all letters from
     `alphabet` at least once.
+
+    Time: O(n)
     """
     
     last_pos_by_char = {}
     start_char = None
     end_char = None
     
-    for char, pos in zip(string, range(len(string))):
+    for pos, char in enumerate(string):
         if len(last_pos_by_char) == len(alphabet):
             break
         
@@ -30,10 +32,10 @@ def find_substring(string, alphabet):
     
     if None in (start_char, end_char):
         return None
-    else:
-        start = last_pos_by_char[start_char]
-        end = last_pos_by_char[end_char]
-        return string[start : end + 1]
+
+    start = last_pos_by_char[start_char]
+    end = last_pos_by_char[end_char]
+    return string[start : end + 1]
 
 class Test (unittest.TestCase):
     def test_repeats(self):

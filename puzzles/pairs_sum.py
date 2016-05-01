@@ -6,6 +6,8 @@ import unittest
 def list_pairs(numbers, target_sum):
     """
     Find all pairs from `numbers` that when added equal `sum`.
+
+    Time: O(n)
     """
     
     needed_numbers = set()
