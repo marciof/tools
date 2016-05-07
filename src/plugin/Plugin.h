@@ -4,7 +4,7 @@
 #include "../Array.h"
 #include "../Error.h"
 
-#define INPUT_NO_FD ((int) -1)
+#define INVALID_FD ((int) -1)
 
 typedef struct {
     // If unnamed, `name` is set to `NULL`.
@@ -14,7 +14,8 @@ typedef struct {
 
 typedef struct {
     intptr_t arg;
-    void (*close)(intptr_t arg);
+    void (*close)(intptr_t arg, Error* error);
+    void (*open)(intptr_t arg, Error* error);
 
     // If all data is flushed, `data` is set to `NULL`.
     void (*write)(intptr_t arg, uint8_t** data, size_t* length, Error* error);

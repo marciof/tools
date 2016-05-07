@@ -84,7 +84,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
             return;
         }
 
-        input = Input_new(path, INPUT_NO_FD, error);
+        input = Input_new(path, INVALID_FD, error);
         position = inputs->length;
     }
     else {

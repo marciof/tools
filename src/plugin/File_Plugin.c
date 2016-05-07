@@ -21,19 +21,19 @@ static int open_file(char* path, Error* error) {
         else {
             Error_errno(error, errno);
         }
-        return INPUT_NO_FD;
+        return INVALID_FD;
     }
 
     if (S_ISDIR(path_stat.st_mode)) {
         Error_clear(error);
-        return INPUT_NO_FD;
+        return INVALID_FD;
     }
 
     int file = open(path, O_RDONLY);
 
     if (file == -1) {
         Error_errno(error, errno);
-        return INPUT_NO_FD;
+        return INVALID_FD;
     }
 
     Error_clear(error);
@@ -44,7 +44,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
-        if ((input != NULL) && (input->fd == INPUT_NO_FD)) {
+        if ((input != NULL) && (input->fd == INVALID_FD)) {
             input->fd = open_file(input->name, error);
 
             if (Error_has(error)) {

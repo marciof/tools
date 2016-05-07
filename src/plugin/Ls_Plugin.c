@@ -19,7 +19,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         return;
     }
 
-    Input* input = Input_new(NULL, INPUT_NO_FD, error);
+    Input* input = Input_new(NULL, INVALID_FD, error);
     if (Error_has(error)) {
         return;
     }
@@ -82,7 +82,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
             continue;
         }
 
-        if ((input->name != NULL) && (input->fd == INPUT_NO_FD)) {
+        if ((input->name != NULL) && (input->fd == INVALID_FD)) {
             Array_add(argv, (intptr_t) input->name, error);
 
             if (Error_has(error)) {

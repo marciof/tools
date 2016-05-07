@@ -6,6 +6,7 @@ See `.travis.yml` for details.
 
 # To Do #
 
+- Use simple C strings to avoid storing buffer lengths separately?
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
 - Profile each commit.

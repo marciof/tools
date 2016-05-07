@@ -21,7 +21,7 @@ static Plugin* plugins[] = {
 };
 
 static void cleanup(Array* inputs, Array* outputs, Error* error) {
-    if (error != NULL) {
+    if (Error_has(error)) {
         fprintf(stderr, "%s\n", *error);
     }
 
@@ -35,8 +35,13 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
-            output->close(output->arg);
+
+            output->close(output->arg, error);
             Output_delete(output);
+
+            if (Error_has(error)) {
+                fprintf(stderr, "%s\n", *error);
+            }
         }
         Array_delete(outputs);
     }
@@ -82,7 +87,7 @@ int main(int argc, char* argv[]) {
         argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
 
     if (inputs == NULL) {
-        cleanup(NULL, NULL, error ? &error : NULL);
+        cleanup(NULL, NULL, &error);
         return EXIT_SUCCESS;
     }
 
@@ -97,11 +102,20 @@ int main(int argc, char* argv[]) {
         if (plugins[i] != NULL) {
             plugins[i]->run(inputs, plugins[i]->options, outputs, &error);
 
-            if (error) {
-                fprintf(stderr, "%s: %s\n", plugins[i]->get_name(), error);
-                cleanup(inputs, outputs, NULL);
+            if (Error_has(&error)) {
+                cleanup(inputs, outputs, &error);
                 return EXIT_FAILURE;
             }
+        }
+    }
+
+    for (size_t i = 0; i < outputs->length; ++i) {
+        Output* output = (Output*) outputs->data[i];
+        output->open(output->arg, &error);
+
+        if (Error_has(&error)) {
+            cleanup(inputs, outputs, &error);
+            return EXIT_FAILURE;
         }
     }
 
@@ -111,7 +125,7 @@ int main(int argc, char* argv[]) {
         if (input != NULL) {
             int input_fd = input->fd;
 
-            if (input_fd == INPUT_NO_FD) {
+            if (input_fd == INVALID_FD) {
                 fprintf(stderr, "Unsupported input: %s\n", input->name);
             }
             else {
@@ -126,6 +140,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    cleanup(inputs, outputs, NULL);
+    cleanup(inputs, outputs, &error);
     return EXIT_SUCCESS;
 }
