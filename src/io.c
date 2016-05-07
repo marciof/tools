@@ -20,6 +20,23 @@ bool io_has_input(int fd, Error* error) {
     return (nr_fds == 1) && (fd_poll.revents & POLLIN);
 }
 
+size_t io_read(int fd, uint8_t* data, size_t length, Error* error) {
+    ssize_t bytes_read = read(fd, data, length);
+
+    if (bytes_read > 0) {
+        Error_clear(error);
+        return (size_t) bytes_read;
+    }
+    if ((bytes_read == 0) || (errno == EIO)) {
+        Error_clear(error);
+        return 0;
+    }
+    else {
+        Error_errno(error, errno);
+        return 0;
+    }
+}
+
 void io_write(int fd, uint8_t* data, size_t length, Error* error) {
     while (length > 0) {
         ssize_t bytes_written = write(fd, data, length);

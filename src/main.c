@@ -50,11 +50,11 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 }
 
 static void flush_input(int input_fd, Array* outputs, Error* error) {
-    const int BUFFER_SIZE = 4 * 1024;
-    uint8_t buffer[BUFFER_SIZE];
-    ssize_t bytes_read;
+    const int LENGTH = 4 * 1024;
+    uint8_t buffer[LENGTH];
+    size_t bytes_read;
 
-    while ((bytes_read = read(input_fd, buffer, BUFFER_SIZE)) > 0) {
+    while ((bytes_read = io_read(input_fd, buffer, LENGTH, error)) > 0) {
         uint8_t* data = buffer;
         size_t length = (size_t) bytes_read;
 
@@ -73,13 +73,6 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
                 return;
             }
         }
-    }
-
-    if ((bytes_read >= 0) || (errno == EIO)) {
-        Error_clear(error);
-    }
-    else {
-        Error_errno(error, errno);
     }
 }
 
