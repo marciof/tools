@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "Array.h"
+#include "io.h"
 #include "options.h"
 
 #define HELP_OPT "h"

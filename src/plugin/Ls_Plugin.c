@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include "../Array.h"
 #include "../fork_exec.h"
+#include "../io.h"
 #include "Ls_Plugin.h"
 
 #define EXTERNAL_BINARY "ls"

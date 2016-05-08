@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include "../io.h"
 #include "File_Plugin.h"
 
 static const char* get_description() {

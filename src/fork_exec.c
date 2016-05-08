@@ -2,22 +2,21 @@
 #include <pty.h>
 #include <unistd.h>
 #include "fork_exec.h"
-
-#define NO_FD ((int) -1)
+#include "io.h"
 
 static int fork_exec_pipe(char* file, char* argv[], Error* error) {
     int read_write_fds[2];
 
     if (pipe(read_write_fds) == -1) {
         Error_errno(error, errno);
-        return NO_FD;
+        return INVALID_FD;
     }
 
     int child_pid = fork();
 
     if (child_pid == -1) {
         Error_errno(error, errno);
-        return NO_FD;
+        return INVALID_FD;
     }
     else if (child_pid) {
         close(read_write_fds[1]);
@@ -27,7 +26,7 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
 
     if (dup2(read_write_fds[1], STDOUT_FILENO) == -1) {
         Error_errno(error, errno);
-        return NO_FD;
+        return INVALID_FD;
     }
 
     close(read_write_fds[0]);
@@ -35,7 +34,7 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
 
     execvp(file, argv);
     Error_errno(error, errno);
-    return NO_FD;
+    return INVALID_FD;
 }
 
 static int fork_exec_pty(char* file, char* argv[], Error* error) {
@@ -44,7 +43,7 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
 
     if (child_pid == -1) {
         Error_errno(error, errno);
-        return NO_FD;
+        return INVALID_FD;
     }
     else if (child_pid) {
         Error_clear(error);
@@ -53,7 +52,7 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
 
     execvp(file, argv);
     Error_errno(error, errno);
-    return NO_FD;
+    return INVALID_FD;
 }
 
 int fork_exec(char* file, char* argv[], Error* error) {

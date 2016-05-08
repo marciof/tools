@@ -4,8 +4,6 @@
 #include "../Array.h"
 #include "../Error.h"
 
-#define INVALID_FD ((int) -1)
-
 typedef struct {
     // If unnamed, `name` is set to `NULL`.
     char* name;
