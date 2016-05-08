@@ -62,7 +62,7 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
         char* data = buffer;
         size_t length = (size_t) (bytes_read / sizeof(char));
 
-        for (size_t i = 0; i < outputs->length; ++i) {
+        for (size_t i = 0; (i < outputs->length) && (data != NULL); ++i) {
             Output* output = (Output*) outputs->data[i];
             output->write(output->arg, &data, &length, error);
 
