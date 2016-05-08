@@ -20,17 +20,17 @@ bool io_has_input(int fd, Error* error) {
     return (nr_fds == 1) && (fd_poll.revents & POLLIN);
 }
 
-void io_write(int fd, uint8_t* data, size_t length, Error* error) {
+void io_write(int fd, char* data, size_t length, Error* error) {
     while (length > 0) {
-        ssize_t bytes_written = write(fd, data, length);
+        ssize_t bytes_written = write(fd, data, length * sizeof(char));
 
         if (bytes_written == -1) {
             Error_errno(error, errno);
             return;
         }
 
-        length -= bytes_written;
-        data += bytes_written;
+        length -= bytes_written / sizeof(char);
+        data += bytes_written / sizeof(char);
     }
 
     Error_clear(error);

@@ -18,7 +18,7 @@ typedef struct {
     void (*open)(intptr_t arg, Error* error);
 
     // If all data is flushed, `data` is set to `NULL`.
-    void (*write)(intptr_t arg, uint8_t** data, size_t* length, Error* error);
+    void (*write)(intptr_t arg, char** data, size_t* length, Error* error);
 } Output;
 
 typedef struct {

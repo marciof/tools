@@ -1,7 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include <errno.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -56,12 +55,12 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 
 static void flush_input(int input_fd, Array* outputs, Error* error) {
     const int LENGTH = 4 * 1024;
-    uint8_t buffer[LENGTH];
+    char buffer[LENGTH];
     ssize_t bytes_read;
 
-    while ((bytes_read = read(input_fd, buffer, LENGTH)) > 0) {
-        uint8_t* data = buffer;
-        size_t length = (size_t) bytes_read;
+    while ((bytes_read = read(input_fd, buffer, LENGTH * sizeof(char))) > 0) {
+        char* data = buffer;
+        size_t length = (size_t) (bytes_read / sizeof(char));
 
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];

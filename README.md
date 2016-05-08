@@ -16,3 +16,4 @@ See `.travis.yml` for details.
   - https://github.com/andrewrk/malcheck
   - https://github.com/google/sanitizers
 - Use `libpipeline` to simplify the code?
+- Character counting for the pager plugin actually counts bytes, not logical characters.

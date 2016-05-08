@@ -10,7 +10,7 @@
 #include "Pager_Plugin.h"
 
 #define EXTERNAL_BINARY "pager"
-#define PAGING_THRESHOLD 0.45
+#define PAGING_THRESHOLD 0.5
 
 typedef struct {
     Array* buffer;
@@ -56,7 +56,7 @@ static Pager* Pager_new(Array* options, Error* error) {
 }
 
 static bool buffer_pager_input(
-        Pager* pager, uint8_t** data, size_t* length, Error* error) {
+        Pager* pager, char** data, size_t* length, Error* error) {
 
     bool should_buffer = true;
 
@@ -86,14 +86,14 @@ static bool buffer_pager_input(
     }
 
     if (should_buffer) {
-        uint8_t* data_copy = (uint8_t*) malloc(*length + 1);
+        char* data_copy = (char*) malloc((*length + 1) * sizeof(char));
 
         if (data_copy == NULL) {
             Error_errno(error, errno);
             return true;
         }
 
-        memcpy(data_copy, *data, *length);
+        memcpy(data_copy, *data, *length * sizeof(char));
         data_copy[*length] = '\0';
         Array_add(pager->buffer, (intptr_t) data_copy, error);
 
@@ -141,9 +141,9 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
     int fd = (pager->fd == INVALID_FD) ? STDOUT_FILENO : pager->fd;
 
     for (size_t i = 0; i < pager->buffer->length; ++i) {
-        uint8_t* buffer = (uint8_t*) pager->buffer->data[i];
-        io_write(fd, buffer, strlen((const char*) buffer), error);
-        free((void*) buffer);
+        char* buffer = (char*) pager->buffer->data[i];
+        io_write(fd, buffer, strlen(buffer), error);
+        free(buffer);
 
         if (Error_has(error)) {
             return;
@@ -165,7 +165,7 @@ static void pager_open(intptr_t arg, Error* error) {
 }
 
 static void pager_write(
-        intptr_t arg, uint8_t** data, size_t* length, Error* error) {
+        intptr_t arg, char** data, size_t* length, Error* error) {
 
     Pager* pager = (Pager*) arg;
 
