@@ -6,12 +6,12 @@ See `.travis.yml` for details.
 
 # To Do #
 
+- Avoid copying so much.
 - Use simple C strings to avoid storing buffer lengths separately?
+- Reduce memory allocation.
+- http://geoff.greer.fm/ag/speed/
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
-- Profile each commit.
-  - http://geoff.greer.fm/ag/speed/
-  - Reduce memory allocation.
 - Tests with coverage.
   - https://github.com/andrewrk/malcheck
   - https://github.com/google/sanitizers
