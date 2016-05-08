@@ -15,6 +15,8 @@ def reverse_span(string, start, end):
 def reverse(string):
     """
     Reverse word order in a `string` (array) in place.
+
+    Time: O(n)
     """
 
     reverse_span(string, 0, len(string) - 1)

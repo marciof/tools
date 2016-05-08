@@ -9,6 +9,8 @@ def pick_random(array, count):
     Pick `count` randomly selected items from `array`.
 
     (Uses Fisher-Yates shuffle algorithm.)
+
+    Time: O(count)
     """
 
     if (not array) or (count <= 0):
@@ -55,10 +57,11 @@ class Test (unittest.TestCase):
             'example')
 
     def test_some_elements(self):
-        array = list('example')
+        array = list('marcio')
         elements = pick_random(array, 3)
 
         self.assertEqual(len(elements), 3)
+        self.assertCountEqual(set(elements), elements)
 
         for element in elements:
             self.assertIn(element, array)

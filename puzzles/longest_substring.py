@@ -7,7 +7,7 @@ def find_substring(string):
     """
     Find the longest substring without repeating characters.
 
-    O(n)
+    Time: O(n)
     """
 
     if string == '':

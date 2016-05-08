@@ -10,6 +10,12 @@ VALUE = 0
 NEXT = 1
 
 def nth_last_node(lst, n):
+    """
+    Find the `n`-th last node of a list `lst`.
+
+    Time: O(n)
+    """
+
     last_node = lst
     curr_node = lst
     pos = 0

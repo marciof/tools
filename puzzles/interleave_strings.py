@@ -11,10 +11,7 @@ def interleave(str_a, str_b):
     ['abcd', 'acbd', 'acdb', 'cabd', 'cadb', 'cdab']
     As you can see, 'a' is always before 'b', and 'c' is always before 'd'.
 
-    n = len(str_a)
-    m = len(str_b)
-    O(1) if n or m = 0
-    O(n+m) otherwise
+    Time: O(n+m), where n = len(str_a), m = len(str_b)
     """
 
     if str_a == '':

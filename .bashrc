@@ -84,7 +84,7 @@ if _have show; then
 fi
 
 if _have ag; then
-    alias f="$NAME --follow --hidden --case-sensitive"
+    alias f="$NAME --follow --hidden"
 fi
 
 # https://wiki.archlinux.org/index.php/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_keys

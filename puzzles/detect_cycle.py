@@ -81,6 +81,8 @@ def has_cycle(l):
     Detect a cycle in a linked list. (Floyd's "tortoise and hare" algorithm.)
 
     Returns `(has_cycle, cycle start node, previous node)`.
+
+    Time: O(n)
     """
 
     def step(node):

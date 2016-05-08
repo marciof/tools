@@ -5,6 +5,14 @@ import sys
 import unittest
 
 def fizz_buzz(n):
+    """
+    Count incrementally from 1 to `n`, replacing any number divisible by three
+    with the word "Fizz", any number divisible by five with the word "Buzz",
+    and for both the word "FizzBuzz".
+
+    Time: O(n)
+    """
+
     for i in range(1, n + 1):
         is_mul_3 = (i % 3) == 0
         is_mul_5 = (i % 5) == 0
