@@ -80,6 +80,7 @@ bind '"\e[2~": backward-kill-word'              # Insert
 
 if _have show; then
     alias s="$NAME -p ls:-Fh -p ls:--color=auto -p ls:--group-directories-first"
+    export PAGER="$NAME"
 fi
 
 if _have ag; then
