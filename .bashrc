@@ -84,7 +84,11 @@ if _have show; then
 fi
 
 if _have ag; then
-    alias f="$NAME --follow --hidden"
+    if [ -n "$PAGER" ]; then
+        alias f="$NAME --follow --hidden --pager \"$PAGER\""
+    else
+        alias f="$NAME --follow --hidden"
+    fi
 fi
 
 # https://wiki.archlinux.org/index.php/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_keys
