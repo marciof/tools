@@ -1,4 +1,4 @@
-# 0.6.0 - UNRELEASED #
+# 0.6.0 - 2016-05-10 #
 
 - Plugin "pager": page output via `pager`.
 - Fix plugin name check in options to accept only full matches, not prefixes.
