@@ -184,7 +184,7 @@ Array* parse_options(
     }
 
     for (int i = optind; i < argc; ++i) {
-        Input* input = Input_new(argv[i], INVALID_FD, error);
+        Input* input = Input_new(argv[i], IO_INVALID_FD, error);
 
         if (Error_has(error)) {
             Array_delete(inputs);

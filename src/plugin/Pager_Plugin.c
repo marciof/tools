@@ -45,7 +45,7 @@ static Pager* Pager_new(Array* options, Error* error) {
     pager->options = options;
     pager->nr_lines = 0;
     pager->nr_line_chars = 0;
-    pager->fd = INVALID_FD;
+    pager->fd = IO_INVALID_FD;
 
     if (Error_has(error)) {
         free(pager);
@@ -138,7 +138,7 @@ static Array* create_argv(Array* options, Error* error) {
 }
 
 static void flush_pager_buffer(Pager* pager, Error* error) {
-    int fd = (pager->fd == INVALID_FD) ? STDOUT_FILENO : pager->fd;
+    int fd = (pager->fd == IO_INVALID_FD) ? STDOUT_FILENO : pager->fd;
 
     for (size_t i = 0; i < pager->buffer->length; ++i) {
         char* buffer = (char*) pager->buffer->data[i];
@@ -165,7 +165,7 @@ static void pager_write(
 
     Pager* pager = (Pager*) arg;
 
-    if (pager->fd == INVALID_FD) {
+    if (pager->fd == IO_INVALID_FD) {
         if (buffer_pager_input(pager, data, length, error)) {
             return;
         }

@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
         if (input != NULL) {
             int input_fd = input->fd;
 
-            if (input_fd == INVALID_FD) {
+            if (input_fd == IO_INVALID_FD) {
                 fprintf(stderr, "Unsupported input: %s\n", input->name);
             }
             else {
