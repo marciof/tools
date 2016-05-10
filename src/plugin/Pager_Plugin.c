@@ -160,10 +160,6 @@ static void pager_close(intptr_t arg, Error* error) {
     Pager_delete(pager);
 }
 
-static void pager_open(intptr_t arg, Error* error) {
-    Error_clear(error);
-}
-
 static void pager_write(
         intptr_t arg, char** data, size_t* length, Error* error) {
 
@@ -260,7 +256,6 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     }
 
     output->close = pager_close;
-    output->open = pager_open;
     output->write = pager_write;
     output->arg = (intptr_t) Pager_new(options, error);
 

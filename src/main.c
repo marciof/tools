@@ -115,16 +115,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (size_t i = 0; i < outputs->length; ++i) {
-        Output* output = (Output*) outputs->data[i];
-        output->open(output->arg, &error);
-
-        if (Error_has(&error)) {
-            cleanup(inputs, outputs, &error);
-            return EXIT_FAILURE;
-        }
-    }
-
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
