@@ -1,3 +1,7 @@
+# 0.7.0 - UNRELEASED #
+
+- Fix plugin "pager" to count logical characters for line wrapping.
+
 # 0.6.0 - 2016-05-10 #
 
 - Plugin "pager": page output via `pager`.
