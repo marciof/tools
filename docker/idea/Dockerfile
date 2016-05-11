@@ -28,6 +28,6 @@ WORKDIR /home/$USER
 
 # IDEA
 RUN mkdir idea/
-RUN wget -O - https://download.jetbrains.com/idea/ideaIU-2016.1.1.tar.gz | tar zx --strip-components=1 -C idea/
+RUN wget -O - https://download.jetbrains.com/idea/ideaIU-2016.1.2.tar.gz | tar zx --strip-components=1 -C idea/
 
 ENTRYPOINT ["idea/bin/idea.sh"]
