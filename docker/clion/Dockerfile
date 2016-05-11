@@ -20,6 +20,6 @@ WORKDIR /home/$USER
 
 # CLion
 RUN mkdir clion/
-RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.1.tar.gz | tar zx --strip-components=1 -C clion/
+RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.2.tar.gz | tar zx --strip-components=1 -C clion/
 
 ENTRYPOINT ["clion/bin/clion.sh"]
