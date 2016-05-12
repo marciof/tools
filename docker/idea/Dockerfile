@@ -17,6 +17,9 @@ RUN apt-get update
 RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 RUN apt-get install -y oracle-java8-installer
 
+# JavaFX
+RUN apt-get install -y gtk2-engines libxtst6 libxxf86vm1 freeglut3 libxslt1.1
+
 # user
 RUN apt-get install -y sudo
 ENV USER dev
