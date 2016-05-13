@@ -20,7 +20,7 @@ static Plugin* plugins[] = {
 };
 
 static void cleanup(Array* inputs, Array* outputs, Error* error) {
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         fprintf(stderr, "%s\n", *error);
     }
 
@@ -38,7 +38,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
             output->close(output->arg, error);
             Output_delete(output);
 
-            if (Error_has(error)) {
+            if (ERROR_HAS(error)) {
                 fprintf(stderr, "%s\n", *error);
             }
         }
@@ -66,24 +66,24 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
             Output* output = (Output*) outputs->data[i];
             output->write(output->arg, &data, &length, error);
 
-            if (Error_has(error)) {
+            if (ERROR_HAS(error)) {
                 return;
             }
         }
 
         if (data != NULL) {
             io_write(STDOUT_FILENO, data, length, error);
-            if (Error_has(error)) {
+            if (ERROR_HAS(error)) {
                 return;
             }
         }
     }
 
     if ((bytes_read == 0) || (errno == EIO)) {
-        Error_clear(error);
+        ERROR_CLEAR(error);
     }
     else {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
     }
 }
 
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     Array* outputs = Array_new(&error, NULL);
 
-    if (Error_has(&error)) {
+    if (ERROR_HAS(&error)) {
         cleanup(inputs, NULL, &error);
         return EXIT_FAILURE;
     }
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
         if (plugins[i] != NULL) {
             plugins[i]->run(inputs, plugins[i]->options, outputs, &error);
 
-            if (Error_has(&error)) {
+            if (ERROR_HAS(&error)) {
                 cleanup(inputs, outputs, &error);
                 return EXIT_FAILURE;
             }
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
                 flush_input(input_fd, outputs, &error);
                 close(input_fd);
 
-                if (Error_has(&error)) {
+                if (ERROR_HAS(&error)) {
                     cleanup(inputs, outputs, &error);
                     return EXIT_FAILURE;
                 }

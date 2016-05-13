@@ -37,7 +37,7 @@ static Pager* Pager_new(Array* options, Error* error) {
     Pager* pager = (Pager*) malloc(sizeof(*pager));
 
     if (pager == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 
@@ -47,7 +47,7 @@ static Pager* Pager_new(Array* options, Error* error) {
     pager->nr_line_chars = 0;
     pager->fd = IO_INVALID_FD;
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         free(pager);
         return NULL;
     }
@@ -89,7 +89,7 @@ static bool buffer_pager_input(
         char* data_copy = (char*) malloc((*length + 1) * sizeof(char));
 
         if (data_copy == NULL) {
-            Error_errno(error, errno);
+            ERROR_ERRNO(error, errno);
             return true;
         }
 
@@ -97,7 +97,7 @@ static bool buffer_pager_input(
         data_copy[*length] = '\0';
         Array_add(pager->buffer, (intptr_t) data_copy, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             free(data_copy);
             return true;
         }
@@ -113,14 +113,14 @@ static bool buffer_pager_input(
 static Array* create_argv(Array* options, Error* error) {
     Array* argv = Array_new(error, EXTERNAL_BINARY, NULL);
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         return NULL;
     }
 
     if (options != NULL) {
         Array_extend(argv, options, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             Array_delete(argv);
             return NULL;
         }
@@ -128,12 +128,12 @@ static Array* create_argv(Array* options, Error* error) {
 
     Array_add(argv, (intptr_t) NULL, error);
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         Array_delete(argv);
         return NULL;
     }
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return argv;
 }
 
@@ -145,7 +145,7 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
         io_write(fd, buffer, strlen(buffer), error);
         free(buffer);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
     }
@@ -171,14 +171,14 @@ static void pager_write(
         }
 
         Array* argv = create_argv(pager->options, error);
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
 
         int read_write_fds[2];
 
         if (pipe(read_write_fds) == -1) {
-            Error_errno(error, errno);
+            ERROR_ERRNO(error, errno);
             Array_delete(argv);
             return;
         }
@@ -186,13 +186,13 @@ static void pager_write(
         int child_pid = fork();
 
         if (child_pid == -1) {
-            Error_errno(error, errno);
+            ERROR_ERRNO(error, errno);
             Array_delete(argv);
             return;
         }
         else if (child_pid) {
             if (dup2(read_write_fds[0], STDIN_FILENO) == -1) {
-                Error_errno(error, errno);
+                ERROR_ERRNO(error, errno);
                 Array_delete(argv);
                 return;
             }
@@ -200,7 +200,7 @@ static void pager_write(
             close(read_write_fds[0]);
             close(read_write_fds[1]);
             execvp((char*) argv->data[0], (char**) argv->data);
-            Error_errno(error, errno);
+            ERROR_ERRNO(error, errno);
             Array_delete(argv);
             return;
         }
@@ -210,7 +210,7 @@ static void pager_write(
         pager->fd = read_write_fds[1];
 
         flush_pager_buffer(pager, error);
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
     }
@@ -235,23 +235,23 @@ static void get_terminal_size(int num) {
 
 static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     if (!isatty(STDOUT_FILENO)) {
-        Error_clear(error);
+        ERROR_CLEAR(error);
         return;
     }
 
     if (signal(SIGWINCH, get_terminal_size) == SIG_ERR) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return;
     }
 
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal) == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return;
     }
 
     Output* output = Output_new(error);
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         return;
     }
 
@@ -259,14 +259,14 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     output->write = pager_write;
     output->arg = (intptr_t) Pager_new(options, error);
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         Output_delete(output);
         return;
     }
 
     Array_add(outputs, (intptr_t) output, error);
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         Pager_delete((Pager*) output->arg);
         Output_delete(output);
     }

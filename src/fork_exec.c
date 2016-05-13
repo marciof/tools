@@ -8,24 +8,24 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
     int read_write_fds[2];
 
     if (pipe(read_write_fds) == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return IO_INVALID_FD;
     }
 
     int child_pid = fork();
 
     if (child_pid == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return IO_INVALID_FD;
     }
     else if (child_pid) {
         close(read_write_fds[1]);
-        Error_clear(error);
+        ERROR_CLEAR(error);
         return read_write_fds[0];
     }
 
     if (dup2(read_write_fds[1], STDOUT_FILENO) == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return IO_INVALID_FD;
     }
 
@@ -33,7 +33,7 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
     close(read_write_fds[1]);
 
     execvp(file, argv);
-    Error_errno(error, errno);
+    ERROR_ERRNO(error, errno);
     return IO_INVALID_FD;
 }
 
@@ -42,16 +42,16 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
     int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return IO_INVALID_FD;
     }
     else if (child_pid) {
-        Error_clear(error);
+        ERROR_CLEAR(error);
         return child_fd_out;
     }
 
     execvp(file, argv);
-    Error_errno(error, errno);
+    ERROR_ERRNO(error, errno);
     return IO_INVALID_FD;
 }
 

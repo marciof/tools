@@ -13,7 +13,6 @@ set(sources
     src/plugin/Pipe_Plugin.h
     src/plugin/Ls_Plugin.c
     src/plugin/Ls_Plugin.h
-    src/Error.c
     src/Error.h
     src/options.c
     src/options.h

@@ -15,28 +15,28 @@ static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
 
     if (cwd == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 
     int cwd_fd = dirfd(cwd);
 
     if (cwd_fd == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 
     if (fchdir(fd) == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         closedir(cwd);
         return NULL;
     }
 
     if (getcwd(fd_dir_name, STATIC_ARRAY_LENGTH(fd_dir_name)) == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
 
         if (fchdir(cwd_fd) == -1) {
-            Error_errno(error, errno);
+            ERROR_ERRNO(error, errno);
         }
 
         closedir(cwd);
@@ -44,13 +44,13 @@ static char* get_fd_dir_path(int fd, Error* error) {
     }
 
     if (fchdir(cwd_fd) == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         closedir(cwd);
         return NULL;
     }
 
     closedir(cwd);
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return fd_dir_name;
 }
 
@@ -69,7 +69,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     size_t position;
 
     if (fstat(fd, &fd_stat) == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return;
     }
 
@@ -80,7 +80,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     else if (S_ISDIR(fd_stat.st_mode)) {
         char* path = get_fd_dir_path(fd, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
 
@@ -90,12 +90,12 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     else {
         bool has_fd_input = io_has_input(fd, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
 
         if (!has_fd_input) {
-            Error_clear(error);
+            ERROR_CLEAR(error);
             return;
         }
 
@@ -103,13 +103,13 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         position = inputs->length;
     }
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         return;
     }
 
     Array_insert(inputs, (intptr_t) input, position, error);
 
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         Input_delete(input);
     }
 }

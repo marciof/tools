@@ -100,21 +100,21 @@ static void parse_plugin_option(
         || (separator[STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        Error_set(error, "No plugin option specified.");
+        ERROR_SET(error, "No plugin option specified.");
         return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        Error_set(error, "No plugin name specified.");
+        ERROR_SET(error, "No plugin name specified.");
         return;
     }
 
     ssize_t plugin_pos = find_plugin(option, name_length, plugins, nr_plugins);
 
     if (plugin_pos < 0) {
-        Error_set(error, ERROR_UNKNOWN_PLUGIN);
+        ERROR_SET(error, ERROR_UNKNOWN_PLUGIN);
         return;
     }
 
@@ -124,18 +124,18 @@ static void parse_plugin_option(
     if (plugin->options == NULL) {
         plugin->options = Array_new(error, value, NULL);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
     }
     else {
         Array_add(plugin->options, (intptr_t) value, error);
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
     }
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
 }
 
 Array* parse_options(
@@ -156,50 +156,50 @@ Array* parse_options(
                 plugins[pos] = NULL;
             }
             else {
-                Error_set(error, ERROR_UNKNOWN_PLUGIN);
+                ERROR_SET(error, ERROR_UNKNOWN_PLUGIN);
                 return NULL;
             }
         }
         else if (option == *HELP_OPT) {
             display_help(plugins, nr_plugins);
-            Error_clear(error);
+            ERROR_CLEAR(error);
             return NULL;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
-            if (Error_has(error)) {
+            if (ERROR_HAS(error)) {
                 return NULL;
             }
         }
         else {
-            Error_set(error, "Try '-h' for more information.");
+            ERROR_SET(error, "Try '-h' for more information.");
             return NULL;
         }
     }
 
     Array* inputs = Array_new(error, NULL);
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
         Input* input = Input_new(argv[i], IO_INVALID_FD, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             Array_delete(inputs);
             return NULL;
         }
 
         Array_add(inputs, (intptr_t) input, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             Input_delete(input);
             Array_delete(inputs);
             return NULL;
         }
     }
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return inputs;
 }

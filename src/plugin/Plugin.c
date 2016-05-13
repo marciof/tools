@@ -14,7 +14,7 @@ Input* Input_new(char* name, int fd, Error* error) {
     Input* input = (Input*) malloc(sizeof(*input));
 
     if (input == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 
@@ -34,7 +34,7 @@ Output* Output_new(Error* error) {
     Output* output = (Output*) malloc(sizeof(*output));
 
     if (output == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 

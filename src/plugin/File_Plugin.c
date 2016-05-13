@@ -17,27 +17,27 @@ static int open_file(char* path, Error* error) {
 
     if (stat(path, &path_stat) == -1) {
         if (errno == ENOENT) {
-            Error_clear(error);
+            ERROR_CLEAR(error);
         }
         else {
-            Error_errno(error, errno);
+            ERROR_ERRNO(error, errno);
         }
         return IO_INVALID_FD;
     }
 
     if (S_ISDIR(path_stat.st_mode)) {
-        Error_clear(error);
+        ERROR_CLEAR(error);
         return IO_INVALID_FD;
     }
 
     int file = open(path, O_RDONLY);
 
     if (file == -1) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return IO_INVALID_FD;
     }
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return file;
 }
 
@@ -48,13 +48,13 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         if ((input != NULL) && (input->fd == IO_INVALID_FD)) {
             input->fd = open_file(input->name, error);
 
-            if (Error_has(error)) {
+            if (ERROR_HAS(error)) {
                 return;
             }
         }
     }
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
 }
 
 Plugin File_Plugin = {

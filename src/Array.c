@@ -9,7 +9,7 @@
 
 static void change_capacity(Array* array, size_t capacity, Error* error) {
     if (capacity < array->length) {
-        Error_errno(error, EINVAL);
+        ERROR_ERRNO(error, EINVAL);
         return;
     }
     
@@ -17,14 +17,14 @@ static void change_capacity(Array* array, size_t capacity, Error* error) {
         array->data, capacity * sizeof(intptr_t));
     
     if (data == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return;
     }
     
     array->data = data;
     array->capacity = capacity;
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return;
 }
 
@@ -42,29 +42,29 @@ void Array_delete(Array* array) {
 
 void Array_extend(Array* list, Array* elements, Error* error) {
     if (elements->length == 0) {
-        Error_clear(error);
+        ERROR_CLEAR(error);
         return;
     }
 
     change_capacity(list, list->length + elements->length, error);
-    if (Error_has(error)) {
+    if (ERROR_HAS(error)) {
         return;
     }
 
     for (size_t i = 0; i < elements->length; ++i, ++list->length) {
         list->data[list->length] = elements->data[i];
     }
-    Error_clear(error);
+    ERROR_CLEAR(error);
 }
 
 void Array_insert(Array* array, intptr_t element, size_t position, Error* error) {
     if (position > array->length) {
-        Error_errno(error, EINVAL);
+        ERROR_ERRNO(error, EINVAL);
         return;
     }
 
     if (array->length == SIZE_MAX) {
-        Error_errno(error, EPERM);
+        ERROR_ERRNO(error, EPERM);
         return;
     }
 
@@ -74,7 +74,7 @@ void Array_insert(Array* array, intptr_t element, size_t position, Error* error)
             (size_t) (array->capacity * DEFAULT_CAPACITY_INCREASE_FACTOR + 1),
             error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             return;
         }
     }
@@ -87,14 +87,14 @@ void Array_insert(Array* array, intptr_t element, size_t position, Error* error)
 
     ++array->length;
     array->data[position] = element;
-    Error_clear(error);
+    ERROR_CLEAR(error);
 }
 
 Array* Array_new(Error* error, ...) {
     Array* array = (Array*) malloc(sizeof(*array));
 
     if (array == NULL) {
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 
@@ -104,7 +104,7 @@ Array* Array_new(Error* error, ...) {
 
     if (array->data == NULL) {
         free(array);
-        Error_errno(error, errno);
+        ERROR_ERRNO(error, errno);
         return NULL;
     }
 
@@ -114,7 +114,7 @@ Array* Array_new(Error* error, ...) {
     for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL; ) {
         Array_add(array, arg, error);
 
-        if (Error_has(error)) {
+        if (ERROR_HAS(error)) {
             va_end(args);
             Array_delete(array);
             return NULL;
@@ -122,13 +122,13 @@ Array* Array_new(Error* error, ...) {
     }
 
     va_end(args);
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return array;
 }
 
 intptr_t Array_remove(Array* array, size_t position, Error* error) {
     if (position >= array->length) {
-        Error_errno(error, EINVAL);
+        ERROR_ERRNO(error, EINVAL);
         return 0;
     }
 
@@ -141,6 +141,6 @@ intptr_t Array_remove(Array* array, size_t position, Error* error) {
         }
     }
 
-    Error_clear(error);
+    ERROR_CLEAR(error);
     return element;
 }
