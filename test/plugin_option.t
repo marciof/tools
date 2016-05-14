@@ -8,7 +8,7 @@ Pass plugin option:
 
 Pass option to a disabled plugin:
 
-  $ show -x pipe -p pipe:abc < /dev/null
+  $ show -d pipe -p pipe:abc < /dev/null
   No such plugin or disabled.
   [1]
 

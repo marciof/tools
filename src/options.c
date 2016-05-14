@@ -8,7 +8,7 @@
 #include "options.h"
 
 #define HELP_OPT "h"
-#define DISABLE_PLUGIN_OPT "x:"
+#define DISABLE_PLUGIN_OPT "d:"
 #define PLUGIN_OPTION_OPT "p:"
 
 #define ALL_OPTS ( \
@@ -26,11 +26,11 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "\n"
         "Options:\n"
         "  -%c              display this help and exit\n"
-        "  -%c PLUGIN:OPT   pass an option to a plugin\n"
-        "  -%c PLUGIN       disable a plugin\n",
+        "  -%c PLUGIN       disable a plugin\n"
+        "  -%c PLUGIN:OPT   pass an option to a plugin\n",
         *HELP_OPT,
-        *PLUGIN_OPTION_OPT,
-        *DISABLE_PLUGIN_OPT);
+        *DISABLE_PLUGIN_OPT,
+        *PLUGIN_OPTION_OPT);
 
     if (nr_plugins > 0) {
         bool needs_header = true;
