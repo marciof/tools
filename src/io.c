@@ -3,6 +3,15 @@
 #include <unistd.h>
 #include "io.h"
 
+void io_close(int fd, Error* error) {
+    if (close(fd) == -1) {
+        ERROR_ERRNO(error, errno);
+    }
+    else {
+        ERROR_CLEAR(error);
+    }
+}
+
 bool io_has_input(int fd, Error* error) {
     struct pollfd fd_poll;
 

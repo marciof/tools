@@ -16,8 +16,11 @@ Input* Input_new(char* name, int fd, Error* error) {
         return NULL;
     }
 
+    input->arg = (intptr_t) NULL;
     input->name = name;
     input->fd = fd;
+    input->close = NULL;
+
     return input;
 }
 

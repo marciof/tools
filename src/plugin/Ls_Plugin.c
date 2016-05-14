@@ -6,6 +6,10 @@
 
 #define EXTERNAL_BINARY "ls"
 
+static void close_pipe(Input* input, Error* error) {
+    io_close(input->fd, error);
+}
+
 static void create_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
@@ -52,6 +56,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 
     input->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
+    input->close = close_pipe;
 
     if (ERROR_HAS(error)) {
         close(input->fd);

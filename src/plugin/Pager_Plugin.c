@@ -152,17 +152,17 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
     pager->buffer.length = 0;
 }
 
-static void pager_close(intptr_t arg, Error* error) {
-    Pager* pager = (Pager*) arg;
+static void close_pager(Output* output, Error* error) {
+    Pager* pager = (Pager*) output->arg;
 
     flush_pager_buffer(pager, error);
     Pager_delete(pager);
 }
 
-static void pager_write(
-        intptr_t arg, char** data, size_t* length, Error* error) {
+static void write_to_pager(
+        Output* output, char** data, size_t* length, Error* error) {
 
-    Pager* pager = (Pager*) arg;
+    Pager* pager = (Pager*) output->arg;
 
     if (pager->fd == IO_INVALID_FD) {
         if (buffer_pager_input(pager, data, length, error)) {
@@ -256,8 +256,8 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         return;
     }
 
-    output->close = pager_close;
-    output->write = pager_write;
+    output->close = close_pager;
+    output->write = write_to_pager;
     output->arg = (intptr_t) Pager_new(options, error);
 
     if (ERROR_HAS(error)) {

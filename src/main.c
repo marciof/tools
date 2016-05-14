@@ -37,7 +37,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
 
-            output->close(output->arg, error);
+            output->close(output, error);
             Output_delete(output);
 
             if (ERROR_HAS(error)) {
@@ -66,7 +66,7 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
 
         for (size_t i = 0; (i < outputs->length) && (data != NULL); ++i) {
             Output* output = (Output*) outputs->data[i];
-            output->write(output->arg, &data, &length, error);
+            output->write(output, &data, &length, error);
 
             if (ERROR_HAS(error)) {
                 return;
@@ -135,15 +135,21 @@ int main(int argc, char* argv[]) {
 
             if (input_fd == IO_INVALID_FD) {
                 fprintf(stderr, "Unsupported input: %s\n", input->name);
+                continue;
             }
-            else {
-                flush_input(input_fd, &outputs, &error);
-                close(input_fd);
 
-                if (ERROR_HAS(&error)) {
-                    cleanup(&inputs, &outputs, &error);
-                    return EXIT_FAILURE;
-                }
+            flush_input(input_fd, &outputs, &error);
+
+            if (ERROR_HAS(&error)) {
+                cleanup(&inputs, &outputs, &error);
+                return EXIT_FAILURE;
+            }
+
+            input->close(input, &error);
+
+            if (ERROR_HAS(&error)) {
+                cleanup(&inputs, &outputs, &error);
+                return EXIT_FAILURE;
             }
         }
     }

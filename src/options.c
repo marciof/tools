@@ -25,9 +25,9 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "Version: 0.7.0\n"
         "\n"
         "Options:\n"
-        "  -%c              display this help and exit\n"
-        "  -%c PLUGIN       disable a plugin\n"
-        "  -%c PLUGIN:OPT   pass an option to a plugin\n",
+        "  -%c            display this help and exit\n"
+        "  -%c NAME       disable a plugin\n"
+        "  -%c NAME:OPT   pass an option to a plugin\n",
         *HELP_OPT,
         *DISABLE_PLUGIN_OPT,
         *PLUGIN_OPTION_OPT);
@@ -46,7 +46,7 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
                         stderr);
                 }
 
-                fprintf(stderr, "  %-16s%s\n",
+                fprintf(stderr, "  %-14s%s\n",
                     plugins[i]->get_name(),
                     plugins[i]->get_description());
             }

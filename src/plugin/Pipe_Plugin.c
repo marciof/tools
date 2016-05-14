@@ -11,6 +11,10 @@
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
+static void close_pipe(Input* input, Error* error) {
+    io_close(input->fd, error);
+}
+
 static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
 
@@ -107,6 +111,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         return;
     }
 
+    input->close = close_pipe;
     Array_add(inputs, position, (intptr_t) input, error);
 
     if (ERROR_HAS(error)) {

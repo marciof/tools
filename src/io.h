@@ -5,5 +5,6 @@
 
 #define IO_INVALID_FD ((int) -1)
 
-bool io_has_input(int fd, Error* error);
+void io_close(int fd, Error* error);
 void io_write(int fd, char* data, size_t length, Error* error);
+bool io_has_input(int fd, Error* error);

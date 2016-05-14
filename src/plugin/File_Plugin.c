@@ -4,6 +4,10 @@
 #include "../io.h"
 #include "File_Plugin.h"
 
+static void close_file(Input* input, Error* error) {
+    io_close(input->fd, error);
+}
+
 static const char* get_description() {
     return "read files";
 }
@@ -51,6 +55,8 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
             if (ERROR_HAS(error)) {
                 return;
             }
+
+            input->close = close_file;
         }
     }
 

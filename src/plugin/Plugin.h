@@ -4,17 +4,20 @@
 #include "../Array.h"
 #include "../Error.h"
 
-typedef struct {
+typedef struct Input {
     // If unnamed, `name` is set to `NULL`.
     char* name;
     int fd;
+    intptr_t arg;
+    void (*close)(struct Input* input, Error* error);
 } Input;
 
-typedef struct {
+typedef struct Output {
     intptr_t arg;
-    void (*close)(intptr_t arg, Error* error);
+    void (*close)(struct Output* output, Error* error);
     // If all data is flushed, `data` is set to `NULL`.
-    void (*write)(intptr_t arg, char** data, size_t* length, Error* error);
+    void (*write)(
+        struct Output* output, char** data, size_t* length, Error* error);
 } Output;
 
 typedef struct {
