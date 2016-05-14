@@ -28,7 +28,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
         for (size_t i = 0; i < inputs->length; ++i) {
             Input_delete((Input*) inputs->data[i]);
         }
-        Array_delete(inputs);
+        Array_deinit(inputs);
     }
 
     if (outputs != NULL) {
@@ -42,12 +42,12 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
                 fprintf(stderr, "%s\n", *error);
             }
         }
-        Array_delete(outputs);
+        Array_deinit(outputs);
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i] != NULL) {
-            Array_delete(plugins[i]->options);
+            Array_deinit(&plugins[i]->options);
             plugins[i] = NULL;
         }
     }
@@ -89,34 +89,44 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
 
 int main(int argc, char* argv[]) {
     Error error;
-    Array* inputs = parse_options(
-        argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
+    Array inputs;
 
-    if (inputs == NULL) {
+    Array_init(&inputs, &error, NULL);
+
+    if (ERROR_HAS(&error)) {
         cleanup(NULL, NULL, &error);
+        return EXIT_FAILURE;
+    }
+
+    bool shown_help = parse_options(
+        argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &inputs, &error);
+
+    if (shown_help || ERROR_HAS(&error)) {
+        cleanup(&inputs, NULL, &error);
         return EXIT_SUCCESS;
     }
 
-    Array* outputs = Array_new(&error, NULL);
+    Array outputs;
+    Array_init(&outputs, &error, NULL);
 
     if (ERROR_HAS(&error)) {
-        cleanup(inputs, NULL, &error);
+        cleanup(&inputs, NULL, &error);
         return EXIT_FAILURE;
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i] != NULL) {
-            plugins[i]->run(inputs, plugins[i]->options, outputs, &error);
+            plugins[i]->run(&inputs, &plugins[i]->options, &outputs, &error);
 
             if (ERROR_HAS(&error)) {
-                cleanup(inputs, outputs, &error);
+                cleanup(&inputs, &outputs, &error);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    for (size_t i = 0; i < inputs->length; ++i) {
-        Input* input = (Input*) inputs->data[i];
+    for (size_t i = 0; i < inputs.length; ++i) {
+        Input* input = (Input*) inputs.data[i];
 
         if (input != NULL) {
             int input_fd = input->fd;
@@ -125,17 +135,17 @@ int main(int argc, char* argv[]) {
                 fprintf(stderr, "Unsupported input: %s\n", input->name);
             }
             else {
-                flush_input(input_fd, outputs, &error);
+                flush_input(input_fd, &outputs, &error);
                 close(input_fd);
 
                 if (ERROR_HAS(&error)) {
-                    cleanup(inputs, outputs, &error);
+                    cleanup(&inputs, &outputs, &error);
                     return EXIT_FAILURE;
                 }
             }
         }
     }
 
-    cleanup(inputs, outputs, &error);
+    cleanup(&inputs, &outputs, &error);
     return EXIT_SUCCESS;
 }

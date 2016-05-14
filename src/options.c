@@ -121,15 +121,16 @@ static void parse_plugin_option(
     Plugin* plugin = plugins[plugin_pos];
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
-    if (plugin->options == NULL) {
-        plugin->options = Array_new(error, value, NULL);
+    if (plugin->options.data == NULL) {
+        Array_init(&plugin->options, error, value, NULL);
 
         if (ERROR_HAS(error)) {
             return;
         }
     }
     else {
-        Array_add(plugin->options, (intptr_t) value, error);
+        Array_add(&plugin->options, (intptr_t) value, error);
+
         if (ERROR_HAS(error)) {
             return;
         }
@@ -138,11 +139,12 @@ static void parse_plugin_option(
     ERROR_CLEAR(error);
 }
 
-Array* parse_options(
+bool parse_options(
         int argc,
         char **argv,
         Plugin **plugins,
         size_t nr_plugins,
+        Array* inputs,
         Error *error) {
 
     int option;
@@ -152,54 +154,47 @@ Array* parse_options(
             ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
 
             if (pos >= 0) {
-                Array_delete(plugins[pos]->options);
+                Array_deinit(&plugins[pos]->options);
                 plugins[pos] = NULL;
             }
             else {
                 ERROR_SET(error, ERROR_UNKNOWN_PLUGIN);
-                return NULL;
+                return false;
             }
         }
         else if (option == *HELP_OPT) {
             display_help(plugins, nr_plugins);
             ERROR_CLEAR(error);
-            return NULL;
+            return true;
         }
         else if (option == *PLUGIN_OPTION_OPT) {
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
             if (ERROR_HAS(error)) {
-                return NULL;
+                return false;
             }
         }
         else {
             ERROR_SET(error, "Try '-h' for more information.");
-            return NULL;
+            return false;
         }
-    }
-
-    Array* inputs = Array_new(error, NULL);
-    if (ERROR_HAS(error)) {
-        return NULL;
     }
 
     for (int i = optind; i < argc; ++i) {
         Input* input = Input_new(argv[i], IO_INVALID_FD, error);
 
         if (ERROR_HAS(error)) {
-            Array_delete(inputs);
-            return NULL;
+            return false;
         }
 
         Array_add(inputs, (intptr_t) input, error);
 
         if (ERROR_HAS(error)) {
             Input_delete(input);
-            Array_delete(inputs);
-            return NULL;
+            return false;
         }
     }
 
     ERROR_CLEAR(error);
-    return inputs;
+    return false;
 }

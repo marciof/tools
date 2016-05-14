@@ -115,7 +115,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
 }
 
 Plugin Pipe_Plugin = {
-    NULL,
+    {NULL},
     get_description,
     get_name,
     run,

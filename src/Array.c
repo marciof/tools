@@ -32,12 +32,9 @@ void Array_add(Array* array, intptr_t element, Error* error) {
     Array_insert(array, element, array->length, error);
 }
 
-void Array_delete(Array* array) {
-    if (array != NULL) {
-        free(array->data);
-        memset(array, 0, sizeof(*array));
-        free(array);
-    }
+void Array_deinit(Array* array) {
+    free(array->data);
+    memset(array, 0, sizeof(*array));
 }
 
 void Array_extend(Array* list, Array* elements, Error* error) {
@@ -90,40 +87,31 @@ void Array_insert(Array* array, intptr_t element, size_t position, Error* error)
     ERROR_CLEAR(error);
 }
 
-Array* Array_new(Error* error, ...) {
-    Array* array = (Array*) malloc(sizeof(*array));
-
-    if (array == NULL) {
-        ERROR_ERRNO(error, errno);
-        return NULL;
-    }
-
+void Array_init(Array* array, Error* error, ...) {
     array->length = 0;
     array->capacity = DEFAULT_INITIAL_CAPACITY;
     array->data = (intptr_t*) malloc(array->capacity * sizeof(intptr_t));
 
     if (array->data == NULL) {
-        free(array);
         ERROR_ERRNO(error, errno);
-        return NULL;
+        return;
     }
 
     va_list args;
     va_start(args, error);
 
-    for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL; ) {
+    for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL;) {
         Array_add(array, arg, error);
 
         if (ERROR_HAS(error)) {
             va_end(args);
-            Array_delete(array);
-            return NULL;
+            Array_deinit(array);
+            return;
         }
     }
 
     va_end(args);
     ERROR_CLEAR(error);
-    return array;
 }
 
 intptr_t Array_remove(Array* array, size_t position, Error* error) {

@@ -6,6 +6,25 @@
 
 #define EXTERNAL_BINARY "ls"
 
+static void create_argv(Array* argv, Array* options, Error* error) {
+    Array_init(argv, error, EXTERNAL_BINARY, NULL);
+
+    if (ERROR_HAS(error)) {
+        return;
+    }
+
+    if (options != NULL) {
+        Array_extend(argv, options, error);
+
+        if (ERROR_HAS(error)) {
+            Array_deinit(argv);
+            return;
+        }
+    }
+
+    ERROR_CLEAR(error);
+}
+
 static const char* get_description() {
     return "list directories via `" EXTERNAL_BINARY "`";
 }
@@ -41,37 +60,19 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 }
 
-static Array* prepare_argv(Array* options, Error* error) {
-    Array* argv = Array_new(error, EXTERNAL_BINARY, NULL);
-
-    if (ERROR_HAS(error)) {
-        return NULL;
-    }
-
-    if (options != NULL) {
-        Array_extend(argv, options, error);
-
-        if (ERROR_HAS(error)) {
-            Array_delete(argv);
-            return NULL;
-        }
-    }
-
-    ERROR_CLEAR(error);
-    return argv;
-}
-
 static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
-    Array* argv = prepare_argv(options, error);
+    Array argv;
     size_t nr_args = 0;
+
+    create_argv(&argv, options, error);
 
     if (ERROR_HAS(error)) {
         return;
     }
 
     if (inputs->length == 0) {
-        open_inputs(inputs, argv, inputs->length, error);
-        Array_delete(argv);
+        open_inputs(inputs, &argv, inputs->length, error);
+        Array_deinit(&argv);
         return;
     }
 
@@ -84,10 +85,10 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         }
 
         if ((input->name != NULL) && (input->fd == IO_INVALID_FD)) {
-            Array_add(argv, (intptr_t) input->name, error);
+            Array_add(&argv, (intptr_t) input->name, error);
 
             if (ERROR_HAS(error)) {
-                Array_delete(argv);
+                Array_deinit(&argv);
                 return;
             }
 
@@ -96,14 +97,14 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
             Input_delete(input);
         }
         else if (nr_args > 0) {
-            open_inputs(inputs, argv, i, error);
+            open_inputs(inputs, &argv, i, error);
 
             if (ERROR_HAS(error)) {
-                Array_delete(argv);
+                Array_deinit(&argv);
                 return;
             }
 
-            argv->length -= nr_args + 1;
+            argv.length -= nr_args + 1;
             nr_args = 0;
             ++i;
         }
@@ -113,17 +114,17 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     }
 
     if (nr_args > 0) {
-        open_inputs(inputs, argv, inputs->length, error);
+        open_inputs(inputs, &argv, inputs->length, error);
     }
     else {
         ERROR_CLEAR(error);
     }
 
-    Array_delete(argv);
+    Array_deinit(&argv);
 }
 
 Plugin Ls_Plugin = {
-    NULL,
+    {NULL},
     get_description,
     get_name,
     run,

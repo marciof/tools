@@ -18,7 +18,7 @@ typedef struct {
 } Output;
 
 typedef struct {
-    Array* options;
+    Array options;
     const char* (*get_description)();
     const char* (*get_name)();
     // If no plugin options are defined, `options` is `NULL`.

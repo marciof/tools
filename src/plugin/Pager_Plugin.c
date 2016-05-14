@@ -13,7 +13,7 @@
 #define PAGING_THRESHOLD 0.5
 
 typedef struct {
-    Array* buffer;
+    Array buffer;
     Array* options;
     size_t nr_lines;
     size_t nr_line_chars;
@@ -24,10 +24,10 @@ static struct winsize terminal;
 
 static void Pager_delete(Pager* pager) {
     if (pager != NULL) {
-        for (size_t i = 0; i < pager->buffer->length; ++i) {
-            free((void*) pager->buffer->data[i]);
+        for (size_t i = 0; i < pager->buffer.length; ++i) {
+            free((void*) pager->buffer.data[i]);
         }
-        Array_delete(pager->buffer);
+        Array_deinit(&pager->buffer);
         memset(pager, 0, sizeof(*pager));
         free(pager);
     }
@@ -41,11 +41,12 @@ static Pager* Pager_new(Array* options, Error* error) {
         return NULL;
     }
 
-    pager->buffer = Array_new(error, NULL);
     pager->options = options;
     pager->nr_lines = 0;
     pager->nr_line_chars = 0;
     pager->fd = IO_INVALID_FD;
+
+    Array_init(&pager->buffer, error, NULL);
 
     if (ERROR_HAS(error)) {
         free(pager);
@@ -95,7 +96,7 @@ static bool buffer_pager_input(
 
         memcpy(data_copy, *data, *length * sizeof(char));
         data_copy[*length] = '\0';
-        Array_add(pager->buffer, (intptr_t) data_copy, error);
+        Array_add(&pager->buffer, (intptr_t) data_copy, error);
 
         if (ERROR_HAS(error)) {
             free(data_copy);
@@ -110,38 +111,37 @@ static bool buffer_pager_input(
     return false;
 }
 
-static Array* create_argv(Array* options, Error* error) {
-    Array* argv = Array_new(error, EXTERNAL_BINARY, NULL);
+static void create_argv(Array* argv, Array* options, Error* error) {
+    Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
     if (ERROR_HAS(error)) {
-        return NULL;
+        return;
     }
 
     if (options != NULL) {
         Array_extend(argv, options, error);
 
         if (ERROR_HAS(error)) {
-            Array_delete(argv);
-            return NULL;
+            Array_deinit(argv);
+            return;
         }
     }
 
     Array_add(argv, (intptr_t) NULL, error);
 
     if (ERROR_HAS(error)) {
-        Array_delete(argv);
-        return NULL;
+        Array_deinit(argv);
+        return;
     }
 
     ERROR_CLEAR(error);
-    return argv;
 }
 
 static void flush_pager_buffer(Pager* pager, Error* error) {
     int fd = (pager->fd == IO_INVALID_FD) ? STDOUT_FILENO : pager->fd;
 
-    for (size_t i = 0; i < pager->buffer->length; ++i) {
-        char* buffer = (char*) pager->buffer->data[i];
+    for (size_t i = 0; i < pager->buffer.length; ++i) {
+        char* buffer = (char*) pager->buffer.data[i];
         io_write(fd, buffer, strlen(buffer), error);
         free(buffer);
 
@@ -150,7 +150,7 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
         }
     }
 
-    pager->buffer->length = 0;
+    pager->buffer.length = 0;
 }
 
 static void pager_close(intptr_t arg, Error* error) {
@@ -170,7 +170,9 @@ static void pager_write(
             return;
         }
 
-        Array* argv = create_argv(pager->options, error);
+        Array argv;
+        create_argv(&argv, pager->options, error);
+
         if (ERROR_HAS(error)) {
             return;
         }
@@ -179,7 +181,7 @@ static void pager_write(
 
         if (pipe(read_write_fds) == -1) {
             ERROR_ERRNO(error, errno);
-            Array_delete(argv);
+            Array_deinit(&argv);
             return;
         }
 
@@ -187,25 +189,25 @@ static void pager_write(
 
         if (child_pid == -1) {
             ERROR_ERRNO(error, errno);
-            Array_delete(argv);
+            Array_deinit(&argv);
             return;
         }
         else if (child_pid) {
             if (dup2(read_write_fds[0], STDIN_FILENO) == -1) {
                 ERROR_ERRNO(error, errno);
-                Array_delete(argv);
+                Array_deinit(&argv);
                 return;
             }
 
             close(read_write_fds[0]);
             close(read_write_fds[1]);
-            execvp((char*) argv->data[0], (char**) argv->data);
+            execvp((char*) argv.data[0], (char**) argv.data);
             ERROR_ERRNO(error, errno);
-            Array_delete(argv);
+            Array_deinit(&argv);
             return;
         }
 
-        Array_delete(argv);
+        Array_deinit(&argv);
         close(read_write_fds[0]);
         pager->fd = read_write_fds[1];
 
@@ -273,7 +275,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
 }
 
 Plugin Pager_Plugin = {
-    NULL,
+    {NULL},
     get_description,
     get_name,
     run,
