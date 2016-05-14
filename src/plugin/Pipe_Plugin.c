@@ -117,6 +117,9 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     if (ERROR_HAS(error)) {
         Input_delete(input);
     }
+    else {
+        ERROR_CLEAR(error);
+    }
 }
 
 Plugin Pipe_Plugin = {

@@ -21,6 +21,7 @@ Input* Input_new(char* name, int fd, Error* error) {
     input->fd = fd;
     input->close = NULL;
 
+    ERROR_CLEAR(error);
     return input;
 }
 
@@ -37,5 +38,6 @@ Output* Output_new(Error* error) {
         return NULL;
     }
 
+    ERROR_CLEAR(error);
     return output;
 }

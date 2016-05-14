@@ -4,7 +4,7 @@
 #include "fork_exec.h"
 #include "io.h"
 
-static int fork_exec_pipe(char* file, char* argv[], Error* error) {
+static int fork_exec_pipe(char* file, char* argv[], int* pid, Error* error) {
     int read_write_fds[2];
 
     if (pipe(read_write_fds) == -1) {
@@ -19,6 +19,7 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
         return IO_INVALID_FD;
     }
     else if (child_pid) {
+        *pid = child_pid;
         close(read_write_fds[1]);
         ERROR_CLEAR(error);
         return read_write_fds[0];
@@ -37,7 +38,7 @@ static int fork_exec_pipe(char* file, char* argv[], Error* error) {
     return IO_INVALID_FD;
 }
 
-static int fork_exec_pty(char* file, char* argv[], Error* error) {
+static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
     int child_fd_out;
     int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
@@ -46,6 +47,7 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
         return IO_INVALID_FD;
     }
     else if (child_pid) {
+        *pid = child_pid;
         ERROR_CLEAR(error);
         return child_fd_out;
     }
@@ -55,11 +57,11 @@ static int fork_exec_pty(char* file, char* argv[], Error* error) {
     return IO_INVALID_FD;
 }
 
-int fork_exec(char* file, char* argv[], Error* error) {
+int fork_exec(char* file, char* argv[], int* pid, Error* error) {
     if (isatty(STDOUT_FILENO)) {
-        return fork_exec_pty(file, argv, error);
+        return fork_exec_pty(file, argv, pid, error);
     }
     else {
-        return fork_exec_pipe(file, argv, error);
+        return fork_exec_pipe(file, argv, pid, error);
     }
 }

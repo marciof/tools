@@ -2,6 +2,7 @@
 
 - Fix plugin "pager" to count logical characters for line wrapping.
 - Fix exit code on option parsing errors.
+- Fix exit code when a plugin has an error.
 - Rename the disable plugin option to be more intuitive.
 
 # 0.6.0 - 2016-05-10 #

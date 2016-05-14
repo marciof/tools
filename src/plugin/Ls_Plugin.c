@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "../Array.h"
 #include "../fork_exec.h"
@@ -8,6 +10,17 @@
 
 static void close_pipe(Input* input, Error* error) {
     io_close(input->fd, error);
+
+    if (!ERROR_HAS(error)) {
+        int status;
+
+        if (waitpid((int) input->arg, &status, 0) == -1) {
+            ERROR_ERRNO(error, errno);
+        }
+        else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+            ERROR_SET(error, "");
+        }
+    }
 }
 
 static void create_argv(Array* argv, Array* options, Error* error) {
@@ -55,13 +68,20 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         return;
     }
 
-    input->fd = fork_exec((char*) argv->data[0], (char**) argv->data, error);
+    int child_pid;
+
     input->close = close_pipe;
+    input->fd = fork_exec(
+        (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
     if (ERROR_HAS(error)) {
         close(input->fd);
         Array_remove(inputs, pos, NULL);
         Input_delete(input);
+    }
+    else {
+        input->arg = (intptr_t) child_pid;
+        ERROR_CLEAR(error);
     }
 }
 

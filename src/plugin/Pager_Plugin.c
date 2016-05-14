@@ -51,6 +51,7 @@ static Pager* Pager_new(Array* options, Error* error) {
         return NULL;
     }
 
+    ERROR_CLEAR(error);
     return pager;
 }
 
@@ -104,9 +105,11 @@ static bool buffer_pager_input(
 
         *data = NULL;
         *length = 0;
+        ERROR_CLEAR(error);
         return true;
     }
 
+    ERROR_CLEAR(error);
     return false;
 }
 
@@ -150,6 +153,7 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
     }
 
     pager->buffer.length = 0;
+    ERROR_CLEAR(error);
 }
 
 static void close_pager(Output* output, Error* error) {
@@ -270,6 +274,9 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
     if (ERROR_HAS(error)) {
         Pager_delete((Pager*) output->arg);
         Output_delete(output);
+    }
+    else {
+        ERROR_CLEAR(error);
     }
 }
 

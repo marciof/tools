@@ -127,6 +127,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    bool has_plugin_failed = false;
+
     for (size_t i = 0; i < inputs.length; ++i) {
         Input* input = (Input*) inputs.data[i];
 
@@ -148,12 +150,18 @@ int main(int argc, char* argv[]) {
             input->close(input, &error);
 
             if (ERROR_HAS(&error)) {
-                cleanup(&inputs, &outputs, &error);
-                return EXIT_FAILURE;
+                if (*error != '\0') {
+                    cleanup(&inputs, &outputs, &error);
+                    return EXIT_FAILURE;
+                }
+                else {
+                    has_plugin_failed = true;
+                    ERROR_CLEAR(&error);
+                }
             }
         }
     }
 
     cleanup(&inputs, &outputs, &error);
-    return EXIT_SUCCESS;
+    return has_plugin_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }
