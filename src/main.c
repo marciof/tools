@@ -136,6 +136,7 @@ int main(int argc, char* argv[]) {
             int input_fd = input->fd;
 
             if (input_fd == IO_INVALID_FD) {
+                has_plugin_failed = true;
                 fprintf(stderr, "Unsupported input: %s\n", input->name);
                 continue;
             }
