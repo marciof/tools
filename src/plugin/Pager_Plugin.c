@@ -94,7 +94,8 @@ static bool buffer_pager_input(
 
         memcpy(data_copy, *data, *length * sizeof(char));
         data_copy[*length] = '\0';
-        Array_add(&pager->buffer, (intptr_t) data_copy, error);
+        Array_add(
+            &pager->buffer, (intptr_t) data_copy, pager->buffer.length, error);
 
         if (ERROR_HAS(error)) {
             free(data_copy);
@@ -125,7 +126,7 @@ static void create_argv(Array* argv, Array* options, Error* error) {
         }
     }
 
-    Array_add(argv, (intptr_t) NULL, error);
+    Array_add(argv, (intptr_t) NULL, argv->length, error);
 
     if (ERROR_HAS(error)) {
         Array_deinit(argv);
@@ -264,7 +265,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         return;
     }
 
-    Array_add(outputs, (intptr_t) output, error);
+    Array_add(outputs, (intptr_t) output, outputs->length, error);
 
     if (ERROR_HAS(error)) {
         Pager_delete((Pager*) output->arg);

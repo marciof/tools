@@ -34,7 +34,7 @@ static const char* get_name() {
 }
 
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
-    Array_add(argv, (intptr_t) NULL, error);
+    Array_add(argv, (intptr_t) NULL, argv->length, error);
     if (ERROR_HAS(error)) {
         return;
     }
@@ -44,7 +44,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         return;
     }
 
-    Array_insert(inputs, (intptr_t) input, pos, error);
+    Array_add(inputs, (intptr_t) input, pos, error);
 
     if (ERROR_HAS(error)) {
         Input_delete(input);
@@ -85,7 +85,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         }
 
         if ((input->name != NULL) && (input->fd == IO_INVALID_FD)) {
-            Array_add(&argv, (intptr_t) input->name, error);
+            Array_add(&argv, (intptr_t) input->name, argv.length, error);
 
             if (ERROR_HAS(error)) {
                 Array_deinit(&argv);

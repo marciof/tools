@@ -28,33 +28,7 @@ static void change_capacity(Array* array, size_t capacity, Error* error) {
     return;
 }
 
-void Array_add(Array* array, intptr_t element, Error* error) {
-    Array_insert(array, element, array->length, error);
-}
-
-void Array_deinit(Array* array) {
-    free(array->data);
-    memset(array, 0, sizeof(*array));
-}
-
-void Array_extend(Array* list, Array* elements, Error* error) {
-    if (elements->length == 0) {
-        ERROR_CLEAR(error);
-        return;
-    }
-
-    change_capacity(list, list->length + elements->length, error);
-    if (ERROR_HAS(error)) {
-        return;
-    }
-
-    for (size_t i = 0; i < elements->length; ++i, ++list->length) {
-        list->data[list->length] = elements->data[i];
-    }
-    ERROR_CLEAR(error);
-}
-
-void Array_insert(Array* array, intptr_t element, size_t position, Error* error) {
+void Array_add(Array* array, intptr_t element, size_t position, Error* error) {
     if (position > array->length) {
         ERROR_ERRNO(error, EINVAL);
         return;
@@ -87,6 +61,28 @@ void Array_insert(Array* array, intptr_t element, size_t position, Error* error)
     ERROR_CLEAR(error);
 }
 
+void Array_deinit(Array* array) {
+    free(array->data);
+    memset(array, 0, sizeof(*array));
+}
+
+void Array_extend(Array* list, Array* elements, Error* error) {
+    if (elements->length == 0) {
+        ERROR_CLEAR(error);
+        return;
+    }
+
+    change_capacity(list, list->length + elements->length, error);
+    if (ERROR_HAS(error)) {
+        return;
+    }
+
+    for (size_t i = 0; i < elements->length; ++i, ++list->length) {
+        list->data[list->length] = elements->data[i];
+    }
+    ERROR_CLEAR(error);
+}
+
 void Array_init(Array* array, Error* error, ...) {
     array->length = 0;
     array->capacity = DEFAULT_INITIAL_CAPACITY;
@@ -101,7 +97,7 @@ void Array_init(Array* array, Error* error, ...) {
     va_start(args, error);
 
     for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL;) {
-        Array_add(array, arg, error);
+        Array_add(array, arg, array->length, error);
 
         if (ERROR_HAS(error)) {
             va_end(args);

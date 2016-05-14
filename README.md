@@ -15,7 +15,6 @@ See `.travis.yml` for details.
 - Tests with coverage.
   - https://github.com/andrewrk/malcheck
   - https://github.com/google/sanitizers
-- Use `libpipeline` to simplify the code?
 - Character counting for the pager plugin actually counts bytes, not logical characters.
 - Allow line numbers in input names to scroll to when paging.
 - Fix exit code for non-existing paths.
