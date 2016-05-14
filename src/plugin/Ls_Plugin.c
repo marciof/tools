@@ -85,11 +85,11 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 }
 
-static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     Array argv;
     size_t nr_args = 0;
 
-    create_argv(&argv, options, error);
+    create_argv(&argv, &plugin->options, error);
 
     if (ERROR_HAS(error)) {
         return;

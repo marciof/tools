@@ -238,7 +238,7 @@ static void get_terminal_size(int num) {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }
 
-static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     if (!isatty(STDOUT_FILENO)) {
         ERROR_CLEAR(error);
         return;
@@ -262,7 +262,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
 
     output->close = close_pager;
     output->write = write_to_pager;
-    output->arg = (intptr_t) Pager_new(options, error);
+    output->arg = (intptr_t) Pager_new(&plugin->options, error);
 
     if (ERROR_HAS(error)) {
         Output_delete(output);

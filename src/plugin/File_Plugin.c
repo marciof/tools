@@ -45,7 +45,7 @@ static int open_file(char* path, Error* error) {
     return file;
 }
 
-static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 

@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i] != NULL) {
-            plugins[i]->run(&inputs, &plugins[i]->options, &outputs, &error);
+            plugins[i]->run(plugins[i], &inputs, &outputs, &error);
 
             if (ERROR_HAS(&error)) {
                 cleanup(&inputs, &outputs, &error);

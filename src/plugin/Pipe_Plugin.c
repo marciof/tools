@@ -66,7 +66,7 @@ static const char* get_name() {
     return "pipe";
 }
 
-static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     int fd = STDIN_FILENO;
     struct stat fd_stat;
     Input* input;

@@ -20,12 +20,12 @@ typedef struct Output {
         struct Output* output, char** data, size_t* length, Error* error);
 } Output;
 
-typedef struct {
+typedef struct Plugin {
     Array options;
     const char* (*get_description)();
     const char* (*get_name)();
     // If no plugin options are defined, `options` is `NULL`.
-    void (*run)(Array* inputs, Array* options, Array* outputs, Error* error);
+    void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
 } Plugin;
 
 void Input_delete(Input* input);
