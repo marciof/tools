@@ -23,14 +23,12 @@ typedef struct {
 static struct winsize terminal;
 
 static void Pager_delete(Pager* pager) {
-    if (pager != NULL) {
-        for (size_t i = 0; i < pager->buffer.length; ++i) {
-            free((void*) pager->buffer.data[i]);
-        }
-        Array_deinit(&pager->buffer);
-        memset(pager, 0, sizeof(*pager));
-        free(pager);
+    for (size_t i = 0; i < pager->buffer.length; ++i) {
+        free((void*) pager->buffer.data[i]);
     }
+    Array_deinit(&pager->buffer);
+    memset(pager, 0, sizeof(*pager));
+    free(pager);
 }
 
 static Pager* Pager_new(Array* options, Error* error) {

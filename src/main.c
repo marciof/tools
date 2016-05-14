@@ -26,7 +26,9 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 
     if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
-            Input_delete((Input*) inputs->data[i]);
+            if (inputs->data[i] != (intptr_t) NULL) {
+                Input_delete((Input*) inputs->data[i]);
+            }
         }
         Array_deinit(inputs);
     }

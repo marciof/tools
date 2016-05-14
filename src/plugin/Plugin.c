@@ -4,10 +4,8 @@
 #include "Plugin.h"
 
 void Input_delete(Input* input) {
-    if (input != NULL) {
-        memset(input, 0, sizeof(*input));
-        free(input);
-    }
+    memset(input, 0, sizeof(*input));
+    free(input);
 }
 
 Input* Input_new(char* name, int fd, Error* error) {
@@ -24,10 +22,8 @@ Input* Input_new(char* name, int fd, Error* error) {
 }
 
 void Output_delete(Output* output) {
-    if (output != NULL) {
-        memset(output, 0, sizeof(*output));
-        free(output);
-    }
+    memset(output, 0, sizeof(*output));
+    free(output);
 }
 
 Output* Output_new(Error* error) {
