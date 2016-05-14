@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 
     if (shown_help || ERROR_HAS(&error)) {
         cleanup(&inputs, NULL, &error);
-        return EXIT_SUCCESS;
+        return shown_help ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     Array outputs;

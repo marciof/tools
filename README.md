@@ -18,4 +18,4 @@ See `.travis.yml` for details.
 - Use `libpipeline` to simplify the code?
 - Character counting for the pager plugin actually counts bytes, not logical characters.
 - Allow line numbers in input names to scroll to when paging.
-- Fix exit code for parsing options errors.
+- Fix exit code for non-existing paths.
