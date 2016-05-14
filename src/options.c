@@ -130,7 +130,7 @@ static void parse_plugin_option(
     }
     else {
         Array_add(
-            &plugin->options, (intptr_t) value, plugin->options.length, error);
+            &plugin->options, plugin->options.length, (intptr_t) value, error);
 
         if (ERROR_HAS(error)) {
             return;
@@ -188,7 +188,7 @@ bool parse_options(
             return false;
         }
 
-        Array_add(inputs, (intptr_t) input, inputs->length, error);
+        Array_add(inputs, inputs->length, (intptr_t) input, error);
 
         if (ERROR_HAS(error)) {
             Input_delete(input);

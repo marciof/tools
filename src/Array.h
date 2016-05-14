@@ -12,7 +12,7 @@ typedef struct {
     size_t capacity;
 } Array;
 
-void Array_add(Array* array, intptr_t element, size_t position, Error* error);
+void Array_add(Array* array, size_t position, intptr_t element, Error* error);
 void Array_deinit(Array* array);
 void Array_extend(Array* array, Array* elements, Error* error);
 void Array_init(Array* array, Error* error, ...);

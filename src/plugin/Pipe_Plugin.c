@@ -107,7 +107,7 @@ static void run(Array* inputs, Array* options, Array* outputs, Error* error) {
         return;
     }
 
-    Array_add(inputs, (intptr_t) input, position, error);
+    Array_add(inputs, position, (intptr_t) input, error);
 
     if (ERROR_HAS(error)) {
         Input_delete(input);

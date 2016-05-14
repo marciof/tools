@@ -28,7 +28,7 @@ static void change_capacity(Array* array, size_t capacity, Error* error) {
     return;
 }
 
-void Array_add(Array* array, intptr_t element, size_t position, Error* error) {
+void Array_add(Array* array, size_t position, intptr_t element, Error* error) {
     if (position > array->length) {
         ERROR_ERRNO(error, EINVAL);
         return;
@@ -97,7 +97,7 @@ void Array_init(Array* array, Error* error, ...) {
     va_start(args, error);
 
     for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL;) {
-        Array_add(array, arg, array->length, error);
+        Array_add(array, array->length, arg, error);
 
         if (ERROR_HAS(error)) {
             va_end(args);
