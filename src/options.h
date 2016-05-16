@@ -6,7 +6,7 @@
 #include "plugin/Plugin.h"
 
 // If a plugin is disabled, its entry in `plugins` is set to `NULL`.
-// If `NULL` is returned without any `error`, it means help usage was displayed.
+// If help usage was displayed, it returns `true`.
 bool parse_options(
     int argc,
     char **argv,

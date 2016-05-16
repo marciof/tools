@@ -176,7 +176,7 @@ bool parse_options(
             }
         }
         else {
-            ERROR_SET(error, "Try '-h' for more information.");
+            ERROR_SET(error, "Try '-" HELP_OPT "' for more information.");
             return false;
         }
     }
