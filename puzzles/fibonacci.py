@@ -4,7 +4,7 @@
 import sys
 import unittest
 
-def calculate(n, result = 0, prev = 1):
+def calculate(n, result = 0, nxt = 1):
     """
     Calculate the `n`-th value of the Fibonacci sequence.
 
@@ -14,7 +14,7 @@ def calculate(n, result = 0, prev = 1):
     if n == 0:
         return result
     else:
-        return calculate(n - 1, prev, prev + result)
+        return calculate(n - 1, nxt, nxt + result)
 
 class Test (unittest.TestCase):
     def test_for_0(self):

@@ -6,7 +6,7 @@ import unittest
 
 def find_alone_int(numbers):
     """
-    Find the only unpaired integer in an array of `numbers`.
+    Find the only unpaired integer in a sequence of `numbers`.
 
     Time: O(n)
     Space: O(1)
