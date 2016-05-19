@@ -11,7 +11,7 @@ def calculate(n, result = 1):
     Time: O(n)
     """
 
-    if n == 0:
+    if n <= 1:
         return result
     else:
         return calculate(n - 1, n * result)

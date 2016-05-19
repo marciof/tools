@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-import copy
 import unittest
 
 def permutate(total, combination = '', nr_open = 0, nr_closed = 0):
@@ -30,20 +29,6 @@ def permutate(total, combination = '', nr_open = 0, nr_closed = 0):
                 permutate(total, combination + ')', nr_open, nr_closed + 1))
 
     return combinations
-
-def permutate_alt_wrong(n):
-    def enclose(parens, level = 0):
-        combinations = [parens]
-
-        for pos in range(len(parens) - 1):
-            new_parens = copy.deepcopy(parens)
-            new_parens[pos].append(new_parens.pop(pos + 1))
-
-            combinations.extend(enclose(new_parens, level + 1))
-
-        return combinations
-
-    return enclose([[] for _ in range(n)])
 
 class Test(unittest.TestCase):
     def test_count_1(self):

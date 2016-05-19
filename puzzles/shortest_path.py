@@ -26,8 +26,8 @@ def shortest_path(start, house):
     Time: O(V+E)
     """
 
-    prev_by_road = {start: None}
     queue = [start]
+    road_to_prev = {start: None}
 
     while len(queue) > 0:
         current_road = queue.pop(0)
@@ -37,15 +37,15 @@ def shortest_path(start, house):
 
             while current_road is not None:
                 path.insert(0, current_road)
-                current_road = prev_by_road[current_road]
+                current_road = road_to_prev[current_road]
 
             return path
 
         for inter in (current_road.inter_a, current_road.inter_b):
             if inter is not None:
                 for next_road in inter.roads:
-                    if next_road not in prev_by_road:
-                        prev_by_road[next_road] = current_road
+                    if next_road not in road_to_prev:
+                        road_to_prev[next_road] = current_road
                         queue.append(next_road)
 
     return None

@@ -11,30 +11,30 @@ def find_substring(string, alphabet):
     Time: O(n)
     """
     
-    last_pos_by_char = {}
     start_char = None
     end_char = None
-    
+    char_to_last_pos = {}
+
     for pos, char in enumerate(string):
-        if len(last_pos_by_char) == len(alphabet):
+        if len(char_to_last_pos) == len(alphabet):
             break
         
         if char not in alphabet:
             continue
         
-        last_pos_by_char[char] = pos
+        char_to_last_pos[char] = pos
         
         start_char = min(start_char, end_char, char,
-            key = lambda c: last_pos_by_char.get(c, float('+inf')))
+            key = lambda c: char_to_last_pos.get(c, float('+inf')))
         
         end_char = max(end_char, start_char, char,
-            key = lambda c: last_pos_by_char.get(c, float('-inf')))
+            key = lambda c: char_to_last_pos.get(c, float('-inf')))
     
     if None in (start_char, end_char):
         return None
 
-    start = last_pos_by_char[start_char]
-    end = last_pos_by_char[end_char]
+    start = char_to_last_pos[start_char]
+    end = char_to_last_pos[end_char]
     return string[start : end + 1]
 
 class Test (unittest.TestCase):
