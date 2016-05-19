@@ -56,26 +56,50 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 }
 
 static void flush_input(int input_fd, Array* outputs, Error* error) {
-    const int LENGTH = 4 * 1024;
-    char buffer[LENGTH];
+    const int MAX_LENGTH = 4 * 1024;
+    char* data = (char*) malloc((MAX_LENGTH + 1) * sizeof(char));
     ssize_t bytes_read;
 
-    while ((bytes_read = read(input_fd, buffer, LENGTH * sizeof(char))) > 0) {
-        char* data = buffer;
-        size_t length = (size_t) (bytes_read / sizeof(char));
+    if (data == NULL) {
+        ERROR_ERRNO(error, errno);
+        return;
+    }
 
-        for (size_t i = 0; (i < outputs->length) && (data != NULL); ++i) {
+    while ((bytes_read = read(input_fd, data, MAX_LENGTH * sizeof(char))) > 0) {
+        size_t length = (size_t) (bytes_read / sizeof(char));
+        bool has_flushed = false;
+
+        data[length] = '\0';
+
+        for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
             output->write(output, &data, &length, error);
 
             if (ERROR_HAS(error)) {
+                free(data);
                 return;
+            }
+
+            if (data == NULL) {
+                data = (char*) malloc((MAX_LENGTH + 1) * sizeof(char));
+                if (data == NULL) {
+                    ERROR_ERRNO(error, errno);
+                    return;
+                }
+                has_flushed = true;
+                break;
+            }
+
+            if (length == 0) {
+                has_flushed = true;
+                break;
             }
         }
 
-        if (data != NULL) {
+        if (!has_flushed) {
             io_write(STDOUT_FILENO, data, length, error);
             if (ERROR_HAS(error)) {
+                free(data);
                 return;
             }
         }
@@ -87,6 +111,8 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
     else {
         ERROR_ERRNO(error, errno);
     }
+
+    free(data);
 }
 
 int main(int argc, char* argv[]) {

@@ -86,25 +86,13 @@ static bool buffer_pager_input(
     }
 
     if (should_buffer) {
-        char* data_copy = (char*) malloc((*length + 1) * sizeof(char));
-
-        if (data_copy == NULL) {
-            ERROR_ERRNO(error, errno);
-            return true;
-        }
-
-        memcpy(data_copy, *data, *length * sizeof(char));
-        data_copy[*length] = '\0';
-        Array_add(
-            &pager->buffer, pager->buffer.length, (intptr_t) data_copy, error);
+        Array_add(&pager->buffer, pager->buffer.length, (intptr_t) *data, error);
 
         if (ERROR_HAS(error)) {
-            free(data_copy);
             return true;
         }
 
         *data = NULL;
-        *length = 0;
         ERROR_CLEAR(error);
         return true;
     }
@@ -143,9 +131,9 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
     int fd = (pager->fd == IO_INVALID_FD) ? STDOUT_FILENO : pager->fd;
 
     for (size_t i = 0; i < pager->buffer.length; ++i) {
-        char* buffer = (char*) pager->buffer.data[i];
-        io_write(fd, buffer, strlen(buffer), error);
-        free(buffer);
+        char* data = (char*) pager->buffer.data[i];
+        io_write(fd, data, strlen(data), error);
+        free(data);
 
         if (ERROR_HAS(error)) {
             return;
@@ -221,7 +209,6 @@ static void write_to_pager(
     }
 
     io_write(pager->fd, *data, *length, error);
-    *data = NULL;
     *length = 0;
 }
 

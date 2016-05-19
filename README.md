@@ -6,10 +6,11 @@ See `.travis.yml` for details.
 
 # To Do #
 
-- Avoid copying so much.
 - Use simple C strings to avoid storing buffer lengths separately?
 - Reduce memory allocation.
-- http://geoff.greer.fm/ag/speed/
+- Profile each change.
+  - http://geoff.greer.fm/ag/speed/
+  - `./bin/callgrind -p pager:-E -p pager:+$(wc -l < /var/log/syslog.1) /var/log/syslog.1`
 - Lint and static analysis?
   - http://clang-analyzer.llvm.org
 - Tests with coverage.
