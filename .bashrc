@@ -203,4 +203,6 @@ _virtual_env_ps1() {
     [ -n "$VIRTUAL_ENV" ] && echo -e ":$_purple$(basename $VIRTUAL_ENV)$_color_off"
 }
 
-export PS1="$_ps1_user_host\$(_virtual_env_ps1):\[$_b_blue\]\w\[$_color_off\]\n\\$ "
+if [ -z "$BASHRC_KEEP_PROMPT" ]; then
+    export PS1="$_ps1_user_host\$(_virtual_env_ps1):\[$_b_blue\]\w\[$_color_off\]\n\\$ "
+fi
