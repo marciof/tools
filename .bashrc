@@ -1,11 +1,7 @@
 #!/bin/bash
 
 if [[ ! "$-" =~ 'i' ]]; then
-    if [[ $_ != $0 ]]; then
-        return 0
-    else
-        exit 0
-    fi
+    return 0
 fi
 
 _warn() {
