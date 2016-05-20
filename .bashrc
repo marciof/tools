@@ -148,12 +148,14 @@ if _have git; then
 
     complete -o bashdefault -o default -o nospace -F _git g
 
-    __git_complete sc _git_commit
-    __git_complete sd _git_diff
-    __git_complete sl _git_log
-    __git_complete sp _git_push
-    __git_complete sr _git_checkout
-    __git_complete ss _git_pull
+    if type -t __git_complete > /dev/null; then
+        __git_complete sc _git_commit
+        __git_complete sd _git_diff
+        __git_complete sl _git_log
+        __git_complete sp _git_push
+        __git_complete sr _git_checkout
+        __git_complete ss _git_pull
+    fi
 
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
