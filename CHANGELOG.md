@@ -1,6 +1,10 @@
-# 0.7.0 - UNRELEASED #
+# 0.8.0 - UNRELEASED #
 
 - Fix plugin "pager" to count logical characters for line wrapping.
+
+# 0.7.0 - 2016-05-21 #
+
+- Use `less` as the pager for systems that don't have `pager`.
 - Fix exit code on option parsing errors.
 - Fix exit code when a plugin has an error.
 - Rename the disable plugin option to be more intuitive.

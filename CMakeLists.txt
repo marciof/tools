@@ -18,8 +18,8 @@ set(sources
     src/options.h
     src/plugin/File_Plugin.c
     src/plugin/File_Plugin.h
-    src/plugin/Pager_Plugin.c
-    src/plugin/Pager_Plugin.h
+    src/plugin/Less_Plugin.c
+    src/plugin/Less_Plugin.h
     src/plugin/Plugin.c
     src/plugin/Plugin.h
     src/fork_exec.c

@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include "../Array.h"
 #include "../io.h"
-#include "Pager_Plugin.h"
+#include "Less_Plugin.h"
 
-#define EXTERNAL_BINARY "pager"
+#define EXTERNAL_BINARY "less"
 #define PAGING_THRESHOLD 0.5
 
 typedef struct {
@@ -213,7 +213,7 @@ static void write_to_pager(
 }
 
 static const char* get_description() {
-    return "page output via `" EXTERNAL_BINARY "`";
+    return "page output if needed via `" EXTERNAL_BINARY "`";
 }
 
 static const char* get_name() {

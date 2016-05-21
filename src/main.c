@@ -8,8 +8,8 @@
 #include "io.h"
 #include "options.h"
 #include "plugin/File_Plugin.h"
+#include "plugin/Less_Plugin.h"
 #include "plugin/Ls_Plugin.h"
-#include "plugin/Pager_Plugin.h"
 #include "plugin/Pipe_Plugin.h"
 
 static Plugin* plugins[] = {

@@ -19,3 +19,4 @@ See `.travis.yml` for details.
 - Character counting for the pager plugin actually counts bytes, not logical characters.
 - Allow line numbers in input names to scroll to when paging.
 - Change array type to allow any element size? Will avoid many memory allocations, but will increase copying.
+- Improve error messages to give more context (which plugin, etc).
