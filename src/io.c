@@ -1,7 +1,25 @@
 #include <errno.h>
 #include <poll.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "io.h"
+
+void Buffer_delete(Buffer* buffer) {
+    free(buffer);
+}
+
+Buffer* Buffer_new(size_t max_length, Error* error) {
+    Buffer* buffer = (Buffer*) malloc(
+        offsetof(Buffer, data) + sizeof(char) * max_length);
+
+    if (buffer == NULL) {
+        ERROR_ERRNO(error, errno);
+        return NULL;
+    }
+
+    buffer->length = 0;
+    return buffer;
+}
 
 void io_close(int fd, Error* error) {
     if (close(fd) == -1) {
@@ -29,17 +47,21 @@ bool io_has_input(int fd, Error* error) {
     return (nr_fds == 1) && (fd_poll.revents & POLLIN);
 }
 
-void io_write(int fd, char* data, size_t length, Error* error) {
-    while (length > 0) {
-        ssize_t bytes_written = write(fd, data, length * sizeof(char));
+void io_write(int fd, Buffer* buffer, Error* error) {
+    size_t remaining_length = buffer->length;
+    char* remaining_data = buffer->data;
+
+    while (remaining_length > 0) {
+        ssize_t bytes_written = write(
+            fd, remaining_data, remaining_length * sizeof(char));
 
         if (bytes_written == -1) {
             ERROR_ERRNO(error, errno);
             return;
         }
 
-        length -= bytes_written / sizeof(char);
-        data += bytes_written / sizeof(char);
+        remaining_length -= bytes_written / sizeof(char);
+        remaining_data += bytes_written / sizeof(char);
     }
 
     ERROR_CLEAR(error);

@@ -1,6 +1,6 @@
 # 0.8.0 - UNRELEASED #
 
-- Fix plugin "pager" to count logical characters for line wrapping.
+- Fix plugin "less" to count logical characters for line wrapping.
 
 # 0.7.0 - 2016-05-21 #
 

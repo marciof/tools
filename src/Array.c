@@ -63,7 +63,6 @@ void Array_add(Array* array, size_t position, intptr_t element, Error* error) {
 
 void Array_deinit(Array* array) {
     free(array->data);
-    memset(array, 0, sizeof(*array));
 }
 
 void Array_extend(Array* list, Array* elements, Error* error) {

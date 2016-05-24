@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "../Array.h"
 #include "../Error.h"
+#include "../io.h"
 
 typedef struct Input {
     // If unnamed, `name` is set to `NULL`.
@@ -15,10 +16,9 @@ typedef struct Input {
 typedef struct Output {
     intptr_t arg;
     void (*close)(struct Output* output, Error* error);
-    // If all data is flushed, `length` is set to `0`.
-    // If `data` is kept, it is set to `NULL`.
-    void (*write)(
-        struct Output* output, char** data, size_t* length, Error* error);
+    // If all data is flushed, `buffer->length` is set to `0`.
+    // If `buffer` is kept, it is set to `NULL`.
+    void (*write)(struct Output* output, Buffer** buffer, Error* error);
 } Output;
 
 typedef struct Plugin {

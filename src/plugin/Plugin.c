@@ -4,7 +4,6 @@
 #include "Plugin.h"
 
 void Input_delete(Input* input) {
-    memset(input, 0, sizeof(*input));
     free(input);
 }
 
@@ -26,7 +25,6 @@ Input* Input_new(char* name, int fd, Error* error) {
 }
 
 void Output_delete(Output* output) {
-    memset(output, 0, sizeof(*output));
     free(output);
 }
 

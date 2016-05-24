@@ -13,7 +13,7 @@
 #define PAGING_THRESHOLD 0.5
 
 typedef struct {
-    Array buffer;
+    Array buffers;
     Array* options;
     size_t nr_lines;
     size_t nr_line_chars;
@@ -23,11 +23,10 @@ typedef struct {
 static struct winsize terminal;
 
 static void Pager_delete(Pager* pager) {
-    for (size_t i = 0; i < pager->buffer.length; ++i) {
-        free((void*) pager->buffer.data[i]);
+    for (size_t i = 0; i < pager->buffers.length; ++i) {
+        Buffer_delete((Buffer*) pager->buffers.data[i]);
     }
-    Array_deinit(&pager->buffer);
-    memset(pager, 0, sizeof(*pager));
+    Array_deinit(&pager->buffers);
     free(pager);
 }
 
@@ -44,7 +43,7 @@ static Pager* Pager_new(Array* options, Error* error) {
     pager->nr_line_chars = 0;
     pager->fd = IO_INVALID_FD;
 
-    Array_init(&pager->buffer, error, NULL);
+    Array_init(&pager->buffers, error, NULL);
 
     if (ERROR_HAS(error)) {
         free(pager);
@@ -55,13 +54,11 @@ static Pager* Pager_new(Array* options, Error* error) {
     return pager;
 }
 
-static bool buffer_pager_input(
-        Pager* pager, char** data, size_t* length, Error* error) {
-
+static bool buffer_pager_input(Pager* pager, Buffer** buffer, Error* error) {
     bool should_buffer = true;
 
-    for (size_t i = 0; i < *length; ++i) {
-        if ((*data)[i] == '\n') {
+    for (size_t i = 0; i < (*buffer)->length; ++i) {
+        if ((*buffer)->data[i] == '\n') {
             ++pager->nr_lines;
             pager->nr_line_chars = 0;
 
@@ -86,13 +83,14 @@ static bool buffer_pager_input(
     }
 
     if (should_buffer) {
-        Array_add(&pager->buffer, pager->buffer.length, (intptr_t) *data, error);
+        Array_add(
+            &pager->buffers, pager->buffers.length, (intptr_t) *buffer, error);
 
         if (ERROR_HAS(error)) {
             return true;
         }
 
-        *data = NULL;
+        *buffer = NULL;
         ERROR_CLEAR(error);
         return true;
     }
@@ -130,17 +128,17 @@ static void create_argv(Array* argv, Array* options, Error* error) {
 static void flush_pager_buffer(Pager* pager, Error* error) {
     int fd = (pager->fd == IO_INVALID_FD) ? STDOUT_FILENO : pager->fd;
 
-    for (size_t i = 0; i < pager->buffer.length; ++i) {
-        char* data = (char*) pager->buffer.data[i];
-        io_write(fd, data, strlen(data), error);
-        free(data);
+    for (size_t i = 0; i < pager->buffers.length; ++i) {
+        Buffer* buffer = (Buffer*) pager->buffers.data[i];
+        io_write(fd, buffer, error);
+        Buffer_delete(buffer);
 
         if (ERROR_HAS(error)) {
             return;
         }
     }
 
-    pager->buffer.length = 0;
+    pager->buffers.length = 0;
     ERROR_CLEAR(error);
 }
 
@@ -151,13 +149,11 @@ static void close_pager(Output* output, Error* error) {
     Pager_delete(pager);
 }
 
-static void write_to_pager(
-        Output* output, char** data, size_t* length, Error* error) {
-
+static void write_to_pager(Output* output, Buffer** buffer, Error* error) {
     Pager* pager = (Pager*) output->arg;
 
     if (pager->fd == IO_INVALID_FD) {
-        if (buffer_pager_input(pager, data, length, error)) {
+        if (buffer_pager_input(pager, buffer, error)) {
             return;
         }
 
@@ -208,8 +204,8 @@ static void write_to_pager(
         }
     }
 
-    io_write(pager->fd, *data, *length, error);
-    *length = 0;
+    io_write(pager->fd, *buffer, error);
+    (*buffer)->length = 0;
 }
 
 static const char* get_description() {

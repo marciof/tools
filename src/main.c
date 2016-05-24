@@ -57,32 +57,30 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 
 static void flush_input(int input_fd, Array* outputs, Error* error) {
     const int MAX_LENGTH = 4 * 1024;
-    char* data = (char*) malloc((MAX_LENGTH + 1) * sizeof(char));
+    Buffer* buffer = Buffer_new(MAX_LENGTH, error);
     ssize_t bytes_read;
 
-    if (data == NULL) {
+    if (buffer == NULL) {
         ERROR_ERRNO(error, errno);
         return;
     }
 
-    while ((bytes_read = read(input_fd, data, MAX_LENGTH * sizeof(char))) > 0) {
-        size_t length = (size_t) (bytes_read / sizeof(char));
+    while ((bytes_read = read(input_fd, buffer->data, MAX_LENGTH * sizeof(char))) > 0) {
+        buffer->length = (size_t) (bytes_read / sizeof(char));
         bool has_flushed = false;
-
-        data[length] = '\0';
 
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
-            output->write(output, &data, &length, error);
+            output->write(output, &buffer, error);
 
             if (ERROR_HAS(error)) {
-                free(data);
+                Buffer_delete(buffer);
                 return;
             }
 
-            if (data == NULL) {
-                data = (char*) malloc((MAX_LENGTH + 1) * sizeof(char));
-                if (data == NULL) {
+            if (buffer == NULL) {
+                buffer = Buffer_new(MAX_LENGTH, error);
+                if (buffer == NULL) {
                     ERROR_ERRNO(error, errno);
                     return;
                 }
@@ -90,16 +88,16 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
                 break;
             }
 
-            if (length == 0) {
+            if (buffer->length == 0) {
                 has_flushed = true;
                 break;
             }
         }
 
         if (!has_flushed) {
-            io_write(STDOUT_FILENO, data, length, error);
+            io_write(STDOUT_FILENO, buffer, error);
             if (ERROR_HAS(error)) {
-                free(data);
+                Buffer_delete(buffer);
                 return;
             }
         }
@@ -111,8 +109,7 @@ static void flush_input(int input_fd, Array* outputs, Error* error) {
     else {
         ERROR_ERRNO(error, errno);
     }
-
-    free(data);
+    Buffer_delete(buffer);
 }
 
 int main(int argc, char* argv[]) {
