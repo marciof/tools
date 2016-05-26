@@ -6,8 +6,11 @@
 #define STATIC_ARRAY_LENGTH(array) \
     (sizeof(array) / sizeof((array)[0]))
 
+#define ARRAY_INITIAL_CAPACITY ((size_t) 8)
+
 typedef struct {
     intptr_t* data;
+    intptr_t buffer[ARRAY_INITIAL_CAPACITY];
     size_t length;
     size_t capacity;
 } Array;

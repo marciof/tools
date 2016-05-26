@@ -4,7 +4,6 @@
 #include <string.h>
 #include "Array.h"
 
-#define DEFAULT_INITIAL_CAPACITY ((size_t) 8)
 #define DEFAULT_CAPACITY_INCREASE_FACTOR (1.5)
 
 static void change_capacity(Array* array, size_t capacity, Error* error) {
@@ -12,20 +11,33 @@ static void change_capacity(Array* array, size_t capacity, Error* error) {
         ERROR_ERRNO(error, EINVAL);
         return;
     }
-    
-    intptr_t* data = (intptr_t*) realloc(
-        array->data, capacity * sizeof(intptr_t));
-    
-    if (data == NULL) {
-        ERROR_ERRNO(error, errno);
-        return;
-    }
-    
-    array->data = data;
-    array->capacity = capacity;
 
+    if ((capacity > ARRAY_INITIAL_CAPACITY) && (array->data == array->buffer)) {
+        array->data = (intptr_t*) malloc(capacity * sizeof(intptr_t));
+
+        if (array->data == NULL) {
+            ERROR_ERRNO(error, errno);
+            array->data = array->buffer;
+            return;
+        }
+
+        memcpy(array->data, array->buffer,
+            ARRAY_INITIAL_CAPACITY * sizeof(intptr_t));
+    }
+    else {
+        intptr_t* data = (intptr_t*) realloc(
+            array->data, capacity * sizeof(intptr_t));
+
+        if (data == NULL) {
+            ERROR_ERRNO(error, errno);
+            return;
+        }
+
+        array->data = data;
+    }
+
+    array->capacity = capacity;
     ERROR_CLEAR(error);
-    return;
 }
 
 void Array_add(Array* array, size_t position, intptr_t element, Error* error) {
@@ -62,7 +74,9 @@ void Array_add(Array* array, size_t position, intptr_t element, Error* error) {
 }
 
 void Array_deinit(Array* array) {
-    free(array->data);
+    if (array->data != array->buffer) {
+        free(array->data);
+    }
 }
 
 void Array_extend(Array* list, Array* elements, Error* error) {
@@ -71,26 +85,17 @@ void Array_extend(Array* list, Array* elements, Error* error) {
         return;
     }
 
-    change_capacity(list, list->length + elements->length, error);
-    if (ERROR_HAS(error)) {
-        return;
-    }
-
     for (size_t i = 0; i < elements->length; ++i, ++list->length) {
         list->data[list->length] = elements->data[i];
     }
+
     ERROR_CLEAR(error);
 }
 
 void Array_init(Array* array, Error* error, ...) {
     array->length = 0;
-    array->capacity = DEFAULT_INITIAL_CAPACITY;
-    array->data = (intptr_t*) malloc(array->capacity * sizeof(intptr_t));
-
-    if (array->data == NULL) {
-        ERROR_ERRNO(error, errno);
-        return;
-    }
+    array->capacity = ARRAY_INITIAL_CAPACITY;
+    array->data = array->buffer;
 
     va_list args;
     va_start(args, error);

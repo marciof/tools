@@ -19,3 +19,5 @@ See `.travis.yml` for details.
 - Allow line numbers in input names to scroll to when paging.
 - Change array type to allow any element size? Will avoid many memory allocations, but will increase copying.
 - Improve error messages to give more context (which plugin, etc).
+- Pre-increase capacity when extending Arrays?
+- Potential problem with storing argv as Arrays? char[] vs intptr[]
