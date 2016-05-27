@@ -6,18 +6,12 @@ See `.travis.yml` for details.
 
 # To Do #
 
-- Reduce memory allocation.
+- Improve error messages to give more context on where it failed.
+- Count logical characters for paging instead of bytes.
+- Allow line numbers in input names to scroll to when paging.
+- Size mismatch issue with argv as Arrays?
+- Code coverage.
 - Profile each change.
   - http://geoff.greer.fm/ag/speed/
+  - Reduce memory allocation.
   - `./bin/callgrind -p less:-E -p less:+$(wc -l < /var/log/syslog.1) /var/log/syslog.1`
-- Lint and static analysis?
-  - http://clang-analyzer.llvm.org
-- Tests with coverage.
-  - https://github.com/andrewrk/malcheck
-  - https://github.com/google/sanitizers
-- Character counting for the "less" plugin actually counts bytes, not logical characters.
-- Allow line numbers in input names to scroll to when paging.
-- Change array type to allow any element size? Will avoid many memory allocations, but will increase copying.
-- Improve error messages to give more context (which plugin, etc).
-- Pre-increase capacity when extending Arrays?
-- Potential problem with storing argv as Arrays? char[] vs intptr[]

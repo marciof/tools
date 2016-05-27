@@ -1,6 +1,6 @@
 # 0.8.0 - UNRELEASED #
 
-- Fix plugin "less" to count logical characters for line wrapping.
+- Automatically disable paging if reading input takes too long to finish.
 
 # 0.7.0 - 2016-05-21 #
 
