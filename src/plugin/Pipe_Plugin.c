@@ -54,10 +54,6 @@ static char* get_fd_dir_path(int fd, Error* error) {
     return fd_dir_name;
 }
 
-static void Input_close(Input* input, Error* error) {
-    io_close(input->fd, error);
-}
-
 static const char* Plugin_get_description() {
     return "pipe input";
 }
@@ -113,7 +109,6 @@ static void Plugin_run(
         return;
     }
 
-    input->close = Input_close;
     Array_add(inputs, position, (intptr_t) input, error);
 
     if (ERROR_HAS(error)) {

@@ -6,7 +6,7 @@ See `.travis.yml` for details.
 
 # To Do #
 
-- Improve error messages to give more context on where it failed.
+- Duplicate output bug: `./show -p less:+$(wc -l < file) file`
 - Count logical characters for paging instead of bytes.
 - Allow line numbers in input names to scroll to when paging.
 - Size mismatch issue with argv as Arrays?

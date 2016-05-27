@@ -117,26 +117,33 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
-        if (input != NULL) {
-            int input_fd = input->fd;
+        if (input == NULL) {
+            continue;
+        }
 
-            if (input_fd == IO_INVALID_FD) {
-                has_plugin_failed = true;
-                fprintf(stderr, "Unsupported input: %s\n", input->name);
-                continue;
-            }
+        int input_fd = input->fd;
 
-            flush_input(input_fd, outputs, error);
+        if (input_fd == IO_INVALID_FD) {
+            has_plugin_failed = true;
+            fprintf(stderr, "Unsupported input: %s\n", input->name);
+            continue;
+        }
 
-            if (ERROR_HAS(error)) {
-                return true;
-            }
+        flush_input(input_fd, outputs, error);
 
+        if (ERROR_HAS(error)) {
+            return true;
+        }
+
+        if (input->close == NULL) {
+            io_close(input->fd, error);
+        }
+        else {
             input->close(input, error);
+        }
 
-            if (ERROR_HAS(error)) {
-                return true;
-            }
+        if (ERROR_HAS(error)) {
+            return true;
         }
     }
 

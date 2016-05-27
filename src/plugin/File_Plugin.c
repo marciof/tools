@@ -33,10 +33,6 @@ static int open_file(char* path, Error* error) {
     return file;
 }
 
-static void Input_close(Input* input, Error* error) {
-    io_close(input->fd, error);
-}
-
 static const char* Plugin_get_description() {
     return "read files";
 }
@@ -57,8 +53,6 @@ static void Plugin_run(
             if (ERROR_HAS(error)) {
                 return;
             }
-
-            input->close = Input_close;
         }
     }
 

@@ -10,6 +10,7 @@ typedef struct Input {
     char* name;
     int fd;
     intptr_t arg;
+    // If `NULL`, uses `io_close` by default.
     void (*close)(struct Input* input, Error* error);
 } Input;
 
