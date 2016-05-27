@@ -11,10 +11,6 @@
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
-static void close_pipe(Input* input, Error* error) {
-    io_close(input->fd, error);
-}
-
 static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
 
@@ -58,15 +54,21 @@ static char* get_fd_dir_path(int fd, Error* error) {
     return fd_dir_name;
 }
 
-static const char* get_description() {
+static void Input_close(Input* input, Error* error) {
+    io_close(input->fd, error);
+}
+
+static const char* Plugin_get_description() {
     return "pipe input";
 }
 
-static const char* get_name() {
+static const char* Plugin_get_name() {
     return "pipe";
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+static void Plugin_run(
+        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+
     int fd = STDIN_FILENO;
     struct stat fd_stat;
     Input* input;
@@ -111,7 +113,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
         return;
     }
 
-    input->close = close_pipe;
+    input->close = Input_close;
     Array_add(inputs, position, (intptr_t) input, error);
 
     if (ERROR_HAS(error)) {
@@ -124,7 +126,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Pipe_Plugin = {
     {NULL},
-    get_description,
-    get_name,
-    run,
+    Plugin_get_description,
+    Plugin_get_name,
+    Plugin_run,
 };

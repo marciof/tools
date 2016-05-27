@@ -8,21 +8,6 @@
 
 #define EXTERNAL_BINARY "ls"
 
-static void close_pipe(Input* input, Error* error) {
-    io_close(input->fd, error);
-
-    if (!ERROR_HAS(error)) {
-        int status;
-
-        if (waitpid((int) input->arg, &status, 0) == -1) {
-            ERROR_ERRNO(error, errno);
-        }
-        else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-            ERROR_SET(error, "");
-        }
-    }
-}
-
 static void create_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
@@ -42,12 +27,19 @@ static void create_argv(Array* argv, Array* options, Error* error) {
     ERROR_CLEAR(error);
 }
 
-static const char* get_description() {
-    return "list directories via `" EXTERNAL_BINARY "`";
-}
+static void Input_close(Input* input, Error* error) {
+    io_close(input->fd, error);
 
-static const char* get_name() {
-    return EXTERNAL_BINARY;
+    if (!ERROR_HAS(error)) {
+        int status;
+
+        if (waitpid((int) input->arg, &status, 0) == -1) {
+            ERROR_ERRNO(error, errno);
+        }
+        else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+            ERROR_SET(error, ERROR_UNSPECIFIED);
+        }
+    }
 }
 
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
@@ -70,7 +62,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
 
     int child_pid;
 
-    input->close = close_pipe;
+    input->close = Input_close;
     input->fd = fork_exec(
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
@@ -85,7 +77,17 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+static const char* Plugin_get_description() {
+    return "list directories via `" EXTERNAL_BINARY "`";
+}
+
+static const char* Plugin_get_name() {
+    return EXTERNAL_BINARY;
+}
+
+static void Plugin_run(
+        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+
     Array argv;
     size_t nr_args = 0;
 
@@ -150,7 +152,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Ls_Plugin = {
     {NULL},
-    get_description,
-    get_name,
-    run,
+    Plugin_get_description,
+    Plugin_get_name,
+    Plugin_run,
 };

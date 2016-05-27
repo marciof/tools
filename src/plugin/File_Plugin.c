@@ -4,18 +4,6 @@
 #include "../io.h"
 #include "File_Plugin.h"
 
-static void close_file(Input* input, Error* error) {
-    io_close(input->fd, error);
-}
-
-static const char* get_description() {
-    return "read files";
-}
-
-static const char* get_name() {
-    return "file";
-}
-
 static int open_file(char* path, Error* error) {
     struct stat path_stat;
 
@@ -45,7 +33,21 @@ static int open_file(char* path, Error* error) {
     return file;
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+static void Input_close(Input* input, Error* error) {
+    io_close(input->fd, error);
+}
+
+static const char* Plugin_get_description() {
+    return "read files";
+}
+
+static const char* Plugin_get_name() {
+    return "file";
+}
+
+static void Plugin_run(
+        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
@@ -56,7 +58,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
                 return;
             }
 
-            input->close = close_file;
+            input->close = Input_close;
         }
     }
 
@@ -65,7 +67,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin File_Plugin = {
     {NULL},
-    get_description,
-    get_name,
-    run,
+    Plugin_get_description,
+    Plugin_get_name,
+    Plugin_run,
 };

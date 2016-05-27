@@ -26,60 +26,35 @@ typedef struct {
 
 static struct winsize terminal;
 
-static void Pager_delete(Pager* pager, Error* error) {
-    if (pager->has_buffer_timer) {
-        if (ERROR_HAS(&pager->buffer_timer_error)) {
-            ERROR_COPY(error, &pager->buffer_timer_error);
-            return;
-        }
-
-        int error_nr = pthread_cancel(pager->buffer_timer);
-
-        if (error_nr && (error_nr != ESRCH)) {
-            ERROR_ERRNO(error, error_nr);
-            return;
-        }
-
-        error_nr = pthread_join(pager->buffer_timer, NULL);
-
-        if (error_nr) {
-            ERROR_ERRNO(error, error_nr);
-            return;
-        }
-    }
-
-    for (size_t i = 0; i < pager->buffers.length; ++i) {
-        Buffer_delete((Buffer*) pager->buffers.data[i]);
-    }
-
-    Array_deinit(&pager->buffers);
-    free(pager);
+static void get_terminal_size(int num) {
+    signal(SIGWINCH, get_terminal_size);
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }
 
-static Pager* Pager_new(Array* options, Error* error) {
-    Pager* pager = (Pager*) malloc(sizeof(*pager));
-
-    if (pager == NULL) {
-        ERROR_ERRNO(error, errno);
-        return NULL;
-    }
-
-    pager->has_buffer_timer = false;
-    pager->options = options;
-    pager->nr_lines = 0;
-    pager->nr_line_chars = 0;
-    pager->fd = IO_INVALID_FD;
-
-    ERROR_CLEAR(&pager->buffer_timer_error);
-    Array_init(&pager->buffers, error, NULL);
+static void create_argv(Array* argv, Array* options, Error* error) {
+    Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
     if (ERROR_HAS(error)) {
-        free(pager);
-        return NULL;
+        return;
+    }
+
+    if (options != NULL) {
+        Array_extend(argv, options, error);
+
+        if (ERROR_HAS(error)) {
+            Array_deinit(argv);
+            return;
+        }
+    }
+
+    Array_add(argv, argv->length, (intptr_t) NULL, error);
+
+    if (ERROR_HAS(error)) {
+        Array_deinit(argv);
+        return;
     }
 
     ERROR_CLEAR(error);
-    return pager;
 }
 
 static void flush_pager_buffer(Pager* pager, Error* error) {
@@ -173,33 +148,63 @@ static bool buffer_pager_input(Pager* pager, Buffer** buffer, Error* error) {
     return true;
 }
 
-static void create_argv(Array* argv, Array* options, Error* error) {
-    Array_init(argv, error, EXTERNAL_BINARY, NULL);
+static void Pager_delete(Pager* pager, Error* error) {
+    if (pager->has_buffer_timer) {
+        if (ERROR_HAS(&pager->buffer_timer_error)) {
+            *error = pager->buffer_timer_error;
+            return;
+        }
 
-    if (ERROR_HAS(error)) {
-        return;
-    }
+        int error_nr = pthread_cancel(pager->buffer_timer);
 
-    if (options != NULL) {
-        Array_extend(argv, options, error);
+        if (error_nr && (error_nr != ESRCH)) {
+            ERROR_ERRNO(error, error_nr);
+            return;
+        }
 
-        if (ERROR_HAS(error)) {
-            Array_deinit(argv);
+        error_nr = pthread_join(pager->buffer_timer, NULL);
+
+        if (error_nr) {
+            ERROR_ERRNO(error, error_nr);
             return;
         }
     }
 
-    Array_add(argv, argv->length, (intptr_t) NULL, error);
+    for (size_t i = 0; i < pager->buffers.length; ++i) {
+        Buffer_delete((Buffer*) pager->buffers.data[i]);
+    }
+
+    Array_deinit(&pager->buffers);
+    free(pager);
+}
+
+static Pager* Pager_new(Array* options, Error* error) {
+    Pager* pager = (Pager*) malloc(sizeof(*pager));
+
+    if (pager == NULL) {
+        ERROR_ERRNO(error, errno);
+        return NULL;
+    }
+
+    pager->has_buffer_timer = false;
+    pager->options = options;
+    pager->nr_lines = 0;
+    pager->nr_line_chars = 0;
+    pager->fd = IO_INVALID_FD;
+
+    ERROR_CLEAR(&pager->buffer_timer_error);
+    Array_init(&pager->buffers, error, NULL);
 
     if (ERROR_HAS(error)) {
-        Array_deinit(argv);
-        return;
+        free(pager);
+        return NULL;
     }
 
     ERROR_CLEAR(error);
+    return pager;
 }
 
-static void close_pager(Output* output, Error* error) {
+static void Output_close(Output* output, Error* error) {
     Pager* pager = (Pager*) output->arg;
 
     if (pager->fd == IO_INVALID_FD) {
@@ -213,7 +218,7 @@ static void close_pager(Output* output, Error* error) {
     }
 }
 
-static void write_to_pager(Output* output, Buffer** buffer, Error* error) {
+static void Output_write(Output* output, Buffer** buffer, Error* error) {
     Pager* pager = (Pager*) output->arg;
 
     if (pager->fd == IO_INVALID_FD) {
@@ -272,20 +277,17 @@ static void write_to_pager(Output* output, Buffer** buffer, Error* error) {
     (*buffer)->length = 0;
 }
 
-static const char* get_description() {
+static const char* Plugin_get_description() {
     return "page output if needed via `" EXTERNAL_BINARY "`";
 }
 
-static const char* get_name() {
+static const char* Plugin_get_name() {
     return EXTERNAL_BINARY;
 }
 
-static void get_terminal_size(int num) {
-    signal(SIGWINCH, get_terminal_size);
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
-}
+static void Plugin_run(
+        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     if (!isatty(STDOUT_FILENO)) {
         ERROR_CLEAR(error);
         return;
@@ -307,8 +309,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
         return;
     }
 
-    output->close = close_pager;
-    output->write = write_to_pager;
+    output->close = Output_close;
+    output->write = Output_write;
     output->arg = (intptr_t) Pager_new(&plugin->options, error);
 
     if (ERROR_HAS(error)) {
@@ -328,7 +330,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Pager_Plugin = {
     {NULL},
-    get_description,
-    get_name,
-    run,
+    Plugin_get_description,
+    Plugin_get_name,
+    Plugin_run,
 };
