@@ -6,6 +6,8 @@ See `.travis.yml` for details.
 
 # To Do #
 
+- Move plugin API to root folder, and remove plugin suffixes from each implementation.
+- Check for race conditions.
 - Duplicate output bug: `./show -p less:+$(wc -l < file) file`
 - Count logical characters for paging instead of bytes.
 - Allow line numbers in input names to scroll to when paging.
