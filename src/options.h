@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include "Array.h"
 #include "Error.h"
-#include "plugin/Plugin.h"
+#include "Plugin.h"
 
 // If a plugin is disabled, its entry in `plugins` is set to `NULL`.
 // If help usage was displayed, it returns `true`.

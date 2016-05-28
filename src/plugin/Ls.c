@@ -4,7 +4,7 @@
 #include "../Array.h"
 #include "../fork_exec.h"
 #include "../io.h"
-#include "Ls_Plugin.h"
+#include "Ls.h"
 
 #define EXTERNAL_BINARY "ls"
 

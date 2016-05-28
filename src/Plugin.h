@@ -1,9 +1,9 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
-#include "../Array.h"
-#include "../Error.h"
-#include "../io.h"
+#include "Array.h"
+#include "Error.h"
+#include "io.h"
 
 typedef struct Input {
     // If unnamed, `name` is set to `NULL`.

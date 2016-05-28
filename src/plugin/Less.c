@@ -8,15 +8,15 @@
 #include <unistd.h>
 #include "../Array.h"
 #include "../io.h"
-#include "Less_Plugin.h"
+#include "Less.h"
 
 #define EXTERNAL_BINARY "less"
 #define PAGING_THRESHOLD 0.5
 
 typedef struct {
-    bool has_buffer_timer;
-    pthread_t buffer_timer;
-    Error buffer_timer_error;
+    bool has_timer;
+    Error timer_error;
+    pthread_t timer_thread;
     Array buffers;
     Array* options;
     size_t nr_lines;
@@ -81,11 +81,11 @@ void* flush_pager_buffer_timer(void* arg) {
     timeout.tv_usec = 500 * 1000;
 
     if (select(0, NULL, NULL, NULL, &timeout) == -1) {
-        ERROR_ERRNO(&pager->buffer_timer_error, errno);
+        ERROR_ERRNO(&pager->timer_error, errno);
     }
     else {
         pager->fd = STDOUT_FILENO;
-        flush_pager_buffer(pager, &pager->buffer_timer_error);
+        flush_pager_buffer(pager, &pager->timer_error);
     }
 
     return NULL;
@@ -131,16 +131,16 @@ static bool buffer_pager_input(Pager* pager, Buffer** buffer, Error* error) {
         return true;
     }
 
-    if (!pager->has_buffer_timer) {
+    if (!pager->has_timer) {
         int error_nr = pthread_create(
-            &pager->buffer_timer, NULL, flush_pager_buffer_timer, pager);
+            &pager->timer_thread, NULL, flush_pager_buffer_timer, pager);
 
         if (error_nr) {
             ERROR_ERRNO(error, error_nr);
             return true;
         }
 
-        pager->has_buffer_timer = true;
+        pager->has_timer = true;
     }
 
     *buffer = NULL;
@@ -149,20 +149,20 @@ static bool buffer_pager_input(Pager* pager, Buffer** buffer, Error* error) {
 }
 
 static void Pager_delete(Pager* pager, Error* error) {
-    if (pager->has_buffer_timer) {
-        if (ERROR_HAS(&pager->buffer_timer_error)) {
-            *error = pager->buffer_timer_error;
+    if (pager->has_timer) {
+        if (ERROR_HAS(&pager->timer_error)) {
+            *error = pager->timer_error;
             return;
         }
 
-        int error_nr = pthread_cancel(pager->buffer_timer);
+        int error_nr = pthread_cancel(pager->timer_thread);
 
         if (error_nr && (error_nr != ESRCH)) {
             ERROR_ERRNO(error, error_nr);
             return;
         }
 
-        error_nr = pthread_join(pager->buffer_timer, NULL);
+        error_nr = pthread_join(pager->timer_thread, NULL);
 
         if (error_nr) {
             ERROR_ERRNO(error, error_nr);
@@ -186,13 +186,13 @@ static Pager* Pager_new(Array* options, Error* error) {
         return NULL;
     }
 
-    pager->has_buffer_timer = false;
+    pager->has_timer = false;
     pager->options = options;
     pager->nr_lines = 0;
     pager->nr_line_chars = 0;
     pager->fd = IO_INVALID_FD;
 
-    ERROR_CLEAR(&pager->buffer_timer_error);
+    ERROR_CLEAR(&pager->timer_error);
     Array_init(&pager->buffers, error, NULL);
 
     if (ERROR_HAS(error)) {

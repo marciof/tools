@@ -9,19 +9,19 @@ endif()
 set(sources
     src/Array.c
     src/Array.h
-    src/plugin/Pipe_Plugin.c
-    src/plugin/Pipe_Plugin.h
-    src/plugin/Ls_Plugin.c
-    src/plugin/Ls_Plugin.h
+    src/plugin/Pipe.c
+    src/plugin/Pipe.h
+    src/plugin/Ls.c
+    src/plugin/Ls.h
     src/Error.h
     src/options.c
     src/options.h
-    src/plugin/File_Plugin.c
-    src/plugin/File_Plugin.h
-    src/plugin/Less_Plugin.c
-    src/plugin/Less_Plugin.h
-    src/plugin/Plugin.c
-    src/plugin/Plugin.h
+    src/plugin/File.c
+    src/plugin/File.h
+    src/plugin/Less.c
+    src/plugin/Less.h
+    src/Plugin.c
+    src/Plugin.h
     src/fork_exec.c
     src/fork_exec.h
     src/io.c

@@ -7,7 +7,7 @@
 #include "../Array.h"
 #include "../Error.h"
 #include "../io.h"
-#include "Pipe_Plugin.h"
+#include "Pipe.h"
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 

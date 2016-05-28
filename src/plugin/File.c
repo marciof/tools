@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "../io.h"
-#include "File_Plugin.h"
+#include "File.h"
 
 static int open_file(char* path, Error* error) {
     struct stat path_stat;

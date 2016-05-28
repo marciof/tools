@@ -7,10 +7,10 @@
 #include "Array.h"
 #include "io.h"
 #include "options.h"
-#include "plugin/File_Plugin.h"
-#include "plugin/Less_Plugin.h"
-#include "plugin/Ls_Plugin.h"
-#include "plugin/Pipe_Plugin.h"
+#include "plugin/File.h"
+#include "plugin/Less.h"
+#include "plugin/Ls.h"
+#include "plugin/Pipe.h"
 
 static Plugin* plugins[] = {
     &Pipe_Plugin,
