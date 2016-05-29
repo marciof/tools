@@ -14,12 +14,11 @@ def generate(pattern):
 
     combinations = []
     prefixes = pattern[:1]
-    suffix = pattern[1:]
 
     if prefixes == '?':
         prefixes = {'0', '1'}
 
-    for combination in generate(suffix):
+    for combination in generate(pattern[1:]):
         for prefix in prefixes:
             combinations.append(prefix + combination)
 

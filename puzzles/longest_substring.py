@@ -16,29 +16,27 @@ def find_substring(string):
     best_start = 0
     best_end = -1
 
-    current_start = 0
-    current_end = -1
+    start = 0
+    end = -1
 
     char_to_pos = {}
 
     for i, char in enumerate(string):
         pos = char_to_pos.get(char, -1)
 
-        if pos < current_start:
-            current_end = i
-        else:
-            if (current_end - current_start) > (best_end - best_start):
-                best_start = current_start
-                best_end = current_end
+        if pos >= start:
+            if (end - start) > (best_end - best_start):
+                best_start = start
+                best_end = end
 
-            current_start = pos + 1
-            current_end = i
+            start = pos + 1
 
         char_to_pos[char] = i
+        end = i
 
-    if (current_end - current_start) > (best_end - best_start):
-        best_start = current_start
-        best_end = current_end
+    if (end - start) > (best_end - best_start):
+        best_start = start
+        best_end = end
 
     return string[best_start : best_end + 1]
 

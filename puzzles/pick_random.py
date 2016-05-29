@@ -13,10 +13,10 @@ def pick_random(array, count):
     Time: O(count)
     """
 
-    if (not array) or (count <= 0):
+    if (len(array) == 0) or (count <= 0):
         return []
 
-    shuffled = {}
+    shuffled_by_pos = {}
     elements = []
 
     for i in range(0, len(array)):
@@ -25,13 +25,13 @@ def pick_random(array, count):
 
         j = random.randint(i, len(array) - 1)
 
-        elem_i = shuffled.get(i, array[i])
-        elem_j = shuffled.get(j, array[j])
+        elem_i = shuffled_by_pos.get(i, array[i])
+        elem_j = shuffled_by_pos.get(j, array[j])
 
-        shuffled[i] = elem_j
-        shuffled[j] = elem_i
+        shuffled_by_pos[i] = elem_j
+        shuffled_by_pos[j] = elem_i
 
-        elements.append(shuffled.pop(i))
+        elements.append(shuffled_by_pos.pop(i))
 
     return elements
 

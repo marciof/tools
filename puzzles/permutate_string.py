@@ -10,15 +10,13 @@ def permutate(string):
     Time: O(n^2) where n = len(string)
     """
 
-    if len(string) <= 1:
+    if string == '':
         return [string]
 
     permutations = []
 
-    for pos, char in enumerate(string):
-        substring = string[:pos] + string[pos + 1:]
-
-        for permutation in permutate(substring):
+    for i, char in enumerate(string):
+        for permutation in permutate(string[:i] + string[i + 1:]):
             permutations.append(char + permutation)
 
     return permutations

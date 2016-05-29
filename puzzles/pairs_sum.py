@@ -3,9 +3,9 @@
 
 import unittest
 
-def list_pairs(numbers, target_sum):
+def list_pairs(numbers, total):
     """
-    Find all pairs from `numbers` that when added equal `sum`.
+    Find all pairs from `numbers` that when added equal `total`.
 
     Time: O(n)
     """
@@ -15,9 +15,9 @@ def list_pairs(numbers, target_sum):
 
     for n in numbers:
         if n in needed_numbers:
-            pairs.append((target_sum - n, n))
+            pairs.append((total - n, n))
         else:
-            needed_numbers.add(target_sum - n)
+            needed_numbers.add(total - n)
     
     return pairs
 
