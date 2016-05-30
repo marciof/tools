@@ -17,6 +17,7 @@ typedef struct {
     bool has_timer;
     Error timer_error;
     pthread_t timer_thread;
+    pthread_mutex_t timer_mutex;
     Array buffers;
     Array* options;
     size_t nr_lines;
@@ -26,7 +27,7 @@ typedef struct {
 
 static struct winsize terminal;
 
-static void get_terminal_size(int num) {
+static void get_terminal_size(int signal_num) {
     signal(SIGWINCH, get_terminal_size);
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }
@@ -57,7 +58,31 @@ static void create_argv(Array* argv, Array* options, Error* error) {
     ERROR_CLEAR(error);
 }
 
-static void flush_pager_buffer(Pager* pager, Error* error) {
+static void protect_buffer(Pager* pager, bool is_lock, Error* error) {
+    if (pager->has_timer) {
+        int error_nr = (is_lock ? pthread_mutex_lock : pthread_mutex_unlock)(
+            &pager->timer_mutex);
+
+        if (error_nr) {
+            ERROR_ERRNO(error, error_nr);
+            return;
+        }
+    }
+
+    ERROR_CLEAR(error);
+}
+
+static void flush_buffer(Pager* pager, int default_fd, Error* error) {
+    protect_buffer(pager, true, error);
+
+    if (ERROR_HAS(error)) {
+        return;
+    }
+
+    if (pager->fd == IO_INVALID_FD) {
+        pager->fd = default_fd;
+    }
+
     for (size_t i = 0; i < pager->buffers.length; ++i) {
         Buffer* buffer = (Buffer*) pager->buffers.data[i];
 
@@ -70,10 +95,10 @@ static void flush_pager_buffer(Pager* pager, Error* error) {
     }
 
     pager->buffers.length = 0;
-    ERROR_CLEAR(error);
+    protect_buffer(pager, false, error);
 }
 
-void* flush_pager_buffer_timer(void* arg) {
+void* flush_buffer_timer(void* arg) {
     Pager* pager = (Pager*) arg;
     struct timeval timeout;
 
@@ -84,14 +109,13 @@ void* flush_pager_buffer_timer(void* arg) {
         ERROR_ERRNO(&pager->timer_error, errno);
     }
     else {
-        pager->fd = STDOUT_FILENO;
-        flush_pager_buffer(pager, &pager->timer_error);
+        flush_buffer(pager, STDOUT_FILENO, &pager->timer_error);
     }
 
     return NULL;
 }
 
-static bool buffer_pager_input(Pager* pager, Buffer** buffer, Error* error) {
+static bool buffer_input(Pager* pager, Buffer** buffer, Error* error) {
     bool should_buffer = true;
 
     for (size_t i = 0; i < (*buffer)->length; ++i) {
@@ -124,20 +148,39 @@ static bool buffer_pager_input(Pager* pager, Buffer** buffer, Error* error) {
         return false;
     }
 
+    protect_buffer(pager, true, error);
+
+    if (ERROR_HAS(error)) {
+        return false;
+    }
+
     Array_add(
         &pager->buffers, pager->buffers.length, (intptr_t) *buffer, error);
 
     if (ERROR_HAS(error)) {
-        return true;
+        return false;
+    }
+
+    protect_buffer(pager, false, error);
+
+    if (ERROR_HAS(error)) {
+        return false;
     }
 
     if (!pager->has_timer) {
         int error_nr = pthread_create(
-            &pager->timer_thread, NULL, flush_pager_buffer_timer, pager);
+            &pager->timer_thread, NULL, flush_buffer_timer, pager);
 
         if (error_nr) {
             ERROR_ERRNO(error, error_nr);
-            return true;
+            return false;
+        }
+
+        error_nr = pthread_mutex_init(&pager->timer_mutex, NULL);
+
+        if (error_nr) {
+            ERROR_ERRNO(error, error_nr);
+            return false;
         }
 
         pager->has_timer = true;
@@ -163,6 +206,13 @@ static void Pager_delete(Pager* pager, Error* error) {
         }
 
         error_nr = pthread_join(pager->timer_thread, NULL);
+
+        if (error_nr) {
+            ERROR_ERRNO(error, error_nr);
+            return;
+        }
+
+        error_nr = pthread_mutex_destroy(&pager->timer_mutex);
 
         if (error_nr) {
             ERROR_ERRNO(error, error_nr);
@@ -206,12 +256,7 @@ static Pager* Pager_new(Array* options, Error* error) {
 
 static void Output_close(Output* output, Error* error) {
     Pager* pager = (Pager*) output->arg;
-
-    if (pager->fd == IO_INVALID_FD) {
-        pager->fd = STDOUT_FILENO;
-    }
-
-    flush_pager_buffer(pager, error);
+    flush_buffer(pager, STDOUT_FILENO, error);
 
     if (!ERROR_HAS(error)) {
         Pager_delete(pager, error);
@@ -222,7 +267,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
     Pager* pager = (Pager*) output->arg;
 
     if (pager->fd == IO_INVALID_FD) {
-        if (buffer_pager_input(pager, buffer, error)) {
+        if (buffer_input(pager, buffer, error)) {
             return;
         }
 
@@ -265,9 +310,8 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 
         Array_deinit(&argv);
         close(read_write_fds[0]);
-        pager->fd = read_write_fds[1];
+        flush_buffer(pager, read_write_fds[1], error);
 
-        flush_pager_buffer(pager, error);
         if (ERROR_HAS(error)) {
             return;
         }

@@ -1,4 +1,4 @@
-# 0.8.0 - UNRELEASED #
+# 0.8.0 - 2016-05-30 #
 
 - Automatically disable paging if reading input takes too long to finish.
 
