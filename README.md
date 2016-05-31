@@ -10,6 +10,6 @@ See `.travis.yml` for details.
 - Profile each change.
   - http://geoff.greer.fm/ag/speed/
   - Reduce memory allocation.
-  - `./bin/callgrind -p less:-E -p less:+$(wc -l < /var/log/syslog.1) /var/log/syslog.1`
+  - `./bin/callgrind -p pager:-E -p pager:+$(wc -l < /var/log/syslog.1) /var/log/syslog.1`
 - Count logical characters for paging instead of bytes.
 - Allow line numbers in input names to scroll to when paging.

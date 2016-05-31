@@ -1,3 +1,7 @@
+# 0.9.0 - UNRELEASED #
+
+- Rename plugin "less" back to "pager", since it does a lot more than just pipe to `less`.
+
 # 0.8.0 - 2016-05-30 #
 
 - Automatically disable paging if reading input takes too long to finish.

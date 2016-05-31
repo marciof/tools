@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include "../Array.h"
 #include "../io.h"
-#include "Less.h"
+#include "Pager.h"
 
 #define EXTERNAL_BINARY "less"
 #define PAGING_THRESHOLD 0.5
@@ -322,11 +322,11 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 }
 
 static const char* Plugin_get_description() {
-    return "page output if needed via `" EXTERNAL_BINARY "`";
+    return "page output via `" EXTERNAL_BINARY "`";
 }
 
 static const char* Plugin_get_name() {
-    return EXTERNAL_BINARY;
+    return "pager";
 }
 
 static void Plugin_run(

@@ -8,7 +8,7 @@
 #include "io.h"
 #include "options.h"
 #include "plugin/File.h"
-#include "plugin/Less.h"
+#include "plugin/Pager.h"
 #include "plugin/Ls.h"
 #include "plugin/Pipe.h"
 
