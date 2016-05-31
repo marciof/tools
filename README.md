@@ -6,7 +6,6 @@ See `.travis.yml` for details.
 
 # To Do #
 
-- Size mismatch issue with argv as Arrays?
 - Code coverage.
 - Profile each change.
   - http://geoff.greer.fm/ag/speed/
