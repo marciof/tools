@@ -1,6 +1,7 @@
 # 0.9.0 - UNRELEASED #
 
-- Rename plugin "less" back to "pager", since it does a lot more than just pipe to `less`.
+- Rename plugin "ls" to "dir" for readability.
+- Rename plugin "less" back to "pager" for readability and because it does a lot more than just piping to `less`.
 
 # 0.8.0 - 2016-05-30 #
 

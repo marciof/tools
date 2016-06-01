@@ -4,7 +4,7 @@
 #include "../Array.h"
 #include "../fork_exec.h"
 #include "../io.h"
-#include "Ls.h"
+#include "Dir.h"
 
 #define EXTERNAL_BINARY "ls"
 
@@ -82,7 +82,7 @@ static const char* Plugin_get_description() {
 }
 
 static const char* Plugin_get_name() {
-    return EXTERNAL_BINARY;
+    return "dir";
 }
 
 static void Plugin_run(
@@ -150,7 +150,7 @@ static void Plugin_run(
     Array_deinit(&argv);
 }
 
-Plugin Ls_Plugin = {
+Plugin Dir_Plugin = {
     {NULL},
     Plugin_get_description,
     Plugin_get_name,

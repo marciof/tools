@@ -9,13 +9,13 @@
 #include "options.h"
 #include "plugin/File.h"
 #include "plugin/Pager.h"
-#include "plugin/Ls.h"
+#include "plugin/Dir.h"
 #include "plugin/Pipe.h"
 
 static Plugin* plugins[] = {
     &Pipe_Plugin,
     &File_Plugin,
-    &Ls_Plugin,
+    &Dir_Plugin,
     &Pager_Plugin,
 };
 

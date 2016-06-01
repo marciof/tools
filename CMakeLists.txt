@@ -11,8 +11,8 @@ set(sources
     src/Array.h
     src/plugin/Pipe.c
     src/plugin/Pipe.h
-    src/plugin/Ls.c
-    src/plugin/Ls.h
+    src/plugin/Dir.c
+    src/plugin/Dir.h
     src/Error.h
     src/options.c
     src/options.h
