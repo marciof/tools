@@ -75,7 +75,7 @@ bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
 bind '"\e[2~": backward-kill-word'              # Insert
 
 if _have show; then
-    alias s="$NAME -p ls:-Fh -p ls:--color=auto -p ls:--group-directories-first"
+    alias s="$NAME -p dir:-Fh -p dir:--color=auto -p dir:--group-directories-first"
     export PAGER="$NAME"
 fi
 
