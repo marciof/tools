@@ -6,6 +6,7 @@ See `.travis.yml` for details.
 
 # To Do #
 
+- Split plugins into input and output? To simplify and to avoid having to memory allocate outputs.
 - Code coverage.
 - Profile each change.
   - http://geoff.greer.fm/ag/speed/

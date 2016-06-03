@@ -22,6 +22,7 @@ typedef struct {
     Array* options;
     size_t nr_lines;
     size_t nr_line_chars;
+    // Set to `IO_INVALID_FD` if and until the pager starts.
     int fd;
 } Pager;
 
@@ -226,6 +227,7 @@ static void Pager_delete(Pager* pager, Error* error) {
 
     Array_deinit(&pager->buffers);
     free(pager);
+    ERROR_CLEAR(error);
 }
 
 static Pager* Pager_new(Array* options, Error* error) {
