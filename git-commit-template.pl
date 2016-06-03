@@ -32,7 +32,7 @@ sub add_ticket_number {
     };
     
     foreach my $branch ($remote_branch, $local_branch) {
-        if (my ($ticket) = (($branch // '') =~ m/(\w+-\d+)/)) {
+        if (my ($ticket) = (($branch // '') =~ m/^.*\b(\w+-\d+)/)) {
             print $commit_message "[\U$ticket\E] ";
             last;
         }
