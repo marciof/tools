@@ -49,15 +49,17 @@ export LESS='-x4 -c -M -R -i'
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
 
-# https://wiki.archlinux.org/index.php/Color_Bash_Prompt
 _color_off='\e[0m'
 _yellow='\e[0;33m'
-_purple='\e[0;35m'
+_green='\e[0;32m'
 _b_red='\e[1;31m'
 _b_blue='\e[1;34m'
-_u_green='\e[4;32m'
 
-_ps1_user_host='\u@\h'
+if [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+    _ps1_user_host="\[$_yellow\]\\u@\\h\[$_color_off\] "
+else
+    _ps1_user_host=
+fi
 
 # Disable XON/XOFF flow control to allow `bind -q forward-search-history`.
 stty -ixon
@@ -104,13 +106,6 @@ SCRIPT
     fi
 fi
 
-_jobs_nr_ps1() {
-    local jobs=$(jobs | wc -l)
-    [ $jobs -gt 0 ] && echo -e ":$_b_red$jobs$_color_off"
-}
-
-_ps1_user_host="\[$_u_green\]$_ps1_user_host\[$_color_off\]\$(_jobs_nr_ps1)"
-
 # https://github.com/git/git/tree/master/contrib/completion
 if _have git; then
     alias g=$NAME
@@ -155,7 +150,7 @@ if _have git; then
 
     _color_git_ps1() {
         local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo -e ":$_yellow$ps1$_color_off"
+        [ -n "$ps1" ] && echo "$ps1 "
     }
 
     _set_git_config() {
@@ -194,13 +189,14 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
 
-    _ps1_user_host="$_ps1_user_host\$(_color_git_ps1)"
+    _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
 fi
 
-_virtual_env_ps1() {
-    [ -n "$VIRTUAL_ENV" ] && echo -e ":$_purple$(basename $VIRTUAL_ENV)$_color_off"
+_jobs_nr_ps1() {
+    local jobs=$(jobs | wc -l)
+    [ $jobs -gt 0 ] && echo -e " $_b_red$jobs$_color_off"
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_ps1_user_host\$(_virtual_env_ps1):\[$_b_blue\]\w\[$_color_off\]\n\\$ "
+    export PS1="$_ps1_user_host\[$_b_blue\]\w\[$_color_off\]\$(_jobs_nr_ps1)\\$ "
 fi
