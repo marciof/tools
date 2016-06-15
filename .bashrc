@@ -195,9 +195,9 @@ fi
 
 _jobs_nr_ps1() {
     local jobs=$(jobs | wc -l)
-    [ $jobs -gt 0 ] && echo -e " $_b_red$jobs$_color_off"
+    [ $jobs -gt 0 ] && echo " $jobs"
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_ps1_user_host\[$_b_blue\]\w\[$_color_off\]\$(_jobs_nr_ps1)\\$ "
+    export PS1="$_ps1_user_host\[$_b_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
 fi
