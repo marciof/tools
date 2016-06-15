@@ -46,6 +46,7 @@ _have lesspipe && eval "$($NAME)"
 export ANSIBLE_NOCOWS=x
 export HISTCONTROL=ignoreboth
 export LESS='-x4 -c -M -R -i'
+export PROMPT_DIRTRIM=3
 export PYTHONDONTWRITEBYTECODE=x
 export VIRTUAL_ENV_DISABLE_PROMPT=x
 
