@@ -54,7 +54,7 @@ _color_off='\e[0m'
 _yellow='\e[0;33m'
 _green='\e[0;32m'
 _b_red='\e[1;31m'
-_b_blue='\e[1;34m'
+_blue='\e[0;34m'
 
 if [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
     _ps1_user_host="\[$_yellow\]\\u@\\h\[$_color_off\] "
@@ -199,5 +199,5 @@ _jobs_nr_ps1() {
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_ps1_user_host\[$_b_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
+    export PS1="$_ps1_user_host\[$_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
 fi
