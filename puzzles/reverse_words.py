@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Reverse word order in a `string` (array) in place.
+
+Time: O(n)
+"""
+
 import unittest
 
 def reverse_span(string, start, end):
@@ -13,12 +19,6 @@ def reverse_span(string, start, end):
         end -= 1
 
 def reverse(string):
-    """
-    Reverse word order in a `string` (array) in place.
-
-    Time: O(n)
-    """
-
     reverse_span(string, 0, len(string) - 1)
     last = None
 

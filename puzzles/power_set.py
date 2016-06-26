@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+List all subsets of a given set of `numbers`.
+
+Time: O(n)
+"""
+
 import unittest
 
 def generate(numbers):
-    """
-    List all subsets of a given set of `numbers`.
-
-    Time: O(n)
-    """
-
     if len(numbers) == 0:
         return [set()]
 

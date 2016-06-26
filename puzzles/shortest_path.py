@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Find shortest path from road `start` to a road containing `house` nr.
+
+https://en.wikipedia.org/wiki/Breadth-first_search
+
+Time: O(V+E)
+"""
+
 import collections
 import unittest
 
@@ -18,14 +26,6 @@ class Intersect:
         return hash(self) == hash(other)
 
 def shortest_path(start, house):
-    """
-    Find shortest path from road `start` to a road containing `house` nr.
-
-    https://en.wikipedia.org/wiki/Breadth-first_search
-
-    Time: O(V+E)
-    """
-
     queue = [start]
     road_to_prev = {start: None}
 

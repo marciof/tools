@@ -2,6 +2,12 @@
 # -*- coding: UTF-8 -*-
 
 """
+Detect a cycle in a linked list. (Floyd's "tortoise and hare" algorithm.)
+
+Returns `(has_cycle, cycle start node, previous node)`.
+
+Time: O(n)
+
 Floyd's "tortoise and hare" algorithm:
 
 1. Keep two pointers: `slow` steps one node at a time, `fast` steps double.
@@ -77,14 +83,6 @@ def print_list(l):
     print()
 
 def has_cycle(l):
-    """
-    Detect a cycle in a linked list. (Floyd's "tortoise and hare" algorithm.)
-
-    Returns `(has_cycle, cycle start node, previous node)`.
-
-    Time: O(n)
-    """
-
     def step(node):
         return None if node is None else node.next
 

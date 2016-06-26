@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Find the only unpaired integer in a sequence of `numbers`.
+
+Time: O(n)
+Space: O(1)
+"""
+
 import sys
 import unittest
 
 def find_alone_int(numbers):
-    """
-    Find the only unpaired integer in a sequence of `numbers`.
-
-    Time: O(n)
-    Space: O(1)
-    """
 
     alone = next(numbers)
 

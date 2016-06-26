@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Generate all combinations of the `pattern` string, consisting of `'0'` and
+`'1'`, where `'?'` is a wildcard.
+"""
+
 import unittest
 
 def generate(pattern):
-    """
-    Generate all combinations of the `pattern` string, consisting of `'0'` and
-    `'1'`, where `'?'` is a wildcard.
-    """
-
     if pattern == '':
         return ['']
 

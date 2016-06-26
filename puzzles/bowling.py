@@ -1,36 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# Input: valid sequence of rolls for one game of American Ten-Pin Bowling.
-# Output: total score for the game.
+"""
+Input: valid sequence of rolls for one game of American Ten-Pin Bowling.
+Output: total score for the game.
 
-# Glossary:
-#
-# - line = game
-# - frame = turn
-# - roll = try (?)
-# - throw = try (?)
+Glossary:
 
-# Rules:
-#
-# - 1 game = 10 turns
-# - 1 turn = up to 2 tries
-#
-# - If on first try of his turn he knocks down all the pins (a strike)
-#   then turn over and turn score = 10 + nr. of pins knocked down in his next 2
-#   tries
-#
-# - If in 2 tries he knocks them all down (a spare)
-#   then turn score = 10 + nr. of pins knocked down on his next 1 try
-#
-# - If in 2 tries he does not knock them all down
-#   then turn score = nr. of pins knocked down in his 2 tries
-#
-# - If he gets a spare or strike in the last turn
-#   then gets one or two more tries (part of the same turn), respectively.
-#
-#   - If the bonus throws knock down all the pins, the process does not repeat:
-#     the bonus throws are only used to calculate the score of the final turn.
+- line = game
+- frame = turn
+- roll = try (?)
+- throw = try (?)
+
+Rules:
+
+- 1 game = 10 turns
+- 1 turn = up to 2 tries
+
+- If on first try of his turn he knocks down all the pins (a strike)
+  then turn over and turn score = 10 + nr. of pins knocked down in his next 2
+  tries
+
+- If in 2 tries he knocks them all down (a spare)
+  then turn score = 10 + nr. of pins knocked down on his next 1 try
+
+- If in 2 tries he does not knock them all down
+  then turn score = nr. of pins knocked down in his 2 tries
+
+- If he gets a spare or strike in the last turn
+  then gets one or two more tries (part of the same turn), respectively.
+
+  - If the bonus throws knock down all the pins, the process does not repeat:
+    the bonus throws are only used to calculate the score of the final turn.
+"""
 
 import unittest
 

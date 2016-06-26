@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Find all pairs from `numbers` that when added equal `total`.
+
+Time: O(n)
+"""
+
 import unittest
 
 def list_pairs(numbers, total):
-    """
-    Find all pairs from `numbers` that when added equal `total`.
-
-    Time: O(n)
-    """
-    
     needed_numbers = set()
     pairs = []
 

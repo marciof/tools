@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Find the shortest substring in `string` that contains all letters from
+`alphabet` at least once.
+
+Time: O(n)
+"""
+
 import unittest
 
 def find_substring(string, alphabet):
-    """
-    Find the shortest substring in `string` that contains all letters from
-    `alphabet` at least once.
-
-    Time: O(n)
-    """
-    
     start_char = None
     end_char = None
     char_to_last_pos = {}

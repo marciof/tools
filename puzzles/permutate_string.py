@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+List all permutations of `string`.
+
+Time: O(n^2) where n = len(string)
+"""
+
 import unittest
 
 def permutate(string):
-    """
-    List all permutations of `string`.
-
-    Time: O(n^2) where n = len(string)
-    """
-
     if string == '':
         return [string]
 

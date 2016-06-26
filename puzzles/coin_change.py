@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Generate all possible coin combinations using any from `coins`
+that when added equal `amount`.
+
+https://programmingpraxis.com/2013/05/17/coin-change-part-1/2/
+"""
+
 from collections import Counter
 import unittest
 
 def generate(amount, coins):
-    """
-    Generate all possible coin combinations using any from `coins`
-    that when added equal `amount`.
-
-    https://programmingpraxis.com/2013/05/17/coin-change-part-1/2/
-    """
-
     combs = [[] for _ in range(amount + 1)]
     combs[0] = [[]]
 

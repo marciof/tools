@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Calculate the factorial of `n`.
+
+Time: O(n)
+"""
+
 import sys
 import unittest
 
 def calculate(n, result = 1):
-    """
-    Calculate the factorial of `n`.
-
-    Time: O(n)
-    """
-
     if n <= 1:
         return result
     else:

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Reverse an `array` in place.
+
+Time: O(n)
+Space: O(1)
+"""
+
 import unittest
 
 def reverse(array):
-    """
-    Reverse an `array` in place.
-
-    Time: O(n)
-    Space: O(1)
-    """
-
     start = 0
     end = len(array) - 1
 

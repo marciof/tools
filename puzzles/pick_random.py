@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Pick `count` randomly selected items from `array`.
+
+(Uses Fisher-Yates shuffle algorithm.)
+
+Time: O(count)
+"""
+
 import random
 import unittest
 
 def pick_random(array, count):
-    """
-    Pick `count` randomly selected items from `array`.
-
-    (Uses Fisher-Yates shuffle algorithm.)
-
-    Time: O(count)
-    """
-
     if (len(array) == 0) or (count <= 0):
         return []
 

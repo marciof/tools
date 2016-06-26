@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Find the longest substring without repeating characters.
+
+Time: O(n)
+"""
+
 import unittest
 
 def find_substring(string):
-    """
-    Find the longest substring without repeating characters.
-
-    Time: O(n)
-    """
-
     if string == '':
         return ''
 

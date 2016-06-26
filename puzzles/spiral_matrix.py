@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Creates a clock-wise spiral starting at the center of a square matrix of
+side length `size` with consecutive positive integers.
+"""
+
 import collections
 import unittest
 
@@ -12,10 +17,6 @@ LEFT = Direction(x = -1, y = 0)
 RIGHT = Direction(x = +1, y = 0)
 
 def create_spiral(size):
-    """
-    Creates a clock-wise spiral starting at the center of a square matrix of
-    side length `size` with consecutive positive integers.
-    """
 
     if size <= 0:
         return []

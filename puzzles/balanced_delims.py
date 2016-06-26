@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Check if a `string` contains only balanced delimiters.
+
+Time: O(n)
+"""
+
 import unittest
 import sys
 
 def is_balanced(string):
-    """
-    Check if a `string` contains only balanced delimiters.
-
-    Time: O(n)
-    """
-
     expected = []
 
     open_to_close = {

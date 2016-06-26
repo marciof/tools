@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Generate all possible ways to interleave strings `str_a` and `str_b`.
+
+For example, if the two strings are 'ab' and 'cd', the output is:
+['abcd', 'acbd', 'acdb', 'cabd', 'cadb', 'cdab']
+As you can see, 'a' is always before 'b', and 'c' is always before 'd'.
+
+Time: O(n+m), where n = len(str_a), m = len(str_b)
+"""
+
 import unittest
 
 def interleave(str_a, str_b):
-    """
-    Generate all possible ways to interleave strings `str_a` and `str_b`.
-
-    For example, if the two strings are 'ab' and 'cd', the output is:
-    ['abcd', 'acbd', 'acdb', 'cabd', 'cadb', 'cdab']
-    As you can see, 'a' is always before 'b', and 'c' is always before 'd'.
-
-    Time: O(n+m), where n = len(str_a), m = len(str_b)
-    """
-
     if str_a == '':
         return [str_b]
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Calculate the `n`-th value of the Fibonacci sequence.
+
+Time: O(n)
+"""
+
 import sys
 import unittest
 
 def calculate(n, result = 0, nxt = 1):
-    """
-    Calculate the `n`-th value of the Fibonacci sequence.
-
-    Time: O(n)
-    """
-
     if n == 0:
         return result
     else:

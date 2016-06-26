@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Checks if the last used piece of `color` at position `x` and `y` in the
+`board` has won the game or not.
+"""
+
 import collections
 import unittest
 
@@ -19,11 +24,6 @@ DOWN_RIGHT = Direction(x = +1, y = -1)
 MAX_NR_PIECES = 4
 
 def is_winner(color, x, y, board):
-    """
-    Checks if the last used piece of `color` at position `x` and `y` in the
-    `board` has won the game or not.
-    """
-
     directions = [
         (UP, DOWN),
         (LEFT, RIGHT),

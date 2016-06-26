@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Reverse a linked-list.
+
+Time: O(n)
+Space: O(1)
+"""
+
 import unittest
 
 class Node:
@@ -19,12 +26,6 @@ class Node:
         return values
 
 def reverse(l):
-    """
-    Reverse a linked-list.
-
-    Time: O(n)
-    Space: O(1)
-    """
     previous = None
     current = l
 
