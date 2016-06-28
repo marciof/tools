@@ -1,9 +1,12 @@
 version: '2'
 services:
   clion:
-    build: .
     image: docker.io/marciof/clion
     network_mode: host
+    build:
+      context: .
+      args:
+        HOST_USER: ${USER}
     environment:
       DISPLAY:
       TERM:
