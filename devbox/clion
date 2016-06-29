@@ -1,5 +1,5 @@
 #!/bin/sh
-mkdir -p ~/.idea-docker
+mkdir -p ~/.clion-docker
 cd "$(dirname "$(readlink -e "$0")")"
 xhost +
-docker-compose up -d
+docker-compose up -d clion
