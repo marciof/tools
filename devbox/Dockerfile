@@ -29,13 +29,6 @@ RUN echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 USER $USER
 WORKDIR /home/$USER
 
-# host SSH access
-# $ apt-get install ssh
-# ~/.ssh/config (local): SendEnv ENV_VAR
-# /etc/ssh/sshd_config (remote): AcceptEnv ENV_VAR
-RUN echo "alias ssh-host=ssh\ ${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
-RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
-
 # CLion
 RUN mkdir clion/
 RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.3.tar.gz | tar zx --strip-components=1 -C clion/
@@ -43,3 +36,11 @@ RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.3.tar.gz | tar zx 
 # IDEA
 RUN mkdir idea/
 RUN wget -O - https://download.jetbrains.com/idea/ideaIU-2016.1.3.tar.gz | tar zx --strip-components=1 -C idea/
+
+# host SSH access
+# $ apt-get install ssh
+# /etc/ssh/sshd_config: AcceptEnv
+RUN echo "alias sshost=ssh\ -o\ StrictHostKeyChecking=no\ ${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
+RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
+RUN mkdir -p .ssh
+RUN echo 'SendEnv BASHRC_HIDE_USER_HOST' >> .ssh/config
