@@ -29,7 +29,11 @@ USER $USER
 WORKDIR /home/$USER
 
 # host SSH access
+# $ apt-get install ssh
+# ~/.ssh/config (local): SendEnv BASHRC_HIDE_USER_HOST
+# /etc/ssh/sshd_config (remote): AcceptEnv BASHRC_HIDE_USER_HOST
 RUN echo "alias ssh-host=ssh\ ${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
+RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
 
 # CLion
 RUN mkdir clion/

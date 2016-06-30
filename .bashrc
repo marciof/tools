@@ -56,7 +56,7 @@ _green='\e[0;32m'
 _b_red='\e[1;31m'
 _blue='\e[0;34m'
 
-if [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+if [ -z "$BASHRC_HIDE_USER_HOST" -a \( -n "$SSH_CLIENT" -o -n "$SSH_TTY" \) ]; then
     _ps1_user_host="\[$_yellow\]\\u@\\h\[$_color_off\] "
 else
     _ps1_user_host=
