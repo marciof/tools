@@ -1,0 +1,5 @@
+#!/bin/sh
+mkdir -p ~/.idea-docker
+cd "$(dirname "$(readlink -e "$0")")"
+xhost +
+docker-compose up -d idea

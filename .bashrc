@@ -56,7 +56,7 @@ _green='\e[0;32m'
 _b_red='\e[1;31m'
 _blue='\e[0;34m'
 
-if [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+if [ -z "$BASHRC_HIDE_USER_HOST" -a \( -n "$SSH_CLIENT" -o -n "$SSH_TTY" \) ]; then
     _ps1_user_host="\[$_yellow\]\\u@\\h\[$_color_off\] "
 else
     _ps1_user_host=
@@ -109,51 +109,6 @@ fi
 
 # https://github.com/git/git/tree/master/contrib/completion
 if _have git; then
-    alias g=$NAME
-
-    alias sb='g blame --date=short "$@"'
-    alias sl='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
-    alias sp='g push "$@"'
-    alias sr='g checkout "$@"'
-    alias ss='g pull "$@"'
-    alias st='g status "$@"'
-
-    if _have kompare; then
-        alias sd='GIT_PAGER="kompare -o -" g diff --no-color "$@"'
-    else
-        alias sd='g diff "$@"'
-    fi
-
-    sc() {
-        local cached=$(git diff --cached --name-only | wc -l)
-
-        if  [ $# -eq 0 -a $cached -eq 0 ]; then
-            git commit -a
-        else
-            git commit "$@"
-        fi
-    }
-
-    if type -t _completion_loader > /dev/null; then
-        _completion_loader git
-    fi
-
-    complete -o bashdefault -o default -o nospace -F _git g
-
-    if type -t __git_complete > /dev/null; then
-        __git_complete sc _git_commit
-        __git_complete sd _git_diff
-        __git_complete sl _git_log
-        __git_complete sp _git_push
-        __git_complete sr _git_checkout
-        __git_complete ss _git_pull
-    fi
-
-    _color_git_ps1() {
-        local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo "$ps1 "
-    }
-
     _set_git_config() {
         local option=$1
         local value=$2
@@ -167,30 +122,65 @@ if _have git; then
         fi
     }
 
-    _set_git_config alias.br 'branch -vv'
-    _set_git_config alias.co checkout
-    _set_git_config alias.re rebase
-    _set_git_config color.ui auto
-    _set_git_config core.whitespace -trailing-space
-    _set_git_config push.default tracking
-    _set_git_config branch.autosetuprebase always
-    _set_git_config user.email
-    _set_git_config user.name
+    sc() {
+        local cached=$(git diff --cached --name-only | wc -l)
+
+        if  [ $# -eq 0 -a $cached -eq 0 ]; then
+            git commit -a
+        else
+            git commit "$@"
+        fi
+    }
+
+    alias sb='git branch -vv "$@"'
+    alias sd='git diff "$@"'
+    alias sh='git blame --date=short "$@"'
+    alias sl='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
+    alias sp='git push "$@"'
+    alias sr='git checkout "$@"'
+    alias ss='git pull "$@"'
+    alias st='git status "$@"'
+
+    if _have diff-highlight; then
+        _set_git_config pager.diff "$NAME | show"
+        _set_git_config pager.show "$NAME | show"
+    fi
 
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
-
-        if ! grep -qsF 'set nowrap' ~/.nanorc; then
-            echo 'set nowrap' >> ~/.nanorc
-        fi
     fi
+
+    _set_git_config push.default simple
+    _set_git_config branch.autosetuprebase always
+    _set_git_config user.email
+    _set_git_config user.name
 
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
 
-    _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
+    if type -t _completion_loader > /dev/null; then
+        _completion_loader git
+        __git_complete sb _git_branch
+        __git_complete sc _git_commit
+        __git_complete sd _git_diff
+        __git_complete sh _git_blame
+        __git_complete sl _git_log
+        __git_complete sp _git_push
+        __git_complete sr _git_checkout
+        __git_complete ss _git_pull
+        __git_complete st _git_status
+
+        _color_git_ps1() {
+            local ps1=$(__git_ps1 "%s")
+            [ -n "$ps1" ] && echo "$ps1 "
+        }
+
+        _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
+    else
+        _warn "No Git completion and prompt"
+    fi
 fi
 
 _jobs_nr_ps1() {
