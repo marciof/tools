@@ -151,6 +151,15 @@ if _have git; then
         export GIT_EDITOR="$NAME +,9999"
     fi
 
+    _set_git_config push.default simple
+    _set_git_config branch.autosetuprebase always
+    _set_git_config user.email
+    _set_git_config user.name
+
+    export GIT_PS1_SHOWDIRTYSTATE=x
+    export GIT_PS1_SHOWSTASHSTATE=x
+    export GIT_PS1_SHOWUNTRACKEDFILES=x
+
     if type -t _completion_loader > /dev/null; then
         _completion_loader git
         __git_complete sb _git_branch
@@ -162,25 +171,16 @@ if _have git; then
         __git_complete sr _git_checkout
         __git_complete ss _git_pull
         __git_complete st _git_status
+
+        _color_git_ps1() {
+            local ps1=$(__git_ps1 "%s")
+            [ -n "$ps1" ] && echo "$ps1 "
+        }
+
+        _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
     else
-        _warn "No Git completion"
+        _warn "No Git completion and prompt"
     fi
-
-    _set_git_config push.default simple
-    _set_git_config branch.autosetuprebase always
-    _set_git_config user.email
-    _set_git_config user.name
-
-    export GIT_PS1_SHOWDIRTYSTATE=x
-    export GIT_PS1_SHOWSTASHSTATE=x
-    export GIT_PS1_SHOWUNTRACKEDFILES=x
-
-    _color_git_ps1() {
-        local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo "$ps1 "
-    }
-
-    _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
 fi
 
 _jobs_nr_ps1() {
