@@ -3,7 +3,7 @@ ARG HOST_USER
 
 # base
 RUN apt-get update && apt-get install -y apt-utils
-RUN apt-get install -y man sudo wget
+RUN apt-get install -y man nano sudo wget
 
 # dependencies
 RUN apt-get install -y fontconfig git g++ gcc make
