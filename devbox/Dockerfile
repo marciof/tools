@@ -2,13 +2,17 @@ FROM debian:jessie
 ARG HOST_USER
 
 # base
-RUN apt-get update && apt-get install -y apt-utils sudo wget
+RUN apt-get update && apt-get install -y apt-utils
+RUN apt-get install -y man sudo wget
 
 # dependencies
-RUN apt-get update && apt-get install -y fontconfig git g++ gcc make
+RUN apt-get install -y fontconfig git g++ gcc make
 
-# X11
-RUN apt-get update && apt-get install -y libx11-6 libxext-dev libxrender-dev libxtst-dev
+# X11 (IDE)
+RUN apt-get install -y libx11-6 libxext-dev libxrender-dev libxtst-dev
+
+# JavaFX (IDE)
+RUN apt-get install -y gtk2-engines libxtst6 libxxf86vm1 freeglut3 libxslt1.1
 
 # Java
 RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' | tee /etc/apt/sources.list.d/webupd8team-java.list
@@ -16,9 +20,6 @@ RUN echo 'deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
 RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 RUN apt-get update && apt-get install -y oracle-java8-installer
-
-# JavaFX
-RUN apt-get update && apt-get install -y gtk2-engines libxtst6 libxxf86vm1 freeglut3 libxslt1.1
 
 # user
 ENV USER dev
@@ -30,8 +31,8 @@ WORKDIR /home/$USER
 
 # host SSH access
 # $ apt-get install ssh
-# ~/.ssh/config (local): SendEnv BASHRC_HIDE_USER_HOST
-# /etc/ssh/sshd_config (remote): AcceptEnv BASHRC_HIDE_USER_HOST
+# ~/.ssh/config (local): SendEnv ENV_VAR
+# /etc/ssh/sshd_config (remote): AcceptEnv ENV_VAR
 RUN echo "alias ssh-host=ssh\ ${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
 RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
 
