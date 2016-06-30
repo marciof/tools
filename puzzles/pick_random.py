@@ -13,15 +13,12 @@ import random
 import unittest
 
 def pick_random(array, count):
-    if (len(array) == 0) or (count <= 0):
-        return []
-
     shuffled_by_pos = {}
-    elements = []
+    elems = []
 
     for i in range(0, len(array)):
-        if len(elements) == count:
-            return elements
+        if len(elems) == count:
+            return elems
 
         j = random.randint(i, len(array) - 1)
 
@@ -31,9 +28,9 @@ def pick_random(array, count):
         shuffled_by_pos[i] = elem_j
         shuffled_by_pos[j] = elem_i
 
-        elements.append(shuffled_by_pos.pop(i))
+        elems.append(shuffled_by_pos.pop(i))
 
-    return elements
+    return elems
 
 class Test (unittest.TestCase):
     def test_empty_array(self):

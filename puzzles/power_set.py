@@ -13,13 +13,13 @@ def generate(numbers):
     if len(numbers) == 0:
         return [set()]
 
-    combinations = []
+    combs = []
 
-    for combination in generate(numbers[1:]):
-        combinations.append(combination)
-        combinations.append({numbers[0]} | combination)
+    for comb in generate(numbers[1:]):
+        combs.append(comb)
+        combs.append({numbers[0]} | comb)
 
-    return combinations
+    return combs
 
 class Test(unittest.TestCase):
     def test_many(self):

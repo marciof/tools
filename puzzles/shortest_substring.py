@@ -16,20 +16,18 @@ def find_substring(string, alphabet):
     char_to_last_pos = {}
 
     for pos, char in enumerate(string):
-        if len(char_to_last_pos) == len(alphabet):
-            break
-        
-        if char not in alphabet:
-            continue
-        
-        char_to_last_pos[char] = pos
-        
-        start_char = min(start_char, end_char, char,
-            key = lambda c: char_to_last_pos.get(c, float('+inf')))
-        
-        end_char = max(end_char, start_char, char,
-            key = lambda c: char_to_last_pos.get(c, float('-inf')))
-    
+        if char in alphabet:
+            char_to_last_pos[char] = pos
+
+            start_char = min(start_char, end_char, char,
+                key = lambda c: char_to_last_pos.get(c, float('+inf')))
+
+            end_char = max(end_char, start_char, char,
+                key = lambda c: char_to_last_pos.get(c, float('-inf')))
+
+            if len(char_to_last_pos) == len(alphabet):
+                break
+
     if None in (start_char, end_char):
         return None
 

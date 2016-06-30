@@ -12,13 +12,12 @@ import sys
 import unittest
 
 def find_alone_int(numbers):
-
-    alone = next(numbers)
+    target = 0
 
     for n in numbers:
-        alone ^= n
+        target ^= n
 
-    return alone
+    return target
 
 class Test (unittest.TestCase):
     def test_single_int(self):

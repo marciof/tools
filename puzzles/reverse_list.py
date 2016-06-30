@@ -11,9 +11,9 @@ Space: O(1)
 import unittest
 
 class Node:
-    def __init__(self, value, next = None):
+    def __init__(self, value, nxt = None):
         self.value = value
-        self.next = next
+        self.nxt = nxt
 
     def to_array(self):
         node = self
@@ -21,7 +21,7 @@ class Node:
 
         while node is not None:
             values.append(node.value)
-            node = node.next
+            node = node.nxt
 
         return values
 
@@ -30,11 +30,11 @@ def reverse(l):
     current = l
 
     while current is not None:
-        next = current.next
-        current.next = previous
+        nxt = current.nxt
+        current.nxt = previous
 
         previous = current
-        current = next
+        current = nxt
 
     return previous
 
