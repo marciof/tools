@@ -10,7 +10,7 @@ Time: O(n^2) where n = len(string)
 import unittest
 
 def permutate(string):
-    if string == '':
+    if len(string) <= 1:
         return [string]
 
     permutations = []

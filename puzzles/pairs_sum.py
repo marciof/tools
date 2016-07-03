@@ -10,14 +10,14 @@ Time: O(n)
 import unittest
 
 def list_pairs(numbers, total):
-    needed_numbers = set()
+    needed_nrs = set()
     pairs = []
 
     for n in numbers:
-        if n in needed_numbers:
+        if n in needed_nrs:
             pairs.append((total - n, n))
         else:
-            needed_numbers.add(total - n)
+            needed_nrs.add(total - n)
     
     return pairs
 
