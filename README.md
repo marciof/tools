@@ -6,8 +6,6 @@ See `.travis.yml` for details.
 
 # To Do #
 
-- Simplify error handling for readability?
-- Add a license, MIT?
 - Split plugins into input and output? To simplify and to avoid having to memory allocate outputs.
 - Code coverage.
 - Profile each change.
