@@ -11,11 +11,13 @@
 #include "plugin/Pager.h"
 #include "plugin/Dir.h"
 #include "plugin/Pipe.h"
+#include "plugin/Vcs.h"
 
 static Plugin* plugins[] = {
     &Pipe_Plugin,
     &File_Plugin,
     &Dir_Plugin,
+    &Vcs_Plugin,
     &Pager_Plugin,
 };
 

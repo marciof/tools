@@ -6,6 +6,7 @@ See `.travis.yml` for details.
 
 # To Do #
 
+- Try to simplify, add some documentation, perhaps remove `ERROR_UNSPECIFIED`.
 - Split plugins into input and output? To simplify and to avoid having to memory allocate outputs.
 - Code coverage.
 - Profile each change.

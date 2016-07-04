@@ -13,6 +13,8 @@ set(sources
     src/plugin/Pipe.h
     src/plugin/Dir.c
     src/plugin/Dir.h
+    src/plugin/Vcs.c
+    src/plugin/Vcs.h
     src/Error.h
     src/options.c
     src/options.h
