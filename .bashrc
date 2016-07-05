@@ -48,7 +48,6 @@ export HISTCONTROL=ignoreboth
 export LESS='-x4 -c -M -R -i'
 export PROMPT_DIRTRIM=2
 export PYTHONDONTWRITEBYTECODE=x
-export VIRTUAL_ENV_DISABLE_PROMPT=x
 
 _color_off='\e[0m'
 _yellow='\e[0;33m'
