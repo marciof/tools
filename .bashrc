@@ -131,6 +131,7 @@ if _have git; then
         fi
     }
 
+    alias sa='git add "$@"'
     alias sb='git branch -vv "$@"'
     alias sd='git diff "$@"'
     alias sh='git blame --date=short "$@"'
@@ -161,6 +162,7 @@ if _have git; then
 
     if type -t _completion_loader > /dev/null; then
         _completion_loader git
+        __git_complete sa _git_add
         __git_complete sb _git_branch
         __git_complete sc _git_commit
         __git_complete sd _git_diff
