@@ -122,8 +122,10 @@ static void Plugin_run(
             ++nr_args;
             inputs->data[i] = (intptr_t) NULL;
             Input_delete(input);
+            continue;
         }
-        else if (nr_args > 0) {
+
+        if (nr_args > 0) {
             open_inputs(inputs, &argv, i, error);
 
             if (ERROR_HAS(error)) {
@@ -133,11 +135,9 @@ static void Plugin_run(
 
             argv.length -= nr_args + 1;
             nr_args = 0;
-            ++i;
         }
-        else {
-            ++i;
-        }
+
+        ++i;
     }
 
     if (nr_args > 0) {

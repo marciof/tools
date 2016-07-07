@@ -23,10 +23,11 @@ typedef struct Output {
 } Output;
 
 typedef struct Plugin {
+    // If no plugin options are defined, `options` is set to `NULL`.
     Array options;
     const char* (*get_description)();
     const char* (*get_name)();
-    // If no plugin options are defined, `options` is `NULL`.
+    // The `inputs` array is sparse, individual elements may be `NULL`.
     void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
 } Plugin;
 
