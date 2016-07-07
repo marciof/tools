@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <stdbool.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "../Array.h"
@@ -67,7 +68,6 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
     if (ERROR_HAS(error)) {
-        close(input->fd);
         Array_remove(inputs, pos, NULL);
         Input_delete(input);
     }
@@ -111,7 +111,11 @@ static void Plugin_run(
             continue;
         }
 
-        if ((input->name != NULL) && (input->fd == IO_INVALID_FD)) {
+        bool does_exist = (input->fd == IO_INVALID_FD)
+            && ((access(input->name, F_OK) == 0)
+                || (errno != ENOENT));
+
+        if (does_exist) {
             Array_add(&argv, argv.length, (intptr_t) input->name, error);
 
             if (ERROR_HAS(error)) {
