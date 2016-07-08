@@ -142,8 +142,7 @@ if _have git; then
     alias st='git status "$@"'
 
     if _have diff-highlight; then
-        _set_git_config pager.diff "$NAME | show"
-        _set_git_config pager.show "$NAME | show"
+        export GIT_PAGER="$NAME | $PAGER"
     fi
 
     if _have nano; then
