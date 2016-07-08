@@ -1,3 +1,7 @@
+# 0.10.0 - UNRELEASED #
+
+- Plugin "vcs": show VCS revisions via `git`.
+
 # 0.9.0 - 2016-06-27 #
 
 - Rename plugin "ls" to "dir" for readability.
