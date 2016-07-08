@@ -40,7 +40,8 @@ RUN wget -O - https://download.jetbrains.com/idea/ideaIU-2016.1.3.tar.gz | tar z
 # host SSH access
 # $ apt-get install ssh
 # /etc/ssh/sshd_config: AcceptEnv
-RUN echo "alias sshost=ssh\ -o\ StrictHostKeyChecking=no\ ${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
-RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
-RUN mkdir -p .ssh
+RUN ssh-keygen -q -N "" < /dev/zero
 RUN echo 'SendEnv BASHRC_HIDE_USER_HOST' >> .ssh/config
+RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
+RUN echo "export HOST_SSH=${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
+RUN echo "alias sshost=ssh-copy-id\ -o\ StrictHostKeyChecking=no\ \$HOST_SSH\ \&\&\ ssh\ -o\ StrictHostKeyChecking=no\ \$HOST_SSH" >> .bashrc
