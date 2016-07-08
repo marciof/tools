@@ -45,3 +45,4 @@ RUN echo 'SendEnv BASHRC_HIDE_USER_HOST' >> .ssh/config
 RUN echo 'export BASHRC_HIDE_USER_HOST=x' >> .bashrc
 RUN echo "export HOST_SSH=${HOST_USER}@\$(ip route list dev docker0 | awk 'NR==1 {print \$NF}')" >> .bashrc
 RUN echo "alias sshost=ssh-copy-id\ -o\ StrictHostKeyChecking=no\ \$HOST_SSH\ \&\&\ ssh\ -o\ StrictHostKeyChecking=no\ \$HOST_SSH" >> .bashrc
+RUN echo 'shopt -q login_shell && sshost' >> .bashrc
