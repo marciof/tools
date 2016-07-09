@@ -28,21 +28,6 @@ static void create_argv(Array* argv, Array* options, Error* error) {
     ERROR_CLEAR(error);
 }
 
-static void Input_close(Input* input, Error* error) {
-    io_close(input->fd, error);
-
-    if (!ERROR_HAS(error)) {
-        int status;
-
-        if (waitpid((int) input->arg, &status, 0) == -1) {
-            ERROR_ERRNO(error, errno);
-        }
-        else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-            ERROR_SET(error, ERROR_UNSPECIFIED);
-        }
-    }
-}
-
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     Array_add(argv, argv->length, (intptr_t) NULL, error);
     if (ERROR_HAS(error)) {
@@ -63,7 +48,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
 
     int child_pid;
 
-    input->close = Input_close;
+    input->close = Input_close_subprocess;
     input->fd = fork_exec(
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 

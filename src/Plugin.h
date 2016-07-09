@@ -31,6 +31,7 @@ typedef struct Plugin {
     void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
 } Plugin;
 
+void Input_close_subprocess(Input* input, Error* error);
 void Input_delete(Input* input);
 Input* Input_new(char* name, int fd, Error* error);
 

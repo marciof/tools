@@ -1,7 +1,24 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include "Plugin.h"
+
+void Input_close_subprocess(Input* input, Error* error) {
+    io_close(input->fd, error);
+    int status;
+
+    if (ERROR_HAS(error)) {
+        return;
+    }
+
+    if ((waitpid((int) input->arg, &status, 0) == -1) && (errno != ECHILD)) {
+        ERROR_ERRNO(error, errno);
+    }
+    else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
+        ERROR_SET(error, ERROR_UNSPECIFIED);
+    }
+}
 
 void Input_delete(Input* input) {
     free(input);

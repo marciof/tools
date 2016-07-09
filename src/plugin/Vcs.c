@@ -1,25 +1,7 @@
-#include <errno.h>
-#include <sys/wait.h>
 #include "../fork_exec.h"
 #include "Vcs.h"
 
 #define EXTERNAL_BINARY "git"
-
-// FIXME: dup of dir
-static void Input_close(Input* input, Error* error) {
-    io_close(input->fd, error);
-
-    if (!ERROR_HAS(error)) {
-        int status;
-
-        if (waitpid((int) input->arg, &status, 0) == -1) {
-            ERROR_ERRNO(error, errno);
-        }
-        else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-            ERROR_SET(error, ERROR_UNSPECIFIED);
-        }
-    }
-}
 
 static const char* Plugin_get_description() {
     return "show VCS revisions via `" EXTERNAL_BINARY "`";
@@ -38,7 +20,7 @@ static void Plugin_run(
         if ((input != NULL) && (input->fd == IO_INVALID_FD)) {
             char* argv[] = {
                 EXTERNAL_BINARY,
-                "--no-pager", // FIXME: not generic
+                "--no-pager",
                 "show",
                 input->name,
                 NULL,
@@ -47,12 +29,13 @@ static void Plugin_run(
             int child_pid;
             input->fd = fork_exec(argv[0], argv, &child_pid, error);
 
+            // FIXME: don't abort and don't swallow inputs
             if (ERROR_HAS(error)) {
-                return; // FIXME: don't abort
+                return;
             }
 
             input->arg = child_pid;
-            input->close = Input_close;
+            input->close = Input_close_subprocess;
         }
     }
 
