@@ -141,10 +141,6 @@ if _have git; then
     alias ss='git pull "$@"'
     alias st='git status "$@"'
 
-    if _have diff-highlight; then
-        export GIT_PAGER="$NAME | $PAGER"
-    fi
-
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
