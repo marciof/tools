@@ -1,23 +1,8 @@
 #!/bin/bash
 
-if [[ ! "$-" =~ 'i' ]]; then
-    return 0
-fi
-
 _warn() {
     echo "* $@" >&2
 }
-
-for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-    source "$bashrc_child"
-    _warn "Loaded: $bashrc_child"
-done
-
-if [ -e /etc/bash_completion ]; then
-    source /etc/bash_completion
-else
-    _warn 'Missing: bash-completion'
-fi
 
 _have() {
     for NAME; do
@@ -33,6 +18,11 @@ _have() {
     return 1
 }
 
+for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
+    source "$bashrc_child"
+    _warn "Loaded: $bashrc_child"
+done
+
 shopt -s cdspell checkwinsize histappend
 
 alias -- -='cd -'
@@ -40,7 +30,6 @@ alias ..='cd ..'
 alias ...='cd ../..'
 
 _have dircolors && eval "$($NAME -b)"
-_have ksshaskpass ssh-askpass && export SSH_ASKPASS=$LOCATION
 _have lesspipe && eval "$($NAME)"
 
 export ANSIBLE_NOCOWS=x
@@ -53,7 +42,7 @@ _color_off='\e[0m'
 _yellow='\e[0;33m'
 _green='\e[0;32m'
 _b_red='\e[1;31m'
-_blue='\e[0;34m'
+_b_blue='\e[1;34m'
 
 if [ -z "$BASHRC_HIDE_USER_HOST" -a \( -n "$SSH_CLIENT" -o -n "$SSH_TTY" \) ]; then
     _ps1_user_host="\[$_yellow\]\\u@\\h\[$_color_off\] "
@@ -89,23 +78,6 @@ if _have ag; then
     fi
 fi
 
-# https://wiki.archlinux.org/index.php/KDE_Wallet#Using_the_KDE_Wallet_to_store_ssh_keys
-if [ -n "$KDE_FULL_SESSION" ]; then
-    if [ -d "$HOME/.kde/Autostart" ]; then
-        _ssh_add_auto_start="$HOME/.kde/Autostart/ssh-add.sh"
-    else
-        _ssh_add_auto_start="$HOME/.config/autostart-scripts/ssh-add.sh"
-    fi
-
-    if [ ! -e "$_ssh_add_auto_start" ]; then
-        cat << 'SCRIPT' > "$_ssh_add_auto_start"
-#!/bin/sh
-ssh-add < /dev/null 2> /dev/null
-SCRIPT
-        chmod +x "$_ssh_add_auto_start"
-    fi
-fi
-
 # https://github.com/git/git/tree/master/contrib/completion
 if _have git; then
     _set_git_config() {
@@ -119,6 +91,20 @@ if _have git; then
                 git config --global "$option" "$value"
             fi
         fi
+    }
+
+    _load_git_completions() {
+        _completion_loader git
+        __git_complete sa _git_add
+        __git_complete sb _git_branch
+        __git_complete sc _git_commit
+        __git_complete sd _git_diff
+        __git_complete sh __gitcomp
+        __git_complete sl _git_log
+        __git_complete sp _git_push
+        __git_complete sr _git_checkout
+        __git_complete ss _git_pull
+        __git_complete st _git_status
     }
 
     sc() {
@@ -141,6 +127,11 @@ if _have git; then
     alias ss='git pull "$@"'
     alias st='git status "$@"'
 
+    for ALIAS in sa sb sc sd sh sl sp sr ss st; do
+        eval "_${ALIAS}() { _load_git_completions; }"
+        eval "complete -F _${ALIAS} ${ALIAS}"
+    done
+
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
@@ -155,28 +146,12 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
 
-    if type -t _completion_loader > /dev/null; then
-        _completion_loader git
-        __git_complete sa _git_add
-        __git_complete sb _git_branch
-        __git_complete sc _git_commit
-        __git_complete sd _git_diff
-        __git_complete sh __gitcomp
-        __git_complete sl _git_log
-        __git_complete sp _git_push
-        __git_complete sr _git_checkout
-        __git_complete ss _git_pull
-        __git_complete st _git_status
+    _color_git_ps1() {
+        local ps1=$(__git_ps1 "%s")
+        [ -n "$ps1" ] && echo "$ps1 "
+    }
 
-        _color_git_ps1() {
-            local ps1=$(__git_ps1 "%s")
-            [ -n "$ps1" ] && echo "$ps1 "
-        }
-
-        _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
-    else
-        _warn "No Git completion and prompt"
-    fi
+    _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
 fi
 
 _jobs_nr_ps1() {
@@ -185,5 +160,5 @@ _jobs_nr_ps1() {
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_ps1_user_host\[$_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
+    export PS1="$_ps1_user_host\[$_b_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
 fi
