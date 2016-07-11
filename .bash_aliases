@@ -137,6 +137,10 @@ if _have git; then
         export GIT_EDITOR="$NAME +,9999"
     fi
 
+    if [ ! -a ~/.config/git/ignore ]; then
+        _warn "Missing user Git ignore: ~/.config/git/ignore"
+    fi
+
     _set_git_config push.default simple
     _set_git_config branch.autosetuprebase always
     _set_git_config user.email
