@@ -121,7 +121,7 @@ if _have git; then
     alias sb='git branch -vv "$@"'
     alias sd='git diff "$@"'
     alias sh='git blame --date=short "$@"'
-    alias sl='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue)%d" "$@"'
+    alias sl='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
     alias sp='git push "$@"'
     alias sr='git checkout "$@"'
     alias ss='git pull "$@"'
