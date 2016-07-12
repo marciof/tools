@@ -137,7 +137,7 @@ if _have git; then
         export GIT_EDITOR="$NAME +,9999"
     fi
 
-    if [ ! -a ~/.config/git/ignore ]; then
+    if [ ! -e "$HOME/.config/git/ignore" ]; then
         _warn "Missing user Git ignore: ~/.config/git/ignore"
     fi
 
