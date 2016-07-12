@@ -1,6 +1,7 @@
 # 0.10.0 - UNRELEASED #
 
 - Plugin "vcs": show VCS revisions via `git`.
+- Fix plugin "dir" to interpret inputs as file names and paths only.
 
 # 0.9.0 - 2016-06-27 #
 

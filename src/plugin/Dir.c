@@ -24,6 +24,13 @@ static void create_argv(Array* argv, Array* options, Error* error) {
         }
     }
 
+    Array_add(argv, argv->length, (intptr_t) "--", error);
+
+    if (ERROR_HAS(error)) {
+        Array_deinit(argv);
+        return;
+    }
+
     ERROR_CLEAR(error);
 }
 
