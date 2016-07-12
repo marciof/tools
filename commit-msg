@@ -1,18 +1,24 @@
 #!/bin/sh
-# Git (prepare-)commit message hook for adding ticket/issue numbers.
+# Git (prepare-)commit message hook for adding issue numbers.
 
 MESSAGE_FILE="$1"
 
-for REF in @{u} HEAD; do
-    TICKET=$(git rev-parse --abbrev-ref "$REF" 2> /dev/null \
+for REF in '@{u}' HEAD
+do
+    ISSUE=$(git rev-parse --abbrev-ref "$REF" 2> /dev/null \
         | grep -oP '\b\w+-\d+$')
 
-    if [ -n "$TICKET" ]; then
-        if [ "$(basename "$0")" = "prepare-commit-msg" ]; then
-            echo "# Ticket: $TICKET" >> "$MESSAGE_FILE"
+    if [ -n "$ISSUE" ]
+    then
+        if [ "$(basename "$0")" = "prepare-commit-msg" ]
+        then
+            echo "# Issue: $ISSUE" >> "$MESSAGE_FILE"
             echo "#" >> "$MESSAGE_FILE"
-        elif grep -qvP "^\s*(#|$)" "$MESSAGE_FILE"; then
-            sed -i.bak -e "1s/^/[$TICKET] /" "$MESSAGE_FILE"
+        elif grep -vP "^\s*(#|$)" "$MESSAGE_FILE" \
+                | head -n1 \
+                | grep -qvF "[$ISSUE]"
+        then
+            sed -i.bak -e "1s/^/[$ISSUE] /" "$MESSAGE_FILE"
         fi
 
         break
