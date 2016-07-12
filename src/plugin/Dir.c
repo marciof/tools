@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <stdbool.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include "../Array.h"
 #include "../fork_exec.h"
