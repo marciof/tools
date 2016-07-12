@@ -6,7 +6,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic-errors -Wall -Wextra -Wno-unused-parameter -O2")
 endif()
 
-set(sources
+add_executable(${PROJECT_NAME}
     src/Array.c
     src/Array.h
     src/plugin/Pipe.c
@@ -27,10 +27,7 @@ set(sources
     src/fork_exec.c
     src/fork_exec.h
     src/io.c
-    src/io.h)
-
-add_executable(${PROJECT_NAME}
-    ${sources}
+    src/io.h
     src/main.c)
 
 target_link_libraries(${PROJECT_NAME} pthread util)
