@@ -1,0 +1,16 @@
+#!/bin/sh
+# Git commit message hook for prepending ticket/issue numbers.
+
+MESSAGE_FILE="$1"
+
+if grep -qvP "^\s*(#|$)" "$MESSAGE_FILE"; then
+    for REF in @{u} HEAD; do
+        TICKET=$(git rev-parse --abbrev-ref "$REF" 2> /dev/null \
+            | grep -oP '\b\w+-\d+$')
+
+        if [ -n "$TICKET" ]; then
+            sed -i.bak -e "1s/^/[$TICKET] /" "$MESSAGE_FILE"
+            break
+        fi
+    done
+fi

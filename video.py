@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-
 import glob
 import itertools
 import os
@@ -12,10 +11,8 @@ import subprocess
 import sys
 import time
 
-
 class UnsupportedVideoException (Exception):
     pass
-
 
 def get_smil(video):
     (height, width) = get_video_size(video)
@@ -40,13 +37,10 @@ def get_smil(video):
         height = height,
         width = width)
 
-
 def get_video_date(path):
     ctime = os.path.getctime(path)
     mtime = os.path.getmtime(path)
-    
     return time.strftime('%Y-%m-%d', time.gmtime(min(ctime, mtime)))
-
 
 def get_video_size(path):
     try:
@@ -59,7 +53,6 @@ def get_video_size(path):
         raise UnsupportedVideoException()
     else:
         return reversed(list(map(int, size[0])))
-
 
 if len(sys.argv) <= 2:
     sys.exit('Usage: audio|smil <video> ...')
