@@ -7,14 +7,14 @@
 #include "io.h"
 #include "options.h"
 
-#define HELP_OPT "h"
-#define DISABLE_PLUGIN_OPT "d:"
-#define PLUGIN_OPTION_OPT "p:"
+#define HELP_OPTION "h"
+#define DISABLE_PLUGIN_OPTION "d:"
+#define PLUGIN_OPTION_OPTION "p:"
 
-#define ALL_OPTS ( \
-    HELP_OPT \
-    DISABLE_PLUGIN_OPT \
-    PLUGIN_OPTION_OPT \
+#define ALL_OPTIONS ( \
+    HELP_OPTION \
+    DISABLE_PLUGIN_OPTION \
+    PLUGIN_OPTION_OPTION \
 )
 
 #define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled."
@@ -28,9 +28,9 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "  -%c            display this help and exit\n"
         "  -%c NAME       disable a plugin\n"
         "  -%c NAME:OPT   pass an option to a plugin\n",
-        *HELP_OPT,
-        *DISABLE_PLUGIN_OPT,
-        *PLUGIN_OPTION_OPT);
+        *HELP_OPTION,
+        *DISABLE_PLUGIN_OPTION,
+        *PLUGIN_OPTION_OPTION);
 
     if (nr_plugins > 0) {
         bool needs_header = true;
@@ -150,8 +150,8 @@ bool parse_options(
 
     int option;
 
-    while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
-        if (option == *DISABLE_PLUGIN_OPT) {
+    while ((option = getopt(argc, argv, ALL_OPTIONS)) != -1) {
+        if (option == *DISABLE_PLUGIN_OPTION) {
             ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
 
             if (pos >= 0) {
@@ -163,12 +163,12 @@ bool parse_options(
                 return false;
             }
         }
-        else if (option == *HELP_OPT) {
+        else if (option == *HELP_OPTION) {
             display_help(plugins, nr_plugins);
             ERROR_CLEAR(error);
             return true;
         }
-        else if (option == *PLUGIN_OPTION_OPT) {
+        else if (option == *PLUGIN_OPTION_OPTION) {
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
             if (ERROR_HAS(error)) {
@@ -176,7 +176,7 @@ bool parse_options(
             }
         }
         else {
-            ERROR_SET(error, "Try '-" HELP_OPT "' for more information.");
+            ERROR_SET(error, "Try '-" HELP_OPTION "' for more information.");
             return false;
         }
     }
