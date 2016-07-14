@@ -18,6 +18,7 @@ static void Plugin_run(
         Input* input = (Input*) inputs->data[i];
 
         if ((input != NULL) && (input->fd == IO_INVALID_FD)) {
+            // FIXME: add user-defined options
             char* argv[] = {
                 EXTERNAL_BINARY,
                 "--no-pager",
@@ -29,7 +30,7 @@ static void Plugin_run(
             int child_pid;
             input->fd = fork_exec(argv[0], argv, &child_pid, error);
 
-            // FIXME: don't abort and don't swallow inputs
+            // FIXME: don't swallow invalid inputs
             if (ERROR_HAS(error)) {
                 return;
             }
@@ -38,8 +39,6 @@ static void Plugin_run(
             input->close = Input_close_subprocess;
         }
     }
-
-    ERROR_CLEAR(error);
 }
 
 Plugin Vcs_Plugin = {

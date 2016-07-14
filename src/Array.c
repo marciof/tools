@@ -6,17 +6,17 @@
 
 #define DEFAULT_CAPACITY_INCREASE_FACTOR (1.5)
 
-static void change_capacity(Array* array, size_t capacity, Error* error) {
-    if (capacity < array->length) {
-        ERROR_ERRNO(error, EINVAL);
+static void change_capacity(Array* array, size_t size, Error* error) {
+    if (size < array->length) {
+        Error_add(error, "Array capacity is smaller than its length");
         return;
     }
 
-    if ((capacity > ARRAY_INITIAL_CAPACITY) && (array->data == array->buffer)) {
-        array->data = (intptr_t*) malloc(capacity * sizeof(intptr_t));
+    if ((size > ARRAY_INITIAL_CAPACITY) && (array->data == array->buffer)) {
+        array->data = (intptr_t*) malloc(size * sizeof(intptr_t));
 
         if (array->data == NULL) {
-            ERROR_ERRNO(error, errno);
+            Error_add(error, strerror(errno));
             array->data = array->buffer;
             return;
         }
@@ -25,29 +25,27 @@ static void change_capacity(Array* array, size_t capacity, Error* error) {
             ARRAY_INITIAL_CAPACITY * sizeof(intptr_t));
     }
     else {
-        intptr_t* data = (intptr_t*) realloc(
-            array->data, capacity * sizeof(intptr_t));
+        void* data = realloc(array->data, size * sizeof(intptr_t));
 
         if (data == NULL) {
-            ERROR_ERRNO(error, errno);
+            Error_add(error, strerror(errno));
             return;
         }
 
-        array->data = data;
+        array->data = (intptr_t*) data;
     }
 
-    array->capacity = capacity;
-    ERROR_CLEAR(error);
+    array->capacity = size;
 }
 
-void Array_add(Array* array, size_t position, intptr_t element, Error* error) {
-    if (position > array->length) {
-        ERROR_ERRNO(error, EINVAL);
+void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
+    if (pos > array->length) {
+        Error_add(error, "Out of bounds array position for adding");
         return;
     }
 
     if (array->length == SIZE_MAX) {
-        ERROR_ERRNO(error, EPERM);
+        Error_add(error, strerror(ENOMEM));
         return;
     }
 
@@ -62,15 +60,14 @@ void Array_add(Array* array, size_t position, intptr_t element, Error* error) {
         }
     }
 
-    if (position < array->length) {
-        for (size_t i = array->length; i > position; --i) {
+    if (pos < array->length) {
+        for (size_t i = array->length; i > pos; --i) {
             array->data[i] = array->data[i - 1];
         }
     }
 
     ++array->length;
-    array->data[position] = element;
-    ERROR_CLEAR(error);
+    array->data[pos] = element;
 }
 
 void Array_deinit(Array* array) {
@@ -80,16 +77,11 @@ void Array_deinit(Array* array) {
 }
 
 void Array_extend(Array* list, Array* elements, Error* error) {
-    if (elements->length == 0) {
-        ERROR_CLEAR(error);
-        return;
+    if (elements->length > 0) {
+        for (size_t i = 0; i < elements->length; ++i, ++list->length) {
+            list->data[list->length] = elements->data[i];
+        }
     }
-
-    for (size_t i = 0; i < elements->length; ++i, ++list->length) {
-        list->data[list->length] = elements->data[i];
-    }
-
-    ERROR_CLEAR(error);
 }
 
 void Array_init(Array* array, Error* error, ...) {
@@ -111,24 +103,22 @@ void Array_init(Array* array, Error* error, ...) {
     }
 
     va_end(args);
-    ERROR_CLEAR(error);
 }
 
-intptr_t Array_remove(Array* array, size_t position, Error* error) {
-    if (position >= array->length) {
-        ERROR_ERRNO(error, EINVAL);
+intptr_t Array_remove(Array* array, size_t pos, Error* error) {
+    if (pos >= array->length) {
+        Error_add(error, "Out of bounds array position for removal");
         return 0;
     }
 
     --array->length;
-    intptr_t element = array->data[position];
+    intptr_t element = array->data[pos];
 
-    if (position < array->length) {
-        for (size_t i = position; i < array->length; ++i) {
+    if (pos < array->length) {
+        for (size_t i = pos; i < array->length; ++i) {
             array->data[i] = array->data[i + 1];
         }
     }
 
-    ERROR_CLEAR(error);
     return element;
 }

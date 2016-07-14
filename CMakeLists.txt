@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
     src/plugin/Dir.h
     src/plugin/Vcs.c
     src/plugin/Vcs.h
+    src/Error.c
     src/Error.h
     src/options.c
     src/options.h

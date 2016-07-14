@@ -1,19 +1,15 @@
 #pragma once
-#include <stdbool.h>
-#include <string.h>
+#include <stdio.h>
 
-typedef const char* Error;
+#define ERROR_MESSAGE_STACK_SIZE (8)
 
-#define ERROR_UNSPECIFIED ((Error) "")
+// Initialize to `{NULL}`, successful calls must not clear errors.
+// Ordered by most to least recent error messages.
+typedef const char* Error[ERROR_MESSAGE_STACK_SIZE];
 
-#define /* void */ ERROR_CLEAR(/* Error* */ error) \
-    (*(error) = NULL)
+#define ERROR_CLEAR(error) ((void) ((*error)[0] = NULL))
+#define ERROR_HAS(error) ((*error)[0] != NULL)
 
-#define /* void */ ERROR_ERRNO(/* Error* */ error, /* int */ code) \
-    ERROR_SET((error), strerror(code))
-
-#define /* bool */ ERROR_HAS(/* Error* */ error) \
-    (*(error) != NULL)
-
-#define /* void */ ERROR_SET(/* Error* */ error, /* char* */ message) \
-    (*(error) = message)
+void Error_add(Error* error, const char* message);
+void Error_set(Error* error, Error* source);
+void Error_print(FILE* stream, Error* error);

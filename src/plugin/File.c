@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/stat.h>
 #include "../io.h"
 #include "File.h"
@@ -8,29 +9,24 @@ static int open_file(char* path, Error* error) {
     struct stat path_stat;
 
     if (stat(path, &path_stat) == -1) {
-        if (errno == ENOENT) {
-            ERROR_CLEAR(error);
-        }
-        else {
-            ERROR_ERRNO(error, errno);
+        if (errno != ENOENT) {
+            Error_add(error, strerror(errno));
         }
         return IO_INVALID_FD;
     }
 
     if (S_ISDIR(path_stat.st_mode)) {
-        ERROR_CLEAR(error);
         return IO_INVALID_FD;
     }
 
-    int file = open(path, O_RDONLY);
+    int fd = open(path, O_RDONLY);
 
-    if (file == -1) {
-        ERROR_ERRNO(error, errno);
+    if (fd == -1) {
+        Error_add(error, strerror(errno));
         return IO_INVALID_FD;
     }
 
-    ERROR_CLEAR(error);
-    return file;
+    return fd;
 }
 
 static const char* Plugin_get_description() {
@@ -55,8 +51,6 @@ static void Plugin_run(
             }
         }
     }
-
-    ERROR_CLEAR(error);
 }
 
 Plugin File_Plugin = {

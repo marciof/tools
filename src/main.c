@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "Array.h"
 #include "io.h"
@@ -23,9 +24,7 @@ static Plugin* plugins[] = {
 };
 
 static void cleanup(Array* inputs, Array* outputs, Error* error) {
-    if (ERROR_HAS(error) && (*error != ERROR_UNSPECIFIED)) {
-        fprintf(stderr, "%s\n", *error);
-    }
+    Error_print(stderr, error);
 
     if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
@@ -39,13 +38,11 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
+            ERROR_CLEAR(error);
 
             output->close(output, error);
             Output_delete(output);
-
-            if (ERROR_HAS(error) && (*error != ERROR_UNSPECIFIED)) {
-                fprintf(stderr, "%s\n", *error);
-            }
+            Error_print(stderr, error);
         }
         Array_deinit(outputs);
     }
@@ -82,6 +79,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
 
             if (buffer == NULL) {
                 buffer = Buffer_new(MAX_LEN, error);
+
                 if (ERROR_HAS(error)) {
                     return;
                 }
@@ -97,6 +95,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
 
         if (!has_flushed) {
             io_write(STDOUT_FILENO, buffer, error);
+
             if (ERROR_HAS(error)) {
                 Buffer_delete(buffer);
                 return;
@@ -104,18 +103,15 @@ static void flush_input(int fd, Array* outputs, Error* error) {
         }
     }
 
-    if ((bytes_read == 0) || (errno == EIO)) {
-        ERROR_CLEAR(error);
-    }
-    else {
-        ERROR_ERRNO(error, errno);
+    if ((bytes_read != 0) && (errno != EIO)) {
+        Error_add(error, strerror(errno));
     }
 
     Buffer_delete(buffer);
 }
 
 static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
-    bool has_plugin_failed = false;
+    bool did_succeed = true;
 
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
@@ -124,18 +120,16 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             continue;
         }
 
-        int input_fd = input->fd;
-
-        if (input_fd == IO_INVALID_FD) {
-            has_plugin_failed = true;
+        if (input->fd == IO_INVALID_FD) {
+            did_succeed = false;
             fprintf(stderr, "Unsupported input: %s\n", input->name);
             continue;
         }
 
-        flush_input(input_fd, outputs, error);
+        flush_input(input->fd, outputs, error);
 
         if (ERROR_HAS(error)) {
-            return true;
+            return false;
         }
 
         if (input->close == NULL) {
@@ -146,15 +140,15 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         }
 
         if (ERROR_HAS(error)) {
-            return true;
+            return false;
         }
     }
 
-    return has_plugin_failed;
+    return did_succeed;
 }
 
 int main(int argc, char* argv[]) {
-    Error error;
+    Error error = {NULL};
     Array inputs, outputs;
 
     Array_init(&inputs, &error, NULL);
@@ -190,7 +184,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    bool has_plugin_failed = flush_inputs(&inputs, &outputs, &error);
+    bool did_succeed = flush_inputs(&inputs, &outputs, &error);
     cleanup(&inputs, &outputs, &error);
-    return has_plugin_failed ? EXIT_FAILURE : EXIT_SUCCESS;
+    return did_succeed ? EXIT_SUCCESS: EXIT_FAILURE;
 }

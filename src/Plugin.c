@@ -13,10 +13,10 @@ void Input_close_subprocess(Input* input, Error* error) {
     }
 
     if ((waitpid((int) input->arg, &status, 0) == -1) && (errno != ECHILD)) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
     }
     else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
-        ERROR_SET(error, ERROR_UNSPECIFIED);
+        Error_add(error, "Subprocess exited with an error code");
     }
 }
 
@@ -28,7 +28,7 @@ Input* Input_new(char* name, int fd, Error* error) {
     Input* input = (Input*) malloc(sizeof(*input));
 
     if (input == NULL) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         return NULL;
     }
 
@@ -37,7 +37,6 @@ Input* Input_new(char* name, int fd, Error* error) {
     input->fd = fd;
     input->close = NULL;
 
-    ERROR_CLEAR(error);
     return input;
 }
 
@@ -49,10 +48,9 @@ Output* Output_new(Error* error) {
     Output* output = (Output*) malloc(sizeof(*output));
 
     if (output == NULL) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         return NULL;
     }
 
-    ERROR_CLEAR(error);
     return output;
 }

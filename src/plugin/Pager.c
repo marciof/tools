@@ -34,7 +34,7 @@ static void get_terminal_size(int signal_num) {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }
 
-static void create_argv(Array* argv, Array* options, Error* error) {
+static void init_argv(Array *argv, Array *options, Error *error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
     if (ERROR_HAS(error)) {
@@ -54,24 +54,18 @@ static void create_argv(Array* argv, Array* options, Error* error) {
 
     if (ERROR_HAS(error)) {
         Array_deinit(argv);
-        return;
     }
-
-    ERROR_CLEAR(error);
 }
 
-static void protect_buffer(Pager* pager, bool is_lock, Error* error) {
+static void protect_buffer(Pager* pager, bool do_lock, Error* error) {
     if (pager->has_timer) {
-        int error_nr = (is_lock ? pthread_mutex_lock : pthread_mutex_unlock)(
-            &pager->timer_mutex);
+        int error_nr = (do_lock ? pthread_mutex_lock : pthread_mutex_unlock)
+            (&pager->timer_mutex);
 
         if (error_nr) {
-            ERROR_ERRNO(error, error_nr);
-            return;
+            Error_add(error, strerror(error_nr));
         }
     }
-
-    ERROR_CLEAR(error);
 }
 
 static void flush_buffer(Pager* pager, int default_fd, Error* error) {
@@ -92,6 +86,7 @@ static void flush_buffer(Pager* pager, int default_fd, Error* error) {
         Buffer_delete(buffer);
 
         if (ERROR_HAS(error)) {
+            pager->buffers.data[i] = (intptr_t) NULL;
             return;
         }
     }
@@ -108,7 +103,7 @@ void* flush_buffer_timer(void* arg) {
     timeout.tv_usec = 500 * 1000;
 
     if (select(0, NULL, NULL, NULL, &timeout) == -1) {
-        ERROR_ERRNO(&pager->timer_error, errno);
+        Error_add(&pager->timer_error, strerror(errno));
     }
     else {
         flush_buffer(pager, STDOUT_FILENO, &pager->timer_error);
@@ -146,7 +141,6 @@ static bool buffer_input(Pager* pager, Buffer** buffer, Error* error) {
     }
 
     if (!should_buffer) {
-        ERROR_CLEAR(error);
         return false;
     }
 
@@ -174,14 +168,15 @@ static bool buffer_input(Pager* pager, Buffer** buffer, Error* error) {
             &pager->timer_thread, NULL, flush_buffer_timer, pager);
 
         if (error_nr) {
-            ERROR_ERRNO(error, error_nr);
+            Error_add(error, strerror(error_nr));
             return false;
         }
 
         error_nr = pthread_mutex_init(&pager->timer_mutex, NULL);
 
+        // FIXME: stop thread?
         if (error_nr) {
-            ERROR_ERRNO(error, error_nr);
+            Error_add(error, strerror(error_nr));
             return false;
         }
 
@@ -189,35 +184,35 @@ static bool buffer_input(Pager* pager, Buffer** buffer, Error* error) {
     }
 
     *buffer = NULL;
-    ERROR_CLEAR(error);
     return true;
 }
 
 static void Pager_delete(Pager* pager, Error* error) {
     if (pager->has_timer) {
         if (ERROR_HAS(&pager->timer_error)) {
-            *error = pager->timer_error;
+            // FIXME: don't discard errors
+            Error_set(error, &pager->timer_error);
             return;
         }
 
         int error_nr = pthread_cancel(pager->timer_thread);
 
         if (error_nr && (error_nr != ESRCH)) {
-            ERROR_ERRNO(error, error_nr);
+            Error_add(error, strerror(error_nr));
             return;
         }
 
         error_nr = pthread_join(pager->timer_thread, NULL);
 
         if (error_nr) {
-            ERROR_ERRNO(error, error_nr);
+            Error_add(error, strerror(error_nr));
             return;
         }
 
         error_nr = pthread_mutex_destroy(&pager->timer_mutex);
 
         if (error_nr) {
-            ERROR_ERRNO(error, error_nr);
+            Error_add(error, strerror(error_nr));
             return;
         }
     }
@@ -228,14 +223,20 @@ static void Pager_delete(Pager* pager, Error* error) {
 
     Array_deinit(&pager->buffers);
     free(pager);
-    ERROR_CLEAR(error);
 }
 
 static Pager* Pager_new(Array* options, Error* error) {
     Pager* pager = (Pager*) malloc(sizeof(*pager));
 
     if (pager == NULL) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
+        return NULL;
+    }
+
+    Array_init(&pager->buffers, error, NULL);
+
+    if (ERROR_HAS(error)) {
+        free(pager);
         return NULL;
     }
 
@@ -246,24 +247,13 @@ static Pager* Pager_new(Array* options, Error* error) {
     pager->fd = IO_INVALID_FD;
 
     ERROR_CLEAR(&pager->timer_error);
-    Array_init(&pager->buffers, error, NULL);
-
-    if (ERROR_HAS(error)) {
-        free(pager);
-        return NULL;
-    }
-
-    ERROR_CLEAR(error);
     return pager;
 }
 
 static void Output_close(Output* output, Error* error) {
     Pager* pager = (Pager*) output->arg;
     flush_buffer(pager, STDOUT_FILENO, error);
-
-    if (!ERROR_HAS(error)) {
-        Pager_delete(pager, error);
-    }
+    Pager_delete(pager, error);
 }
 
 static void Output_write(Output* output, Buffer** buffer, Error* error) {
@@ -275,7 +265,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
         }
 
         Array argv;
-        create_argv(&argv, pager->options, error);
+        init_argv(&argv, pager->options, error);
 
         if (ERROR_HAS(error)) {
             return;
@@ -284,21 +274,23 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
         int read_write_fds[2];
 
         if (pipe(read_write_fds) == -1) {
-            ERROR_ERRNO(error, errno);
+            Error_add(error, strerror(errno));
             Array_deinit(&argv);
             return;
         }
 
+        // FIXME: reuse fork_exec?
         int child_pid = fork();
 
         if (child_pid == -1) {
-            ERROR_ERRNO(error, errno);
+            Error_add(error, strerror(errno));
             Array_deinit(&argv);
             return;
         }
         else if (child_pid) {
+            // FIXME: cleanup fork
             if (dup2(read_write_fds[0], STDIN_FILENO) == -1) {
-                ERROR_ERRNO(error, errno);
+                Error_add(error, strerror(errno));
                 Array_deinit(&argv);
                 return;
             }
@@ -306,7 +298,9 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
             close(read_write_fds[0]);
             close(read_write_fds[1]);
             execvp((char*) argv.data[0], (char**) argv.data);
-            ERROR_ERRNO(error, errno);
+
+            // FIXME: cleanup fork
+            Error_add(error, strerror(errno));
             Array_deinit(&argv);
             return;
         }
@@ -315,6 +309,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
         close(read_write_fds[0]);
         flush_buffer(pager, read_write_fds[1], error);
 
+        // FIXME: cleanup fork
         if (ERROR_HAS(error)) {
             return;
         }
@@ -336,22 +331,25 @@ static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
     if (!isatty(STDOUT_FILENO)) {
-        ERROR_CLEAR(error);
         return;
     }
 
+    // FIXME: convert fatal error to warning
     if (signal(SIGWINCH, get_terminal_size) == SIG_ERR) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         return;
     }
 
+    // FIXME: cleanup signal handler
+    // FIXME: convert fatal error to warning
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal) == -1) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         return;
     }
 
     Output* output = Output_new(error);
 
+    // FIXME: cleanup signal handler
     if (ERROR_HAS(error)) {
         return;
     }
@@ -360,6 +358,7 @@ static void Plugin_run(
     output->write = Output_write;
     output->arg = (intptr_t) Pager_new(&plugin->options, error);
 
+    // FIXME: cleanup signal handler
     if (ERROR_HAS(error)) {
         Output_delete(output);
         return;
@@ -367,11 +366,10 @@ static void Plugin_run(
 
     Array_add(outputs, outputs->length, (intptr_t) output, error);
 
+    // FIXME: cleanup signal handler
     if (ERROR_HAS(error)) {
+        Pager_delete((Pager*) output->arg, error);
         Output_delete(output);
-    }
-    else {
-        ERROR_CLEAR(error);
     }
 }
 

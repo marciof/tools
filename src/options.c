@@ -17,7 +17,7 @@
     PLUGIN_OPTION_OPTION \
 )
 
-#define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled."
+#define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled"
 
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
@@ -100,21 +100,21 @@ static void parse_plugin_option(
         || (separator[STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        ERROR_SET(error, "No plugin option specified.");
+        Error_add(error, "No plugin option specified");
         return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        ERROR_SET(error, "No plugin name specified.");
+        Error_add(error, "No plugin name specified");
         return;
     }
 
     ssize_t plugin_pos = find_plugin(option, name_length, plugins, nr_plugins);
 
     if (plugin_pos < 0) {
-        ERROR_SET(error, ERROR_UNKNOWN_PLUGIN);
+        Error_add(error, ERROR_UNKNOWN_PLUGIN);
         return;
     }
 
@@ -136,8 +136,6 @@ static void parse_plugin_option(
             return;
         }
     }
-
-    ERROR_CLEAR(error);
 }
 
 bool parse_options(
@@ -159,13 +157,12 @@ bool parse_options(
                 plugins[pos] = NULL;
             }
             else {
-                ERROR_SET(error, ERROR_UNKNOWN_PLUGIN);
+                Error_add(error, ERROR_UNKNOWN_PLUGIN);
                 return false;
             }
         }
         else if (option == *HELP_OPTION) {
             display_help(plugins, nr_plugins);
-            ERROR_CLEAR(error);
             return true;
         }
         else if (option == *PLUGIN_OPTION_OPTION) {
@@ -176,7 +173,7 @@ bool parse_options(
             }
         }
         else {
-            ERROR_SET(error, "Try '-" HELP_OPTION "' for more information.");
+            Error_add(error, "Try '-" HELP_OPTION "' for more information.");
             return false;
         }
     }
@@ -196,6 +193,5 @@ bool parse_options(
         }
     }
 
-    ERROR_CLEAR(error);
     return false;
 }

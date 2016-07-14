@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../Array.h"
@@ -11,32 +12,34 @@
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
+// Non-thread safe, returns pointer to static storage.
 static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
 
     if (cwd == NULL) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         return NULL;
     }
 
     int cwd_fd = dirfd(cwd);
 
     if (cwd_fd == -1) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
+        closedir(cwd);
         return NULL;
     }
 
     if (fchdir(fd) == -1) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         closedir(cwd);
         return NULL;
     }
 
     if (getcwd(fd_dir_name, STATIC_ARRAY_LENGTH(fd_dir_name)) == NULL) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
 
         if (fchdir(cwd_fd) == -1) {
-            ERROR_ERRNO(error, errno);
+            Error_add(error, strerror(errno));
         }
 
         closedir(cwd);
@@ -44,13 +47,12 @@ static char* get_fd_dir_path(int fd, Error* error) {
     }
 
     if (fchdir(cwd_fd) == -1) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         closedir(cwd);
         return NULL;
     }
 
     closedir(cwd);
-    ERROR_CLEAR(error);
     return fd_dir_name;
 }
 
@@ -71,7 +73,7 @@ static void Plugin_run(
     size_t position;
 
     if (fstat(fd, &fd_stat) == -1) {
-        ERROR_ERRNO(error, errno);
+        Error_add(error, strerror(errno));
         return;
     }
 
@@ -92,12 +94,7 @@ static void Plugin_run(
     else {
         bool has_fd_input = io_has_input(fd, error);
 
-        if (ERROR_HAS(error)) {
-            return;
-        }
-
-        if (!has_fd_input) {
-            ERROR_CLEAR(error);
+        if (ERROR_HAS(error) || !has_fd_input) {
             return;
         }
 
@@ -113,9 +110,6 @@ static void Plugin_run(
 
     if (ERROR_HAS(error)) {
         Input_delete(input);
-    }
-    else {
-        ERROR_CLEAR(error);
     }
 }
 

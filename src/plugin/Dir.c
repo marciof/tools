@@ -8,7 +8,7 @@
 
 #define EXTERNAL_BINARY "ls"
 
-static void create_argv(Array* argv, Array* options, Error* error) {
+static void init_argv(Array *argv, Array *options, Error *error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
     if (ERROR_HAS(error)) {
@@ -28,19 +28,18 @@ static void create_argv(Array* argv, Array* options, Error* error) {
 
     if (ERROR_HAS(error)) {
         Array_deinit(argv);
-        return;
     }
-
-    ERROR_CLEAR(error);
 }
 
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     Array_add(argv, argv->length, (intptr_t) NULL, error);
+
     if (ERROR_HAS(error)) {
         return;
     }
 
     Input* input = Input_new(NULL, IO_INVALID_FD, error);
+
     if (ERROR_HAS(error)) {
         return;
     }
@@ -53,18 +52,16 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 
     int child_pid;
-
-    input->close = Input_close_subprocess;
     input->fd = fork_exec(
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
     if (ERROR_HAS(error)) {
-        Array_remove(inputs, pos, NULL);
+        Array_remove(inputs, pos, error);
         Input_delete(input);
     }
     else {
+        input->close = Input_close_subprocess;
         input->arg = (intptr_t) child_pid;
-        ERROR_CLEAR(error);
     }
 }
 
@@ -82,7 +79,7 @@ static void Plugin_run(
     Array argv;
     size_t nr_args = 0;
 
-    create_argv(&argv, &plugin->options, error);
+    init_argv(&argv, &plugin->options, error);
 
     if (ERROR_HAS(error)) {
         return;
@@ -137,9 +134,6 @@ static void Plugin_run(
 
     if (nr_args > 0) {
         open_inputs(inputs, &argv, inputs->length, error);
-    }
-    else {
-        ERROR_CLEAR(error);
     }
 
     Array_deinit(&argv);
