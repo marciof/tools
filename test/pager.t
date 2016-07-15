@@ -2,7 +2,7 @@ Setup:
 
   $ . $TESTDIR/setup.sh
 
-Disable pager on slow input :
+Disable pager on slow input:
 
   $ (echo begin && sleep 1 && echo end) | show
   begin
