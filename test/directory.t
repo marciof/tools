@@ -18,3 +18,10 @@ List directory from stdin:
 
   $ show < dir1
   file1
+
+List directory with a custom option:
+
+  $ show -p dir:-a dir1
+  .
+  ..
+  file1
