@@ -12,7 +12,7 @@
 #include "Pager.h"
 
 #define EXTERNAL_BINARY "less"
-#define PAGING_THRESHOLD 0.5
+#define PAGING_THRESHOLD 0.6
 
 typedef struct {
     bool has_timer;
