@@ -27,6 +27,20 @@ static void init_argv(Array *argv, Array *options, char* input, Error *error) {
     }
 }
 
+static bool is_input_valid(char* input, Error* error) {
+    char* args[] = {
+        EXTERNAL_BINARY,
+        "--no-pager",
+        "rev-parse",
+        "--quiet",
+        "--verify",
+        input,
+        NULL,
+    };
+
+    return fork_exec_status(args[0], args, error) == 0;
+}
+
 static const char* Plugin_get_description() {
     return "show VCS revisions via `" EXTERNAL_BINARY "`";
 }
@@ -42,6 +56,15 @@ static void Plugin_run(
         Input* input = (Input*) inputs->data[i];
 
         if ((input != NULL) && (input->fd == IO_INVALID_FD)) {
+            bool is_valid = is_input_valid(input->name, error);
+
+            if (ERROR_HAS(error)) {
+                return;
+            }
+            if (!is_valid) {
+                continue;
+            }
+
             Array argv;
             init_argv(&argv, &plugin->options, input->name, error);
 
@@ -50,12 +73,11 @@ static void Plugin_run(
             }
 
             int child_pid;
-            input->fd = fork_exec(
+            input->fd = fork_exec_fd(
                 (char*) argv.data[0], (char**) argv.data, &child_pid, error);
 
             Array_deinit(&argv);
 
-            // FIXME: don't swallow invalid inputs
             if (ERROR_HAS(error)) {
                 return;
             }

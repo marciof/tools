@@ -279,7 +279,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
             return;
         }
 
-        // FIXME: reuse fork_exec?
+        // FIXME: reuse fork_exec_fd?
         int child_pid = fork();
 
         if (child_pid == -1) {

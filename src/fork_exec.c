@@ -1,6 +1,8 @@
 #include <errno.h>
+#include <fcntl.h>
 #include <pty.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "fork_exec.h"
 #include "io.h"
@@ -60,8 +62,7 @@ static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
     return IO_INVALID_FD;
 }
 
-// FIXME: http://stackoverflow.com/a/23428212/753501
-int fork_exec(char* file, char* argv[], int* pid, Error* error) {
+int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
     int is_tty = isatty(STDOUT_FILENO);
 
     if (is_tty == 0) {
@@ -75,5 +76,47 @@ int fork_exec(char* file, char* argv[], int* pid, Error* error) {
     }
     else {
         return fork_exec_pty(file, argv, pid, error);
+    }
+}
+
+// FIXME: http://stackoverflow.com/a/23428212/753501
+int fork_exec_status(char* file, char* argv[], Error* error) {
+    int child_pid = fork();
+
+    if (child_pid == -1) {
+        Error_add(error, strerror(errno));
+        return -1;
+    }
+    else if (!child_pid) {
+        int dev_null = open("/dev/null", O_RDWR);
+
+        // FIXME: cleanup fork
+        if (dup2(dev_null, STDERR_FILENO) == -1) {
+            Error_add(error, strerror(errno));
+            close(dev_null);
+            return -1;
+        }
+        // FIXME: cleanup fork
+        if (dup2(dev_null, STDOUT_FILENO) == -1) {
+            Error_add(error, strerror(errno));
+            close(dev_null);
+            return -1;
+        }
+
+        execvp(file, argv);
+
+        // FIXME: cleanup fork
+        Error_add(error, strerror(errno));
+        return -1;
+    }
+    else {
+        int status;
+
+        if (waitpid(child_pid, &status, 0) == -1) {
+            Error_add(error, strerror(errno));
+            return -1;
+        }
+
+        return WEXITSTATUS(status);
     }
 }

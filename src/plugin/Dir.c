@@ -52,7 +52,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 
     int child_pid;
-    input->fd = fork_exec(
+    input->fd = fork_exec_fd(
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
     if (ERROR_HAS(error)) {
