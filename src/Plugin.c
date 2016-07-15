@@ -12,8 +12,10 @@ void Input_close_subprocess(Input* input, Error* error) {
         return;
     }
 
-    if ((waitpid((int) input->arg, &status, 0) == -1) && (errno != ECHILD)) {
-        Error_add(error, strerror(errno));
+    if (waitpid((int) input->arg, &status, 0) == -1) {
+        if (errno != ECHILD) {
+            Error_add(error, strerror(errno));
+        }
     }
     else if (WIFEXITED(status) && (WEXITSTATUS(status) != 0)) {
         Error_add(error, "Subprocess exited with an error code");
