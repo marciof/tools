@@ -373,7 +373,6 @@ static void Plugin_run(
     }
 }
 
-// FIXME: test with `script` or `expect`?
 Plugin Pager_Plugin = {
     {NULL},
     Plugin_get_description,
