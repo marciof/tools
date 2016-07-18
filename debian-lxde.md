@@ -18,7 +18,7 @@ http://askubuntu.com/a/7484/163034
 
 1. $ adduser USERNAME sudo
 
-# Use GRUB in faster console mode #
+# Use GRUB in console mode (faster) #
 
 https://wiki.ubuntu.com/HardwareSupportComponentsVideoCardsPoulsbo#Post_installation
 
@@ -32,6 +32,12 @@ http://askubuntu.com/a/178977/163034
 
 1. $ apt-get install ntp
 2. In the Time and Date settings set it to Automatic Update.
+
+# Opera Presto (lightweight, spatial navigation) #
+
+http://arc.opera.com/pub/opera/linux/
+
+1. Add GPG key: wget -O- http://deb.opera.com/archive.key | sudo apt-key add -
 
 # Enable Sony Vaio function keys #
 
