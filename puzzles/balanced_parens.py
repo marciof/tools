@@ -14,19 +14,19 @@ Time: O(n)
 
 import unittest
 
-def permutate(total, combination = '', nr_open = 0, nr_closed = 0):
+def permutate(total, nr_open = 0, nr_closed = 0):
     combinations = []
 
-    if (nr_open == total) and (nr_closed == total):
-        combinations.append(combination)
+    if nr_open == nr_closed == total:
+        combinations.append('')
     else:
         if nr_open < total:
-            combinations.extend(
-                permutate(total, combination + '(', nr_open + 1, nr_closed))
+            for c in permutate(total, nr_open + 1, nr_closed):
+                combinations.append('(' + c)
 
         if nr_closed < nr_open:
-            combinations.extend(
-                permutate(total, combination + ')', nr_open, nr_closed + 1))
+            for c in permutate(total, nr_open, nr_closed + 1):
+                combinations.append(')' + c)
 
     return combinations
 

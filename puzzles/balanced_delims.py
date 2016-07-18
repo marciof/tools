@@ -22,10 +22,10 @@ def is_balanced(string):
     for char in string:
         if char in open_to_close:
             expected.append(open_to_close[char])
-        elif (len(expected) == 0) or (expected[-1] != char):
-            return False
-        else:
+        elif (len(expected) > 0) and (expected[-1] == char):
             expected.pop()
+        else:
+            return False
 
     return len(expected) == 0
 
