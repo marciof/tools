@@ -1,9 +1,10 @@
-﻿# Scale UI #
+# Scale UI #
 
 http://blog.mlindgren.ca/entry/2015/02/21/configuring-dpi-in-lubuntu-slash-lxde/
+https://wiki.archlinux.org/index.php/xorg#Display_size_and_DPI
 
 1. Open: ~/.Xresources
-2. Add: Xft.dpi: 150
+2. Add: Xft.dpi: 140
 
 # Scale mouse pointer #
 
@@ -38,6 +39,7 @@ http://askubuntu.com/a/178977/163034
 http://arc.opera.com/pub/opera/linux/
 
 1. Add GPG key: wget -O- http://deb.opera.com/archive.key | sudo apt-key add -
+1. Download and install.
 
 # Enable Sony Vaio function keys #
 
