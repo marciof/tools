@@ -47,6 +47,8 @@ http://arc.opera.com/pub/opera/linux/
 @ can remap Sony function keys
 @ ACPI can recognize events
 
+scroll with middle button and pointing stick
+
 $ lsmod | grep gm
 
 http://askubuntu.com/q/624320/163034
