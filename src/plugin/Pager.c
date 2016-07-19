@@ -29,7 +29,7 @@ typedef struct {
 
 static struct winsize terminal;
 
-static void get_terminal_size(int signal_num) {
+static void get_terminal_size(int signal_nr) {
     signal(SIGWINCH, get_terminal_size);
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }

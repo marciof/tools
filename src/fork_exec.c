@@ -1,11 +1,57 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pty.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "fork_exec.h"
 #include "io.h"
+
+static void init_child_failure_pipe(int read_write_fds[2], Error* error) {
+    if (pipe(read_write_fds) == -1) {
+        Error_add(error, strerror(errno));
+    }
+    else if (fcntl(read_write_fds[0], F_SETFL, O_NONBLOCK) == -1) {
+        Error_add(error, strerror(errno));
+
+        if (close(read_write_fds[0]) == -1) {
+            Error_add(error, strerror(errno));
+        }
+        if (close(read_write_fds[1]) == -1) {
+            Error_add(error, strerror(errno));
+        }
+    }
+}
+
+static bool is_set_child_failure_pipe(int read_write_fds[2], Error* error) {
+    uint8_t has_failed = 0;
+
+    if ((read(read_write_fds[0], &has_failed, 1) == -1) && (errno != EAGAIN)) {
+        Error_add(error, strerror(errno));
+        return false;
+    }
+    else {
+        return has_failed == 1;
+    }
+}
+
+static void set_child_failure_pipe(int read_write_fds[2], Error* error) {
+    uint8_t has_failed = 1;
+
+    while (true) {
+        ssize_t nr_bytes_read = write(read_write_fds[1], &has_failed, 1);
+
+        if (nr_bytes_read == -1) {
+            Error_add(error, strerror(errno));
+            break;
+        }
+        else if (nr_bytes_read == 1) {
+            break;
+        }
+    }
+}
 
 static int fork_exec_pipe(char* file, char* argv[], int* pid, Error* error) {
     int read_write_fds[2];
@@ -79,8 +125,14 @@ int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
     }
 }
 
-// FIXME: http://stackoverflow.com/a/23428212/753501
 int fork_exec_status(char* file, char* argv[], Error* error) {
+    int read_write_fds[2];
+    init_child_failure_pipe(read_write_fds, error);
+
+    if (ERROR_HAS(error)) {
+        return -1;
+    }
+
     int child_pid = fork();
 
     if (child_pid == -1) {
@@ -88,26 +140,25 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
         return -1;
     }
     else if (!child_pid) {
-        int dev_null = open("/dev/null", O_RDWR);
+        int dev_null;
 
-        // FIXME: cleanup fork
-        if (dup2(dev_null, STDERR_FILENO) == -1) {
-            Error_add(error, strerror(errno));
-            close(dev_null);
-            return -1;
-        }
-        // FIXME: cleanup fork
-        if (dup2(dev_null, STDOUT_FILENO) == -1) {
-            Error_add(error, strerror(errno));
-            close(dev_null);
-            return -1;
+        bool has_redirected = ((dev_null = open("/dev/null", O_RDWR)) != -1)
+            && (dup2(dev_null, STDERR_FILENO) != -1)
+            && (dup2(dev_null, STDOUT_FILENO) != -1);
+
+        if (!has_redirected) {
+            int saved_errno = errno;
+            set_child_failure_pipe(read_write_fds, error);
+            Error_print(stderr, error);
+            exit(saved_errno);
         }
 
         execvp(file, argv);
 
-        // FIXME: cleanup fork
-        Error_add(error, strerror(errno));
-        return -1;
+        int saved_errno = errno;
+        set_child_failure_pipe(read_write_fds, error);
+        Error_print(stderr, error);
+        exit(saved_errno);
     }
     else {
         int status;
@@ -117,6 +168,20 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
             return -1;
         }
 
-        return WEXITSTATUS(status);
+        bool has_failed = is_set_child_failure_pipe(read_write_fds, error);
+
+        if (ERROR_HAS(error)) {
+            return -1;
+        }
+
+        // FIXME: check `WIFEXITED`
+        int exit_status = WEXITSTATUS(status);
+
+        if (has_failed) {
+            Error_add(error, strerror(exit_status));
+            return -1;
+        }
+
+        return exit_status;
     }
 }
