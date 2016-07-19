@@ -35,7 +35,7 @@ RUN wget -O - https://download.jetbrains.com/cpp/CLion-2016.1.3.tar.gz | tar zx 
 
 # IDEA
 RUN mkdir idea/
-RUN wget -O - https://download.jetbrains.com/idea/ideaIU-2016.1.3.tar.gz | tar zx --strip-components=1 -C idea/
+RUN wget -O - https://download.jetbrains.com/idea/ideaIU-2016.2.tar.gz | tar zx --strip-components=1 -C idea/
 
 # host SSH access
 # $ apt-get install ssh
