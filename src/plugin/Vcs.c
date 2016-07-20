@@ -3,7 +3,7 @@
 
 #define EXTERNAL_BINARY "git"
 
-static void init_argv(Array *argv, Array *options, char* input, Error *error) {
+static void init_argv(Array* argv, Array* options, char* input, Error* error) {
     Array_init(argv, error,
         EXTERNAL_BINARY, "--no-pager", "show", input, NULL);
 
@@ -55,36 +55,42 @@ static void Plugin_run(
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
-        if ((input != NULL) && (input->fd == IO_INVALID_FD)) {
-            bool is_valid = is_input_valid(input->name, error);
-
-            if (ERROR_HAS(error)) {
-                return;
-            }
-            if (!is_valid) {
-                continue;
-            }
-
-            Array argv;
-            init_argv(&argv, &plugin->options, input->name, error);
-
-            if (ERROR_HAS(error)) {
-                return;
-            }
-
-            int child_pid;
-            input->fd = fork_exec_fd(
-                (char*) argv.data[0], (char**) argv.data, &child_pid, error);
-
-            Array_deinit(&argv);
-
-            if (ERROR_HAS(error)) {
-                return;
-            }
-
-            input->arg = child_pid;
-            input->close = Input_close_subprocess;
+        if ((input == NULL) || (input->fd != IO_INVALID_FD)) {
+            continue;
         }
+
+        bool is_valid = is_input_valid(input->name, error);
+
+        if (ERROR_HAS(error)) {
+            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            return;
+        }
+        if (!is_valid) {
+            continue;
+        }
+
+        // FIXME: reuse `argv` array for performance
+        Array argv;
+        init_argv(&argv, &plugin->options, input->name, error);
+
+        if (ERROR_HAS(error)) {
+            return;
+        }
+
+        int child_pid;
+        int fd = fork_exec_fd(
+            (char*) argv.data[0], (char**) argv.data, &child_pid, error);
+
+        Array_deinit(&argv);
+
+        if (ERROR_HAS(error)) {
+            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            return;
+        }
+
+        input->fd = fd;
+        input->arg = child_pid;
+        input->close = Input_close_subprocess;
     }
 }
 

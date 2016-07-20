@@ -140,11 +140,11 @@ static void parse_plugin_option(
 
 bool parse_options(
         int argc,
-        char **argv,
-        Plugin **plugins,
+        char* argv[],
+        Plugin* plugins[],
         size_t nr_plugins,
         Array* inputs,
-        Error *error) {
+        Error* error) {
 
     int option;
 

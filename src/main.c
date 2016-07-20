@@ -24,7 +24,7 @@ static Plugin* plugins[] = {
 };
 
 static void cleanup(Array* inputs, Array* outputs, Error* error) {
-    Error_print(stderr, error);
+    Error_print(error, stderr);
 
     if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
@@ -42,7 +42,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 
             output->close(output, error);
             Output_delete(output);
-            Error_print(stderr, error);
+            Error_print(error, stderr);
         }
         Array_deinit(outputs);
     }
@@ -178,6 +178,7 @@ int main(int argc, char* argv[]) {
             plugins[i]->run(plugins[i], &inputs, &outputs, &error);
 
             if (ERROR_HAS(&error)) {
+                Error_add(&error, plugins[i]->get_name());
                 cleanup(&inputs, &outputs, &error);
                 return EXIT_FAILURE;
             }

@@ -11,15 +11,15 @@ typedef struct Input {
     int fd;
     intptr_t arg;
     // If `NULL`, uses `io_close` by default.
-    void (*close)(struct Input* input, Error* error);
+    void (*close)(struct Input*, Error* error);
 } Input;
 
 typedef struct Output {
     intptr_t arg;
-    void (*close)(struct Output* output, Error* error);
+    void (*close)(struct Output*, Error* error);
     // If all data is flushed, `buffer->length` is set to `0`.
     // If `buffer` is kept, it is set to `NULL`.
-    void (*write)(struct Output* output, Buffer** buffer, Error* error);
+    void (*write)(struct Output*, Buffer** buffer, Error* error);
 } Output;
 
 typedef struct Plugin {

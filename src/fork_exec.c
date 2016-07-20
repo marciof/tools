@@ -149,7 +149,7 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
         if (has_failed) {
             int saved_errno = errno;
             set_child_failure_pipe(read_write_fds, error);
-            Error_print(stderr, error);
+            Error_print(error, stderr);
             errno = saved_errno;
         }
 

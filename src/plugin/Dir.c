@@ -32,6 +32,7 @@ static void init_argv(Array *argv, Array *options, Error *error) {
 }
 
 static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
+    // FIXME: `NULL` is sometimes added multiple times
     Array_add(argv, argv->length, (intptr_t) NULL, error);
 
     if (ERROR_HAS(error)) {
@@ -56,6 +57,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
     if (ERROR_HAS(error)) {
+        Error_add(error, "`" EXTERNAL_BINARY "` error");
         Array_remove(inputs, pos, error);
         Input_delete(input);
     }

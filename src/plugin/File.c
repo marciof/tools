@@ -47,6 +47,7 @@ static void Plugin_run(
             input->fd = open_file(input->name, error);
 
             if (ERROR_HAS(error)) {
+                Error_add(error, input->name);
                 return;
             }
         }
