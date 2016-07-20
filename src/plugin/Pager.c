@@ -330,6 +330,7 @@ static const char* Plugin_get_name() {
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
+    // FIXME: check `errno`
     if (!isatty(STDOUT_FILENO)) {
         return;
     }

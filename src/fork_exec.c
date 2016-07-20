@@ -111,17 +111,15 @@ static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
 int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
     int is_tty = isatty(STDOUT_FILENO);
 
-    if (is_tty == 0) {
-        if (errno == EBADF) {
-            Error_add(error, strerror(errno));
-            return IO_INVALID_FD;
-        }
-        else {
-            return fork_exec_pipe(file, argv, pid, error);
-        }
+    if (is_tty == 1) {
+        return fork_exec_pty(file, argv, pid, error);
+    }
+    else if (errno != EBADF) {
+        return fork_exec_pipe(file, argv, pid, error);
     }
     else {
-        return fork_exec_pty(file, argv, pid, error);
+        Error_add(error, strerror(errno));
+        return IO_INVALID_FD;
     }
 }
 
@@ -142,23 +140,19 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
     else if (!child_pid) {
         int dev_null;
 
-        bool has_redirected = ((dev_null = open("/dev/null", O_RDWR)) != -1)
-            && (dup2(dev_null, STDERR_FILENO) != -1)
-            && (dup2(dev_null, STDOUT_FILENO) != -1);
+        bool has_failed = ((dev_null = open("/dev/null", O_RDWR)) == -1)
+            || (dup2(dev_null, STDERR_FILENO) == -1)
+            || (dup2(dev_null, STDOUT_FILENO) == -1)
+            || (execvp(file, argv) == -1);
 
-        if (!has_redirected) {
+        if (has_failed) {
             int saved_errno = errno;
             set_child_failure_pipe(read_write_fds, error);
             Error_print(stderr, error);
-            exit(saved_errno);
+            errno = saved_errno;
         }
 
-        execvp(file, argv);
-
-        int saved_errno = errno;
-        set_child_failure_pipe(read_write_fds, error);
-        Error_print(stderr, error);
-        exit(saved_errno);
+        exit(errno);
     }
     else {
         int status;

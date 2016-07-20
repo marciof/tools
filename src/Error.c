@@ -1,11 +1,11 @@
 #include <string.h>
+#include <sys/types.h>
 #include "Error.h"
 
 void Error_add(Error* error, const char* message) {
-    memmove(
-        (*error) + 1,
-        *error,
-        (ERROR_MESSAGE_STACK_SIZE - 1) * sizeof((*error)[0]));
+    for (ssize_t i = ERROR_MESSAGE_STACK_SIZE - 1 - 1; i >= 0; --i) {
+        (*error)[i+1] = (*error)[i];
+    }
 
     (*error)[0] = message;
 }

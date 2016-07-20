@@ -1,8 +1,8 @@
 # 0.10.0 - UNRELEASED #
 
 - Plugin "vcs": show VCS revisions via `git`.
-- Plugin "diff": highlight changed words in unified diff input.
 - Fix plugin "dir" to interpret inputs as file names and paths only.
+- Improved error handling and reporting.
 
 # 0.9.0 - 2016-06-27 #
 
