@@ -103,3 +103,15 @@ $ dmesg | grep sony
 https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1054298
 $ xrandr -q
 $ xrandr --output LVDS-0 --set backlight 50
+
+# Emacs #
+
+- spacemacs.org
+- YASnippet
+- Magit
+- Restclient
+- Multiple-cursors
+- Jump to any point in the screen: https://www.youtube.com/watch?v=UZkpmegySnc
+- Rainbow mode
+- paredit
+- @emacsrocks
