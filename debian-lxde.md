@@ -4,7 +4,7 @@ http://blog.mlindgren.ca/entry/2015/02/21/configuring-dpi-in-lubuntu-slash-lxde/
 https://wiki.archlinux.org/index.php/xorg#Display_size_and_DPI
 
 1. Open: ~/.Xresources
-2. Add: Xft.dpi: 140
+2. Add: Xft.dpi: 135
 
 # Scale mouse pointer #
 
