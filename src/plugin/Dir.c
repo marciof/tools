@@ -52,7 +52,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 
     int child_pid;
-    input->fd = fork_exec_fd(
+    int fd = fork_exec_fd(
         (char*) argv->data[0], (char**) argv->data, &child_pid, error);
 
     if (ERROR_HAS(error)) {
@@ -60,6 +60,7 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         Input_delete(input);
     }
     else {
+        input->fd = fd;
         input->close = Input_close_subprocess;
         input->arg = (intptr_t) child_pid;
     }

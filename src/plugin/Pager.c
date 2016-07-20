@@ -23,7 +23,7 @@ typedef struct {
     Array* options;
     size_t nr_lines;
     size_t nr_line_chars;
-    // Set to `IO_INVALID_FD` if and until the pager starts.
+    // Set to `IO_INVALID_FD` until the pager starts (if at all).
     int fd;
 } Pager;
 

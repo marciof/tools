@@ -17,9 +17,11 @@ void Input_close_subprocess(Input* input, Error* error) {
             Error_add(error, strerror(errno));
         }
     }
-    // FIXME: check `WIFEXITED`
+    else if (!WIFEXITED(status)) {
+        Error_add(error, "Input subprocess did not exit");
+    }
     else if (WEXITSTATUS(status) != 0) {
-        Error_add(error, "Subprocess exited with an error code");
+        Error_add(error, "Input subprocess exited with an error code");
     }
 }
 

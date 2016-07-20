@@ -123,6 +123,7 @@ int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
     }
 }
 
+// FIXME: refactor into and wrap `fork_exec_pipe`?
 int fork_exec_status(char* file, char* argv[], Error* error) {
     int read_write_fds[2];
     init_child_failure_pipe(read_write_fds, error);
@@ -167,8 +168,11 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
         if (ERROR_HAS(error)) {
             return -1;
         }
+        if (!WIFEXITED(status)) {
+            Error_add(error, "Fork/exec subprocess did not exit");
+            return -1;
+        }
 
-        // FIXME: check `WIFEXITED`
         int exit_status = WEXITSTATUS(status);
 
         if (has_failed) {
