@@ -11,7 +11,7 @@ https://wiki.archlinux.org/index.php/xorg#Display_size_and_DPI
 http://bbs.archbang.org/viewtopic.php?id=4435
 
 1. Open: ~/.config/lxsession/LXDE/desktop.conf
-2. Add line: iGtk/CursorThemeSize=38
+2. Add line: iGtk/CursorThemeSize=36
 
 # Get sudo rights #
 
