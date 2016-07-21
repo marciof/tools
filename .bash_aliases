@@ -44,13 +44,7 @@ _green='\e[0;32m'
 _b_red='\e[1;31m'
 _b_blue='\e[1;34m'
 
-if [ -z "$BASHRC_HIDE_USER_HOST" -a \( -n "$SSH_CLIENT" -o -n "$SSH_TTY" \) ]; then
-    _ps1_user_host="\[$_yellow\]\\u@\\h\[$_color_off\] "
-else
-    _ps1_user_host=
-fi
-
-# Disable XON/XOFF flow control to allow `bind -q forward-search-history`.
+# Allow `bind -q forward-search-history`.
 stty -ixon
 
 bind 'set bind-tty-special-chars Off'
@@ -59,11 +53,21 @@ bind 'set expand-tilde Off'
 bind 'set mark-symlinked-directories On'
 bind 'set visible-stats On'
 
-bind '"\e[1;5C": forward-word'                  # Ctrl + Right
-bind '"\e[1;5D": backward-word'                 # Ctrl + Left
-bind '"\e[3;5~": kill-word'                     # Ctrl + Delete
-bind '"\e[2;5~": backward-kill-word'            # Ctrl + Insert
-bind '"\e[2~": backward-kill-word'              # Insert
+bind '"\e[1;5C": forward-word'       # ctrl-right
+bind '"\e[1;5D": backward-word'      # ctrl-left
+bind '"\e[3;5~": kill-word'          # ctrl-delete
+bind '"\e[2;5~": backward-kill-word' # ctrl-insert
+bind '"\e[2~": backward-kill-word'   # insert
+
+if test -n "$DESKTOP_SESSION" && _have gnome-keyring-daemon; then
+    eval "$($NAME --start)"
+fi
+
+if [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+    _prompt="\[$_yellow\]\\u@\\h\[$_color_off\] "
+else
+    _prompt=
+fi
 
 if _have show; then
     alias s="$NAME -p dir:-Fh -p dir:--color=auto -p dir:--group-directories-first"
@@ -78,19 +82,10 @@ if _have ag; then
     fi
 fi
 
-# https://github.com/git/git/tree/master/contrib/completion
 if _have git; then
-    _set_git_config() {
-        local option=$1
-        local value=$2
-
-        if ! git config --global "$option" > /dev/null; then
-            if [ -z "$value" ]; then
-                _warn "Missing Git config: $option"
-            else
-                git config --global "$option" "$value"
-            fi
-        fi
+    _color_git_ps1() {
+        local ps1=$(__git_ps1 "%s")
+        [ -n "$ps1" ] && echo "$ps1 "
     }
 
     _load_git_completions() {
@@ -127,6 +122,13 @@ if _have git; then
     alias ss='git pull "$@"'
     alias st='git status "$@"'
 
+    git config --global  push.default simple
+    git config --global  branch.autosetuprebase always
+
+    export GIT_PS1_SHOWDIRTYSTATE=x
+    export GIT_PS1_SHOWSTASHSTATE=x
+    export GIT_PS1_SHOWUNTRACKEDFILES=x
+
     for ALIAS in sa sb sc sd sh sl sp sr ss st; do
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _${ALIAS} ${ALIAS}"
@@ -137,25 +139,7 @@ if _have git; then
         export GIT_EDITOR="$NAME +,9999"
     fi
 
-    if [ ! -e "$HOME/.config/git/ignore" ]; then
-        _warn "Missing user Git ignore: ~/.config/git/ignore"
-    fi
-
-    _set_git_config push.default simple
-    _set_git_config branch.autosetuprebase always
-    _set_git_config user.email
-    _set_git_config user.name
-
-    export GIT_PS1_SHOWDIRTYSTATE=x
-    export GIT_PS1_SHOWSTASHSTATE=x
-    export GIT_PS1_SHOWUNTRACKEDFILES=x
-
-    _color_git_ps1() {
-        local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo "$ps1 "
-    }
-
-    _ps1_user_host="$_ps1_user_host\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
+    _prompt="$_prompt\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
 fi
 
 _jobs_nr_ps1() {
@@ -164,5 +148,5 @@ _jobs_nr_ps1() {
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_ps1_user_host\[$_b_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
+    export PS1="$_prompt\[$_b_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
 fi
