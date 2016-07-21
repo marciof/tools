@@ -4,27 +4,27 @@ http://blog.mlindgren.ca/entry/2015/02/21/configuring-dpi-in-lubuntu-slash-lxde/
 https://wiki.archlinux.org/index.php/xorg#Display_size_and_DPI
 
 1. Open: ~/.Xresources
-2. Add: Xft.dpi: 135
+2. Use: Xft.dpi: 135
 
 # Scale mouse pointer #
 
 http://bbs.archbang.org/viewtopic.php?id=4435
 
 1. Open: ~/.config/lxsession/LXDE/desktop.conf
-2. Add line: iGtk/CursorThemeSize=36
+2. Use: iGtk/CursorThemeSize=36
 
 # Get sudo rights #
 
 http://askubuntu.com/a/7484/163034 
 
-1. $ adduser USERNAME sudo
+2. $ adduser USERNAME sudo
 
 # Use GRUB in console mode (faster) #
 
 https://wiki.ubuntu.com/HardwareSupportComponentsVideoCardsPoulsbo#Post_installation
 
 1. Open: /etc/default/grub
-2. Add: GRUB_TERMINAL=console
+2. Use: GRUB_TERMINAL=console
 3. $ update-grub
 
 # Network sync time #
@@ -32,14 +32,14 @@ https://wiki.ubuntu.com/HardwareSupportComponentsVideoCardsPoulsbo#Post_installa
 http://askubuntu.com/a/178977/163034 
 
 1. $ apt-get install ntp
-2. In the Time and Date settings set it to Automatic Update.
 
 # Opera Presto (lightweight, spatial navigation) #
 
 http://arc.opera.com/pub/opera/linux/
 
-1. Add GPG key: wget -O- http://deb.opera.com/archive.key | sudo apt-key add -
-1. Download and install.
+1. $ wget -O- http://deb.opera.com/archive.key | sudo apt-key add -
+2. $ dpkg -i DEB_FILE
+3. $ apt-get install -f
 
 # Enable Sony Vaio function keys #
 
