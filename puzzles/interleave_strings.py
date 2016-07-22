@@ -22,11 +22,11 @@ def interleave(str_a, str_b):
 
     combinations = []
 
-    for comb in interleave(str_a[1:], str_b):
-        combinations.append(str_a[0] + comb)
+    for c in interleave(str_a[1:], str_b):
+        combinations.append(str_a[0] + c)
 
-    for comb in interleave(str_a, str_b[1:]):
-        combinations.append(str_b[0] + comb)
+    for c in interleave(str_a, str_b[1:]):
+        combinations.append(str_b[0] + c)
 
     return combinations
 

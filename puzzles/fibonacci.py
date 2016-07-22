@@ -5,6 +5,7 @@
 Calculate the `n`-th value of the Fibonacci sequence.
 
 Time: O(n)
+Memory: O(1)
 """
 
 import sys

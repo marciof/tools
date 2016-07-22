@@ -5,13 +5,14 @@
 Calculate the factorial of `n`.
 
 Time: O(n)
+Memory: O(1)
 """
 
 import sys
 import unittest
 
 def calculate(n, result = 1):
-    if n <= 1:
+    if n == 0:
         return result
     else:
         return calculate(n - 1, n * result)
