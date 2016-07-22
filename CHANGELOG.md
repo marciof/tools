@@ -1,3 +1,8 @@
+# 0.11.0 - UNRELEASED #
+
+- Plugin "diff": highlight changed words in unified diff input.
+- Deactivate plugins automatically when unsupported.
+
 # 0.10.0 - 2016-07-20 #
 
 - Plugin "vcs": show VCS revisions via `git`.
