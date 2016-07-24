@@ -11,26 +11,18 @@ import unittest
 
 def find_char(string):
     seen_chars = set()
-    char_to_pos = {}
+    char_to_first_pos = {}
 
     for pos, char in enumerate(string):
         if char in seen_chars:
-            char_to_pos.pop(char, None)
+            char_to_first_pos.pop(char, None)
         else:
             seen_chars.add(char)
-            char_to_pos[char] = pos
+            char_to_first_pos[char] = pos
 
-    target_pos = float('+inf')
+    target_pos = min(char_to_first_pos.values(), default = None)
 
-    for char, pos in char_to_pos.items():
-        if pos == 0:
-            return char
-        elif pos < target_pos:
-            target_pos = pos
-
-    if target_pos == float('+inf'):
-        return None
-    else:
+    if target_pos is not None:
         return string[target_pos]
 
 class Test(unittest.TestCase):

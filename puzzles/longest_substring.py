@@ -13,16 +13,14 @@ def find_substring(string):
     if string == '':
         return ''
 
+    char_to_last_pos = {}
+    start = 0
+    end = -1
     best_start = 0
     best_end = -1
 
-    start = 0
-    end = -1
-
-    char_to_pos = {}
-
     for i, char in enumerate(string):
-        pos = char_to_pos.get(char, -1)
+        pos = char_to_last_pos.get(char, -1)
 
         if pos >= start:
             if (end - start) > (best_end - best_start):
@@ -31,7 +29,7 @@ def find_substring(string):
 
             start = pos + 1
 
-        char_to_pos[char] = i
+        char_to_last_pos[char] = i
         end = i
 
     if (end - start) > (best_end - best_start):

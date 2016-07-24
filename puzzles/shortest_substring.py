@@ -11,9 +11,9 @@ Time: O(n)
 import unittest
 
 def find_substring(string, alphabet):
+    char_to_last_pos = {}
     start_char = None
     end_char = None
-    char_to_last_pos = {}
 
     for pos, char in enumerate(string):
         if char in alphabet:
@@ -26,14 +26,12 @@ def find_substring(string, alphabet):
                 key = lambda c: char_to_last_pos.get(c, float('-inf')))
 
             if len(char_to_last_pos) == len(alphabet):
-                break
+                start_pos = char_to_last_pos[start_char]
+                end_pos = char_to_last_pos[end_char]
 
-    if None in (start_char, end_char):
-        return None
+                return string[start_pos : end_pos + 1]
 
-    start = char_to_last_pos[start_char]
-    end = char_to_last_pos[end_char]
-    return string[start : end + 1]
+    return None
 
 class Test (unittest.TestCase):
     def test_repeats(self):

@@ -9,8 +9,6 @@ import unittest
 
 def normalize(path):
     stack = []
-    is_root = path.startswith('/')
-    is_directory = path.endswith('/')
 
     for part in path.split('/'):
         if part == '..':
@@ -23,10 +21,10 @@ def normalize(path):
 
     new_path = '/'.join(stack)
 
-    if is_root and not new_path.startswith('/'):
+    if path.startswith('/') and not new_path.startswith('/'):
         new_path = '/' + new_path
 
-    if is_directory and not new_path.endswith('/'):
+    if path.endswith('/') and not new_path.endswith('/'):
         if new_path == '':
             new_path = './'
         else:
