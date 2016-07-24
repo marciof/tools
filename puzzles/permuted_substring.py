@@ -21,6 +21,9 @@ def match_permutation(string, sub, pos):
     return False
 
 def has_permutation(string, substring):
+    if len(substring) > len(string):
+        return False
+
     for i in range(len(string) - len(substring) + 1):
         if match_permutation(string, substring, i):
             return True
