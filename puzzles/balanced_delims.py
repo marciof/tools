@@ -29,7 +29,7 @@ def is_balanced(string):
 
     return len(expected) == 0
 
-class Test(unittest.TestCase):
+class Test (unittest.TestCase):
     def test_balanced(self):
         cases = [
             '([])([])',

@@ -25,7 +25,7 @@ def find_char(string):
     if target_pos is not None:
         return string[target_pos]
 
-class Test(unittest.TestCase):
+class Test (unittest.TestCase):
     def test_empty_string(self):
         self.assertIsNone(find_char(''))
 

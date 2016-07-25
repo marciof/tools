@@ -21,7 +21,7 @@ def generate(numbers):
 
     return combs
 
-class Test(unittest.TestCase):
+class Test (unittest.TestCase):
     def test_many(self):
         self.assertCountEqual(
             generate([1, 2, 3]),

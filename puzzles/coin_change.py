@@ -26,7 +26,7 @@ def generate(amount, coins):
 
     return combs[amount]
 
-class Test(unittest.TestCase):
+class Test (unittest.TestCase):
     def test_few_combinations(self):
         self.assertCountEqual(
 

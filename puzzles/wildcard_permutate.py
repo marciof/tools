@@ -24,7 +24,7 @@ def generate(pattern):
 
     return combinations
 
-class Test(unittest.TestCase):
+class Test (unittest.TestCase):
     def test_fixed_string(self):
         self.assertCountEqual(
             generate('01101'),
