@@ -56,4 +56,9 @@ if __name__ == '__main__':
     if sys.stdin.isatty():
         unittest.main(verbosity = 2)
     else:
-        print(is_balanced(sys.stdin.readline()))
+        for line in sys.stdin:
+            if line[0] in '(){}[]':
+                if is_balanced(line.strip()):
+                    print('YES')
+                else:
+                    print('NO')
