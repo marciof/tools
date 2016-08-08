@@ -11,7 +11,7 @@ import unittest
 
 def permutate(string):
     if string == '':
-        return [string]
+        return ['']
 
     permutations = []
 
