@@ -15,14 +15,9 @@ def reverse(array):
     end = len(array) - 1
 
     while start < end:
-        element = array[start]
-        array[start] = array[end]
-        array[end] = element
-
+        (array[start], array[end]) = (array[end], array[start])
         start += 1
         end -= 1
-
-    return array
 
 class Test (unittest.TestCase):
     def test_empty_array(self):
