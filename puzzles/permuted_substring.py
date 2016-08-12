@@ -11,10 +11,10 @@ def match_permutation(string, sub, pos):
     if sub == '':
         return True
 
-    for i, char in enumerate(sub):
-        if pos >= len(string):
-            return False
+    if pos >= len(string):
+        return False
 
+    for i, char in enumerate(sub):
         if char == string[pos]:
             return match_permutation(string, sub[:i] + sub[i + 1:], pos + 1)
 
