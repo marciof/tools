@@ -29,7 +29,7 @@ def list_pairs_in_place(numbers, total):
     numbers.sort()
     pairs = []
 
-    for i in range(0, math.ceil(len(numbers) / 2)):
+    for i in range(0, len(numbers)):
         n = numbers[i]
         target = total - n
         j = bisect.bisect_left(numbers, target, i + 1)
@@ -64,8 +64,8 @@ class TestSuite:
 
     def test_mix(self):
         self.assertEqual(
-            normalize(self.list_pairs([1, 2, 2, 3], 4)),
-            normalize([(1, 3), (2, 2)]))
+            normalize(self.list_pairs([0, 1, 2, 2, 3, 4, 5, 6, 11], 11)),
+            normalize([(11, 0), (5, 6)]))
 
 class TestFunctional (unittest.TestCase, TestSuite):
     def list_pairs(self, *args):
