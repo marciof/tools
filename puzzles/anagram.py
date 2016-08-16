@@ -7,25 +7,29 @@ Check if two words are an anagram of each other.
 
 import unittest
 
-def is_anagram(word_a, word_b):
-    char_count_a = {}
+def is_anagram(word_1, word_2):
+    """
+    Time: O(k+l), where k=len(word_1), l=ken(word_2)
+    Space: O(k), worst-case every character is unique in word_1
+    """
 
-    for char in word_a:
-        if char in char_count_a:
-            char_count_a[char] += 1
-        else:
-            char_count_a[char] = 1
+    # Optimization: if of different lengths, return false.
 
-    for char in word_b:
-        if char not in char_count_a:
+    char_count_1 = {}
+
+    for char in word_1:
+        char_count_1[char] = char_count_1.get(char, 0) + 1
+
+    for char in word_2:
+        if char not in char_count_1:
             return False
 
-        if char_count_a[char] == 1:
-            del char_count_a[char]
-        else:
-            char_count_a[char] -= 1
+        char_count_1[char] -= 1
 
-    return len(char_count_a) == 0
+        if char_count_1[char] == 0:
+            del char_count_1[char]
+
+    return len(char_count_1) == 0
 
 class Test (unittest.TestCase):
     def test_empty(self):

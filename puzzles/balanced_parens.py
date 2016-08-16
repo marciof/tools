@@ -3,18 +3,16 @@
 
 """
 List all possible balanced parenthesis combinations up to `total` pairs.
-
-At any point there are two options: print an open parenthesis if available
-and check recursively for a solution, print a closed parenthesis if a
-corresponding open parenthesis has been printed and check recursively for a
-solution.
-
-Time: O(n)
 """
 
 import unittest
 
 def permutate(total, nr_open = 0, nr_closed = 0):
+    """
+    Time: O(2^n), two branches of recursive calls for each call
+    Space: O(2^n)
+    """
+
     combinations = []
 
     if nr_open < total:

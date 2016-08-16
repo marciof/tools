@@ -3,21 +3,24 @@
 
 """
 Check if a `string` contains only balanced delimiters.
-
-Time: O(n)
 """
 
 import unittest
 import sys
 
 def is_balanced(string):
-    expected = []
+    """
+    Time: O(n)
+    Space: O(n), worst-case it consists of open delimiters only
+    """
 
     open_to_close = {
         '(': ')',
         '[': ']',
         '{': '}',
     }
+
+    expected = []
 
     for char in string:
         if char in open_to_close:

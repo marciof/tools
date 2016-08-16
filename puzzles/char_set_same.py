@@ -7,20 +7,25 @@ Check if two strings have an identical character set.
 
 import unittest
 
-def has_same_char_set(str_a, str_b):
-    char_set_a = set()
-    char_set_b = set()
+def has_same_char_set(str_1, str_2):
+    """
+    Time: O(k+l), where k=len(str_1), l=len(str_2)
+    Space: O(k+l), worst-case every character is unique in both strings
+    """
 
-    for char in str_a:
-        char_set_a.add(char)
+    char_set_1 = set()
+    char_set_2 = set()
 
-    for char in str_b:
-        if char not in char_set_a:
+    for char in str_1:
+        char_set_1.add(char)
+
+    for char in str_2:
+        if char not in char_set_1:
             return False
 
-        char_set_b.add(char)
+        char_set_2.add(char)
 
-    return len(char_set_a) == len(char_set_b)
+    return len(char_set_1) == len(char_set_2)
 
 class Test (unittest.TestCase):
     def test_empty(self):
