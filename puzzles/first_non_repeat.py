@@ -3,13 +3,16 @@
 
 """
 Find the first character that doesn't repeat anywhere else in a `string`.
-
-Time: O(n)
 """
 
 import unittest
 
 def find_char(string):
+    """
+    Space: O(n)
+    Time: O(n)
+    """
+
     seen_chars = set()
     char_to_first_pos = {}
 
