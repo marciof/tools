@@ -6,6 +6,8 @@ Generate all possible coin combinations using any from `coins`
 that when added equal `amount`.
 
 https://programmingpraxis.com/2013/05/17/coin-change-part-1/2/
+http://www.geeksforgeeks.org/dynamic-programming-set-7-coin-change/
+https://www.hackerrank.com/contests/programming-interview-questions/challenges/coin-change
 """
 
 from collections import Counter

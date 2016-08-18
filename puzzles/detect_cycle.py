@@ -2,53 +2,15 @@
 # -*- coding: UTF-8 -*-
 
 """
-Detect a cycle in a linked list. (Floyd's "tortoise and hare" algorithm.)
-
-Returns `(has_cycle, cycle start node, previous node)`.
-
-Time: O(n)
-
-Floyd's "tortoise and hare" algorithm:
-
-1. Keep two pointers: `slow` steps one node at a time, `fast` steps double.
-2. If they ever meet, then there's a cycle.
-3. Otherwise, there's no cycle.
-
-To find the start of the cycle:
-
-1. Reset `slow` to the start.
-2. Step both `slow` and `fast` now one node at a time.
-3. The node where they meet is the start of the cycle.
-
-Why does this work?
-
-Imagine two people racing around a track, one twice as fast as the other. If
-they start off at the same place, they will next meet at the start of the next
-lap.
-
-After some moves both pointers will be in the cycle. With the next moves you
-can be sure that both will meet at some point since with every step the
-difference between them reduces by 1.
-
-Hypothesis:
-
-- `m` = distance from first node to start of cycle (# nodes)
-- `l` = length of cycle (# nodes)
-- `k` = distance of meeting point from start of cycle (# nodes)
-- `dist_S = m + p*l + k`
-- `dist_F = m + q*l + k` where `q > p` since this one goes faster
-- `2 * dist_S = dist_F` (note that any multiple would work)
-- `2 * (m + p*l + k) = m + q*l + k`
-- `m + 2*p*l + k = q*l`
-- `m + k = (q - 2*p)*l` implies `m+k` is an integer multiple of the cycle length
+Check if a linked list has a cycle, and where if it has one.
 """
 
 import unittest
 
 class Node:
-    def __init__(self, value, next = None):
+    def __init__(self, value, nxt = None):
         self.value = value
-        self.next = next
+        self.nxt = nxt
 
     def __str__(self):
         return '<%r at %x>' % (self.value, id(self))
@@ -61,7 +23,7 @@ def make_list(*values):
         node = Node(value)
 
         if previous is not None:
-            previous.next = node
+            previous.nxt = node
 
         if first is None:
             first = node
@@ -83,6 +45,48 @@ def print_list(l):
     print()
 
 def has_cycle(l):
+    """
+    Returns `(has_cycle, cycle start node, previous node)`.
+
+    Time: O(n)
+    Space: O(1)
+
+    Floyd's "tortoise and hare" algorithm:
+
+    1. Keep two pointers: `slow` steps one node at a time, `fast` steps double
+    2. If they ever meet, then there's a cycle
+    3. Otherwise, there's no cycle
+
+    To find the start of the cycle:
+
+    1. Reset `slow` to the start.
+    2. Step both `slow` and `fast` now one node at a time.
+    3. The node where they meet is the start of the cycle.
+
+    Why does this work?
+
+    Imagine two people racing around a track, one twice as fast as the other.
+    If they start off at the same place, they will next meet at the start of
+    the next lap.
+
+    After some moves both pointers will be in the cycle. With the next moves
+    you can be sure that both will meet at some point since with every step
+    the difference between them reduces by 1.
+
+    Hypothesis:
+
+    - `m` = distance from first node to start of cycle (# nodes)
+    - `l` = length of cycle (# nodes)
+    - `k` = distance of meeting point from start of cycle (# nodes)
+    - `dist_S = m + p*l + k`
+    - `dist_F = m + q*l + k` where `q > p` since this one goes faster
+    - `2 * dist_S = dist_F` (note that any multiple would work)
+    - `2 * (m + p*l + k) = m + q*l + k`
+    - `m + 2*p*l + k = q*l`
+    - `m + k = (q - 2*p)*l` implies `m+k` is an integer multiple of the cycle
+      length
+    """
+
     def step(node):
         return None if node is None else node.next
 
@@ -133,21 +137,21 @@ class Test (unittest.TestCase):
 
     def test_cycle_with_single_node(self):
         l = make_list('x')
-        l.next = l
+        l.nxt = l
         self.assertEqual(has_cycle(l), (True, l, l))
 
     def test_cycle_with_multiple_nodes(self):
         l = make_list('a', 'b', 'c')
-        c = l.next.next
+        c = l.nxt.next
 
         c.next = l
         self.assertEqual(has_cycle(l), (True, l, c))
 
-        c.next = l.next
-        self.assertEqual(has_cycle(l), (True, l.next, c))
+        c.next = l.nxt
+        self.assertEqual(has_cycle(l), (True, l.nxt, c))
 
-        c.next = l.next.next
-        self.assertEqual(has_cycle(l), (True, l.next.next, c))
+        c.next = l.nxt.next
+        self.assertEqual(has_cycle(l), (True, l.nxt.next, c))
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
