@@ -3,15 +3,17 @@
 
 """
 Find the only unpaired integer in a sequence of `integers`.
-
-Time: O(n)
-Space: O(1)
 """
 
 import sys
 import unittest
 
 def find(integers):
+    """
+    Time: O(n)
+    Space: O(1)
+    """
+
     target = 0
 
     for n in integers:

@@ -20,6 +20,11 @@ LATE = 'l'
 ABSENT = 'a'
 
 def is_in_trouble(attendance):
+    """
+    Time: O(n)
+    Space: O(1)
+    """
+
     nr_absent = 0
     nr_late = 0
 
@@ -44,6 +49,7 @@ def is_in_trouble(attendance):
 def generate_pass(length, nr_absent = 0, nr_late = 0):
     """
     Time: O(3^n)
+    Space: O(n.3^n)
     """
 
     if length == 0:
