@@ -9,14 +9,20 @@ Generate all combinations of the `pattern` string, consisting of `'0'` and
 import unittest
 
 def generate(pattern):
+    """
+    Time: O(n)
+    Space: O(n.2^k), where n=len(pattern), k=number of wildcards
+    """
+
     if pattern == '':
         return ['']
 
-    combinations = []
-    prefixes = pattern[:1]
-
-    if prefixes == '?':
+    if pattern[0] == '?':
         prefixes = {'0', '1'}
+    else:
+        prefixes = {pattern[0]}
+
+    combinations = []
 
     for combination in generate(pattern[1:]):
         for prefix in prefixes:
