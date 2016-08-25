@@ -2,15 +2,18 @@
 # -*- coding: UTF-8 -*-
 
 """
-Find the shortest substring in `string` that contains all letters from
-`alphabet` at least once.
-
-Time: O(n)
+Find the shortest substring in `string` that contains all letters
+from `alphabet` at least once.
 """
 
 import unittest
 
 def find_substring(string, alphabet):
+    """
+    Time: O(n)
+    Space: O(k), where k=len(alphabet)
+    """
+
     char_to_last_pos = {}
     start_char = None
     end_char = None
