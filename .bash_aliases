@@ -83,11 +83,6 @@ if _have ag; then
 fi
 
 if _have git; then
-    _color_git_ps1() {
-        local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo "$ps1 "
-    }
-
     _load_git_completions() {
         _completion_loader git
         __git_complete sa _git_add
@@ -137,6 +132,18 @@ if _have git; then
     if _have nano; then
         # Go to the end of the first line in commit message templates.
         export GIT_EDITOR="$NAME +,9999"
+    fi
+
+    if ! type -t __git_ps1 > /dev/null; then
+        _warn "Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh"
+        _color_git_ps1() {
+            :
+        }
+    else
+        _color_git_ps1() {
+            local ps1=$(__git_ps1 "%s")
+            [ -n "$ps1" ] && echo "$ps1 "
+        }
     fi
 
     _prompt="$_prompt\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
