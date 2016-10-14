@@ -63,7 +63,9 @@ if test -n "$DESKTOP_SESSION" && _have gnome-keyring-daemon; then
     eval "$($NAME --start)"
 fi
 
-if [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
+    _prompt="\[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\] "
+elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
     _prompt="\[$_yellow\]\\u@\\h\[$_color_off\] "
 else
     _prompt=
