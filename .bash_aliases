@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ ! "$-" =~ 'i' ]]; then
+    return 0
+fi
+
 _warn() {
     echo "* $@" >&2
 }
