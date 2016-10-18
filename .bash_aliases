@@ -90,7 +90,10 @@ fi
 
 if _have git; then
     _load_git_completions() {
-        _completion_loader git
+        if type -t _completion_loader > /dev/null; then
+            _completion_loader git
+        fi
+
         __git_complete sa _git_add
         __git_complete sb _git_branch
         __git_complete sc _git_commit
