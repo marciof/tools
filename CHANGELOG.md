@@ -2,6 +2,7 @@
 
 - Plugin "diff": highlight changed words in unified diff input.
 - Deactivate plugins automatically when unsupported.
+- Fix broken pipe error when viewing very long output from programs and exiting early.
 
 # 0.10.0 - 2016-07-20 #
 
