@@ -82,9 +82,9 @@ fi
 
 if _have ag; then
     if [ -n "$PAGER" ]; then
-        alias f="$NAME --follow --hidden --pager \"$PAGER\""
+        alias f="$NAME --follow --pager \"$PAGER\""
     else
-        alias f="$NAME --follow --hidden"
+        alias f="$NAME --follow"
     fi
 fi
 
@@ -126,8 +126,8 @@ if _have git; then
     alias ss='git pull "$@"'
     alias st='git status "$@"'
 
-    git config --global  push.default simple
-    git config --global  branch.autosetuprebase always
+    git config --global push.default simple
+    git config --global branch.autosetuprebase always
 
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
