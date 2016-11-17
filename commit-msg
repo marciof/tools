@@ -6,7 +6,7 @@ MESSAGE_FILE="$1"
 for REF in '@{u}' HEAD
 do
     ISSUE=$(git rev-parse --abbrev-ref "$REF" 2> /dev/null \
-        | grep -oP '\b\w+-\d+$')
+        | grep -oE '[[:alpha:]]+-[[:digit:]]+$')
 
     if [ -n "$ISSUE" ]
     then
@@ -14,7 +14,7 @@ do
         then
             echo "# Issue: $ISSUE" >> "$MESSAGE_FILE"
             echo "#" >> "$MESSAGE_FILE"
-        elif grep -vP "^\s*(#|$)" "$MESSAGE_FILE" \
+        elif grep -vE "^[[:space:]]*(#|$)" "$MESSAGE_FILE" \
                 | head -n1 \
                 | grep -qvF "[$ISSUE]"
         then
