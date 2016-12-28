@@ -54,13 +54,13 @@ def get_video_size(path):
     else:
         return reversed(list(map(int, size[0])))
 
+if shutil.which('ffmpeg') is None:
+    sys.exit('FFmpeg not in path. Install it from <http://www.ffmpeg.org/>.')
+
 if len(sys.argv) <= 2:
     sys.exit('Usage: audio|smil <video> ...')
 
 (action, videos) = (sys.argv[1], sys.argv[2:])
-
-if shutil.which('ffmpeg') is None:
-    sys.exit('FFmpeg not in path. Install it from <http://www.ffmpeg.org/>.')
 
 if os.name == 'nt':
     videos = itertools.chain.from_iterable(map(glob.glob, videos))
