@@ -61,7 +61,6 @@ bind '"\e[1;5C": forward-word'       # ctrl-right
 bind '"\e[1;5D": backward-word'      # ctrl-left
 bind '"\e[3;5~": kill-word'          # ctrl-delete
 bind '"\e[2;5~": backward-kill-word' # ctrl-insert
-bind '"\e[2~": backward-kill-word'   # insert
 
 if test -n "$DESKTOP_SESSION" && _have gnome-keyring-daemon; then
     eval "$($NAME --start)"
