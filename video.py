@@ -14,6 +14,9 @@ import time
 class UnsupportedVideoException (Exception):
     pass
 
+def exit_usage():
+    sys.exit('Usage: audio|smil <video> ...')
+
 def get_smil(video):
     (height, width) = get_video_size(video)
     
@@ -42,23 +45,27 @@ def get_video_date(path):
     mtime = os.path.getmtime(path)
     return time.strftime('%Y-%m-%d', time.gmtime(min(ctime, mtime)))
 
-def get_video_size(path):
+def get_video_size(tool, path):
     try:
-        subprocess.check_output(['ffmpeg', '-i', path],
+        subprocess.check_output([tool, '-i', path],
             stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError as error:
         size = re.findall(rb'Video:[^\n]+ (\d{2,})x(\d{2,})', error.output)
-    
+
     if len(size) == 0:
         raise UnsupportedVideoException()
     else:
         return reversed(list(map(int, size[0])))
 
-if shutil.which('ffmpeg') is None:
-    sys.exit('FFmpeg not in path. Install it from <http://www.ffmpeg.org/>.')
+for candidate_tool in 'ffmpeg', 'avconv':
+    if shutil.which(candidate_tool) is not None:
+        tool = candidate_tool
+        break
+else:
+    sys.exit('FFmpeg or avconv not in path. Install from <http://www.ffmpeg.org>, <https://libav.org>.')
 
 if len(sys.argv) <= 2:
-    sys.exit('Usage: audio|smil <video> ...')
+    exit_usage()
 
 (action, videos) = (sys.argv[1], sys.argv[2:])
 
@@ -71,7 +78,7 @@ if action == 'audio':
         
         try:
             subprocess.check_output(
-                args = ['ffmpeg', '-i', video, '-vn', '-acodec', 'copy', audio],
+                args = [tool, '-i', video, '-vn', '-acodec', 'copy', audio],
                 stderr = subprocess.STDOUT)
         except subprocess.CalledProcessError as error:
             print('Error:', video, file = sys.stderr)
@@ -88,3 +95,5 @@ elif action == 'smil':
             
             with open(os.path.splitext(video)[0] + '.smil', 'w') as smil_file:
                 smil_file.write(smil + '\n')
+else:
+    exit_usage()
