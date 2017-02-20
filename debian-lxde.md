@@ -11,6 +11,8 @@ Firefox:
 1. Open: about:config
 2. Use: layout.css.devPixelsPerPx = 1.5
 
+https://wiki.archlinux.org/index.php/HiDPI#Firefox
+
 # Scale mouse pointer #
 
 1. Open: ~/.config/lxsession/LXDE/desktop.conf
