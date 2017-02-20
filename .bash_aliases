@@ -74,6 +74,11 @@ else
     _prompt=
 fi
 
+if _have micro nano; then
+    export EDITOR="$NAME"
+    export GIT_EDITOR="$NAME"
+fi
+
 if _have show; then
     alias s="$NAME -p dir:-Fh -p dir:--color=auto -p dir:--group-directories-first"
     export PAGER="$NAME"
@@ -136,11 +141,6 @@ if _have git; then
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _${ALIAS} ${ALIAS}"
     done
-
-    if _have nano; then
-        # Go to the end of the first line in commit message templates.
-        export GIT_EDITOR="$NAME +,9999"
-    fi
 
     if ! type -t __git_ps1 > /dev/null; then
         _warn "Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh"
