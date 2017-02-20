@@ -1,6 +1,6 @@
 # Scale UI #
 
-WM/DE:
+## WM/DE ##
 
 1. Open: ~/.Xresources
 2. Use: Xft.dpi: 145
@@ -8,14 +8,14 @@ WM/DE:
 http://blog.mlindgren.ca/entry/2015/02/21/configuring-dpi-in-lubuntu-slash-lxde/
 https://wiki.archlinux.org/index.php/xorg#Display_size_and_DPI
 
-Firefox:
+## Firefox ##
 
 1. Open: about:config
 2. Use: layout.css.devPixelsPerPx = 1.5
 
 https://wiki.archlinux.org/index.php/HiDPI#Firefox
 
-# Scale mouse pointer #
+## Mouse pointer ##
 
 1. Open: ~/.config/lxsession/LXDE/desktop.conf
 2. Use: iGtk/CursorThemeSize=36
@@ -45,7 +45,7 @@ http://askubuntu.com/a/178977/163034
 
 # Digital clock format #
 
-%l:%M %P%n%D
+`%l:%M %P%n%D`
 
 # Emacs #
 
