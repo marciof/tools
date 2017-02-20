@@ -1,10 +1,15 @@
 # Scale UI #
 
+WM/DE:
 1. Open: ~/.Xresources
 2. Use: Xft.dpi: 145
 
 http://blog.mlindgren.ca/entry/2015/02/21/configuring-dpi-in-lubuntu-slash-lxde/
 https://wiki.archlinux.org/index.php/xorg#Display_size_and_DPI
+
+Firefox:
+1. Open: about:config
+2. Use: layout.css.devPixelsPerPx = 1.5
 
 # Scale mouse pointer #
 
