@@ -45,7 +45,7 @@ http://askubuntu.com/a/178977/163034
 
 # Digital clock format #
 
-`%l:%M %P%n%D`
+`%a %l:%M%P%n%x`
 
 # Emacs #
 
