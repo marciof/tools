@@ -7,11 +7,11 @@ addons:
    - make
    - gcc
    # Test.
-   - python3-pip
+   - python-pip
    - valgrind
 install:
 - export PATH=$HOME/.local/bin:$PATH
-- pip3 install --user cram
+- pip install --user cram
 script:
 - cmake .
 - make
