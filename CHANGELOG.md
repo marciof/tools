@@ -5,6 +5,7 @@
 - Fix broken pipe error when viewing very long output from programs and exiting early.
 - Implicit option for plugins.
 - Plugin "url": local file URLs.
+- Fix plugin "pager" to respect the `PAGER` environment variable.
 
 # 0.10.0 - 2016-07-20 #
 
