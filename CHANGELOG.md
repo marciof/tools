@@ -1,12 +1,13 @@
 # 0.11.0 - UNRELEASED #
 
-- Improve error handling and reporting.
+- Improve error reporting.
 
 - Plugin "diff": highlight changed words in unified diff input.
 - Deactivate plugins automatically when unsupported.
 - Fix broken pipe error when viewing very long output from programs and exiting early.
 - Implicit option for plugins.
 - Plugin "url": local file URLs.
+- Fix plugin "pager" to allow `less` launching an editor when there's only one named input.
 - Fix plugin "pager" to respect the `PAGER` environment variable.
 
 # 0.10.0 - 2016-07-20 #
