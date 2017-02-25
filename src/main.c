@@ -138,14 +138,15 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             return false;
         }
 
-        if (input->close == NULL) {
-            io_close(input->fd, error);
-        }
-        else {
+        if (input->close != NULL) {
             input->close(input, error);
-        }
 
-        if (ERROR_HAS(error)) {
+            if (ERROR_HAS(error)) {
+                return false;
+            }
+        }
+        else if (close(input->fd) == -1) {
+            Error_add(error, strerror(errno));
             return false;
         }
     }

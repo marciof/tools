@@ -2,15 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "Plugin.h"
 
 void Input_close_subprocess(Input* input, Error* error) {
-    io_close(input->fd, error);
-    int status;
-
-    if (ERROR_HAS(error)) {
+    if (close(input->fd) == -1) {
+        Error_add(error, strerror(errno));
         return;
     }
+
+    int status;
 
     if (waitpid((int) input->arg, &status, 0) == -1) {
         if (errno != ECHILD) {

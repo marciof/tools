@@ -139,21 +139,11 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
         }
         else {
             int child_errno;
-            size_t remaining_length = sizeof(child_errno);
-            uint8_t* remaining_data = (uint8_t*) &child_errno;
+            io_read(
+                read_fd, (uint8_t*) &child_errno, sizeof(child_errno), error);
 
-            // FIXME: refactor into a `io_read`?
-            while (remaining_length > 0) {
-                ssize_t bytes_read = read(
-                    read_fd, remaining_data, remaining_length);
-
-                if (bytes_read == -1) {
-                    Error_add(error, strerror(errno));
-                    return -1;
-                }
-
-                remaining_length -= bytes_read;
-                remaining_data += bytes_read;
+            if (ERROR_HAS(error)) {
+                return -1;
             }
 
             Error_add(error, strerror(child_errno));

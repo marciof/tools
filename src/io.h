@@ -15,6 +15,6 @@ typedef struct {
 void Buffer_delete(Buffer* buffer);
 Buffer* Buffer_new(size_t max_length, Error* error);
 
-void io_close(int fd, Error* error);
-void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error);
+void io_read(int fd, uint8_t* data, size_t nr_bytes, Error* error);
 bool io_has_input(int fd, Error* error);
+void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error);
