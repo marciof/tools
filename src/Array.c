@@ -13,7 +13,7 @@ static void change_capacity(Array* array, size_t size, Error* error) {
     }
 
     if ((size > ARRAY_INITIAL_CAPACITY) && (array->data == array->buffer)) {
-        array->data = (intptr_t*) malloc(size * sizeof(intptr_t));
+        array->data = (intptr_t*) malloc(size * sizeof(array->data[0]));
 
         if (array->data == NULL) {
             Error_add(error, strerror(errno));
@@ -22,10 +22,10 @@ static void change_capacity(Array* array, size_t size, Error* error) {
         }
 
         memcpy(array->data, array->buffer,
-            ARRAY_INITIAL_CAPACITY * sizeof(intptr_t));
+            ARRAY_INITIAL_CAPACITY * sizeof(array->data[0]));
     }
     else {
-        void* data = realloc(array->data, size * sizeof(intptr_t));
+        void* data = realloc(array->data, size * sizeof(array->data[0]));
 
         if (data == NULL) {
             Error_add(error, strerror(errno));

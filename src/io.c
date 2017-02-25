@@ -11,7 +11,7 @@ void Buffer_delete(Buffer* buffer) {
 
 Buffer* Buffer_new(size_t max_length, Error* error) {
     Buffer* buffer = (Buffer*) malloc(
-        offsetof(Buffer, data) + sizeof(char) * max_length);
+        offsetof(Buffer, data) + sizeof(buffer->data[0]) * max_length);
 
     if (buffer == NULL) {
         Error_add(error, strerror(errno));
@@ -44,20 +44,16 @@ bool io_has_input(int fd, Error* error) {
     return (nr_fds == 1) && (fd_poll.revents & POLLIN);
 }
 
-void io_write(int fd, Buffer* buffer, Error* error) {
-    size_t remaining_length = buffer->length;
-    char* remaining_data = buffer->data;
-
-    while (remaining_length > 0) {
-        ssize_t bytes_written = write(
-            fd, remaining_data, remaining_length * sizeof(char));
+void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error) {
+    while (nr_bytes > 0) {
+        ssize_t bytes_written = write(fd, data, nr_bytes);
 
         if (bytes_written == -1) {
             Error_add(error, strerror(errno));
             return;
         }
 
-        remaining_length -= bytes_written / sizeof(char);
-        remaining_data += bytes_written / sizeof(char);
+        nr_bytes -= bytes_written;
+        data += bytes_written;
     }
 }

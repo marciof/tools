@@ -64,8 +64,10 @@ static void flush_input(int fd, Array* outputs, Error* error) {
         return;
     }
 
-    while ((bytes_read = read(fd, buffer->data, MAX_LEN * sizeof(char))) > 0) {
-        buffer->length = (size_t) (bytes_read / sizeof(char));
+    while ((bytes_read = read(
+            fd, buffer->data, MAX_LEN * sizeof(buffer->data[0]))) > 0) {
+
+        buffer->length = (size_t) (bytes_read / sizeof(buffer->data[0]));
         bool has_flushed = false;
 
         for (size_t i = 0; i < outputs->length; ++i) {
@@ -94,7 +96,11 @@ static void flush_input(int fd, Array* outputs, Error* error) {
         }
 
         if (!has_flushed) {
-            io_write(STDOUT_FILENO, buffer, error);
+            io_write(
+                STDOUT_FILENO,
+                (uint8_t*) buffer->data,
+                buffer->length * sizeof(buffer->data[0]),
+                error);
 
             if (ERROR_HAS(error)) {
                 Buffer_delete(buffer);

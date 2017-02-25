@@ -82,7 +82,12 @@ static void flush_buffer(Pager* pager, int default_fd, Error* error) {
     for (size_t i = 0; i < pager->buffers.length; ++i) {
         Buffer* buffer = (Buffer*) pager->buffers.data[i];
 
-        io_write(pager->fd, buffer, error);
+        io_write(
+            pager->fd,
+            (uint8_t*) buffer->data,
+            buffer->length * sizeof(buffer->data[0]),
+            error);
+
         Buffer_delete(buffer);
 
         if (ERROR_HAS(error)) {
@@ -315,7 +320,12 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
         }
     }
 
-    io_write(pager->fd, *buffer, error);
+    io_write(
+        pager->fd,
+        (uint8_t*) (*buffer)->data,
+        (*buffer)->length * sizeof((*buffer)->data[0]),
+        error);
+
     (*buffer)->length = 0;
 }
 

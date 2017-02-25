@@ -50,21 +50,12 @@ static int fork_exec_pipe(
 
         if (has_failed) {
             int saved_errno = errno;
-            size_t remaining_length = sizeof(saved_errno);
-            uint8_t* remaining_data = (uint8_t*) &saved_errno;
 
-            // FIXME: refactor and merge with `io_write`?
-            while (remaining_length > 0) {
-                ssize_t bytes_written = write(
-                    read_write_fds[1], remaining_data, remaining_length);
-
-                if (bytes_written == -1) {
-                    break;
-                }
-
-                remaining_length -= bytes_written;
-                remaining_data += bytes_written;
-            }
+            io_write(
+                read_write_fds[1],
+                (uint8_t*) &saved_errno,
+                sizeof(saved_errno),
+                error);
         }
 
         abort();
