@@ -1,4 +1,4 @@
 #!/bin/sh
 # https://perf.wiki.kernel.org
-# apt-get install linux-tools-common linux-tools-generic
-perf stat --sync -r 10 "${BIN:-show}" $@
+# apt-get install linux-tools
+perf stat --sync -r 100 "${BIN:-show}" $@

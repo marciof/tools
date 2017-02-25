@@ -9,51 +9,14 @@
 #include "fork_exec.h"
 #include "io.h"
 
-static void init_child_failure_pipe(int read_write_fds[2], Error* error) {
-    if (pipe(read_write_fds) == -1) {
-        Error_add(error, strerror(errno));
-    }
-    else if (fcntl(read_write_fds[0], F_SETFL, O_NONBLOCK) == -1) {
-        Error_add(error, strerror(errno));
+static int fork_exec_pipe(
+        char* file,
+        char* argv[],
+        int out_fd,
+        int err_fd,
+        int* pid,
+        Error* error) {
 
-        if (close(read_write_fds[0]) == -1) {
-            Error_add(error, strerror(errno));
-        }
-        if (close(read_write_fds[1]) == -1) {
-            Error_add(error, strerror(errno));
-        }
-    }
-}
-
-static bool is_set_child_failure_pipe(int read_write_fds[2], Error* error) {
-    uint8_t has_failed = 0;
-
-    if ((read(read_write_fds[0], &has_failed, 1) == -1) && (errno != EAGAIN)) {
-        Error_add(error, strerror(errno));
-        return false;
-    }
-    else {
-        return has_failed == 1;
-    }
-}
-
-static void set_child_failure_pipe(int read_write_fds[2], Error* error) {
-    uint8_t has_failed = 1;
-
-    while (true) {
-        ssize_t nr_bytes_read = write(read_write_fds[1], &has_failed, 1);
-
-        if (nr_bytes_read == -1) {
-            Error_add(error, strerror(errno));
-            break;
-        }
-        else if (nr_bytes_read == 1) {
-            break;
-        }
-    }
-}
-
-static int fork_exec_pipe(char* file, char* argv[], int* pid, Error* error) {
     int read_write_fds[2];
 
     if (pipe(read_write_fds) == -1) {
@@ -69,23 +32,43 @@ static int fork_exec_pipe(char* file, char* argv[], int* pid, Error* error) {
     }
     else if (child_pid) {
         *pid = child_pid;
-        close(read_write_fds[1]);
+
+        if (close(read_write_fds[1]) == -1) {
+            Error_add(error, strerror(errno));
+            return IO_INVALID_FD;
+        }
+
         return read_write_fds[0];
     }
+    else {
+        bool has_failed =
+            ((out_fd != STDOUT_FILENO)
+                && (dup2(out_fd, STDOUT_FILENO) == -1))
+            || ((err_fd != STDERR_FILENO)
+                && (dup2(err_fd, STDERR_FILENO) == -1))
+            || (execvp(file, argv) == -1);
 
-    // FIXME: cleanup fork
-    if (dup2(read_write_fds[1], STDOUT_FILENO) == -1) {
-        Error_add(error, strerror(errno));
-        return IO_INVALID_FD;
+        if (has_failed) {
+            int saved_errno = errno;
+            size_t remaining_length = sizeof(saved_errno);
+            uint8_t* remaining_data = (uint8_t*) &saved_errno;
+
+            // FIXME: refactor and merge with `io_write`?
+            while (remaining_length > 0) {
+                ssize_t bytes_written = write(
+                    read_write_fds[1], remaining_data, remaining_length);
+
+                if (bytes_written == -1) {
+                    break;
+                }
+
+                remaining_length -= bytes_written;
+                remaining_data += bytes_written;
+            }
+        }
+
+        abort();
     }
-
-    close(read_write_fds[0]);
-    close(read_write_fds[1]);
-    execvp(file, argv);
-
-    // FIXME: cleanup fork
-    Error_add(error, strerror(errno));
-    return IO_INVALID_FD;
 }
 
 static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
@@ -100,12 +83,13 @@ static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
         *pid = child_pid;
         return child_fd_out;
     }
+    else {
+        execvp(file, argv);
 
-    execvp(file, argv);
-
-    // FIXME: cleanup fork
-    Error_add(error, strerror(errno));
-    return IO_INVALID_FD;
+        // FIXME: cleanup fork
+        Error_add(error, strerror(errno));
+        return IO_INVALID_FD;
+    }
 }
 
 int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
@@ -115,7 +99,8 @@ int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
         return fork_exec_pty(file, argv, pid, error);
     }
     else if (errno != EBADF) {
-        return fork_exec_pipe(file, argv, pid, error);
+        return fork_exec_pipe(
+            file, argv, STDOUT_FILENO, STDERR_FILENO, pid, error);
     }
     else {
         Error_add(error, strerror(errno));
@@ -123,63 +108,68 @@ int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
     }
 }
 
-// FIXME: refactor into and wrap `fork_exec_pipe`?
 int fork_exec_status(char* file, char* argv[], Error* error) {
-    int read_write_fds[2];
-    init_child_failure_pipe(read_write_fds, error);
+    int null_fd = open("/dev/null", O_RDWR);
+
+    if (null_fd == -1) {
+        Error_add(error, strerror(errno));
+        return -1;
+    }
+
+    int child_pid;
+    int read_fd = fork_exec_pipe(
+        file, argv, null_fd, null_fd, &child_pid, error);
 
     if (ERROR_HAS(error)) {
         return -1;
     }
 
-    int child_pid = fork();
+    int status;
 
-    if (child_pid == -1) {
+    if (waitpid(child_pid, &status, 0) == -1) {
         Error_add(error, strerror(errno));
         return -1;
     }
-    else if (!child_pid) {
-        int dev_null;
 
-        bool has_failed = ((dev_null = open("/dev/null", O_RDWR)) == -1)
-            || (dup2(dev_null, STDERR_FILENO) == -1)
-            || (dup2(dev_null, STDOUT_FILENO) == -1)
-            || (execvp(file, argv) == -1);
-
-        if (has_failed) {
-            int saved_errno = errno;
-            set_child_failure_pipe(read_write_fds, error);
-            Error_print(error, stderr);
-            errno = saved_errno;
-        }
-
-        exit(errno);
+    if (close(null_fd) == -1) {
+        Error_add(error, strerror(errno));
+        return -1;
     }
-    else {
-        int status;
 
-        if (waitpid(child_pid, &status, 0) == -1) {
-            Error_add(error, strerror(errno));
-            return -1;
-        }
-
-        bool has_failed = is_set_child_failure_pipe(read_write_fds, error);
+    if (!WIFEXITED(status)) {
+        bool has_child_errno = io_has_input(read_fd, error);
 
         if (ERROR_HAS(error)) {
             return -1;
         }
-        if (!WIFEXITED(status)) {
-            Error_add(error, "Fork/exec subprocess did not exit");
-            return -1;
+
+        if (!has_child_errno) {
+            Error_add(error, "Fork/exec subprocess did not exit normally");
+        }
+        else {
+            int child_errno;
+            size_t remaining_length = sizeof(child_errno);
+            uint8_t* remaining_data = (uint8_t*) &child_errno;
+
+            // FIXME: refactor into a `io_read`?
+            while (remaining_length > 0) {
+                ssize_t bytes_read = read(
+                    read_fd, remaining_data, remaining_length);
+
+                if (bytes_read == -1) {
+                    Error_add(error, strerror(errno));
+                    return -1;
+                }
+
+                remaining_length -= bytes_read;
+                remaining_data += bytes_read;
+            }
+
+            Error_add(error, strerror(child_errno));
         }
 
-        int exit_status = WEXITSTATUS(status);
-
-        if (has_failed) {
-            Error_add(error, strerror(exit_status));
-            return -1;
-        }
-
-        return exit_status;
+        return -1;
     }
+
+    return WEXITSTATUS(status);
 }

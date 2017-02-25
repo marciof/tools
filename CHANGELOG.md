@@ -1,5 +1,7 @@
 # 0.11.0 - UNRELEASED #
 
+- Improve error handling and reporting.
+
 - Plugin "diff": highlight changed words in unified diff input.
 - Deactivate plugins automatically when unsupported.
 - Fix broken pipe error when viewing very long output from programs and exiting early.
