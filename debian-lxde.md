@@ -3,7 +3,18 @@
     su
     adduser USERNAME sudo
 
-# Scale UI for high DPI #
+# Apt repositories #
+
+In `/etc/apt/sources.list`:
+
+    deb http://httpredir.debian.org/debian stretch contrib main non-free
+    deb-src http://httpredir.debian.org/debian stretch contrib main non-free
+    deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
+    deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
+
+https://packages.debian.org/stretch/all/firmware-iwlwifi/download
+
+# High DPI scaling #
 
 ## WM/DE ##
 
@@ -18,17 +29,17 @@ In `/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_custom.conf`:
     [greeter]
     xft-dpi=145
 
-## Firefox ##
-
-In `about:config` set:
-
-    layout.css.devPixelsPerPx=1.5
-
 ## Mouse pointer ##
 
 In `~/.config/lxsession/LXDE/desktop.conf`:
 
     iGtk/CursorThemeSize=36
+
+## Firefox ##
+
+In `about:config` set:
+
+    layout.css.devPixelsPerPx=1.5
 
 # Network sync time #
 
