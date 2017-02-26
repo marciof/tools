@@ -358,7 +358,7 @@ static void Plugin_run(
         return;
     }
 
-    Output* output = Output_new(error);
+    Output* output = Output_new(plugin, error);
 
     // FIXME: cleanup signal handler
     if (ERROR_HAS(error)) {

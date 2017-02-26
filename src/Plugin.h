@@ -15,6 +15,7 @@ typedef struct Input {
 } Input;
 
 typedef struct Output {
+    struct Plugin* plugin;
     intptr_t arg;
     void (*close)(struct Output*, Error* error);
     // If all data is flushed, `buffer->length` is set to `0`.
@@ -36,4 +37,4 @@ void Input_delete(Input* input);
 Input* Input_new(char* name, int fd, Error* error);
 
 void Output_delete(Output* output);
-Output* Output_new(Error* error);
+Output* Output_new(Plugin* plugin, Error* error);

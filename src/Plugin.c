@@ -51,7 +51,7 @@ void Output_delete(Output* output) {
     free(output);
 }
 
-Output* Output_new(Error* error) {
+Output* Output_new(Plugin* plugin, Error* error) {
     Output* output = (Output*) malloc(sizeof(*output));
 
     if (output == NULL) {
@@ -59,5 +59,6 @@ Output* Output_new(Error* error) {
         return NULL;
     }
 
+    output->plugin = plugin;
     return output;
 }

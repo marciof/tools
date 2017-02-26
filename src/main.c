@@ -75,6 +75,8 @@ static void flush_input(int fd, Array* outputs, Error* error) {
             output->write(output, &buffer, error);
 
             if (ERROR_HAS(error)) {
+                Error_add(error, "Write error");
+                Error_add(error, output->plugin->get_name());
                 Buffer_delete(buffer);
                 return;
             }
@@ -83,6 +85,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
                 buffer = Buffer_new(MAX_LEN, error);
 
                 if (ERROR_HAS(error)) {
+                    Error_add(error, output->plugin->get_name());
                     return;
                 }
                 has_flushed = true;
