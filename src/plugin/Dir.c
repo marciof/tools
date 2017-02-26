@@ -57,8 +57,8 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     int fd = fork_exec_fd(
         (char*) argv->data[0],
         (char**) argv->data,
-        STDOUT_FILENO,
-        STDERR_FILENO,
+        IO_INVALID_FD,
+        IO_INVALID_FD,
         &child_pid,
         error);
 

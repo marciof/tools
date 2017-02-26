@@ -42,9 +42,9 @@ static int fork_exec_pipe(
     }
     else {
         bool has_failed =
-            ((out_fd != STDOUT_FILENO)
+            ((out_fd != IO_INVALID_FD)
                 && (dup2(out_fd, STDOUT_FILENO) == -1))
-            || ((err_fd != STDERR_FILENO)
+            || ((err_fd != IO_INVALID_FD)
                 && (dup2(err_fd, STDERR_FILENO) == -1))
             || (execvp(file, argv) == -1);
 

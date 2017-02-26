@@ -93,8 +93,8 @@ static void Plugin_run(
         int fd = fork_exec_fd(
             (char*) argv.data[0],
             (char**) argv.data,
-            STDOUT_FILENO,
-            STDERR_FILENO,
+            IO_INVALID_FD,
+            IO_INVALID_FD,
             &child_pid,
             error);
 
