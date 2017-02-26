@@ -88,7 +88,7 @@ static void Plugin_run(
 
         argv.data[argv.length - 1 - 1] = (intptr_t) input->name;
 
-        int child_pid;
+        pid_t child_pid;
         int fd = fork_exec_fd(
             (char*) argv.data[0], (char**) argv.data, &child_pid, error);
 

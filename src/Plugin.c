@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "Plugin.h"
@@ -13,7 +14,7 @@ void Input_close_subprocess(Input* input, Error* error) {
 
     int status;
 
-    if (waitpid((int) input->arg, &status, 0) == -1) {
+    if (waitpid((pid_t) input->arg, &status, 0) == -1) {
         if (errno != ECHILD) {
             Error_add(error, strerror(errno));
         }

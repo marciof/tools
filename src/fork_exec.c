@@ -14,7 +14,7 @@ static int fork_exec_pipe(
         char* argv[],
         int out_fd,
         int err_fd,
-        int* pid,
+        pid_t* pid,
         Error* error) {
 
     int read_write_fds[2];
@@ -24,7 +24,7 @@ static int fork_exec_pipe(
         return IO_INVALID_FD;
     }
 
-    int child_pid = fork();
+    pid_t child_pid = fork();
 
     if (child_pid == -1) {
         Error_add(error, strerror(errno));
@@ -62,9 +62,9 @@ static int fork_exec_pipe(
     }
 }
 
-static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
+static int fork_exec_pty(char* file, char* argv[], pid_t* pid, Error* error) {
     int child_fd_out;
-    int child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
+    pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
         Error_add(error, strerror(errno));
@@ -83,10 +83,9 @@ static int fork_exec_pty(char* file, char* argv[], int* pid, Error* error) {
     }
 }
 
-int fork_exec_fd(char* file, char* argv[], int* pid, Error* error) {
-    int is_tty = isatty(STDOUT_FILENO);
-
-    if (is_tty == 1) {
+// FIXME: refactor near-duplicate `fork_exec_pty` and `fork_exec_pipe`
+int fork_exec_fd(char* file, char* argv[], pid_t* pid, Error* error) {
+    if (isatty(STDOUT_FILENO)) {
         return fork_exec_pty(file, argv, pid, error);
     }
     else if (errno != EBADF) {
@@ -107,7 +106,7 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
         return -1;
     }
 
-    int child_pid;
+    pid_t child_pid;
     int read_fd = fork_exec_pipe(
         file, argv, null_fd, null_fd, &child_pid, error);
 
