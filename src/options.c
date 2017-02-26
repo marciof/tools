@@ -17,6 +17,7 @@
     PLUGIN_OPTION_OPTION \
 )
 
+#define ERROR_INVALID_OPTIONS "Invalid options"
 #define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled"
 
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
@@ -158,6 +159,7 @@ bool parse_options(
             }
             else {
                 Error_add(error, ERROR_UNKNOWN_PLUGIN);
+                Error_add(error, ERROR_INVALID_OPTIONS);
                 return false;
             }
         }
@@ -169,6 +171,7 @@ bool parse_options(
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
             if (ERROR_HAS(error)) {
+                Error_add(error, ERROR_INVALID_OPTIONS);
                 return false;
             }
         }
@@ -182,12 +185,14 @@ bool parse_options(
         Input* input = Input_new(argv[i], IO_INVALID_FD, error);
 
         if (ERROR_HAS(error)) {
+            Error_add(error, ERROR_INVALID_OPTIONS);
             return false;
         }
 
         Array_add(inputs, inputs->length, (intptr_t) input, error);
 
         if (ERROR_HAS(error)) {
+            Error_add(error, ERROR_INVALID_OPTIONS);
             Input_delete(input);
             return false;
         }
