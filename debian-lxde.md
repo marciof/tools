@@ -30,16 +30,6 @@ In `~/.config/lxsession/LXDE/desktop.conf`:
 
     iGtk/CursorThemeSize=36
 
-# Use GRUB in console mode (faster) #
-
-In `/etc/default/grub`:
-
-    GRUB_TERMINAL=console
-
-Then:
-
-    update-grub
-
 # Network sync time #
 
     apt-get install ntp
