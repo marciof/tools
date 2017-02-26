@@ -76,21 +76,23 @@ static int fork_exec_pty(char* file, char* argv[], pid_t* pid, Error* error) {
     }
     else {
         execvp(file, argv);
-
-        // FIXME: cleanup fork
-        Error_add(error, strerror(errno));
-        return IO_INVALID_FD;
+        abort();
     }
 }
 
-// FIXME: refactor near-duplicate `fork_exec_pty` and `fork_exec_pipe`
-int fork_exec_fd(char* file, char* argv[], pid_t* pid, Error* error) {
+int fork_exec_fd(
+        char* file,
+        char* argv[],
+        int out_fd,
+        int err_fd,
+        pid_t* pid,
+        Error* error) {
+
     if (isatty(STDOUT_FILENO)) {
         return fork_exec_pty(file, argv, pid, error);
     }
     else if (errno != EBADF) {
-        return fork_exec_pipe(
-            file, argv, STDOUT_FILENO, STDERR_FILENO, pid, error);
+        return fork_exec_pipe(file, argv, out_fd, err_fd, pid, error);
     }
     else {
         Error_add(error, strerror(errno));
@@ -107,8 +109,7 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
     }
 
     pid_t child_pid;
-    int read_fd = fork_exec_pipe(
-        file, argv, null_fd, null_fd, &child_pid, error);
+    int read_fd = fork_exec_fd(file, argv, null_fd, null_fd, &child_pid, error);
 
     if (ERROR_HAS(error)) {
         return -1;

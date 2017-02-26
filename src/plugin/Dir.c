@@ -53,8 +53,14 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
     }
 
     pid_t child_pid;
+
     int fd = fork_exec_fd(
-        (char*) argv->data[0], (char**) argv->data, &child_pid, error);
+        (char*) argv->data[0],
+        (char**) argv->data,
+        STDOUT_FILENO,
+        STDERR_FILENO,
+        &child_pid,
+        error);
 
     if (ERROR_HAS(error)) {
         Error_add(error, "`" EXTERNAL_BINARY "` error");

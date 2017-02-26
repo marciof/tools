@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "../fork_exec.h"
 #include "Vcs.h"
 
@@ -87,10 +88,15 @@ static void Plugin_run(
         }
 
         argv.data[argv.length - 1 - 1] = (intptr_t) input->name;
-
         pid_t child_pid;
+
         int fd = fork_exec_fd(
-            (char*) argv.data[0], (char**) argv.data, &child_pid, error);
+            (char*) argv.data[0],
+            (char**) argv.data,
+            STDOUT_FILENO,
+            STDERR_FILENO,
+            &child_pid,
+            error);
 
         if (ERROR_HAS(error)) {
             Error_add(error, "`" EXTERNAL_BINARY "` error");
