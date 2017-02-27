@@ -71,10 +71,6 @@ bind '"\e[1;5D": backward-word'      # ctrl-left
 bind '"\e[3;5~": kill-word'          # ctrl-delete
 bind '"\e[2;5~": backward-kill-word' # ctrl-insert
 
-if test -n "$DESKTOP_SESSION" && _have gnome-keyring-daemon; then
-    eval "$($NAME --start)"
-fi
-
 if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
     _prompt="\[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\] "
 elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
