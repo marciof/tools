@@ -22,12 +22,6 @@ In `/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_custom.conf`:
     [greeter]
     xft-dpi=145
 
-## Mouse pointer ##
-
-In `~/.config/lxsession/LXDE/desktop.conf`:
-
-    iGtk/CursorThemeSize=36
-
 ## Firefox ##
 
 In `about:config` set:
