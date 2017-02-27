@@ -3,14 +3,7 @@
     su
     adduser USERNAME sudo
 
-# Apt repositories #
-
-In `/etc/apt/sources.list`:
-
-    deb http://httpredir.debian.org/debian stretch contrib main non-free
-    deb-src http://httpredir.debian.org/debian stretch contrib main non-free
-    deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
-    deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
+# Wifi firmware #
 
 https://packages.debian.org/stretch/all/firmware-iwlwifi/download
 
@@ -40,6 +33,15 @@ In `~/.config/lxsession/LXDE/desktop.conf`:
 In `about:config` set:
 
     layout.css.devPixelsPerPx=1.5
+
+# Apt repositories #
+
+In `/etc/apt/sources.list`:
+
+    deb http://httpredir.debian.org/debian stretch contrib main non-free
+    deb-src http://httpredir.debian.org/debian stretch contrib main non-free
+    deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
+    deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
 
 # Network sync time #
 
