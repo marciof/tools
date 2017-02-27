@@ -49,20 +49,23 @@ static int fork_exec_pipe(
             || (execvp(file, argv) == -1);
 
         if (has_failed) {
-            int saved_errno = errno;
-
-            io_write(
-                read_write_fds[1],
-                (uint8_t*) &saved_errno,
-                sizeof(saved_errno),
-                error);
+            Error_add(error, strerror(errno));
+            abort();
+            return IO_INVALID_FD;
         }
 
-        abort();
+        return read_write_fds[1];
     }
 }
 
-static int fork_exec_pty(char* file, char* argv[], pid_t* pid, Error* error) {
+static int fork_exec_pty(
+        char* file,
+        char* argv[],
+        int out_fd,
+        int err_fd,
+        pid_t* pid,
+        Error* error) {
+
     int child_fd_out;
     pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
@@ -75,8 +78,19 @@ static int fork_exec_pty(char* file, char* argv[], pid_t* pid, Error* error) {
         return child_fd_out;
     }
     else {
-        execvp(file, argv);
-        abort();
+        bool has_failed =
+            ((out_fd != IO_INVALID_FD)
+                && (dup2(out_fd, STDOUT_FILENO) == -1))
+            || ((err_fd != IO_INVALID_FD)
+                && (dup2(err_fd, STDERR_FILENO) == -1))
+            || (execvp(file, argv) == -1);
+
+        if (has_failed) {
+            Error_add(error, strerror(errno));
+            abort();
+        }
+
+        return IO_INVALID_FD;
     }
 }
 
@@ -89,7 +103,7 @@ int fork_exec_fd(
         Error* error) {
 
     if (isatty(STDOUT_FILENO)) {
-        return fork_exec_pty(file, argv, pid, error);
+        return fork_exec_pty(file, argv, out_fd, err_fd, pid, error);
     }
     else if (errno != EBADF) {
         return fork_exec_pipe(file, argv, out_fd, err_fd, pid, error);
@@ -109,7 +123,7 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
     }
 
     pid_t child_pid;
-    int read_fd = fork_exec_fd(file, argv, null_fd, null_fd, &child_pid, error);
+    fork_exec_fd(file, argv, null_fd, null_fd, &child_pid, error);
 
     if (ERROR_HAS(error)) {
         return -1;
@@ -128,27 +142,7 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
     }
 
     if (!WIFEXITED(status)) {
-        bool has_child_errno = io_has_input(read_fd, error);
-
-        if (ERROR_HAS(error)) {
-            return -1;
-        }
-
-        if (!has_child_errno) {
-            Error_add(error, "Fork/exec subprocess did not exit normally");
-        }
-        else {
-            int child_errno;
-            io_read(
-                read_fd, (uint8_t*) &child_errno, sizeof(child_errno), error);
-
-            if (ERROR_HAS(error)) {
-                return -1;
-            }
-
-            Error_add(error, strerror(child_errno));
-        }
-
+        Error_add(error, "Fork/exec subprocess did not exit normally");
         return -1;
     }
 
