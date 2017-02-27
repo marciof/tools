@@ -1,8 +1,3 @@
-# sudo rights #
-
-    su
-    adduser USERNAME sudo
-
 # Wifi firmware #
 
 https://packages.debian.org/stretch/all/firmware-iwlwifi/download
@@ -43,7 +38,7 @@ In `/etc/apt/sources.list`:
 
 # Digital clock format #
 
-    %a %l:%M%P%n%x
+    %a%l:%M%P %-m/%e
 
 # Emacs #
 
