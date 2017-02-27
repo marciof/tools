@@ -42,6 +42,15 @@ export LESS='-x4 -c -M -R -i'
 export PROMPT_DIRTRIM=2
 export PYTHONDONTWRITEBYTECODE=x
 
+# Color manual pages.
+export LESS_TERMCAP_mb=$'\e[1;31m'     # begin bold
+export LESS_TERMCAP_md=$'\e[1;33m'     # begin blink
+export LESS_TERMCAP_so=$'\e[01;44;37m' # begin reverse video
+export LESS_TERMCAP_us=$'\e[01;37m'    # begin underline
+export LESS_TERMCAP_me=$'\e[0m'        # reset bold/blink
+export LESS_TERMCAP_se=$'\e[0m'        # reset reverse video
+export LESS_TERMCAP_ue=$'\e[0m'        # reset underline
+
 _color_off='\e[0m'
 _yellow='\e[0;33m'
 _green='\e[0;32m'
