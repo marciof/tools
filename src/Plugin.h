@@ -6,8 +6,11 @@
 #include "io.h"
 
 typedef struct Input {
+    // If unsupported, `plugin` is set to `NULL`.
+    struct Plugin* plugin;
     // If unnamed, `name` is set to `NULL`.
     char* name;
+    // If unsupported, `fd` is set to `IO_INVALID_FD`.
     int fd;
     intptr_t arg;
     // If `NULL`, uses `io_close` by default.

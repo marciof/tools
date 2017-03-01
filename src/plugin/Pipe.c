@@ -111,6 +111,9 @@ static void Plugin_run(
     if (ERROR_HAS(error)) {
         Input_delete(input);
     }
+    else {
+        input->plugin = plugin;
+    }
 }
 
 Plugin Pipe_Plugin = {

@@ -31,7 +31,9 @@ static void init_argv(Array *argv, Array *options, Error *error) {
     }
 }
 
-static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
+static void open_inputs(
+        Plugin* plugin, Array* inputs, Array* argv, size_t pos, Error* error) {
+
     // FIXME: `NULL` is sometimes added multiple times
     Array_add(argv, argv->length, (intptr_t) NULL, error);
 
@@ -68,9 +70,10 @@ static void open_inputs(Array* inputs, Array* argv, size_t pos, Error* error) {
         Input_delete(input);
     }
     else {
+        input->plugin = plugin;
         input->fd = fd;
-        input->close = Input_close_subprocess;
         input->arg = (intptr_t) child_pid;
+        input->close = Input_close_subprocess;
     }
 }
 
@@ -95,7 +98,7 @@ static void Plugin_run(
     }
 
     if (inputs->length == 0) {
-        open_inputs(inputs, &argv, inputs->length, error);
+        open_inputs(plugin, inputs, &argv, inputs->length, error);
         Array_deinit(&argv);
         return;
     }
@@ -127,7 +130,7 @@ static void Plugin_run(
         }
 
         if (nr_args > 0) {
-            open_inputs(inputs, &argv, i, error);
+            open_inputs(plugin, inputs, &argv, i, error);
 
             if (ERROR_HAS(error)) {
                 Array_deinit(&argv);
@@ -142,7 +145,7 @@ static void Plugin_run(
     }
 
     if (nr_args > 0) {
-        open_inputs(inputs, &argv, inputs->length, error);
+        open_inputs(plugin, inputs, &argv, inputs->length, error);
     }
 
     Array_deinit(&argv);

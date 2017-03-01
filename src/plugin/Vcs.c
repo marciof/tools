@@ -103,6 +103,7 @@ static void Plugin_run(
             return;
         }
 
+        input->plugin = plugin;
         input->fd = fd;
         input->arg = child_pid;
         input->close = Input_close_subprocess;
