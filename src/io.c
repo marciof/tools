@@ -22,20 +22,6 @@ Buffer* Buffer_new(size_t max_length, Error* error) {
     return buffer;
 }
 
-void io_read(int fd, uint8_t* data, size_t nr_bytes, Error* error) {
-    while (nr_bytes > 0) {
-        ssize_t bytes_read = read(fd, data, nr_bytes);
-
-        if (bytes_read == -1) {
-            Error_add(error, strerror(errno));
-            return;
-        }
-
-        nr_bytes -= bytes_read;
-        data += bytes_read;
-    }
-}
-
 bool io_has_input(int fd, Error* error) {
     struct pollfd fd_poll;
 
