@@ -330,7 +330,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 }
 
 static const char* Plugin_get_description() {
-    return "page output via `" EXTERNAL_BINARY "`";
+    return "page output via `" EXTERNAL_BINARY "` when needed";
 }
 
 static const char* Plugin_get_name() {
