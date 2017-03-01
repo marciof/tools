@@ -38,7 +38,7 @@ In `/etc/apt/sources.list`:
 
 # Digital clock format #
 
-    %a %l:%M%P %-m/%e
+    %a %-l:%M%P %-m/%-e
 
 # Emacs #
 
