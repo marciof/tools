@@ -160,7 +160,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
 }
 
 int main(int argc, char* argv[]) {
-    Error error = {NULL};
+    Error error = ERROR_INITIAL_VALUE;
     Array inputs, outputs;
 
     Array_init(&inputs, &error, NULL);

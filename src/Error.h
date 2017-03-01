@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #define ERROR_MESSAGE_STACK_SIZE 8
+#define ERROR_INITIAL_VALUE {NULL}
 
-// Initialize to `{NULL}`.
 // Successful calls must not clear errors.
 // Ordered by most to least recent error message.
 typedef const char* Error[ERROR_MESSAGE_STACK_SIZE];
