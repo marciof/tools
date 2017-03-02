@@ -32,10 +32,6 @@ In `/etc/apt/sources.list`:
     deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
     deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
 
-# Network sync time #
-
-    apt-get install ntp
-
 # Digital clock format #
 
     %a %-l:%M%P %-m/%-e
