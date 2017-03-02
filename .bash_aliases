@@ -85,7 +85,7 @@ if _have micro nano; then
 fi
 
 if _have show; then
-    alias s="$NAME -p dir:-Fh -p dir:--color=auto -p dir:--group-directories-first"
+    alias s="$NAME -p dir=-Fh -p dir=--color=auto -p dir=--group-directories-first"
     export PAGER="$NAME"
 fi
 
