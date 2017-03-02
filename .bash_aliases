@@ -22,9 +22,11 @@ _have() {
     return 1
 }
 
-for bashrc_child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-    source "$bashrc_child"
-    _warn "Loaded: $bashrc_child"
+child_dir="$(readlink -e "$(dirname "$BASH_SOURCE")")"
+
+for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
+    source "$child_dir/$(basename "$child")"
+    _warn "Loaded: $child"
 done
 
 shopt -s cdspell checkwinsize histappend
