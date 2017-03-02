@@ -21,7 +21,7 @@ List directory from stdin:
 
 List directory with a custom option:
 
-  $ show -p dir:-a dir1
+  $ show -p dir=-a dir1
   .
   ..
   file1

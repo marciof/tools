@@ -1,6 +1,7 @@
 # 0.11.0 - UNRELEASED #
 
 - Improve error reporting.
+- Change plugin option separator for easier/faster typing.
 
 - Plugin "diff": highlight changed words in unified diff input.
 - Deactivate plugins automatically when unsupported.

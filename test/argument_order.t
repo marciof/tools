@@ -6,7 +6,7 @@ Setup:
 
 List directory:
 
-  $ echo "Hello world!" | show -p dir:-1 dir dir/file
+  $ echo "Hello world!" | show -p dir=-1 dir dir/file
   Hello world!
   file
   Bob

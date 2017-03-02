@@ -7,6 +7,8 @@
 #include "io.h"
 #include "options.h"
 
+#define PLUGIN_OPTION_SEP "="
+
 #define HELP_OPTION "h"
 #define DISABLE_PLUGIN_OPTION "d:"
 #define PLUGIN_OPTION_OPTION "p:"
@@ -28,10 +30,11 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "Options:\n"
         "  -%c            display this help and exit\n"
         "  -%c NAME       disable a plugin\n"
-        "  -%c NAME:OPT   pass an option to a plugin\n",
+        "  -%c NAME%sOPT   pass an option to a plugin\n",
         *HELP_OPTION,
         *DISABLE_PLUGIN_OPTION,
-        *PLUGIN_OPTION_OPTION);
+        *PLUGIN_OPTION_OPTION,
+        PLUGIN_OPTION_SEP);
 
     if (nr_plugins > 0) {
         bool needs_header = true;
@@ -94,7 +97,6 @@ static void parse_plugin_option(
         size_t nr_plugins,
         Error* error) {
 
-    const char PLUGIN_OPTION_SEP[] = ":";
     char* separator = strstr(option, PLUGIN_OPTION_SEP);
 
     bool is_option_missing = (separator == NULL)
