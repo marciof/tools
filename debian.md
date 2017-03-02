@@ -40,6 +40,14 @@ In `/etc/apt/sources.list`:
 
     %a %-l:%M%P %-m/%-e
 
+# Mouse speed #
+
+    apt-get install xinput
+
+In `~/.xsessionrc`:
+
+    xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
+
 # Emacs #
 
 - spacemacs.org
