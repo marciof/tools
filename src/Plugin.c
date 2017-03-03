@@ -1,9 +1,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include "fork_exec.h"
 #include "Plugin.h"
 
 void Input_close_subprocess(Input* input, Error* error) {
@@ -12,26 +11,17 @@ void Input_close_subprocess(Input* input, Error* error) {
         return;
     }
 
-    int status;
+    int status = wait_subprocess((pid_t) input->arg, error);
 
-    if (waitpid((pid_t) input->arg, &status, 0) == -1) {
-        if (errno != ECHILD) {
-            Error_add(error, strerror(errno));
-
-            if (input->name != NULL) {
-                Error_add(error, input->name);
-            }
-        }
-    }
-    else if (!WIFEXITED(status)) {
-        Error_add(error, "Input subprocess did not exit normally");
-
+    if (ERROR_HAS(error)) {
         if (input->name != NULL) {
             Error_add(error, input->name);
         }
+        return;
     }
-    else if (WEXITSTATUS(status) != 0) {
-        Error_add(error, "Input subprocess exited with an error code");
+
+    if (status != 0) {
+        Error_add(error, "Subprocess exited with an error code");
 
         if (input->name != NULL) {
             Error_add(error, input->name);

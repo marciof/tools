@@ -8,10 +8,13 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include "../Array.h"
+#include "../fork_exec.h"
 #include "../io.h"
 #include "Pager.h"
 
+// Don't use `pager` as it's not available in some systems.
 #define EXTERNAL_BINARY "less"
+
 #define PAGING_THRESHOLD 0.6
 
 typedef struct {
@@ -25,6 +28,7 @@ typedef struct {
     size_t nr_line_chars;
     // Set to `IO_INVALID_FD` until the pager starts (if at all).
     int fd;
+    pid_t child_pid;
 } Pager;
 
 static struct winsize terminal;
@@ -227,6 +231,21 @@ static void Pager_delete(Pager* pager, Error* error) {
     }
 
     Array_deinit(&pager->buffers);
+
+    if ((pager->fd != IO_INVALID_FD) && (close(pager->fd) == -1)) {
+        Error_add(error, strerror(errno));
+        return;
+    }
+
+    if (pager->child_pid != -1) {
+        int status = wait_subprocess(pager->child_pid, error);
+
+        if (ERROR_HAS(error) || (status != 0)) {
+            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            return;
+        }
+    }
+
     free(pager);
 }
 
@@ -250,6 +269,7 @@ static Pager* Pager_new(Array* options, Error* error) {
     pager->nr_lines = 0;
     pager->nr_line_chars = 0;
     pager->fd = IO_INVALID_FD;
+    pager->child_pid = -1;
 
     ERROR_CLEAR(&pager->timer_error);
     return pager;
@@ -261,7 +281,6 @@ static void Output_close(Output* output, Error* error) {
     Pager_delete(pager, error);
 }
 
-// FIXME: error reporting
 static void Output_write(Output* output, Buffer** buffer, Error* error) {
     Pager* pager = (Pager*) output->arg;
 
@@ -277,45 +296,25 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
             return;
         }
 
-        int read_write_fds[2];
+        int fd = fork_exec_fd_pipe(
+            (char*) argv.data[0],
+            (char**) argv.data,
+            IO_INVALID_FD,
+            IO_INVALID_FD,
+            false,
+            &pager->child_pid,
+            error);
 
-        if (pipe(read_write_fds) == -1) {
+        if (ERROR_HAS(error)) {
             Error_add(error, strerror(errno));
-            Array_deinit(&argv);
-            return;
-        }
-
-        // FIXME: reuse fork_exec_fd?
-        int child_pid = fork();
-
-        if (child_pid == -1) {
-            Error_add(error, strerror(errno));
-            Array_deinit(&argv);
-            return;
-        }
-        else if (child_pid) {
-            // FIXME: cleanup fork
-            if (dup2(read_write_fds[0], STDIN_FILENO) == -1) {
-                Error_add(error, strerror(errno));
-                Array_deinit(&argv);
-                return;
-            }
-
-            close(read_write_fds[0]);
-            close(read_write_fds[1]);
-            execvp((char*) argv.data[0], (char**) argv.data);
-
-            // FIXME: cleanup fork
-            Error_add(error, strerror(errno));
+            Error_add(error, "`" EXTERNAL_BINARY "` error");
             Array_deinit(&argv);
             return;
         }
 
         Array_deinit(&argv);
-        close(read_write_fds[0]);
-        flush_buffer(pager, read_write_fds[1], error);
+        flush_buffer(pager, fd, error);
 
-        // FIXME: cleanup fork
         if (ERROR_HAS(error)) {
             return;
         }

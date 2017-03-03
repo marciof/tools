@@ -38,11 +38,16 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
-            ERROR_CLEAR(error);
+            Error output_error = ERROR_INITIAL_VALUE;
 
-            output->close(output, error);
+            output->close(output, &output_error);
+
+            if (ERROR_HAS(&output_error)) {
+                Error_add(&output_error, output->plugin->get_name());
+                Error_print(&output_error, stderr);
+            }
+
             Output_delete(output);
-            Error_print(error, stderr);
         }
         Array_deinit(outputs);
     }

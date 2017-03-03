@@ -13,7 +13,7 @@ typedef struct Input {
     // If unsupported, `fd` is set to `IO_INVALID_FD`.
     int fd;
     intptr_t arg;
-    // If `NULL`, uses `io_close` by default.
+    // If `NULL`, uses `close` by default.
     void (*close)(struct Input*, Error* error);
 } Input;
 
