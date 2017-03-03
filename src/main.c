@@ -130,7 +130,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
 
         if (input->fd == IO_INVALID_FD) {
             did_succeed = false;
-            fprintf(stderr, "Unsupported input: %s\n", input->name);
+            fprintf(stderr, "%s: Unsupported input\n", input->name);
             continue;
         }
 

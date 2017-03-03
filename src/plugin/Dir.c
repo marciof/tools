@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <stdbool.h>
+#include <string.h>
 #include <unistd.h>
 #include "../Array.h"
 #include "../fork_exec.h"
@@ -113,20 +114,28 @@ static void Plugin_run(
 
         bool does_exist = (input->fd == IO_INVALID_FD)
             && ((access(input->name, F_OK) == 0)
-                || (errno != ENOENT));
+                && (errno != ENOENT));
 
         if (does_exist) {
-            Array_add(&argv, argv.length, (intptr_t) input->name, error);
+            if (access(input->name, R_OK) == 0) {
+                Array_add(&argv, argv.length, (intptr_t) input->name, error);
 
-            if (ERROR_HAS(error)) {
+                if (ERROR_HAS(error)) {
+                    Array_deinit(&argv);
+                    return;
+                }
+
+                ++nr_args;
+                inputs->data[i] = (intptr_t) NULL;
+                Input_delete(input);
+                continue;
+            }
+            else {
+                Error_add(error, strerror(errno));
+                Error_add(error, input->name);
                 Array_deinit(&argv);
                 return;
             }
-
-            ++nr_args;
-            inputs->data[i] = (intptr_t) NULL;
-            Input_delete(input);
-            continue;
         }
 
         if (nr_args > 0) {

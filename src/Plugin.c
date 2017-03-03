@@ -17,13 +17,25 @@ void Input_close_subprocess(Input* input, Error* error) {
     if (waitpid((pid_t) input->arg, &status, 0) == -1) {
         if (errno != ECHILD) {
             Error_add(error, strerror(errno));
+
+            if (input->name != NULL) {
+                Error_add(error, input->name);
+            }
         }
     }
     else if (!WIFEXITED(status)) {
-        Error_add(error, "Input subprocess did not exit");
+        Error_add(error, "Input subprocess did not exit normally");
+
+        if (input->name != NULL) {
+            Error_add(error, input->name);
+        }
     }
     else if (WEXITSTATUS(status) != 0) {
         Error_add(error, "Input subprocess exited with an error code");
+
+        if (input->name != NULL) {
+            Error_add(error, input->name);
+        }
     }
 }
 

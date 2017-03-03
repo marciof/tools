@@ -25,3 +25,12 @@ List directory with a custom option:
   .
   ..
   file1
+
+Complain about directory without permission to read:
+
+  $ mkdir cant_read
+  $ chmod u-r cant_read
+  $ show cant_read
+  dir: cant_read: Permission denied
+  [1]
+  $ rmdir cant_read
