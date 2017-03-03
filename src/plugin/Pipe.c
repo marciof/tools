@@ -12,7 +12,7 @@
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
-// Non-thread safe, returns pointer to static storage.
+// Non-reentrant, returns pointer to static storage.
 static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
 

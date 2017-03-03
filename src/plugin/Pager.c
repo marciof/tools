@@ -261,6 +261,7 @@ static void Output_close(Output* output, Error* error) {
     Pager_delete(pager, error);
 }
 
+// FIXME: error reporting
 static void Output_write(Output* output, Buffer** buffer, Error* error) {
     Pager* pager = (Pager*) output->arg;
 

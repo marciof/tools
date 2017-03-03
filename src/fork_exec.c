@@ -45,16 +45,15 @@ static int fork_exec_pipe(
             ((out_fd != IO_INVALID_FD)
                 && (dup2(out_fd, STDOUT_FILENO) == -1))
             || ((err_fd != IO_INVALID_FD)
-                && (dup2(err_fd, STDERR_FILENO) == -1))
-            || (execvp(file, argv) == -1);
+                && (dup2(err_fd, STDERR_FILENO) == -1));
 
         if (has_failed) {
             Error_add(error, strerror(errno));
-            abort();
             return IO_INVALID_FD;
         }
 
-        return read_write_fds[1];
+        execvp(file, argv);
+        abort();
     }
 }
 
@@ -82,15 +81,15 @@ static int fork_exec_pty(
             ((out_fd != IO_INVALID_FD)
                 && (dup2(out_fd, STDOUT_FILENO) == -1))
             || ((err_fd != IO_INVALID_FD)
-                && (dup2(err_fd, STDERR_FILENO) == -1))
-            || (execvp(file, argv) == -1);
+                && (dup2(err_fd, STDERR_FILENO) == -1));
 
         if (has_failed) {
             Error_add(error, strerror(errno));
-            abort();
+            return IO_INVALID_FD;
         }
 
-        return IO_INVALID_FD;
+        execvp(file, argv);
+        abort();
     }
 }
 

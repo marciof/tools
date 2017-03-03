@@ -8,6 +8,7 @@
 - Plugin "diff": highlight changed words in unified diff input.
 - Implicit option for plugins.
 - Plugin "url": local file URLs.
+- Fix plugin "file" to leverage `cat`.
 - Fix plugin "pager" to allow `less` launching an editor when there's only one named input.
 - Fix plugin "pager" to respect the `PAGER` environment variable.
 
