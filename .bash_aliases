@@ -26,17 +26,14 @@ for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
 done
 
 shopt -s autocd dirspell histappend
-
 alias -- -='cd -'
 alias ..='cd ..'
-alias ...='cd ../..'
 
 _have dircolors && eval "$($NAME -b)"
 _have lesspipe && eval "$($NAME)"
 
-export ANSIBLE_NOCOWS=x
-export HISTCONTROL=ignoreboth
-export LESS='-x4 -c -M -R -i'
+export HISTCONTROL=ignoredups
+export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
 export PROMPT_DIRTRIM=2
 export PYTHONDONTWRITEBYTECODE=x
 
