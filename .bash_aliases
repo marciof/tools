@@ -126,11 +126,6 @@ if _have git; then
     git config --global push.default simple
     git config --global branch.autosetuprebase always
 
-    export GIT_PS1_SHOWDIRTYSTATE=x
-    export GIT_PS1_SHOWSTASHSTATE=x
-    export GIT_PS1_SHOWUNTRACKEDFILES=x
-    export GIT_PS1_STATESEPARATOR=
-
     for ALIAS in sa sb sc sd sh sl sp sr ss st; do
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _${ALIAS} ${ALIAS}"
