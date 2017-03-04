@@ -62,11 +62,9 @@ _color_off='\e[0m'
 _yellow='\e[0;33m'
 
 if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
-    _prompt="\[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\] "
+    _host_prompt=" \[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\]"
 elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
-    _prompt="\[$_yellow\]\\u@\\h\[$_color_off\] "
-else
-    _prompt=
+    _host_prompt=" \[$_yellow\]\\u@\\h\[$_color_off\]"
 fi
 
 if _have micro nano; then
@@ -131,6 +129,7 @@ if _have git; then
     export GIT_PS1_SHOWDIRTYSTATE=x
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_SHOWUNTRACKEDFILES=x
+    export GIT_PS1_STATESEPARATOR=
 
     for ALIAS in sa sb sc sd sh sl sp sr ss st; do
         eval "_${ALIAS}() { _load_git_completions; }"
@@ -142,12 +141,7 @@ if _have git; then
         alias __git_ps1=
     fi
 
-    _color_git_ps1() {
-        local ps1=$(__git_ps1 "%s")
-        [ -n "$ps1" ] && echo "$ps1 "
-    }
-
-    _prompt="$_prompt\[\e[0;32m\]\$(_color_git_ps1)\[$_color_off\]"
+    _git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$_color_off\]"
 fi
 
 _jobs_nr_ps1() {
@@ -156,5 +150,5 @@ _jobs_nr_ps1() {
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_prompt\[\e[1;34m\]\w\[$_color_off\]\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
+    export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
 fi
