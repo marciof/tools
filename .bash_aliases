@@ -68,8 +68,7 @@ elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
 fi
 
 if _have micro nano; then
-    export EDITOR="$NAME"
-    export GIT_EDITOR="$NAME"
+    export EDITOR="$NAME" GIT_EDITOR="$NAME"
 fi
 
 if _have show; then
@@ -140,7 +139,7 @@ if _have git; then
 fi
 
 _jobs_nr_ps1() {
-    local jobs=$(jobs | wc -l)
+    local jobs=$(jobs -p | wc -l)
     [ $jobs -gt 0 ] && echo " $jobs"
 }
 
