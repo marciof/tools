@@ -4,10 +4,6 @@ if [[ ! "$-" =~ 'i' ]]; then
     return 0
 fi
 
-_warn() {
-    echo "* $@" >&2
-}
-
 _have() {
     for NAME; do
         LOCATION=$(which $NAME 2> /dev/null)
@@ -18,7 +14,7 @@ _have() {
         fi
     done
 
-    _warn "Missing: $@"
+    echo "* Missing: $@" >&2
     return 1
 }
 
@@ -26,7 +22,7 @@ child_dir="$(readlink -e "$(dirname "$BASH_SOURCE")")"
 
 for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
     source "$child_dir/$(basename "$child")"
-    _warn "Loaded: $child"
+    echo "* Loaded: $child" >&2
 done
 
 shopt -s cdspell checkwinsize histappend
@@ -150,7 +146,7 @@ if _have git; then
     done
 
     if ! type -t __git_ps1 > /dev/null; then
-        _warn "Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh"
+        echo "* Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh" >&2
         _color_git_ps1() {
             :
         }
