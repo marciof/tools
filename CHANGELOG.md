@@ -5,6 +5,7 @@
 
 - Fix broken pipe error when viewing very long output from programs and exiting early.
 - Deactivate plugins automatically when unsupported.
+- Plugin "color": use `source-highlight` to colorize files.
 - Plugin "diff": highlight changed words in unified diff input.
 - Implicit option for plugins.
 - Plugin "url": local file URLs.
