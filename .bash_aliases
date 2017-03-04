@@ -64,7 +64,6 @@ bind 'set visible-stats On'
 bind '"\e[1;5C": forward-word'       # ctrl-right
 bind '"\e[1;5D": backward-word'      # ctrl-left
 bind '"\e[3;5~": kill-word'          # ctrl-delete
-bind '"\e[2;5~": backward-kill-word' # ctrl-insert
 
 if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
     _prompt="\[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\] "
