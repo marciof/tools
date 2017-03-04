@@ -51,6 +51,8 @@ def get_video_size(tool, path):
             stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError as error:
         size = re.findall(rb'Video:[^\n]+ (\d{2,})x(\d{2,})', error.output)
+    else:
+        raise UnsupportedVideoException()
 
     if len(size) == 0:
         raise UnsupportedVideoException()
