@@ -17,8 +17,8 @@ class UnsupportedVideoException (Exception):
 def exit_usage():
     sys.exit('Usage: audio|smil <video> ...')
 
-def get_smil(video):
-    (height, width) = get_video_size(video)
+def get_smil(tool, video):
+    (height, width) = get_video_size(tool, video)
     
     return """
 <?xml version="1.1"?>
@@ -62,7 +62,7 @@ for candidate_tool in 'ffmpeg', 'avconv':
         tool = candidate_tool
         break
 else:
-    sys.exit('FFmpeg or avconv not in path. Install from <http://www.ffmpeg.org>, <https://libav.org>.')
+    sys.exit('FFmpeg or avconv not in path: <http://www.ffmpeg.org>, <https://libav.org>.')
 
 if len(sys.argv) <= 2:
     exit_usage()
@@ -87,7 +87,7 @@ if action == 'audio':
 elif action == 'smil':
     for video in videos:
         try:
-            smil = get_smil(video)
+            smil = get_smil(tool, video)
         except UnsupportedVideoException:
             print('Error:', video, file = sys.stderr)
         else:
