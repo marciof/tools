@@ -4,6 +4,8 @@ https://packages.debian.org/stretch/all/firmware-iwlwifi/download
 
 # High DPI scaling #
 
+Appearance: Xfce, Greybird color style, Breeze Dark icons, Breeze window style
+
 ## WM/DE ##
 
 In `/usr/share/lightdm/lightdm.conf.d/02_custom.conf`:
@@ -34,7 +36,7 @@ In `/etc/apt/sources.list`:
 
 # Digital clock format #
 
-    %a %-l:%M%P %-m/%-e
+    %-l:%M%P %a %-m/%-e
 
 # Mouse speed #
 
