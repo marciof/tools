@@ -25,7 +25,7 @@ for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
     echo "* Loaded: $child" >&2
 done
 
-shopt -s cdspell checkwinsize histappend
+shopt -s autocd dirspell histappend
 
 alias -- -='cd -'
 alias ..='cd ..'
