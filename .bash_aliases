@@ -37,23 +37,16 @@ export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-
 export PROMPT_DIRTRIM=2
 export PYTHONDONTWRITEBYTECODE=x
 
-# Color manual pages.
-export LESS_TERMCAP_mb=$'\e[1;31m'     # begin bold
-export LESS_TERMCAP_md=$'\e[1;33m'     # begin blink
+# Color man pages.
+export LESS_TERMCAP_mb=$'\e[1;31m' # begin bold
+export LESS_TERMCAP_md=$'\e[1;33m' # begin blink
 export LESS_TERMCAP_so=$'\e[01;44;37m' # begin reverse video
-export LESS_TERMCAP_us=$'\e[01;37m'    # begin underline
-export LESS_TERMCAP_me=$'\e[0m'        # reset bold/blink
-export LESS_TERMCAP_se=$'\e[0m'        # reset reverse video
-export LESS_TERMCAP_ue=$'\e[0m'        # reset underline
+export LESS_TERMCAP_us=$'\e[01;37m' # begin underline
+export LESS_TERMCAP_me=$'\e[0m' # reset bold/blink
+export LESS_TERMCAP_se=$'\e[0m' # reset reverse video
+export LESS_TERMCAP_ue=$'\e[0m' # reset underline
 
-_color_off='\e[0m'
-_yellow='\e[0;33m'
-_green='\e[0;32m'
-_b_red='\e[1;31m'
-_b_blue='\e[1;34m'
-
-# Allow `bind -q forward-search-history`.
-stty -ixon
+stty -ixon # Allow `bind -q forward-search-history`.
 
 bind 'set bind-tty-special-chars Off'
 bind 'set completion-ignore-case On'
@@ -61,9 +54,12 @@ bind 'set expand-tilde Off'
 bind 'set mark-symlinked-directories On'
 bind 'set visible-stats On'
 
-bind '"\e[1;5C": forward-word'       # ctrl-right
-bind '"\e[1;5D": backward-word'      # ctrl-left
-bind '"\e[3;5~": kill-word'          # ctrl-delete
+bind '"\e[1;5C": forward-word' # ctrl-right
+bind '"\e[1;5D": backward-word' # ctrl-left
+bind '"\e[3;5~": kill-word' # ctrl-delete
+
+_color_off='\e[0m'
+_yellow='\e[0;33m'
 
 if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
     _prompt="\[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\] "
@@ -143,17 +139,15 @@ if _have git; then
 
     if ! type -t __git_ps1 > /dev/null; then
         echo "* Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh" >&2
-        _color_git_ps1() {
-            :
-        }
-    else
-        _color_git_ps1() {
-            local ps1=$(__git_ps1 "%s")
-            [ -n "$ps1" ] && echo "$ps1 "
-        }
+        alias __git_ps1=
     fi
 
-    _prompt="$_prompt\[$_green\]\$(_color_git_ps1)\[$_color_off\]"
+    _color_git_ps1() {
+        local ps1=$(__git_ps1 "%s")
+        [ -n "$ps1" ] && echo "$ps1 "
+    }
+
+    _prompt="$_prompt\[\e[0;32m\]\$(_color_git_ps1)\[$_color_off\]"
 fi
 
 _jobs_nr_ps1() {
@@ -162,5 +156,5 @@ _jobs_nr_ps1() {
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="$_prompt\[$_b_blue\]\w\[$_color_off\]\[$_b_red\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
+    export PS1="$_prompt\[\e[1;34m\]\w\[$_color_off\]\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\] \\$ "
 fi
