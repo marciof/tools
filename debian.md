@@ -37,6 +37,10 @@ Logout and login to apply:
 
     xfconf-query -c xsettings -p /Gtk/IconSizes -s gtk-button=32,32
 
+## Xfce ##
+
+    xfconf-query -c xsettings -p /Xft/DPI -s 145
+
 # Apt repositories #
 
 In `/etc/apt/sources.list`:
