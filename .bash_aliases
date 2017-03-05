@@ -132,7 +132,7 @@ if _have git; then
 
     if ! type -t __git_ps1 > /dev/null; then
         echo "* Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh" >&2
-        alias __git_ps1=
+        alias __git_ps1=:
     fi
 
     _git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$_color_off\]"
