@@ -31,6 +31,12 @@ Change font size in:
 
     qtconfig
 
+## Gtk ##
+
+Logout and login to apply:
+
+    xfconf-query -c xsettings -p /Gtk/IconSizes -s gtk-button=32,32
+
 # Apt repositories #
 
 In `/etc/apt/sources.list`:
