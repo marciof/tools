@@ -27,7 +27,9 @@ In `about:config` set:
 
 ## Qt4 ##
 
-    apt install qt4-qtconfig
+Change font size in:
+
+    qtconfig
 
 # Apt repositories #
 
@@ -43,8 +45,6 @@ In `/etc/apt/sources.list`:
     %-l:%M%P %a %-m/%-e
 
 # Mouse speed #
-
-    apt install xinput
 
 In `~/.xsessionrc`:
 
