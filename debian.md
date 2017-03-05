@@ -4,7 +4,7 @@ https://packages.debian.org/stretch/all/firmware-iwlwifi/download
 
 # High DPI scaling #
 
-Appearance: Xfce, Greybird color style, Breeze Dark icons, Breeze window style
+Appearance: Xfce, Greybird color style, Breeze icons, Breeze window style
 
 ## WM/DE ##
 
