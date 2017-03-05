@@ -25,6 +25,10 @@ In `about:config` set:
 
     layout.css.devPixelsPerPx=1.5
 
+## Qt4 ##
+
+    apt install qt4-qtconfig
+
 # Apt repositories #
 
 In `/etc/apt/sources.list`:
@@ -40,7 +44,7 @@ In `/etc/apt/sources.list`:
 
 # Mouse speed #
 
-    apt-get install xinput
+    apt install xinput
 
 In `~/.xsessionrc`:
 
