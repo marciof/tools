@@ -1,17 +1,7 @@
-# 0.11.0 - UNRELEASED #
+# 0.11.0 - 2017-05-03 #
 
-- Change plugin option separator for easier/faster typing.
 - Improve error reporting.
-
-- Fix broken pipe error when viewing very long output from programs and exiting early.
-- Deactivate plugins automatically when unsupported.
-- Plugin "color": use `source-highlight` to colorize files.
-- Plugin "diff": highlight changed words in unified diff input.
-- Implicit option for plugins.
-- Plugin "url": local file URLs.
-- Fix plugin "file" to leverage `cat`.
-- Fix plugin "pager" to allow `less` launching an editor when there's only one named input.
-- Fix plugin "pager" to respect the `PAGER` environment variable.
+- Change plugin option separator for easier/faster typing.
 
 # 0.10.0 - 2016-07-20 #
 
