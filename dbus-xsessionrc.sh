@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-app="$(basename "$0" .sh)"
+app=$(basename "$0" .sh)
 path=/org/freedesktop/login1
 interface=org.freedesktop.login1.Manager
 
