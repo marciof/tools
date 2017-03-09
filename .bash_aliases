@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ ! "$-" =~ 'i' ]]; then
+if [ -z "$(echo "$-" | tr -c -d i)" ]; then
     return 0
 fi
 
