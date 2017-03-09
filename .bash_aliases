@@ -6,10 +6,7 @@ fi
 
 _have() {
     for NAME; do
-        LOCATION=$(which $NAME 2> /dev/null)
-
-        if [ -n "$LOCATION" ]; then
-            eval "HAVE_$(echo $NAME | tr '[:lower:]-' '[:upper:]_')='$LOCATION'"
+        if command -v "$NAME" > /dev/null; then
             return 0
         fi
     done
