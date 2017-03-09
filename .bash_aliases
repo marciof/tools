@@ -18,7 +18,7 @@ _have() {
 child_dir="$(readlink -e "$(dirname "$BASH_SOURCE")")"
 
 for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-    source "$child_dir/$(basename "$child")"
+    . "$child_dir/$(basename "$child")"
     echo "* Loaded: $child" >&2
 done
 
