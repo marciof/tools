@@ -25,6 +25,10 @@ In `about:config` set:
 
     layout.css.devPixelsPerPx=1.5
 
+Fix diagonal scrolling screen tearing, in `about:config` set:
+
+    layers.acceleration.force-enabled=true
+
 ## Qt4 ##
 
 Change font size in:
