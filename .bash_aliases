@@ -84,7 +84,7 @@ fi
 
 if _have git; then
     _load_git_completions() {
-        if type -t _completion_loader > /dev/null; then
+        if command -v _completion_loader > /dev/null; then
             _completion_loader git
         fi
 
@@ -98,6 +98,8 @@ if _have git; then
         __git_complete sr _git_checkout
         __git_complete ss _git_pull
         __git_complete st _git_status
+
+        unset -f _load_git_completions
     }
 
     sc() {
@@ -131,12 +133,11 @@ if _have git; then
         eval "complete -F _${ALIAS} ${ALIAS}"
     done
 
-    if ! type -t __git_ps1 > /dev/null; then
+    if ! command -v __git_ps1 > /dev/null; then
         echo "* Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh" >&2
-        alias __git_ps1=:
+    else
+        _git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$_color_off\]"
     fi
-
-    _git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$_color_off\]"
 fi
 
 _jobs_nr_ps1() {
@@ -147,3 +148,5 @@ _jobs_nr_ps1() {
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
     export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
 fi
+
+unset -f _have
