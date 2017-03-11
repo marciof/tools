@@ -124,7 +124,7 @@ static void parse_plugin_option(
     Plugin* plugin = plugins[plugin_pos];
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
-    if (ARRAY_IS_NULL(&plugin->options)) {
+    if (ARRAY_IS_NULL_INITIALIZED(&plugin->options)) {
         Array_init(&plugin->options, error, value, NULL);
     }
     else {
@@ -153,7 +153,7 @@ bool parse_options(
                 Error_add(error, ERROR_INVALID_OPTIONS);
                 return false;
             }
-            if (!ARRAY_IS_NULL(&plugins[pos]->options)) {
+            if (!ARRAY_IS_NULL_INITIALIZED(&plugins[pos]->options)) {
                 Array_deinit(&plugins[pos]->options);
             }
             plugins[pos] = NULL;

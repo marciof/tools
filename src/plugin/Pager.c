@@ -38,14 +38,14 @@ static void get_terminal_size(int signal_nr) {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }
 
-static void init_argv(Array *argv, Array *options, Error *error) {
+static void init_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
     if (ERROR_HAS(error)) {
         return;
     }
 
-    if (options != NULL) {
+    if (!ARRAY_IS_NULL_INITIALIZED(options)) {
         Array_extend(argv, options, error);
 
         if (ERROR_HAS(error)) {

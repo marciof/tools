@@ -12,7 +12,7 @@ static void init_argv(Array* argv, Array* options, Error* error) {
         return;
     }
 
-    if (options != NULL) {
+    if (!ARRAY_IS_NULL_INITIALIZED(options)) {
         Array_extend(argv, options, error);
 
         if (ERROR_HAS(error)) {
@@ -79,7 +79,7 @@ static void Plugin_run(
             continue;
         }
 
-        if (ARRAY_IS_NULL(&argv)) {
+        if (ARRAY_IS_NULL_INITIALIZED(&argv)) {
             init_argv(&argv, &plugin->options, error);
 
             if (ERROR_HAS(error)) {

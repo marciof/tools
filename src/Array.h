@@ -9,7 +9,7 @@
 #define ARRAY_INITIAL_CAPACITY ((size_t) 8)
 #define ARRAY_NULL_INITIALIZER {NULL}
 
-#define /* bool */ ARRAY_IS_NULL(/* Array* */ array) \
+#define /* bool */ ARRAY_IS_NULL_INITIALIZED(/* Array* */ array) \
     ((array)->data == NULL)
 
 typedef struct {

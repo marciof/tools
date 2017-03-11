@@ -27,7 +27,7 @@ typedef struct Output {
 } Output;
 
 typedef struct Plugin {
-    // If no plugin options are defined, `options` is set to `NULL`.
+    // If no plugin options, `options` satisfies `ARRAY_IS_NULL_INITIALIZED`.
     Array options;
     const char* (*get_description)();
     const char* (*get_name)();
