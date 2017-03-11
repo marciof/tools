@@ -38,7 +38,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
-            Error output_error = ERROR_INITIAL_VALUE;
+            Error output_error = ERROR_INITIALIZER;
 
             output->close(output, &output_error);
 
@@ -135,7 +135,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
 
         if (input->fd == IO_INVALID_FD) {
             did_succeed = false;
-            fprintf(stderr, "%s: Unsupported input\n", input->name);
+            fprintf(stderr, "Unsupported input: %s\n", input->name);
             continue;
         }
 
@@ -165,7 +165,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
 }
 
 int main(int argc, char* argv[]) {
-    Error error = ERROR_INITIAL_VALUE;
+    Error error = ERROR_INITIALIZER;
     Array inputs, outputs;
 
     Array_init(&inputs, &error, NULL);

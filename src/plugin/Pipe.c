@@ -117,7 +117,7 @@ static void Plugin_run(
 }
 
 Plugin Pipe_Plugin = {
-    {NULL},
+    ARRAY_NULL_INITIALIZER,
     Plugin_get_description,
     Plugin_get_name,
     Plugin_run,

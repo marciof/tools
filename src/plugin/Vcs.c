@@ -60,7 +60,7 @@ static const char* Plugin_get_name() {
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
-    Array argv = {NULL};
+    Array argv = ARRAY_NULL_INITIALIZER;
 
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
@@ -79,7 +79,7 @@ static void Plugin_run(
             continue;
         }
 
-        if (argv.data == NULL) {
+        if (ARRAY_IS_NULL(&argv)) {
             init_argv(&argv, &plugin->options, error);
 
             if (ERROR_HAS(error)) {
@@ -115,7 +115,7 @@ static void Plugin_run(
 }
 
 Plugin Vcs_Plugin = {
-    {NULL},
+    ARRAY_NULL_INITIALIZER,
     Plugin_get_description,
     Plugin_get_name,
     Plugin_run,

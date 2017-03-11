@@ -124,7 +124,7 @@ static void parse_plugin_option(
     Plugin* plugin = plugins[plugin_pos];
     char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPTION_SEP) - 1;
 
-    if (plugin->options.data == NULL) {
+    if (ARRAY_IS_NULL(&plugin->options)) {
         Array_init(&plugin->options, error, value, NULL);
 
         if (ERROR_HAS(error)) {
@@ -152,11 +152,13 @@ bool parse_options(
     int option;
 
     while ((option = getopt(argc, argv, ALL_OPTIONS)) != -1) {
-        if (option == *DISABLE_PLUGIN_OPTION) {
+        if (option == DISABLE_PLUGIN_OPTION[0]) {
             ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
 
             if (pos >= 0) {
-                Array_deinit(&plugins[pos]->options);
+                if (!ARRAY_IS_NULL(&plugins[pos]->options)) {
+                    Array_deinit(&plugins[pos]->options);
+                }
                 plugins[pos] = NULL;
             }
             else {
@@ -165,11 +167,11 @@ bool parse_options(
                 return false;
             }
         }
-        else if (option == *HELP_OPTION) {
+        else if (option == HELP_OPTION[0]) {
             display_help(plugins, nr_plugins);
             return true;
         }
-        else if (option == *PLUGIN_OPTION_OPTION) {
+        else if (option == PLUGIN_OPTION_OPTION[0]) {
             parse_plugin_option(optarg, plugins, nr_plugins, error);
 
             if (ERROR_HAS(error)) {
