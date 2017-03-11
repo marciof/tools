@@ -113,11 +113,11 @@ if _have git; then
     alias sa='git add "$@"'
     alias sb='git branch -vv "$@"'
     alias sd='git diff "$@"'
-    alias sg='git pull "$@"'
     alias sl='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
     alias sp='git push "$@"'
     alias sr='git checkout "$@"'
     alias st='git status "$@"'
+    alias sv='git pull "$@"'
     alias sw='git blame --date=short "$@"'
 
     git config --global push.default simple
