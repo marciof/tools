@@ -22,6 +22,8 @@
 #define ERROR_INVALID_OPTIONS "Invalid options"
 #define ERROR_UNKNOWN_PLUGIN "No such plugin or disabled"
 
+#define FIND_PLUGIN_FULL_NAME_COMPARE 0
+
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
         "Usage: show [OPTION]... [INPUT]...\n"
@@ -66,24 +68,22 @@ static ssize_t find_plugin(
 
     for (size_t i = 0; i < nr_plugins; ++i) {
         if (plugins[i] != NULL) {
-            const char* other = plugins[i]->get_name();
+            const char* other_name = plugins[i]->get_name();
 
-            if (name_length == 0) {
-                if (strcmp(other, name) == 0) {
-                    return i;
-                }
-            }
-            else {
+            if (name_length != FIND_PLUGIN_FULL_NAME_COMPARE) {
                 size_t j = 0;
 
-                for (j = 0; (j < name_length) && (other[j] != '\0'); ++j) {
-                    if (other[j] != name[j]) {
+                for (j = 0; (j < name_length) && (other_name[j] != '\0'); ++j) {
+                    if (other_name[j] != name[j]) {
                         break;
                     }
                 }
-                if (other[j] == '\0') {
+                if (other_name[j] == '\0') {
                     return i;
                 }
+            }
+            else if (strcmp(other_name, name) == 0) {
+                return i;
             }
         }
     }
@@ -126,18 +126,10 @@ static void parse_plugin_option(
 
     if (ARRAY_IS_NULL(&plugin->options)) {
         Array_init(&plugin->options, error, value, NULL);
-
-        if (ERROR_HAS(error)) {
-            return;
-        }
     }
     else {
         Array_add(
             &plugin->options, plugin->options.length, (intptr_t) value, error);
-
-        if (ERROR_HAS(error)) {
-            return;
-        }
     }
 }
 
@@ -153,19 +145,18 @@ bool parse_options(
 
     while ((option = getopt(argc, argv, ALL_OPTIONS)) != -1) {
         if (option == DISABLE_PLUGIN_OPTION[0]) {
-            ssize_t pos = find_plugin(optarg, 0, plugins, nr_plugins);
+            ssize_t pos = find_plugin(
+                optarg, FIND_PLUGIN_FULL_NAME_COMPARE, plugins, nr_plugins);
 
-            if (pos >= 0) {
-                if (!ARRAY_IS_NULL(&plugins[pos]->options)) {
-                    Array_deinit(&plugins[pos]->options);
-                }
-                plugins[pos] = NULL;
-            }
-            else {
+            if (pos < 0) {
                 Error_add(error, ERROR_UNKNOWN_PLUGIN);
                 Error_add(error, ERROR_INVALID_OPTIONS);
                 return false;
             }
+            if (!ARRAY_IS_NULL(&plugins[pos]->options)) {
+                Array_deinit(&plugins[pos]->options);
+            }
+            plugins[pos] = NULL;
         }
         else if (option == HELP_OPTION[0]) {
             display_help(plugins, nr_plugins);
