@@ -76,9 +76,9 @@ fi
 
 if _have ag; then
     if [ -n "$PAGER" ]; then
-        alias f="$NAME --follow --pager \"$PAGER\""
+        alias f="$NAME --follow --hidden --pager \"$PAGER\""
     else
-        alias f="$NAME --follow"
+        alias f="$NAME --follow --hidden"
     fi
 fi
 
