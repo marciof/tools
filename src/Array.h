@@ -7,7 +7,7 @@
     (sizeof(array) / sizeof((array)[0]))
 
 #define ARRAY_INITIAL_CAPACITY ((size_t) 8)
-#define ARRAY_NULL_INITIALIZER {NULL}
+#define ARRAY_NULL_INITIALIZER {NULL, {0}, 0, 0}
 
 #define /* bool */ ARRAY_IS_NULL_INITIALIZED(/* Array* */ array) \
     ((array)->data == NULL)
