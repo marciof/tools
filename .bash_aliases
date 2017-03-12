@@ -1,8 +1,9 @@
 #!/bin/bash
 
-if [ -z "$(echo "$-" | tr -c -d i)" ]; then
-    return 0
-fi
+case "$-" in
+    *i*) ;;
+    *) return 0;;
+esac
 
 _have() {
     for NAME; do
