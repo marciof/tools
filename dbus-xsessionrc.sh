@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e -u
 
 app="$(basename "$0" .sh)"
 path=/org/freedesktop/login1
