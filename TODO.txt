@@ -1,4 +1,7 @@
-- Fix broken pipe error when viewing long output and exiting early.
+- Fix broken pipe error when viewing long output and exiting early
+  - IntelliJ only?
+  - `sort /usr/share/dict/words | head`
+  - `cat /usr/share/dict/words | pv -L 100 | head`
 - Deactivate plugins automatically when unsupported.
 - Implicit option for plugins.
 - Fix plugin "file" to leverage `cat`.
