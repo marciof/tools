@@ -1,10 +1,9 @@
 #!/bin/bash
 set -e -u
 
-case "$-" in
-    *i*) ;;
-    *) return 0;;
-esac
+if ! echo "$-" | grep -q i; then
+    return 0
+fi
 
 _have() {
     for NAME; do
