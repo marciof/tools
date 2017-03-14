@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e -u
 
 case "$-" in
     *i*) ;;
@@ -60,10 +61,12 @@ bind '"\e[3;5~": kill-word' # ctrl-delete
 _color_off='\e[0m'
 _yellow='\e[0;33m'
 
-if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
+if [ -n "${BASHRC_CUSTOM_LOCATION:-}" ]; then
     _host_prompt=" \[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\]"
-elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+elif [ -n "${SSH_CLIENT:-}" -o -n "${SSH_TTY:-}" ]; then
     _host_prompt=" \[$_yellow\]\\u@\\h\[$_color_off\]"
+else
+    _host_prompt=
 fi
 
 if _have micro nano; then
@@ -146,8 +149,9 @@ _jobs_nr_ps1() {
     [ $jobs -gt 0 ] && echo " $jobs"
 }
 
-if [ -z "$BASHRC_KEEP_PROMPT" ]; then
+if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
     export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
 fi
 
 unset -f _have
+set +e +u
