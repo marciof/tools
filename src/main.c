@@ -25,13 +25,29 @@ static Plugin* plugins[] = {
 
 static void cleanup(Array* inputs, Array* outputs, Error* error) {
     Error_print(error, stderr);
+    ERROR_CLEAR(error);
 
     if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
-            if (inputs->data[i] != (intptr_t) NULL) {
-                Input_delete((Input*) inputs->data[i]);
+            Input* input = (Input*) inputs->data[i];
+
+            if (input == NULL) {
+                continue;
             }
+
+            if (input->fd != IO_INVALID_FD) {
+                Error input_error = ERROR_INITIALIZER;
+                Input_close(input, &input_error);
+
+                if (ERROR_HAS(&input_error)) {
+                    Error_add(&input_error, input->plugin->get_name());
+                    Error_print(&input_error, stderr);
+                }
+            }
+
+            Input_delete(input);
         }
+
         Array_deinit(inputs);
     }
 
@@ -49,6 +65,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 
             Output_delete(output);
         }
+
         Array_deinit(outputs);
     }
 
@@ -124,8 +141,6 @@ static void flush_input(int fd, Array* outputs, Error* error) {
 }
 
 static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
-    bool did_succeed = true;
-
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
@@ -134,9 +149,9 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         }
 
         if (input->fd == IO_INVALID_FD) {
-            did_succeed = false;
-            fprintf(stderr, "Unsupported input: %s\n", input->name);
-            continue;
+            Error_add(error, input->name);
+            Error_add(error, "Unsupported input");
+            return false;
         }
 
         flush_input(input->fd, outputs, error);
@@ -146,22 +161,15 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             return false;
         }
 
-        if (input->close != NULL) {
-            input->close(input, error);
+        Input_close(input, error);
 
-            if (ERROR_HAS(error)) {
-                Error_add(error, input->plugin->get_name());
-                return false;
-            }
-        }
-        else if (close(input->fd) == -1) {
-            Error_add(error, strerror(errno));
+        if (ERROR_HAS(error)) {
             Error_add(error, input->plugin->get_name());
             return false;
         }
     }
 
-    return did_succeed;
+    return true;
 }
 
 int main(int argc, char* argv[]) {

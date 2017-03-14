@@ -10,10 +10,10 @@ typedef struct Input {
     struct Plugin* plugin;
     // If unnamed, `name` is set to `NULL`.
     char* name;
-    // If unsupported, `fd` is set to `IO_INVALID_FD`.
+    // If unsupported or when closed, `fd` is set to `IO_INVALID_FD`.
     int fd;
     intptr_t arg;
-    // If `NULL`, uses `close` by default.
+    // Calls `close` by default.
     void (*close)(struct Input*, Error* error);
 } Input;
 
@@ -35,6 +35,7 @@ typedef struct Plugin {
     void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
 } Plugin;
 
+void Input_close(Input* input, Error* error);
 void Input_close_subprocess(Input* input, Error* error);
 void Input_delete(Input* input);
 Input* Input_new(char* name, int fd, Error* error);

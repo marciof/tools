@@ -5,6 +5,17 @@
 #include "fork_exec.h"
 #include "Plugin.h"
 
+void Input_close(Input* input, Error* error) {
+    if (input->close != NULL) {
+        input->close(input, error);
+    }
+    else if (close(input->fd) == -1) {
+        Error_add(error, strerror(errno));
+    }
+
+    input->fd = IO_INVALID_FD;
+}
+
 void Input_close_subprocess(Input* input, Error* error) {
     if (close(input->fd) == -1) {
         Error_add(error, strerror(errno));
