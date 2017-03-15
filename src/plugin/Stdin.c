@@ -8,7 +8,7 @@
 #include "../Array.h"
 #include "../Error.h"
 #include "../io.h"
-#include "Pipe.h"
+#include "Stdin.h"
 
 static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
@@ -57,11 +57,11 @@ static char* get_fd_dir_path(int fd, Error* error) {
 }
 
 static const char* Plugin_get_description() {
-    return "pipe input";
+    return "read standard input";
 }
 
 static const char* Plugin_get_name() {
-    return "pipe";
+    return "stdin";
 }
 
 static void Plugin_run(
@@ -116,7 +116,7 @@ static void Plugin_run(
     }
 }
 
-Plugin Pipe_Plugin = {
+Plugin Stdin_Plugin = {
     ARRAY_NULL_INITIALIZER,
     Plugin_get_description,
     Plugin_get_name,

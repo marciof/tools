@@ -4,11 +4,11 @@ Setup:
 
 Pass plugin option:
 
-  $ show -p pipe=abc < /dev/null
+  $ show -p stdin=abc < /dev/null
 
 Pass option to a disabled plugin:
 
-  $ show -d pipe -p pipe=abc < /dev/null
+  $ show -d stdin -p stdin=abc < /dev/null
   Invalid options: No such plugin or disabled
   [1]
 

@@ -9,8 +9,8 @@ endif()
 add_executable(${PROJECT_NAME}
     src/Array.c
     src/Array.h
-    src/plugin/Pipe.c
-    src/plugin/Pipe.h
+    src/plugin/Stdin.c
+    src/plugin/Stdin.h
     src/plugin/Dir.c
     src/plugin/Dir.h
     src/plugin/Vcs.c

@@ -1,4 +1,4 @@
 #pragma once
 #include "../Plugin.h"
 
-extern Plugin Pipe_Plugin;
+extern Plugin Stdin_Plugin;

@@ -9,14 +9,14 @@
 #include "Array.h"
 #include "io.h"
 #include "options.h"
+#include "plugin/Dir.h"
 #include "plugin/File.h"
 #include "plugin/Pager.h"
-#include "plugin/Dir.h"
-#include "plugin/Pipe.h"
+#include "plugin/Stdin.h"
 #include "plugin/Vcs.h"
 
 static Plugin* plugins[] = {
-    &Pipe_Plugin,
+    &Stdin_Plugin,
     &File_Plugin,
     &Dir_Plugin,
     &Vcs_Plugin,
