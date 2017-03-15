@@ -25,7 +25,6 @@ static Plugin* plugins[] = {
 
 static void cleanup(Array* inputs, Array* outputs, Error* error) {
     Error_print(error, stderr);
-    ERROR_CLEAR(error);
 
     if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
@@ -44,10 +43,8 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
                     Error_print(&input_error, stderr);
                 }
             }
-
             Input_delete(input);
         }
-
         Array_deinit(inputs);
     }
 
@@ -62,10 +59,8 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
                 Error_add(&output_error, output->plugin->get_name());
                 Error_print(&output_error, stderr);
             }
-
             Output_delete(output);
         }
-
         Array_deinit(outputs);
     }
 
@@ -77,13 +72,20 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
     }
 }
 
-static void flush_input(int fd, Array* outputs, Error* error) {
+// Receives an optional previous `buffer` returning it or a new one when `NULL`,
+// so as to be able to reuse it across calls and minimize memory allocations.
+static Buffer* flush_input(
+        int fd, Buffer* buffer, Array* outputs, Error* error) {
+
     const size_t MAX_LENGTH = 4 * 1024;
-    Buffer* buffer = Buffer_new(MAX_LENGTH, error);
     ssize_t bytes_read;
 
-    if (ERROR_HAS(error)) {
-        return;
+    if (buffer == NULL) {
+        buffer = Buffer_new(MAX_LENGTH, error);
+
+        if (ERROR_HAS(error)) {
+            return NULL;
+        }
     }
 
     while ((bytes_read = read(
@@ -98,8 +100,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
 
             if (ERROR_HAS(error)) {
                 Error_add(error, output->plugin->get_name());
-                Buffer_delete(buffer);
-                return;
+                return buffer;
             }
 
             if (buffer == NULL) {
@@ -107,7 +108,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
 
                 if (ERROR_HAS(error)) {
                     Error_add(error, output->plugin->get_name());
-                    return;
+                    return buffer;
                 }
                 has_flushed = true;
                 break;
@@ -127,8 +128,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
                 error);
 
             if (ERROR_HAS(error)) {
-                Buffer_delete(buffer);
-                return;
+                return buffer;
             }
         }
     }
@@ -137,10 +137,13 @@ static void flush_input(int fd, Array* outputs, Error* error) {
         Error_add(error, strerror(errno));
     }
 
-    Buffer_delete(buffer);
+    return buffer;
 }
 
 static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
+    Buffer* buffer = NULL;
+    bool did_succeed = true;
+
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
@@ -151,25 +154,32 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         if (input->fd == IO_INVALID_FD) {
             Error_add(error, input->name);
             Error_add(error, "Unsupported input");
-            return false;
+            did_succeed = false;
+            break;
         }
 
-        flush_input(input->fd, outputs, error);
+        buffer = flush_input(input->fd, buffer, outputs, error);
 
         if (ERROR_HAS(error)) {
             Error_add(error, input->plugin->get_name());
-            return false;
+            did_succeed = false;
+            break;
         }
 
         Input_close(input, error);
 
         if (ERROR_HAS(error)) {
             Error_add(error, input->plugin->get_name());
-            return false;
+            did_succeed = false;
+            break;
         }
     }
 
-    return true;
+    if (buffer != NULL) {
+        Buffer_delete(buffer);
+    }
+
+    return did_succeed;
 }
 
 int main(int argc, char* argv[]) {
