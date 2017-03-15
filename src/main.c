@@ -78,8 +78,8 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 }
 
 static void flush_input(int fd, Array* outputs, Error* error) {
-    const int MAX_LEN = 4 * 1024;
-    Buffer* buffer = Buffer_new(MAX_LEN, error);
+    const size_t MAX_LENGTH = 4 * 1024;
+    Buffer* buffer = Buffer_new(MAX_LENGTH, error);
     ssize_t bytes_read;
 
     if (ERROR_HAS(error)) {
@@ -87,7 +87,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
     }
 
     while ((bytes_read = read(
-            fd, buffer->data, MAX_LEN * sizeof(buffer->data[0]))) > 0) {
+            fd, buffer->data, MAX_LENGTH * sizeof(buffer->data[0]))) > 0) {
 
         buffer->length = (size_t) (bytes_read / sizeof(buffer->data[0]));
         bool has_flushed = false;
@@ -103,7 +103,7 @@ static void flush_input(int fd, Array* outputs, Error* error) {
             }
 
             if (buffer == NULL) {
-                buffer = Buffer_new(MAX_LEN, error);
+                buffer = Buffer_new(MAX_LENGTH, error);
 
                 if (ERROR_HAS(error)) {
                     Error_add(error, output->plugin->get_name());

@@ -33,6 +33,7 @@ typedef struct {
 
 static struct winsize terminal;
 
+// FIXME: check `errno`
 static void get_terminal_size(int signal_nr) {
     signal(SIGWINCH, get_terminal_size);
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);

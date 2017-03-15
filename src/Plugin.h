@@ -22,7 +22,7 @@ typedef struct Output {
     intptr_t arg;
     void (*close)(struct Output*, Error* error);
     // If all data is flushed, `buffer->length` is set to `0`.
-    // If `buffer` is kept, it is set to `NULL`.
+    // If `buffer` ownership is transferred to a plugin, it is set to `NULL`.
     void (*write)(struct Output*, Buffer** buffer, Error* error);
 } Output;
 
