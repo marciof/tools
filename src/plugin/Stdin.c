@@ -68,7 +68,7 @@ static const char* Plugin_get_name() {
     return "stdin";
 }
 
-// Non-reentrant, may use static storage.
+// Non-reentrant, may (re-)use static storage.
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 

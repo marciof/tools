@@ -50,8 +50,9 @@ static void Plugin_run(
                 Error_add(error, input->name);
                 return;
             }
-
-            input->plugin = plugin;
+            else if (input->fd != IO_INVALID_FD) {
+                input->plugin = plugin;
+            }
         }
     }
 }
