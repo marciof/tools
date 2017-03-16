@@ -22,5 +22,7 @@ typedef struct {
 void Array_add(Array* array, size_t pos, intptr_t element, Error* error);
 void Array_deinit(Array* array);
 void Array_extend(Array* array, Array* elements, Error* error);
-void Array_init(Array* array, Error* error, ...);
 intptr_t Array_remove(Array* array, size_t pos, Error* error);
+
+// Argument list must end with a `NULL`.
+void Array_init(Array* array, Error* error, ...);
