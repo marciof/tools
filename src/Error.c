@@ -4,7 +4,7 @@
 
 void Error_add(Error* error, const char* message) {
     for (ssize_t i = ERROR_MESSAGE_STACK_SIZE - 1 - 1; i >= 0; --i) {
-        (*error)[i+1] = (*error)[i];
+        (*error)[i + 1] = (*error)[i];
     }
 
     (*error)[0] = message;
