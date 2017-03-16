@@ -1,3 +1,9 @@
+# 0.12.0 - UNRELEASED #
+
+- Rename plugin "pipe" to "stdin" since it only deals with handling standard input.
+- Fix handling of many plugin options.
+- Reuse input buffer for performance (near-equal to plain `ls` now).
+
 # 0.11.0 - 2017-05-03 #
 
 - Improve error reporting.

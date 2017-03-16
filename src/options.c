@@ -27,7 +27,7 @@
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
         "Usage: show [OPTION]... [INPUT]...\n"
-        "Version: 0.11.0\n"
+        "Version: 0.12.0\n"
         "\n"
         "Options:\n"
         "  -%c            display this help and exit\n"
