@@ -6,7 +6,7 @@
 
 #define IO_INVALID_FD ((int) -1)
 
-// Use always as a pointer, never by value.
+// Use always as a pointer only, never by value.
 typedef struct {
     size_t length;
     char data[];

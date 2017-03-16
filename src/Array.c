@@ -4,7 +4,7 @@
 #include <string.h>
 #include "Array.h"
 
-#define DEFAULT_CAPACITY_INCREASE_FACTOR (1.5)
+#define DEFAULT_CAPACITY_INCREASE (1.5)
 
 static void change_capacity(Array* array, size_t size, Error* error) {
     if (size < array->length) {
@@ -50,10 +50,14 @@ void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
     }
 
     if (array->length >= array->capacity) {
-        change_capacity(
-            array,
-            (size_t) (array->capacity * DEFAULT_CAPACITY_INCREASE_FACTOR + 1),
-            error);
+        size_t capacity = (size_t)
+            (array->capacity * DEFAULT_CAPACITY_INCREASE + 1);
+
+        if (capacity < (array->length + 1)) {
+            capacity = SIZE_MAX; // cap overflow
+        }
+
+        change_capacity(array, capacity, error);
 
         if (ERROR_HAS(error)) {
             return;
@@ -76,11 +80,33 @@ void Array_deinit(Array* array) {
     }
 }
 
-void Array_extend(Array* list, Array* elements, Error* error) {
-    if (elements->length > 0) {
-        for (size_t i = 0; i < elements->length; ++i, ++list->length) {
-            list->data[list->length] = elements->data[i];
+void Array_extend(Array* array, Array* elements, Error* error) {
+    if (elements->length == 0) {
+        return;
+    }
+
+    if (array->length > (SIZE_MAX - elements->length)) {
+        Error_add(error, strerror(ENOMEM));
+        return;
+    }
+
+    if ((array->length + elements->length) >= array->capacity) {
+        size_t capacity = (size_t)
+            (array->capacity * DEFAULT_CAPACITY_INCREASE + elements->length);
+
+        if (capacity < (array->length + elements->length)) {
+            capacity = SIZE_MAX; // cap overflow
         }
+
+        change_capacity(array, capacity, error);
+
+        if (ERROR_HAS(error)) {
+            return;
+        }
+    }
+
+    for (size_t i = 0; i < elements->length; ++i, ++array->length) {
+        array->data[array->length] = elements->data[i];
     }
 }
 
