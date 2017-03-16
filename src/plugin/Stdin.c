@@ -10,7 +10,7 @@
 #include "../io.h"
 #include "Stdin.h"
 
-static char fd_dir_name[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
+static char fd_dir_path[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
 // Non-reentrant, returns pointer to static storage.
 static char* get_fd_dir_path(int fd, Error* error) {
@@ -35,7 +35,7 @@ static char* get_fd_dir_path(int fd, Error* error) {
         return NULL;
     }
 
-    if (getcwd(fd_dir_name, STATIC_ARRAY_LENGTH(fd_dir_name)) == NULL) {
+    if (getcwd(fd_dir_path, STATIC_ARRAY_LENGTH(fd_dir_path)) == NULL) {
         Error_add(error, strerror(errno));
 
         if (fchdir(cwd_fd) == -1) {
@@ -52,8 +52,12 @@ static char* get_fd_dir_path(int fd, Error* error) {
         return NULL;
     }
 
-    closedir(cwd);
-    return fd_dir_name;
+    if (closedir(cwd) == -1) {
+        Error_add(error, strerror(errno));
+        return NULL;
+    }
+
+    return fd_dir_path;
 }
 
 static const char* Plugin_get_description() {
@@ -64,6 +68,7 @@ static const char* Plugin_get_name() {
     return "stdin";
 }
 
+// Non-reentrant, may use static storage.
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
