@@ -151,8 +151,10 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         }
 
         if (input->fd == IO_INVALID_FD) {
-            Error_add(error, input->name);
             Error_add(error, "Unsupported input");
+            if (input->name != NULL) {
+                Error_add(error, input->name);
+            }
             did_succeed = false;
             break;
         }
@@ -160,6 +162,9 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         buffer = flush_input(input->fd, buffer, outputs, error);
 
         if (ERROR_HAS(error)) {
+            if (input->name != NULL) {
+                Error_add(error, input->name);
+            }
             Error_add(error, input->plugin->get_name());
             did_succeed = false;
             break;
@@ -168,6 +173,9 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         Input_close(input, error);
 
         if (ERROR_HAS(error)) {
+            if (input->name != NULL) {
+                Error_add(error, input->name);
+            }
             Error_add(error, input->plugin->get_name());
             did_succeed = false;
             break;

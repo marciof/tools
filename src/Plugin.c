@@ -27,18 +27,11 @@ void Input_close_subprocess(Input* input, Error* error) {
     input->fd = IO_INVALID_FD;
 
     if (ERROR_HAS(error)) {
-        if (input->name != NULL) {
-            Error_add(error, input->name);
-        }
         return;
     }
 
     if (status != 0) {
         Error_add(error, "Subprocess exited with an error code");
-
-        if (input->name != NULL) {
-            Error_add(error, input->name);
-        }
     }
 }
 
