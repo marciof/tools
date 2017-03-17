@@ -78,7 +78,6 @@ static void Plugin_run(
         if (!is_valid) {
             continue;
         }
-
         if (ARRAY_IS_NULL_INITIALIZED(&argv)) {
             init_argv(&argv, &plugin->options, error);
 
@@ -109,7 +108,7 @@ static void Plugin_run(
         input->close = Input_close_subprocess;
     }
 
-    if (argv.data != NULL) {
+    if (!ARRAY_IS_NULL_INITIALIZED(&argv)) {
         Array_deinit(&argv);
     }
 }
