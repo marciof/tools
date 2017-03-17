@@ -242,7 +242,7 @@ static void Pager_delete(Pager* pager, Error* error) {
         int status = wait_subprocess(pager->child_pid, error);
 
         if (ERROR_HAS(error) || (status != 0)) {
-            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            Error_add(error, "`" EXTERNAL_BINARY "`");
             return;
         }
     }
@@ -308,7 +308,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 
         if (ERROR_HAS(error)) {
             Error_add(error, strerror(errno));
-            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            Error_add(error, "`" EXTERNAL_BINARY "`");
             Array_deinit(&argv);
             return;
         }

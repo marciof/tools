@@ -72,7 +72,7 @@ static void Plugin_run(
         bool is_valid = is_input_valid(input->name, error);
 
         if (ERROR_HAS(error)) {
-            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            Error_add(error, "`" EXTERNAL_BINARY "`");
             return;
         }
         if (!is_valid) {
@@ -98,7 +98,7 @@ static void Plugin_run(
             error);
 
         if (ERROR_HAS(error)) {
-            Error_add(error, "`" EXTERNAL_BINARY "` error");
+            Error_add(error, "`" EXTERNAL_BINARY "`");
             return;
         }
 

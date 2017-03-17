@@ -66,12 +66,13 @@ static void open_inputs(
         error);
 
     if (ERROR_HAS(error)) {
-        Error_add(error, "`" EXTERNAL_BINARY "` error");
+        Error_add(error, "`" EXTERNAL_BINARY "`");
         Array_remove(inputs, pos, error);
         Input_delete(input);
     }
     else {
         input->plugin = plugin;
+        input->name = "`" EXTERNAL_BINARY "`";
         input->fd = fd;
         input->arg = (intptr_t) child_pid;
         input->close = Input_close_subprocess;
