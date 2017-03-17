@@ -1,12 +1,15 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pty.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "fork_exec.h"
 #include "io.h"
+
+#define EXECVP_FAILED_SIGNAL SIGUSR1
 
 static int fork_exec_fd_pty(
         char* file,
@@ -40,6 +43,7 @@ static int fork_exec_fd_pty(
         }
 
         execvp(file, argv);
+        raise(EXECVP_FAILED_SIGNAL);
         abort();
     }
 }
@@ -121,6 +125,7 @@ int fork_exec_fd_pipe(
         }
 
         execvp(file, argv);
+        raise(EXECVP_FAILED_SIGNAL);
         abort();
     }
 }
@@ -161,6 +166,15 @@ int wait_subprocess(pid_t child_pid, Error* error) {
     if ((waitpid(child_pid, &status, 0) == -1) && (errno != ECHILD)) {
         Error_add(error, strerror(errno));
         return -1;
+    }
+
+    if (WIFSIGNALED(status)) {
+        int child_signal = WTERMSIG(status);
+
+        if (child_signal == EXECVP_FAILED_SIGNAL) {
+            Error_add(error, strerror(ENOENT));
+            return -1;
+        }
     }
 
     if (!WIFEXITED(status)) {
