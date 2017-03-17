@@ -10,7 +10,7 @@ void Error_add(Error* error, const char* message) {
     (*error)[0] = message;
 }
 
-void Error_set(Error* error, Error* source) {
+void Error_copy(Error* error, Error* source) {
     for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
         (*error)[i] = (*source)[i];
     }

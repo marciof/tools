@@ -201,7 +201,7 @@ static void Pager_delete(Pager* pager, Error* error) {
     if (pager->has_timer) {
         if (ERROR_HAS(&pager->timer_error)) {
             // FIXME: don't discard errors
-            Error_set(error, &pager->timer_error);
+            Error_copy(error, &pager->timer_error);
             return;
         }
 

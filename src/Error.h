@@ -12,5 +12,5 @@ typedef const char* Error[ERROR_MESSAGE_STACK_SIZE];
 #define ERROR_HAS(error) ((*error)[0] != NULL)
 
 void Error_add(Error* error, const char* message);
-void Error_set(Error* error, Error* source);
+void Error_copy(Error* error, Error* source);
 void Error_print(Error* error, FILE* stream);
