@@ -24,39 +24,60 @@
 
 #define FIND_PLUGIN_FULL_NAME_COMPARE 0
 
-static void display_help(Plugin* plugins[], size_t nr_plugins) {
+static void display_help(Plugin* plugins[], size_t nr_plugins, Error* error) {
     fprintf(stderr,
         "Usage: show [OPTION]... [INPUT]...\n"
         "Version: 0.12.0\n"
         "\n"
         "Options:\n"
-        "  -%c            display this help and exit\n"
-        "  -%c NAME       disable a plugin\n"
-        "  -%c NAME%sOPT   pass an option to a plugin\n",
+        "  -%c           display this help and exit\n"
+        "  -%c NAME      disable a plugin\n"
+        "  -%c NAME%sOPT  pass an option to a plugin\n",
         *HELP_OPTION,
         *DISABLE_PLUGIN_OPTION,
         *PLUGIN_OPTION_OPTION,
         PLUGIN_OPTION_SEP);
 
-    if (nr_plugins > 0) {
-        bool needs_header = true;
+    if (nr_plugins == 0) {
+        return;
+    }
 
-        for (size_t i = 0; i < nr_plugins; ++i) {
-            if (plugins[i] != NULL) {
-                if (needs_header) {
-                    needs_header = false;
+    bool needs_header = true;
 
-                    fputs(
-                        "\n"
-                        "Plugins:\n",
-                        stderr);
-                }
+    for (size_t i = 0; i < nr_plugins; ++i) {
+        Plugin* plugin = plugins[i];
 
-                fprintf(stderr, "  %-14s%s\n",
-                    plugins[i]->get_name(),
-                    plugins[i]->get_description());
+        if (plugin == NULL) {
+            continue;
+        }
+
+        if (needs_header) {
+            needs_header = false;
+
+            fputs(
+                "\n"
+                "Plugins:\n",
+                stderr);
+        }
+
+        char* remark = "";
+
+        if (plugin->is_available != NULL) {
+            bool is_available = plugin->is_available(error);
+
+            if (ERROR_HAS(error)) {
+                ERROR_CLEAR(error);
+                remark = " (ERRORED)";
+            }
+            else if (!is_available) {
+                remark = " (UNAVAILABLE)";
             }
         }
+
+        fprintf(stderr, "  %-13s%s%s\n",
+            plugin->get_name(),
+            plugin->get_description(),
+            remark);
     }
 }
 
@@ -159,7 +180,7 @@ bool parse_options(
             plugins[pos] = NULL;
         }
         else if (option == HELP_OPTION[0]) {
-            display_help(plugins, nr_plugins);
+            display_help(plugins, nr_plugins, error);
             return true;
         }
         else if (option == PLUGIN_OPTION_OPTION[0]) {

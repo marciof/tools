@@ -87,6 +87,10 @@ static const char* Plugin_get_name() {
     return "dir";
 }
 
+static bool Plugin_is_available(Error* error) {
+    return fork_exec_can_run(EXTERNAL_BINARY, error);
+}
+
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
@@ -165,5 +169,6 @@ Plugin Dir_Plugin = {
     ARRAY_NULL_INITIALIZER,
     Plugin_get_description,
     Plugin_get_name,
+    Plugin_is_available,
     Plugin_run,
 };

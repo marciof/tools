@@ -12,7 +12,7 @@
 #include "../io.h"
 #include "Pager.h"
 
-// Don't use `pager` as it's not available in some systems.
+// Don't use `pager` as it's not available in all systems.
 #define EXTERNAL_BINARY "less"
 
 #define PAGING_THRESHOLD 0.6
@@ -338,6 +338,10 @@ static const char* Plugin_get_name() {
     return "pager";
 }
 
+static bool Plugin_is_available(Error* error) {
+    return fork_exec_can_run(EXTERNAL_BINARY, error);
+}
+
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
@@ -389,5 +393,6 @@ Plugin Pager_Plugin = {
     ARRAY_NULL_INITIALIZER,
     Plugin_get_description,
     Plugin_get_name,
+    Plugin_is_available,
     Plugin_run,
 };

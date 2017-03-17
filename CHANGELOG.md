@@ -1,5 +1,6 @@
 # 0.12.0 - UNRELEASED #
 
+- Deactivate plugins automatically when unavailable.
 - Rename plugin "pipe" to "stdin" since it only deals with handling standard input.
 - Fix handling of a large number of plugin options in a single command line call.
 - Reuse input buffer for performance.

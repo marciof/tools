@@ -20,5 +20,6 @@ int fork_exec_fd_pipe(
     pid_t* pid,
     Error* error);
 
+bool fork_exec_can_run(char* file, Error* error);
 int fork_exec_status(char* file, char* argv[], Error* error);
 int wait_subprocess(pid_t child_pid, Error* error);

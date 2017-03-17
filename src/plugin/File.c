@@ -61,5 +61,6 @@ Plugin File_Plugin = {
     ARRAY_NULL_INITIALIZER,
     Plugin_get_description,
     Plugin_get_name,
+    NULL,
     Plugin_run,
 };

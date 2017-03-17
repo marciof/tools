@@ -11,6 +11,20 @@
 
 #define EXECVP_FAILED_SIGNAL SIGUSR1
 
+bool fork_exec_can_run(char* file, Error* error) {
+    char* argv[] = {file, NULL};
+    fork_exec_status(file, argv, error);
+
+    if (ERROR_HAS(error)) {
+        if (strcmp(ERROR_GET_LAST(error), strerror(ENOENT)) == 0) {
+            ERROR_CLEAR(error);
+        }
+        return false;
+    }
+
+    return true;
+}
+
 static int fork_exec_fd_pty(
         char* file,
         char* argv[],
