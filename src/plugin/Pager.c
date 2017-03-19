@@ -8,8 +8,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include "../Array.h"
-#include "../fork_exec.h"
 #include "../io.h"
+#include "../popen2.h"
 #include "Pager.h"
 
 // Don't use `pager` as it's not available in all systems.
@@ -297,7 +297,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
             return;
         }
 
-        int fd = fork_exec_fd_pipe(
+        int fd = popen2_pipe(
             (char*) argv.data[0],
             (char**) argv.data,
             IO_INVALID_FD,
@@ -339,7 +339,7 @@ static const char* Plugin_get_name() {
 }
 
 static bool Plugin_is_available(Error* error) {
-    return fork_exec_can_run(EXTERNAL_BINARY, error);
+    return popen2_can_run(EXTERNAL_BINARY, error);
 }
 
 static void Plugin_run(

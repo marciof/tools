@@ -3,8 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "../Array.h"
-#include "../fork_exec.h"
 #include "../io.h"
+#include "../popen2.h"
 #include "Dir.h"
 
 #define EXTERNAL_BINARY "ls"
@@ -57,7 +57,7 @@ static void open_inputs(
 
     pid_t child_pid;
 
-    int fd = fork_exec_fd(
+    int fd = popen2(
         (char*) argv->data[0],
         (char**) argv->data,
         IO_INVALID_FD,
@@ -88,7 +88,7 @@ static const char* Plugin_get_name() {
 }
 
 static bool Plugin_is_available(Error* error) {
-    return fork_exec_can_run(EXTERNAL_BINARY, error);
+    return popen2_can_run(EXTERNAL_BINARY, error);
 }
 
 static void Plugin_run(

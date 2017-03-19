@@ -6,14 +6,14 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "fork_exec.h"
 #include "io.h"
+#include "popen2.h"
 
 #define EXECVP_FAILED_SIGNAL SIGUSR1
 
-bool fork_exec_can_run(char* file, Error* error) {
+bool popen2_can_run(char* file, Error* error) {
     char* argv[] = {file, NULL};
-    fork_exec_status(file, argv, error);
+    popen2_status(file, argv, error);
 
     if (ERROR_HAS(error)) {
         if (strcmp(ERROR_GET_LAST(error), strerror(ENOENT)) == 0) {
@@ -62,7 +62,7 @@ static int fork_exec_fd_pty(
     }
 }
 
-int fork_exec_fd(
+int popen2(
         char* file,
         char* argv[],
         int out_fd,
@@ -74,7 +74,7 @@ int fork_exec_fd(
         return fork_exec_fd_pty(file, argv, out_fd, err_fd, pid, error);
     }
     else if (errno != EBADF) {
-        return fork_exec_fd_pipe(file, argv, out_fd, err_fd, true, pid, error);
+        return popen2_pipe(file, argv, out_fd, err_fd, true, pid, error);
     }
     else {
         Error_add(error, strerror(errno));
@@ -82,7 +82,7 @@ int fork_exec_fd(
     }
 }
 
-int fork_exec_fd_pipe(
+int popen2_pipe(
         char* file,
         char* argv[],
         int out_fd,
@@ -144,7 +144,7 @@ int fork_exec_fd_pipe(
     }
 }
 
-int fork_exec_status(char* file, char* argv[], Error* error) {
+int popen2_status(char* file, char* argv[], Error* error) {
     int null_fd = open("/dev/null", O_RDWR);
 
     if (null_fd == -1) {
@@ -153,7 +153,7 @@ int fork_exec_status(char* file, char* argv[], Error* error) {
     }
 
     pid_t child_pid;
-    fork_exec_fd(file, argv, null_fd, null_fd, &child_pid, error);
+    popen2(file, argv, null_fd, null_fd, &child_pid, error);
 
     if (ERROR_HAS(error)) {
         return -1;

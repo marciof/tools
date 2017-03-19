@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include "../fork_exec.h"
+#include "../popen2.h"
 #include "Vcs.h"
 
 #define EXTERNAL_BINARY "git"
@@ -46,7 +46,7 @@ static bool is_input_valid(char* input, Error* error) {
         NULL,
     };
 
-    return fork_exec_status(args[0], args, error) == 0;
+    return popen2_status(args[0], args, error) == 0;
 }
 
 static const char* Plugin_get_description() {
@@ -58,7 +58,7 @@ static const char* Plugin_get_name() {
 }
 
 static bool Plugin_is_available(Error* error) {
-    return fork_exec_can_run(EXTERNAL_BINARY, error);
+    return popen2_can_run(EXTERNAL_BINARY, error);
 }
 
 static void Plugin_run(
@@ -93,7 +93,7 @@ static void Plugin_run(
         argv.data[argv.length - 1 - 1] = (intptr_t) input->name;
         pid_t child_pid;
 
-        int fd = fork_exec_fd(
+        int fd = popen2(
             (char*) argv.data[0],
             (char**) argv.data,
             IO_INVALID_FD,

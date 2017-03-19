@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "fork_exec.h"
 #include "Plugin.h"
+#include "popen2.h"
 
 void Input_close(Input* input, Error* error) {
     if (input->close != NULL) {

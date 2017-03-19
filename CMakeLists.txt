@@ -25,8 +25,8 @@ add_executable(${PROJECT_NAME}
     src/plugin/Pager.h
     src/Plugin.c
     src/Plugin.h
-    src/fork_exec.c
-    src/fork_exec.h
+    src/popen2.c
+    src/popen2.h
     src/io.c
     src/io.h
     src/main.c)
