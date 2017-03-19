@@ -1,6 +1,6 @@
 Setup:
 
-  $ . $TESTDIR/setup.sh
+  $ . "$TESTDIR/setup.sh"
 
 Display piped input:
 

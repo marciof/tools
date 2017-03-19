@@ -1,6 +1,6 @@
 Setup:
 
-  $ . $TESTDIR/setup.sh
+  $ . "$TESTDIR/setup.sh"
   $ mkdir dir
   $ echo "Bob" > dir/file
 

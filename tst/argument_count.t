@@ -1,6 +1,6 @@
 Setup:
 
-  $ . $TESTDIR/setup.sh
+  $ . "$TESTDIR/setup.sh"
   $ touch file
 
 Many plugin options (more than `ARRAY_INITIAL_CAPACITY`):

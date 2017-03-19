@@ -1,6 +1,6 @@
 Setup:
 
-  $ . $TESTDIR/setup.sh
+  $ . "$TESTDIR/setup.sh"
   $ mkdir -- dir1 --dir2
   $ touch -- dir1/file1 --dir2/file2
 
