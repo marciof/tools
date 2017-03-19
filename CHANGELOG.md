@@ -5,7 +5,7 @@
 - Fix handling of a large number of plugin options in a single command line call.
 - Fix plugin "pager" to handle SIGINT and terminal resizing correctly.
 
-# 0.11.0 - 2017-05-03 #
+# 0.11.0 - 2017-03-05 #
 
 - Improve error reporting.
 - Change plugin option separator for easier/faster typing.

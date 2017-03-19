@@ -216,11 +216,27 @@ int main(int argc, char* argv[]) {
     }
 
     for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
-        if (plugins[i] != NULL) {
-            plugins[i]->run(plugins[i], &inputs, &outputs, &error);
+        Plugin* plugin = plugins[i];
+
+        if (plugin == NULL) {
+            continue;
+        }
+
+        bool is_available = (
+            (plugin->is_available == NULL)
+            || plugin->is_available(&error));
+
+        if (ERROR_HAS(&error)) {
+            Error_add(&error, plugin->get_name());
+            cleanup(&inputs, &outputs, &error);
+            return EXIT_FAILURE;
+        }
+
+        if (is_available) {
+            plugin->run(plugin, &inputs, &outputs, &error);
 
             if (ERROR_HAS(&error)) {
-                Error_add(&error, plugins[i]->get_name());
+                Error_add(&error, plugin->get_name());
                 cleanup(&inputs, &outputs, &error);
                 return EXIT_FAILURE;
             }
