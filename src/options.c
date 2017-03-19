@@ -198,7 +198,7 @@ bool parse_options(
     }
 
     for (int i = optind; i < argc; ++i) {
-        Input* input = Input_new(argv[i], IO_INVALID_FD, error);
+        Input* input = Input_new(argv[i], IO_NULL_FD, error);
 
         if (ERROR_HAS(error)) {
             Error_add(error, ERROR_INVALID_OPTIONS);

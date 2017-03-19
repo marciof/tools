@@ -93,7 +93,7 @@ static void Plugin_run(
             return;
         }
 
-        input = Input_new(path, IO_INVALID_FD, error);
+        input = Input_new(path, IO_NULL_FD, error);
         position = inputs->length;
     }
     else {

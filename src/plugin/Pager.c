@@ -26,7 +26,7 @@ typedef struct {
     Array* options;
     size_t nr_lines;
     size_t nr_line_chars;
-    // Set to `IO_INVALID_FD` until the pager starts (if at all).
+    // Set to `IO_NULL_FD` until the pager starts (if at all).
     int fd;
     pid_t child_pid;
 } Pager;
@@ -80,7 +80,7 @@ static void flush_buffer(Pager* pager, int default_fd, Error* error) {
         return;
     }
 
-    if (pager->fd == IO_INVALID_FD) {
+    if (pager->fd == IO_NULL_FD) {
         pager->fd = default_fd;
     }
 
@@ -233,7 +233,7 @@ static void Pager_delete(Pager* pager, Error* error) {
 
     Array_deinit(&pager->buffers);
 
-    if ((pager->fd != IO_INVALID_FD) && (close(pager->fd) == -1)) {
+    if ((pager->fd != IO_NULL_FD) && (close(pager->fd) == -1)) {
         Error_add(error, strerror(errno));
         return;
     }
@@ -269,7 +269,7 @@ static Pager* Pager_new(Array* options, Error* error) {
     pager->options = options;
     pager->nr_lines = 0;
     pager->nr_line_chars = 0;
-    pager->fd = IO_INVALID_FD;
+    pager->fd = IO_NULL_FD;
     pager->child_pid = -1;
 
     ERROR_CLEAR(&pager->timer_error);
@@ -285,7 +285,7 @@ static void Output_close(Output* output, Error* error) {
 static void Output_write(Output* output, Buffer** buffer, Error* error) {
     Pager* pager = (Pager*) output->arg;
 
-    if (pager->fd == IO_INVALID_FD) {
+    if (pager->fd == IO_NULL_FD) {
         if (buffer_input(pager, buffer, error)) {
             return;
         }
@@ -297,12 +297,12 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
             return;
         }
 
-        int fd = popen2_pipe(
+        int fd = popen2(
             (char*) argv.data[0],
             (char**) argv.data,
-            IO_INVALID_FD,
-            IO_INVALID_FD,
             false,
+            IO_NULL_FD,
+            IO_NULL_FD,
             &pager->child_pid,
             error);
 

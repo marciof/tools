@@ -10,7 +10,7 @@ typedef struct Input {
     struct Plugin* plugin;
     // If unnamed, `name` is set to `NULL`.
     char* name;
-    // If unsupported or when closed, `fd` is set to `IO_INVALID_FD`.
+    // If unsupported or when closed, `fd` is set to `IO_NULL_FD`.
     int fd;
     intptr_t arg;
     // Calls `close` by default.

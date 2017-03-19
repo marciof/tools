@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include "Error.h"
 
-#define IO_INVALID_FD ((int) -1)
+// Not to be confused with the "null device" (eg. /dev/null).
+#define IO_NULL_FD ((int) -1)
 
 // Use always as a pointer only, never by value.
 typedef struct {

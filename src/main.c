@@ -33,7 +33,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
                 continue;
             }
 
-            if (input->fd != IO_INVALID_FD) {
+            if (input->fd != IO_NULL_FD) {
                 Error input_error = ERROR_INITIALIZER;
                 Input_close(input, &input_error);
 
@@ -150,7 +150,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             continue;
         }
 
-        if (input->fd == IO_INVALID_FD) {
+        if (input->fd == IO_NULL_FD) {
             Error_add(error, "Unsupported input");
             if (input->name != NULL) {
                 Error_add(error, input->name);

@@ -69,7 +69,7 @@ static void Plugin_run(
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
-        if ((input == NULL) || (input->fd != IO_INVALID_FD)) {
+        if ((input == NULL) || (input->fd != IO_NULL_FD)) {
             continue;
         }
 
@@ -96,8 +96,9 @@ static void Plugin_run(
         int fd = popen2(
             (char*) argv.data[0],
             (char**) argv.data,
-            IO_INVALID_FD,
-            IO_INVALID_FD,
+            true,
+            IO_NULL_FD,
+            IO_NULL_FD,
             &child_pid,
             error);
 

@@ -13,18 +13,18 @@ void Input_close(Input* input, Error* error) {
         Error_add(error, strerror(errno));
     }
 
-    input->fd = IO_INVALID_FD;
+    input->fd = IO_NULL_FD;
 }
 
 void Input_close_subprocess(Input* input, Error* error) {
     if (close(input->fd) == -1) {
         Error_add(error, strerror(errno));
-        input->fd = IO_INVALID_FD;
+        input->fd = IO_NULL_FD;
         return;
     }
 
     int status = wait_subprocess((pid_t) input->arg, error);
-    input->fd = IO_INVALID_FD;
+    input->fd = IO_NULL_FD;
 
     if (ERROR_HAS(error)) {
         return;

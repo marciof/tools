@@ -9,7 +9,121 @@
 #include "io.h"
 #include "popen2.h"
 
-#define EXECVP_FAILED_SIGNAL SIGUSR1
+#define EXECVP_ENOENT_FAILED_SIGNAL SIGUSR1
+
+static int popen2_pipe(
+        char* file,
+        char* argv[],
+        bool is_read,
+        int out_fd,
+        int err_fd,
+        pid_t* pid,
+        Error* error) {
+
+    int rw_fds[2];
+
+    if (pipe(rw_fds) == -1) {
+        Error_add(error, strerror(errno));
+        return IO_NULL_FD;
+    }
+
+    pid_t child_pid = fork();
+
+    if (child_pid == -1) {
+        Error_add(error, strerror(errno));
+        return IO_NULL_FD;
+    }
+    else if (child_pid) {
+        int fd_close = is_read ? rw_fds[1] : rw_fds[0];
+        int fd_return = is_read ? rw_fds[0] : rw_fds[1];
+
+        if (close(fd_close) == -1) {
+            Error_add(error, strerror(errno));
+            return IO_NULL_FD;
+        }
+
+        *pid = child_pid;
+        return fd_return;
+    }
+    else {
+        bool has_failed = (
+            ((out_fd != IO_NULL_FD) && (dup2(out_fd, STDOUT_FILENO) == -1))
+            || ((err_fd != IO_NULL_FD) && (dup2(err_fd, STDERR_FILENO) == -1))
+            || (!is_read && (dup2(rw_fds[0], STDIN_FILENO) == -1))
+            || (close(rw_fds[0]) == -1)
+            || (close(rw_fds[1]) == -1));
+
+        if (!has_failed) {
+            execvp(file, argv);
+
+            if (errno == ENOENT) {
+                raise(EXECVP_ENOENT_FAILED_SIGNAL);
+            }
+        }
+
+        // Don't use `exit` to avoid duplicate cleanups.
+        abort();
+    }
+}
+
+// Can only be used for reading, since input is interpreted as TTY/user input.
+static int popen2_pty(
+        char* file,
+        char* argv[],
+        int out_fd,
+        int err_fd,
+        pid_t* pid,
+        Error* error) {
+
+    int child_fd_out;
+    pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
+
+    if (child_pid == -1) {
+        Error_add(error, strerror(errno));
+        return IO_NULL_FD;
+    }
+    else if (child_pid) {
+        *pid = child_pid;
+        return child_fd_out;
+    }
+    else {
+        bool has_failed =
+            ((out_fd != IO_NULL_FD) && (dup2(out_fd, STDOUT_FILENO) == -1))
+            || ((err_fd != IO_NULL_FD) && (dup2(err_fd, STDERR_FILENO) == -1));
+
+        if (!has_failed) {
+            execvp(file, argv);
+
+            if (errno == ENOENT) {
+                raise(EXECVP_ENOENT_FAILED_SIGNAL);
+            }
+        }
+
+        // Don't use `exit` to avoid duplicate cleanups.
+        abort();
+    }
+}
+
+int popen2(
+        char* file,
+        char* argv[],
+        bool is_read,
+        int out_fd,
+        int err_fd,
+        pid_t* pid,
+        Error* error) {
+
+    if (is_read && isatty(STDOUT_FILENO)) {
+        return popen2_pty(file, argv, out_fd, err_fd, pid, error);
+    }
+    else if (errno != EBADF) {
+        return popen2_pipe(file, argv, is_read, out_fd, err_fd, pid, error);
+    }
+    else {
+        Error_add(error, strerror(errno));
+        return IO_NULL_FD;
+    }
+}
 
 bool popen2_can_run(char* file, Error* error) {
     char* argv[] = {file, NULL};
@@ -25,148 +139,30 @@ bool popen2_can_run(char* file, Error* error) {
     return true;
 }
 
-static int fork_exec_fd_pty(
-        char* file,
-        char* argv[],
-        int out_fd,
-        int err_fd,
-        pid_t* pid,
-        Error* error) {
-
-    int child_fd_out;
-    pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
-
-    if (child_pid == -1) {
-        Error_add(error, strerror(errno));
-        return IO_INVALID_FD;
-    }
-    else if (child_pid) {
-        *pid = child_pid;
-        return child_fd_out;
-    }
-    else {
-        bool has_failed =
-            ((out_fd != IO_INVALID_FD)
-                && (dup2(out_fd, STDOUT_FILENO) == -1))
-            || ((err_fd != IO_INVALID_FD)
-                && (dup2(err_fd, STDERR_FILENO) == -1));
-
-        if (has_failed) {
-            Error_add(error, strerror(errno));
-            return IO_INVALID_FD;
-        }
-
-        execvp(file, argv);
-        raise(EXECVP_FAILED_SIGNAL);
-        abort();
-    }
-}
-
-int popen2(
-        char* file,
-        char* argv[],
-        int out_fd,
-        int err_fd,
-        pid_t* pid,
-        Error* error) {
-
-    if (isatty(STDOUT_FILENO)) {
-        return fork_exec_fd_pty(file, argv, out_fd, err_fd, pid, error);
-    }
-    else if (errno != EBADF) {
-        return popen2_pipe(file, argv, out_fd, err_fd, true, pid, error);
-    }
-    else {
-        Error_add(error, strerror(errno));
-        return IO_INVALID_FD;
-    }
-}
-
-int popen2_pipe(
-        char* file,
-        char* argv[],
-        int out_fd,
-        int err_fd,
-        bool is_for_reading,
-        pid_t* pid,
-        Error* error) {
-
-    int read_write_fds[2];
-
-    if (pipe(read_write_fds) == -1) {
-        Error_add(error, strerror(errno));
-        return IO_INVALID_FD;
-    }
-
-    pid_t child_pid = fork();
-
-    if (child_pid == -1) {
-        Error_add(error, strerror(errno));
-        return IO_INVALID_FD;
-    }
-    else if (child_pid) {
-        int fd_close = is_for_reading ? read_write_fds[1] : read_write_fds[0];
-        int fd_return = is_for_reading ? read_write_fds[0] : read_write_fds[1];
-
-        if (close(fd_close) == -1) {
-            Error_add(error, strerror(errno));
-            return IO_INVALID_FD;
-        }
-
-        *pid = child_pid;
-        return fd_return;
-    }
-    else {
-        bool has_failed;
-
-        if (is_for_reading) {
-            has_failed =
-                ((out_fd != IO_INVALID_FD)
-                 && (dup2(out_fd, STDOUT_FILENO) == -1))
-                || ((err_fd != IO_INVALID_FD)
-                    && (dup2(err_fd, STDERR_FILENO) == -1));
-        }
-        else {
-            has_failed =
-                (close(read_write_fds[1]) == -1)
-                || ((read_write_fds[0] != STDIN_FILENO)
-                    && (dup2(read_write_fds[0], STDIN_FILENO) == -1));
-        }
-
-        if (has_failed) {
-            Error_add(error, strerror(errno));
-            return IO_INVALID_FD;
-        }
-
-        execvp(file, argv);
-        raise(EXECVP_FAILED_SIGNAL);
-        abort();
-    }
-}
-
 int popen2_status(char* file, char* argv[], Error* error) {
-    int null_fd = open("/dev/null", O_RDWR);
+    int discard_fd = open("/dev/null", O_RDWR);
 
-    if (null_fd == -1) {
+    if (discard_fd == -1) {
         Error_add(error, strerror(errno));
         return -1;
     }
 
     pid_t child_pid;
-    popen2(file, argv, null_fd, null_fd, &child_pid, error);
+    popen2(file, argv, true, discard_fd, discard_fd, &child_pid, error);
 
     if (ERROR_HAS(error)) {
+        close(discard_fd);
         return -1;
     }
 
     int status = wait_subprocess(child_pid, error);
 
     if (ERROR_HAS(error)) {
-        close(null_fd);
+        close(discard_fd);
         return -1;
     }
 
-    if (close(null_fd) == -1) {
+    if (close(discard_fd) == -1) {
         Error_add(error, strerror(errno));
         return -1;
     }
@@ -185,7 +181,7 @@ int wait_subprocess(pid_t child_pid, Error* error) {
     if (WIFSIGNALED(status)) {
         int child_signal = WTERMSIG(status);
 
-        if (child_signal == EXECVP_FAILED_SIGNAL) {
+        if (child_signal == EXECVP_ENOENT_FAILED_SIGNAL) {
             Error_add(error, strerror(ENOENT));
             return -1;
         }

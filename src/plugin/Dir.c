@@ -42,7 +42,7 @@ static void open_inputs(
         return;
     }
 
-    Input* input = Input_new(NULL, IO_INVALID_FD, error);
+    Input* input = Input_new(NULL, IO_NULL_FD, error);
 
     if (ERROR_HAS(error)) {
         return;
@@ -60,8 +60,9 @@ static void open_inputs(
     int fd = popen2(
         (char*) argv->data[0],
         (char**) argv->data,
-        IO_INVALID_FD,
-        IO_INVALID_FD,
+        true,
+        IO_NULL_FD,
+        IO_NULL_FD,
         &child_pid,
         error);
 
@@ -117,7 +118,7 @@ static void Plugin_run(
             continue;
         }
 
-        bool does_exist = (input->fd == IO_INVALID_FD)
+        bool does_exist = (input->fd == IO_NULL_FD)
             && ((access(input->name, F_OK) == 0)
                 && (errno != ENOENT));
 
