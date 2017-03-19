@@ -222,17 +222,20 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        bool is_available = (
-            (plugin->is_available == NULL)
-            || plugin->is_available(&error));
+        // FIXME: echo 'echo ok | ./show' | sh
+        // FIXME: echo 'echo ok | ./show' | sh | cat
 
-        if (ERROR_HAS(&error)) {
-            Error_add(&error, plugin->get_name());
-            cleanup(&inputs, &outputs, &error);
-            return EXIT_FAILURE;
-        }
+//        bool is_available = (
+//            (plugin->is_available == NULL)
+//            || plugin->is_available(&error));
+//
+//        if (ERROR_HAS(&error)) {
+//            Error_add(&error, plugin->get_name());
+//            cleanup(&inputs, &outputs, &error);
+//            return EXIT_FAILURE;
+//        }
 
-        if (is_available) {
+//        if (is_available) {
             plugin->run(plugin, &inputs, &outputs, &error);
 
             if (ERROR_HAS(&error)) {
@@ -240,7 +243,7 @@ int main(int argc, char* argv[]) {
                 cleanup(&inputs, &outputs, &error);
                 return EXIT_FAILURE;
             }
-        }
+//        }
     }
 
     bool did_succeed = flush_inputs(&inputs, &outputs, &error);
