@@ -14,4 +14,6 @@ typedef const char* Error[ERROR_MESSAGE_STACK_SIZE];
 
 void Error_add(Error* error, const char* message);
 void Error_copy(Error* error, Error* source);
+
+// Errors while printing are silently discarded.
 void Error_print(Error* error, FILE* stream);

@@ -24,6 +24,7 @@
 
 #define FIND_PLUGIN_FULL_NAME_COMPARE 0
 
+// Errors while printing are silently discarded.
 static void display_help(Plugin* plugins[], size_t nr_plugins, Error* error) {
     fprintf(stderr,
         "Usage: show [OPTION]... [INPUT]...\n"

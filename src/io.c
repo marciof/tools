@@ -32,7 +32,7 @@ bool io_has_input(int fd, Error* error) {
 
     int nr_fds = poll(&fd_poll, 1, 0);
 
-    if (nr_fds < 0) {
+    if (nr_fds == -1) {
         Error_add(error, strerror(errno));
         return false;
     }

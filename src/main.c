@@ -132,7 +132,7 @@ static Buffer* flush_input(
         }
     }
 
-    if ((bytes_read != 0) && (errno != EIO)) {
+    if ((bytes_read == -1) && (errno != EIO)) {
         Error_add(error, strerror(errno));
     }
 
