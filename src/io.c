@@ -2,6 +2,8 @@
 #include <poll.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include "io.h"
 
@@ -36,6 +38,27 @@ bool io_has_input(int fd, Error* error) {
     }
 
     return (nr_fds == 1) && (fd_poll.revents & POLLIN);
+}
+
+bool io_is_tty(int fd, Error* error) {
+    struct stat fd_stat;
+
+    if (fstat(fd, &fd_stat) == -1) {
+        Error_add(error, strerror(errno));
+        return false;
+    }
+
+    errno = 0;
+
+    // Check if it's a character device first to avoid `EINVAL` and `ENOTTY`.
+    bool is_tty = S_ISCHR(fd_stat.st_mode) && isatty(fd);
+
+    if (errno != 0) {
+        Error_add(error, strerror(errno));
+        return false;
+    }
+
+    return is_tty;
 }
 
 void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error) {

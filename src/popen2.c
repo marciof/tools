@@ -113,16 +113,20 @@ int popen2(
         pid_t* pid,
         Error* error) {
 
-    if (is_read && isatty(STDOUT_FILENO)) {
-        return popen2_pty(file, argv, out_fd, err_fd, pid, error);
+    if (is_read) {
+        bool is_tty = io_is_tty(STDOUT_FILENO, error);
+
+        if (ERROR_HAS(error)) {
+            Error_add(error, strerror(errno));
+            return IO_NULL_FD;
+        }
+
+        if (is_tty) {
+            return popen2_pty(file, argv, out_fd, err_fd, pid, error);
+        }
     }
-    else if (errno != EBADF) {
-        return popen2_pipe(file, argv, is_read, out_fd, err_fd, pid, error);
-    }
-    else {
-        Error_add(error, strerror(errno));
-        return IO_NULL_FD;
-    }
+
+    return popen2_pipe(file, argv, is_read, out_fd, err_fd, pid, error);
 }
 
 bool popen2_can_run(char* file, Error* error) {

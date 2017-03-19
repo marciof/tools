@@ -345,8 +345,9 @@ static bool Plugin_is_available(Error* error) {
 static void Plugin_run(
         Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
-    // FIXME: check `errno`
-    if (!isatty(STDOUT_FILENO)) {
+    bool is_tty = io_is_tty(STDOUT_FILENO, error);
+
+    if (ERROR_HAS(error) || !is_tty) {
         return;
     }
 
