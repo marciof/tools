@@ -222,19 +222,17 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        // FIXME: echo 'echo ok | ./show' | sh
-        // FIXME: echo 'echo ok | ./show' | sh | cat
-
-//        bool is_available = (
-//            (plugin->is_available == NULL)
-//            || plugin->is_available(&error));
+//        // FIXME: echo 'echo ok | ./show' | sh
+//        // FIXME: echo 'echo ok | ./show' | sh | cat
+//
+//        bool is_available = Plugin_is_available(plugin, &error);
 //
 //        if (ERROR_HAS(&error)) {
 //            Error_add(&error, plugin->get_name());
 //            cleanup(&inputs, &outputs, &error);
 //            return EXIT_FAILURE;
 //        }
-
+//
 //        if (is_available) {
             plugin->run(plugin, &inputs, &outputs, &error);
 

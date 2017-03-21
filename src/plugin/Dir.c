@@ -9,6 +9,14 @@
 
 #define EXTERNAL_BINARY "ls"
 
+static const char* get_description() {
+    return "list directories via `" EXTERNAL_BINARY "`";
+}
+
+static const char* get_name() {
+    return "dir";
+}
+
 static void init_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
@@ -30,6 +38,10 @@ static void init_argv(Array* argv, Array* options, Error* error) {
     if (ERROR_HAS(error)) {
         Array_deinit(argv);
     }
+}
+
+static bool is_available(Error* error) {
+    return popen2_can_run(EXTERNAL_BINARY, error);
 }
 
 static void open_inputs(
@@ -80,21 +92,7 @@ static void open_inputs(
     }
 }
 
-static const char* Plugin_get_description() {
-    return "list directories via `" EXTERNAL_BINARY "`";
-}
-
-static const char* Plugin_get_name() {
-    return "dir";
-}
-
-static bool Plugin_is_available(Error* error) {
-    return popen2_can_run(EXTERNAL_BINARY, error);
-}
-
-static void Plugin_run(
-        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
-
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     Array argv;
     size_t nr_args = 0;
 
@@ -168,8 +166,8 @@ static void Plugin_run(
 
 Plugin Dir_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    Plugin_get_description,
-    Plugin_get_name,
-    Plugin_is_available,
-    Plugin_run,
+    get_description,
+    get_name,
+    is_available,
+    run,
 };

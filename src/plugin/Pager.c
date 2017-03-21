@@ -33,6 +33,14 @@ typedef struct {
 
 static struct winsize terminal;
 
+static const char* get_description() {
+    return "page output via `" EXTERNAL_BINARY "` when needed";
+}
+
+static const char* get_name() {
+    return "pager";
+}
+
 // FIXME: check `errno`
 static void get_terminal_size(int signal_nr) {
     signal(SIGWINCH, get_terminal_size);
@@ -60,6 +68,10 @@ static void init_argv(Array* argv, Array* options, Error* error) {
     if (ERROR_HAS(error)) {
         Array_deinit(argv);
     }
+}
+
+static bool is_available(Error* error) {
+    return popen2_can_run(EXTERNAL_BINARY, error);
 }
 
 static void protect_buffer(Pager* pager, bool do_lock, Error* error) {
@@ -330,21 +342,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
     (*buffer)->length = 0;
 }
 
-static const char* Plugin_get_description() {
-    return "page output via `" EXTERNAL_BINARY "` when needed";
-}
-
-static const char* Plugin_get_name() {
-    return "pager";
-}
-
-static bool Plugin_is_available(Error* error) {
-    return popen2_can_run(EXTERNAL_BINARY, error);
-}
-
-static void Plugin_run(
-        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
-
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
     if (ERROR_HAS(error) || !is_tty) {
@@ -392,8 +390,8 @@ static void Plugin_run(
 
 Plugin Pager_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    Plugin_get_description,
-    Plugin_get_name,
-    Plugin_is_available,
-    Plugin_run,
+    get_description,
+    get_name,
+    is_available,
+    run,
 };

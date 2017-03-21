@@ -4,6 +4,14 @@
 
 #define EXTERNAL_BINARY "git"
 
+static const char* get_description() {
+    return "show VCS revisions via `" EXTERNAL_BINARY "`";
+}
+
+static const char* get_name() {
+    return "vcs";
+}
+
 static void init_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error,
         EXTERNAL_BINARY, "--no-pager", "show", NULL);
@@ -35,6 +43,9 @@ static void init_argv(Array* argv, Array* options, Error* error) {
     }
 }
 
+static bool is_available(Error* error) {
+    return popen2_can_run(EXTERNAL_BINARY, error);
+}
 static bool is_input_valid(char* input, Error* error) {
     char* args[] = {
         EXTERNAL_BINARY,
@@ -49,21 +60,7 @@ static bool is_input_valid(char* input, Error* error) {
     return popen2_status(args[0], args, error) == 0;
 }
 
-static const char* Plugin_get_description() {
-    return "show VCS revisions via `" EXTERNAL_BINARY "`";
-}
-
-static const char* Plugin_get_name() {
-    return "vcs";
-}
-
-static bool Plugin_is_available(Error* error) {
-    return popen2_can_run(EXTERNAL_BINARY, error);
-}
-
-static void Plugin_run(
-        Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
-
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     Array argv = ARRAY_NULL_INITIALIZER;
 
     for (size_t i = 0; i < inputs->length; ++i) {
@@ -120,8 +117,8 @@ static void Plugin_run(
 
 Plugin Vcs_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    Plugin_get_description,
-    Plugin_get_name,
-    Plugin_is_available,
-    Plugin_run,
+    get_description,
+    get_name,
+    is_available,
+    run,
 };

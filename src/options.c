@@ -62,17 +62,14 @@ static void display_help(Plugin* plugins[], size_t nr_plugins, Error* error) {
         }
 
         char* remark = "";
+        bool is_available = Plugin_is_available(plugin, error);
 
-        if (plugin->is_available != NULL) {
-            bool is_available = plugin->is_available(error);
-
-            if (ERROR_HAS(error)) {
-                ERROR_CLEAR(error);
-                remark = " (ERRORED)";
-            }
-            else if (!is_available) {
-                remark = " (UNAVAILABLE)";
-            }
+        if (ERROR_HAS(error)) {
+            ERROR_CLEAR(error);
+            remark = " (ERRORED)";
+        }
+        else if (!is_available) {
+            remark = " (UNAVAILABLE)";
         }
 
         fprintf(stderr, "  %-13s%s%s\n",
