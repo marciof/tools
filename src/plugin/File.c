@@ -5,14 +5,6 @@
 #include "../io.h"
 #include "File.h"
 
-static const char* get_description() {
-    return "read files";
-}
-
-static const char* get_name() {
-    return "file";
-}
-
 static int open_file(char* path, Error* error) {
     struct stat path_stat;
 
@@ -57,8 +49,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin File_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    get_description,
-    get_name,
+    "read files",
+    "file",
     PLUGIN_IS_AVAILABLE_ALWAYS,
     run,
 };

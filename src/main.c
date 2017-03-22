@@ -38,7 +38,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
                 Input_close(input, &input_error);
 
                 if (ERROR_HAS(&input_error)) {
-                    Error_add(&input_error, input->plugin->get_name());
+                    Error_add(&input_error, input->plugin->name);
                     Error_print(&input_error, stderr);
                 }
             }
@@ -55,7 +55,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
             output->close(output, &output_error);
 
             if (ERROR_HAS(&output_error)) {
-                Error_add(&output_error, output->plugin->get_name());
+                Error_add(&output_error, output->plugin->name);
                 Error_print(&output_error, stderr);
             }
             Output_delete(output);
@@ -98,7 +98,7 @@ static Buffer* flush_input(
             output->write(output, &buffer, error);
 
             if (ERROR_HAS(error)) {
-                Error_add(error, output->plugin->get_name());
+                Error_add(error, output->plugin->name);
                 return buffer;
             }
 
@@ -106,7 +106,7 @@ static Buffer* flush_input(
                 buffer = Buffer_new(MAX_LENGTH, error);
 
                 if (ERROR_HAS(error)) {
-                    Error_add(error, output->plugin->get_name());
+                    Error_add(error, output->plugin->name);
                     return buffer;
                 }
                 has_flushed = true;
@@ -165,7 +165,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             if (input->name != NULL) {
                 Error_add(error, input->name);
             }
-            Error_add(error, input->plugin->get_name());
+            Error_add(error, input->plugin->name);
             did_succeed = false;
             break;
         }
@@ -176,7 +176,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             if (input->name != NULL) {
                 Error_add(error, input->name);
             }
-            Error_add(error, input->plugin->get_name());
+            Error_add(error, input->plugin->name);
             did_succeed = false;
             break;
         }
@@ -228,7 +228,7 @@ int main(int argc, char* argv[]) {
 //        bool is_available = Plugin_is_available(plugin, &error);
 //
 //        if (ERROR_HAS(&error)) {
-//            Error_add(&error, plugin->get_name());
+//            Error_add(&error, plugin->name);
 //            cleanup(&inputs, &outputs, &error);
 //            return EXIT_FAILURE;
 //        }
@@ -237,7 +237,7 @@ int main(int argc, char* argv[]) {
             plugin->run(plugin, &inputs, &outputs, &error);
 
             if (ERROR_HAS(&error)) {
-                Error_add(&error, plugin->get_name());
+                Error_add(&error, plugin->name);
                 cleanup(&inputs, &outputs, &error);
                 return EXIT_FAILURE;
             }

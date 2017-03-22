@@ -4,14 +4,6 @@
 
 #define EXTERNAL_BINARY "git"
 
-static const char* get_description() {
-    return "show VCS revisions via `" EXTERNAL_BINARY "`";
-}
-
-static const char* get_name() {
-    return "vcs";
-}
-
 static void init_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error,
         EXTERNAL_BINARY, "--no-pager", "show", NULL);
@@ -117,8 +109,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Vcs_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    get_description,
-    get_name,
+    "show VCS revisions via `" EXTERNAL_BINARY "`",
+    "vcs",
     is_available,
     run,
 };

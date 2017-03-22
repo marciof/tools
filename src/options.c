@@ -54,11 +54,7 @@ static void display_help(Plugin* plugins[], size_t nr_plugins, Error* error) {
 
         if (needs_header) {
             needs_header = false;
-
-            fputs(
-                "\n"
-                "Plugins:\n",
-                stderr);
+            fputs("\nPlugins:\n", stderr);
         }
 
         char* remark = "";
@@ -73,9 +69,7 @@ static void display_help(Plugin* plugins[], size_t nr_plugins, Error* error) {
         }
 
         fprintf(stderr, "  %-13s%s%s\n",
-            plugin->get_name(),
-            plugin->get_description(),
-            remark);
+            plugin->name, plugin->description, remark);
     }
 }
 
@@ -87,7 +81,7 @@ static ssize_t find_plugin(
 
     for (size_t i = 0; i < nr_plugins; ++i) {
         if (plugins[i] != NULL) {
-            const char* other_name = plugins[i]->get_name();
+            const char* other_name = plugins[i]->name;
 
             if (name_length != FIND_PLUGIN_FULL_NAME_COMPARE) {
                 size_t j = 0;

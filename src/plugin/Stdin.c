@@ -12,10 +12,6 @@
 
 static char fd_dir_path[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
-static const char* get_description() {
-    return "read standard input";
-}
-
 // Non-reentrant, returns pointer to static storage.
 static char* get_fd_dir_path(int fd, Error* error) {
     DIR* cwd = opendir(".");
@@ -62,10 +58,6 @@ static char* get_fd_dir_path(int fd, Error* error) {
     }
 
     return fd_dir_path;
-}
-
-static const char* get_name() {
-    return "stdin";
 }
 
 // Non-reentrant, may (re-)use static storage.
@@ -121,8 +113,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Stdin_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    get_description,
-    get_name,
+    "read standard input",
+    "stdin",
     PLUGIN_IS_AVAILABLE_ALWAYS,
     run,
 };

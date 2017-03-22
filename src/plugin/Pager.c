@@ -33,14 +33,6 @@ typedef struct {
 
 static struct winsize terminal;
 
-static const char* get_description() {
-    return "page output via `" EXTERNAL_BINARY "` when needed";
-}
-
-static const char* get_name() {
-    return "pager";
-}
-
 // FIXME: check `errno`
 static void get_terminal_size(int signal_nr) {
     signal(SIGWINCH, get_terminal_size);
@@ -390,8 +382,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Pager_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    get_description,
-    get_name,
+    "page output via `" EXTERNAL_BINARY "` when needed",
+    "pager",
     is_available,
     run,
 };

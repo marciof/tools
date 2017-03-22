@@ -9,14 +9,6 @@
 
 #define EXTERNAL_BINARY "ls"
 
-static const char* get_description() {
-    return "list directories via `" EXTERNAL_BINARY "`";
-}
-
-static const char* get_name() {
-    return "dir";
-}
-
 static void init_argv(Array* argv, Array* options, Error* error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
@@ -166,8 +158,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
 Plugin Dir_Plugin = {
     ARRAY_NULL_INITIALIZER,
-    get_description,
-    get_name,
+    "list directories via `" EXTERNAL_BINARY "`",
+    "dir",
     is_available,
     run,
 };

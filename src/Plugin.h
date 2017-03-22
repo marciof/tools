@@ -32,8 +32,8 @@ typedef struct Output {
 typedef struct Plugin {
     // If no plugin options, it satisfies `ARRAY_IS_NULL_INITIALIZED`.
     Array options;
-    const char* (*get_description)();
-    const char* (*get_name)();
+    const char* description;
+    const char* name;
     // If always supported, set to `PLUGIN_IS_AVAILABLE_ALWAYS`.
     bool (*is_available)(Error* error);
     // The `inputs` array is sparse, individual elements may be `NULL`.
