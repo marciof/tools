@@ -129,20 +129,6 @@ int popen2(
     return popen2_pipe(file, argv, is_read, out_fd, err_fd, pid, error);
 }
 
-bool popen2_can_run(char* file, Error* error) {
-    char* argv[] = {file, NULL};
-    popen2_status(file, argv, error);
-
-    if (ERROR_HAS(error)) {
-        if (strcmp(ERROR_GET_LAST(error), strerror(ENOENT)) == 0) {
-            ERROR_CLEAR(error);
-        }
-        return false;
-    }
-
-    return true;
-}
-
 int popen2_status(char* file, char* argv[], Error* error) {
     int discard_fd = open("/dev/null", O_RDWR);
 
@@ -152,9 +138,22 @@ int popen2_status(char* file, char* argv[], Error* error) {
     }
 
     pid_t child_pid;
-    popen2(file, argv, true, discard_fd, discard_fd, &child_pid, error);
+
+    int fd = popen2(
+        file, argv, true, discard_fd, discard_fd, &child_pid, error);
 
     if (ERROR_HAS(error)) {
+        close(discard_fd);
+        return -1;
+    }
+
+    ssize_t bytes_read;
+    char buffer[BUFSIZ];
+
+    while ((bytes_read = read(fd, buffer, BUFSIZ * sizeof(buffer[0]))) > 0);
+
+    if (bytes_read == -1) {
+        Error_add(error, strerror(errno));
         close(discard_fd);
         return -1;
     }

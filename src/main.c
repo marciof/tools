@@ -76,11 +76,10 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
 static Buffer* flush_input(
         int fd, Buffer* buffer, Array* outputs, Error* error) {
 
-    const size_t MAX_LENGTH = 4 * 1024;
     ssize_t bytes_read;
 
     if (buffer == NULL) {
-        buffer = Buffer_new(MAX_LENGTH, error);
+        buffer = Buffer_new(BUFSIZ, error);
 
         if (ERROR_HAS(error)) {
             return NULL;
@@ -88,7 +87,7 @@ static Buffer* flush_input(
     }
 
     while ((bytes_read = read(
-            fd, buffer->data, MAX_LENGTH * sizeof(buffer->data[0]))) > 0) {
+            fd, buffer->data, BUFSIZ * sizeof(buffer->data[0]))) > 0) {
 
         buffer->length = (size_t) (bytes_read / sizeof(buffer->data[0]));
         bool has_flushed = false;
@@ -103,7 +102,7 @@ static Buffer* flush_input(
             }
 
             if (buffer == NULL) {
-                buffer = Buffer_new(MAX_LENGTH, error);
+                buffer = Buffer_new(BUFSIZ, error);
 
                 if (ERROR_HAS(error)) {
                     Error_add(error, output->plugin->name);
@@ -222,26 +221,13 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-//        // FIXME: echo 'echo ok | ./show' | sh
-//        // FIXME: echo 'echo ok | ./show' | sh | cat
-//
-//        bool is_available = Plugin_is_available(plugin, &error);
-//
-//        if (ERROR_HAS(&error)) {
-//            Error_add(&error, plugin->name);
-//            cleanup(&inputs, &outputs, &error);
-//            return EXIT_FAILURE;
-//        }
-//
-//        if (is_available) {
-            plugin->run(plugin, &inputs, &outputs, &error);
+        plugin->run(plugin, &inputs, &outputs, &error);
 
-            if (ERROR_HAS(&error)) {
-                Error_add(&error, plugin->name);
-                cleanup(&inputs, &outputs, &error);
-                return EXIT_FAILURE;
-            }
-//        }
+        if (ERROR_HAS(&error)) {
+            Error_add(&error, plugin->name);
+            cleanup(&inputs, &outputs, &error);
+            return EXIT_FAILURE;
+        }
     }
 
     bool did_succeed = flush_inputs(&inputs, &outputs, &error);

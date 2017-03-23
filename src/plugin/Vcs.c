@@ -35,9 +35,19 @@ static void init_argv(Array* argv, Array* options, Error* error) {
     }
 }
 
-static bool is_available(Error* error) {
-    return popen2_can_run(EXTERNAL_BINARY, error);
+static bool is_available() {
+    char* argv[] = {
+        EXTERNAL_BINARY,
+        "--version",
+        NULL,
+    };
+
+    Error error = ERROR_INITIALIZER;
+    int status = popen2_status(argv[0], argv, &error);
+
+    return !ERROR_HAS(&error) && (status == 0);
 }
+
 static bool is_input_valid(char* input, Error* error) {
     char* args[] = {
         EXTERNAL_BINARY,
@@ -60,6 +70,10 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
         if ((input == NULL) || (input->fd != IO_NULL_FD)) {
             continue;
+        }
+
+        if (!is_available()) {
+            return;
         }
 
         bool is_valid = is_input_valid(input->name, error);

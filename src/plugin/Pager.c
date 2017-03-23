@@ -62,8 +62,17 @@ static void init_argv(Array* argv, Array* options, Error* error) {
     }
 }
 
-static bool is_available(Error* error) {
-    return popen2_can_run(EXTERNAL_BINARY, error);
+static bool is_available() {
+    char* argv[] = {
+        EXTERNAL_BINARY,
+        "--version",
+        NULL,
+    };
+
+    Error error = ERROR_INITIALIZER;
+    int status = popen2_status(argv[0], argv, &error);
+
+    return !ERROR_HAS(&error) && (status == 0);
 }
 
 static void protect_buffer(Pager* pager, bool do_lock, Error* error) {
@@ -335,6 +344,12 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 }
 
 static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+
+    // FIXME: Messes up argument order processing.
+//    if (!is_available()) {
+//        return;
+//    }
+
     bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
     if (ERROR_HAS(error) || !is_tty) {

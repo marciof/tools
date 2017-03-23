@@ -35,7 +35,7 @@ typedef struct Plugin {
     const char* description;
     const char* name;
     // If always supported, set to `PLUGIN_IS_AVAILABLE_ALWAYS`.
-    bool (*is_available)(Error* error);
+    bool (*is_available)();
     // The `inputs` array is sparse, individual elements may be `NULL`.
     void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
 } Plugin;
@@ -48,4 +48,4 @@ Input* Input_new(char* name, int fd, Error* error);
 void Output_delete(Output* output);
 Output* Output_new(Plugin* plugin, Error* error);
 
-bool Plugin_is_available(Plugin* plugin, Error* error);
+bool Plugin_is_available(Plugin* plugin);

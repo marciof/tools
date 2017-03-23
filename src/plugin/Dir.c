@@ -32,8 +32,17 @@ static void init_argv(Array* argv, Array* options, Error* error) {
     }
 }
 
-static bool is_available(Error* error) {
-    return popen2_can_run(EXTERNAL_BINARY, error);
+static bool is_available() {
+    char* argv[] = {
+        EXTERNAL_BINARY,
+        "--version",
+        NULL,
+    };
+
+    Error error= ERROR_INITIALIZER;
+    int status = popen2_status(argv[0], argv, &error);
+
+    return !ERROR_HAS(&error) && (status == 0);
 }
 
 static void open_inputs(
@@ -95,8 +104,10 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     }
 
     if (inputs->length == 0) {
-        open_inputs(plugin, inputs, &argv, inputs->length, error);
-        Array_deinit(&argv);
+        if (is_available()) {
+            open_inputs(plugin, inputs, &argv, inputs->length, error);
+            Array_deinit(&argv);
+        }
         return;
     }
 
@@ -114,6 +125,11 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
 
         if (does_exist) {
             if (access(input->name, R_OK) == 0) {
+                if (!is_available()) {
+                    Array_deinit(&argv);
+                    return;
+                }
+
                 Array_add(&argv, argv.length, (intptr_t) input->name, error);
 
                 if (ERROR_HAS(error)) {
