@@ -73,6 +73,9 @@ for test_file; do
         cd "$current_dir"
 
         rm -rf "$test_scratch_dir"
-        diff -u "$test_file" "$test_dir/$test_output" && rm "$test_dir/$test_script"
+
+        if diff -u "$test_file" "$test_dir/$test_output"; then
+            rm "$test_dir/$test_script" "$test_dir/$test_output"
+        fi
     fi
 done
