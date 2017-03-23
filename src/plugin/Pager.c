@@ -344,15 +344,14 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 }
 
 static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
-
-    // FIXME: Messes up argument order processing.
-//    if (!is_available()) {
-//        return;
-//    }
-
     bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
     if (ERROR_HAS(error) || !is_tty) {
+        return;
+    }
+
+    // FIXME: may mess up argument order processing if called always
+    if (!is_available()) {
         return;
     }
 
