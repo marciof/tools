@@ -35,6 +35,8 @@ USAGE
 }
 
 process_options() {
+    local option
+
     while getopts "$compile_option$help_option" option "$@"; do
         case "$option" in
             "$compile_option")
