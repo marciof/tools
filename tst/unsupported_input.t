@@ -10,6 +10,6 @@ Complain about non-supported input:
 
 Deactivate non-supported plugin automatically:
 
-  $ PATH= VALGRIND_LEAK_CHECK= show /
-  /: Unsupported input
+  $ PATH=/bin VALGRIND_LEAK_CHECK= show @
+  @: Unsupported input
   [1]

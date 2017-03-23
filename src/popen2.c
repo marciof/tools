@@ -152,7 +152,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
 
     while ((bytes_read = read(fd, buffer, BUFSIZ * sizeof(buffer[0]))) > 0);
 
-    if (bytes_read == -1) {
+    if ((bytes_read == -1) && (errno != EIO)) {
         Error_add(error, strerror(errno));
         close(discard_fd);
         return -1;
