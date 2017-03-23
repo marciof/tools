@@ -18,7 +18,7 @@ EOT
     sed -E '/^  /! s/^/#/' \
         | sed -E 's/^  \$ //' \
         | grep -v -E '^  ' \
-        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot_marker'\n  \$ \1\n$eot_marker\ncat <<$eot_marker | sh 2>\&1 | sed -E 's:^:  :'\n\1\n$eot_marker/" \
+        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot_marker'\n  \$ \1\n$eot_marker\n\1 2>\&1 | sed -E 's=^=  ='/" \
         | sed -E "s/^#([^\\\$\"\`'(){}<>;|&-]*)$/echo \1/" \
         | sed -E "s/^#(.*)\$/cat <<'$eot_marker'\n\1\n$eot_marker/"
 }
@@ -69,7 +69,7 @@ for test_file; do
         test_scratch_dir="$(mktemp -d)"
 
         cd "$test_scratch_dir"
-        sh "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"
+        "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"
         cd "$current_dir"
 
         rm -rf "$test_scratch_dir"
