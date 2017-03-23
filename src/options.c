@@ -57,10 +57,14 @@ static void display_help(Plugin* plugins[], size_t nr_plugins, Error* error) {
             fputs("\nPlugins:\n", stderr);
         }
 
+        bool is_available
+            = (plugin->is_available == PLUGIN_IS_AVAILABLE_ALWAYS)
+            || plugin->is_available();
+
         fprintf(stderr, "  %-13s%s%s\n",
             plugin->name,
             plugin->description,
-            Plugin_is_available(plugin) ? "" : " (UNAVAILABLE)");
+            is_available ? "" : " (UNAVAILABLE)");
     }
 }
 

@@ -47,5 +47,3 @@ Input* Input_new(char* name, int fd, Error* error);
 
 void Output_delete(Output* output);
 Output* Output_new(Plugin* plugin, Error* error);
-
-bool Plugin_is_available(Plugin* plugin);

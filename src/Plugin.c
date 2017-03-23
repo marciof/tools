@@ -71,8 +71,3 @@ Output* Output_new(Plugin* plugin, Error* error) {
     output->plugin = plugin;
     return output;
 }
-
-bool Plugin_is_available(Plugin* plugin) {
-    return (plugin->is_available == PLUGIN_IS_AVAILABLE_ALWAYS)
-        || plugin->is_available();
-}
