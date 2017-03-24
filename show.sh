@@ -35,6 +35,8 @@ plugin_run_stdin() {
 }
 
 print_usage() {
+    local plugin
+
     cat <<USAGE
 Usage: $(basename "$0") [OPTION]... [INPUT]...
 
@@ -50,6 +52,8 @@ USAGE
 }
 
 process_options() {
+    local option
+
     while getopts h option "$@"; do
         case "$option" in
             h)
