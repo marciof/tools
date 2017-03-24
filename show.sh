@@ -1,31 +1,32 @@
 #!/bin/sh
 set -e -u
 
-program_path="$0"
 help_option=h
 status_cant_execute=126
 
-mode_description_dir='list directories via `ls`'
-mode_description_file='read files'
-mode_description_stdin='read standard input'
+plugin_description_dir='list directories via `ls`'
+plugin_description_file='read files'
+plugin_description_stdin='read standard input'
 
-mode_run_dir() {
-    if [ -d "$1" ]; then
-        ls -- "$1"
-    else
+plugin_run_dir() {
+    if [ ! -d "$1" ]; then
         return $status_cant_execute
+    elif [ -t 1 ]; then
+        pty ls -- "$1"
+    else
+        ls -- "$1"
     fi
 }
 
-mode_run_file() {
-    if [ -e "$1" -a ! -d "$1" ]; then
+plugin_run_file() {
+    if [ ! -d "$1" -a -e "$1" ]; then
         cat -- "$1"
     else
         return $status_cant_execute
     fi
 }
 
-mode_run_stdin() {
+plugin_run_stdin() {
     if [ ! -t 0 ]; then
         cat
     else
@@ -35,16 +36,16 @@ mode_run_stdin() {
 
 print_usage() {
     cat <<USAGE
-Usage: $(basename "$program_path") [OPTION]... [INPUT]...
+Usage: $(basename "$0") [OPTION]... [INPUT]...
 
 Options:
   -$help_option           display this help and exit
 
-Modes:
+Plugins:
 USAGE
 
-    for mode in stdin file dir; do
-        printf "  %-13s%s\n" "$mode" "$(var mode_description_$mode)"
+    for plugin in stdin file dir; do
+        printf "  %-13s%s\n" "$plugin" "$(var "plugin_description_$plugin")"
     done
 }
 
@@ -70,13 +71,13 @@ var() {
 process_options "$@"
 shift $((OPTIND - 1))
 
-if ! mode_run_stdin && [ $# -eq 0 ]; then
+if ! plugin_run_stdin && [ $# -eq 0 ]; then
     set -- .
 fi
 
 for input; do
-    for mode in file dir; do
-        if mode_run_$mode "$input"; then
+    for plugin in file dir; do
+        if "plugin_run_$plugin" "$input"; then
             continue 2
         fi
     done
