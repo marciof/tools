@@ -8,21 +8,18 @@ status_cant_execute=126
 plugin_description_dir='list directories via `ls`'
 plugin_description_file='read files'
 plugin_description_stdin='read standard input'
+plugin_description_vcs='show VCS revisions via `git`'
 
 plugin_run_dir() {
-    if [ ! -d "$1" ]; then
-        return $status_cant_execute
-    elif [ -t 1 ]; then
+    if [ -d "$1" ]; then
         pty ls -- "$1"
     else
-        ls -- "$1"
+        return $status_cant_execute
     fi
 }
 
 plugin_run_file() {
-    if [ ! -d "$1" -a -e "$1" ]; then
-        cat -- "$1"
-    else
+    if ! cat "$1" 2>/dev/null; then
         return $status_cant_execute
     fi
 }
@@ -30,6 +27,14 @@ plugin_run_file() {
 plugin_run_stdin() {
     if [ ! -t 0 ]; then
         cat
+    else
+        return $status_cant_execute
+    fi
+}
+
+plugin_run_vcs() {
+    if git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
+        pty git --no-pager show "$1"
     else
         return $status_cant_execute
     fi
@@ -58,7 +63,7 @@ Options:
 Plugins:
 USAGE
 
-    for plugin in stdin file dir; do
+    for plugin in stdin file dir vcs; do
         printf "  %-13s%s\n" "$plugin" "$(var "plugin_description_$plugin")"
     done
 }
@@ -95,7 +100,7 @@ if ! plugin_run_stdin && [ $# -eq 0 ]; then
 fi
 
 for input; do
-    for plugin in file dir; do
+    for plugin in file dir vcs; do
         if "plugin_run_$plugin" "$input"; then
             continue 2
         fi
