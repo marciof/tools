@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e -u
 
+disable_plugin_option=d
 help_option=h
 status_cant_execute=126
 
@@ -34,6 +35,16 @@ plugin_run_stdin() {
     fi
 }
 
+disable_plugin() {
+    if ! type "plugin_run_$1" >/dev/null; then
+        echo "$1: no such plugin" 2>&1
+        return 1
+    else
+        eval "plugin_run_$1() { return $status_cant_execute; }"
+        return 0
+    fi
+}
+
 print_usage() {
     local plugin
 
@@ -41,6 +52,7 @@ print_usage() {
 Usage: $(basename "$0") [OPTION]... [INPUT]...
 
 Options:
+  -$disable_plugin_option NAME      disable a plugin
   -$help_option           display this help and exit
 
 Plugins:
@@ -54,14 +66,17 @@ USAGE
 process_options() {
     local option
 
-    while getopts h option "$@"; do
+    while getopts "$disable_plugin_option:$help_option" option "$@"; do
         case "$option" in
-            h)
+            "$disable_plugin_option")
+                disable_plugin "$OPTARG"
+                ;;
+            "$help_option")
                 print_usage
                 exit 0
                 ;;
             ?)
-                printf "Try '-%s' for more information.\n" "$help_option" 2>&1
+                echo "Try '-$help_option' for more information." 2>&1
                 exit 1
                 ;;
         esac
@@ -86,7 +101,7 @@ for input; do
         fi
     done
 
-    printf "%s: Unsupported input\n" "$input" 2>&1
+    echo "$input: Unsupported input" 2>&1
     exit 1
 done
 
