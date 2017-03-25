@@ -1,30 +1,39 @@
 #!/bin/sh
 set -e -u
 
-disable_plugin_option=d
-help_option=h
 status_cant_execute=126
 
-plugin_description_dir='list directories via `ls`'
-plugin_description_file='read files'
-plugin_description_stdin='read standard input'
-plugin_description_vcs='show VCS revisions via `git`'
+disable_mode_opt=d
+help_opt=h
+mode_option_opt=p
 
-plugin_run_dir() {
+mode_description_dir='list directories via `ls`'
+mode_description_file='read files'
+mode_description_stdin='read standard input'
+mode_description_vcs='show VCS revisions via `git`'
+
+mode_options_dir=
+mode_options_file=
+mode_options_stdin=
+mode_options_vcs=
+
+mode_run_dir() {
     if [ -d "$1" ]; then
-        pty ls -- "$1"
+        run_with_mode_options "$mode_options_dir" "$1" pty ls
     else
         return $status_cant_execute
     fi
 }
 
-plugin_run_file() {
-    if ! cat "$1" 2>/dev/null; then
+mode_run_file() {
+    if [ -e "$1" -a ! -d "$1" ]; then
+        run_with_mode_options "$mode_options_file" "$1" cat
+    else
         return $status_cant_execute
     fi
 }
 
-plugin_run_stdin() {
+mode_run_stdin() {
     if [ ! -t 0 ]; then
         cat
     else
@@ -32,57 +41,93 @@ plugin_run_stdin() {
     fi
 }
 
-plugin_run_vcs() {
+mode_run_vcs() {
     if git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
-        pty git --no-pager show "$1"
+        run_with_mode_options "$mode_options_vcs" "$1" pty git --no-pager show
     else
         return $status_cant_execute
     fi
 }
 
-disable_plugin() {
-    if ! type "plugin_run_$1" >/dev/null; then
-        echo "$1: no such plugin" 2>&1
+assert_mode_exists() {
+    if ! type "mode_run_$1" >/dev/null; then
+        echo "$1: no such mode" >&2
         return 1
     else
-        eval "plugin_run_$1() { return $status_cant_execute; }"
         return 0
     fi
 }
 
+disable_mode() {
+    assert_mode_exists "$1"
+    eval "mode_run_$1() { return $status_cant_execute; }"
+}
+
+add_mode_option() {
+    if ! echo "$1" | grep -E -q '[^=]=.'; then
+        echo "$1: missing mode name/option" >&2
+        return 1
+    fi
+
+    local name="$(echo "$1" | sed -E 's/=.+$//')"
+    assert_mode_exists "$name"
+
+    local option="$(echo "$1" | sed -E -e 's/^[^=]+=//' -e 's/@/@@/g')"
+    local current="$(var "mode_options_$name")"
+
+    # Concatenate mode options separated by "@0", with "@" escaped as "@@".
+    export "mode_options_$name=$current${current:+@0}$option"
+    return 0
+}
+
+run_with_mode_options() {
+    local options="$1"
+    local input="$2"
+    shift 2
+
+    # Split mode options by "@0", with "@@" unescaped as "@".
+    printf "%s" "$options${options:+@0}$input" \
+        | sed -E -e 's/@0/\x0/g' -e 's/@@/@/g' \
+        | xargs -0 -- "$@"
+}
+
 print_usage() {
-    local plugin
+    local mode
 
     cat <<USAGE
 Usage: $(basename "$0") [OPTION]... [INPUT]...
 
 Options:
-  -$disable_plugin_option NAME      disable a plugin
-  -$help_option           display this help and exit
+  -$help_opt           display this help and exit
+  -$disable_mode_opt NAME      disable a mode
+  -$mode_option_opt NAME=OPT  pass an option to a mode
 
-Plugins:
+Modes:
 USAGE
 
-    for plugin in stdin file dir vcs; do
-        printf "  %-13s%s\n" "$plugin" "$(var "plugin_description_$plugin")"
+    for mode in stdin file dir vcs; do
+        printf "  %-13s%s\n" "$mode" "$(var "mode_description_$mode")"
     done
 }
 
 process_options() {
     local option
 
-    while getopts "$disable_plugin_option:$help_option" option "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:" option "$@"; do
         case "$option" in
-            "$disable_plugin_option")
-                disable_plugin "$OPTARG"
+            "$disable_mode_opt")
+                disable_mode "$OPTARG"
                 ;;
-            "$help_option")
+            "$help_opt")
                 print_usage
                 exit 0
                 ;;
+            "$mode_option_opt")
+                add_mode_option "$OPTARG"
+                ;;
             ?)
-                echo "Try '-$help_option' for more information." 2>&1
-                exit 1
+                echo "Try '-$help_opt' for more information." >&2
+                return 1
                 ;;
         esac
     done
@@ -95,18 +140,18 @@ var() {
 process_options "$@"
 shift $((OPTIND - 1))
 
-if ! plugin_run_stdin && [ $# -eq 0 ]; then
+if ! mode_run_stdin && [ $# -eq 0 ]; then
     set -- .
 fi
 
 for input; do
-    for plugin in file dir vcs; do
-        if "plugin_run_$plugin" "$input"; then
+    for mode in file dir vcs; do
+        if "mode_run_$mode" "$input"; then
             continue 2
         fi
     done
 
-    echo "$input: Unsupported input" 2>&1
+    echo "$input: Unsupported input" >&2
     exit 1
 done
 
