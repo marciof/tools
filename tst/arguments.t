@@ -3,14 +3,14 @@ Setup:
   $ . "$TESTDIR/setup.sh"
   $ echo "Bob" > file
 
-Many plugin options (more than `ARRAY_INITIAL_CAPACITY`):
+Many plugin options:
 
-  $ show . -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1
+  $ show.sh -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 -p dir=-1 .
   file
 
 Order of argument processing:
 
-  $ echo "Hello world!" | show -p dir=-1 . ./file
+  $ echo "Hello world!" | show.sh -p dir=-1 . ./file
   Hello world!
   file
   Bob
