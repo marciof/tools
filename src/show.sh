@@ -3,6 +3,7 @@ set -e -u
 
 status_cant_execute=126
 arg_separator="$(printf "\036")" # ASCII RS
+pty="${SHOW_PTY:-pty}"
 
 disable_mode_opt=d
 help_opt=h
@@ -36,7 +37,7 @@ mode_can_vcs() {
 
 mode_run_dir() {
     if [ -d "$1" ]; then
-        run_with_mode_options "$mode_options_dir" "$1" pty ls
+        run_with_mode_options "$mode_options_dir" "$1" $pty ls
     else
         return $status_cant_execute
     fi
@@ -60,7 +61,7 @@ mode_run_stdin() {
 
 mode_run_vcs() {
     if git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
-        run_with_mode_options "$mode_options_vcs" "$1" pty git --no-pager show
+        run_with_mode_options "$mode_options_vcs" "$1" $pty git --no-pager show
     else
         return $status_cant_execute
     fi
