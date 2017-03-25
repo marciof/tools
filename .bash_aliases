@@ -74,12 +74,9 @@ if _have micro nano; then
     export EDITOR="$NAME" GIT_EDITOR="$NAME"
 fi
 
-if _have show.sh auto-pager.sh; then
-    export PAGER=auto-pager.sh
-
-    function s() {
-        show.sh -p dir=-Fh -p dir=--color=auto -p dir=--group-directories-first "$@" | auto-pager.sh
-    }
+if _have show; then
+    alias s="$NAME -p dir=-Fh -p dir=--color=auto -p dir=--group-directories-first"
+    export PAGER="$NAME"
 fi
 
 if _have ag; then
