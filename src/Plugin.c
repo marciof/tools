@@ -31,7 +31,7 @@ void Input_close_subprocess(Input* input, Error* error) {
     }
 
     if (status != 0) {
-        Error_add(error, "Subprocess exited with an error code");
+        Error_add(error, "subprocess exited with an error code");
     }
 }
 

@@ -82,11 +82,12 @@ static size_t find_plugin(
 }
 
 static void parse_plugin_option(
-        char* option,
         int argc,
+        char* option,
         size_t nr_plugins,
         Plugin* plugins[],
-        char* plugin_options[],
+        size_t plugins_nr_options[],
+        char* plugins_options[],
         Error* error) {
 
     char* separator = strstr(option, PLUGIN_OPT_SEP);
@@ -106,18 +107,16 @@ static void parse_plugin_option(
         return;
     }
 
-    size_t plugin_pos = find_plugin(
+    size_t pos = find_plugin(
         option, name_length, nr_plugins, plugins, error);
 
     if (ERROR_HAS(error)) {
         return;
     }
 
-    Plugin* plugin = plugins[plugin_pos];
     char* value = separator + C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1;
-
-    plugin_options[plugin_pos * argc + plugin->nr_options] = value;
-    ++plugin->nr_options;
+    plugins_options[pos * argc + plugins_nr_options[pos]] = value;
+    ++plugins_nr_options[pos];
 }
 
 int parse_options(
@@ -125,7 +124,8 @@ int parse_options(
         char* argv[],
         size_t nr_plugins,
         Plugin* plugins[],
-        char* plugin_options[],
+        size_t plugins_nr_options[],
+        char* plugins_options[],
         Error* error) {
 
     int option;
@@ -146,7 +146,13 @@ int parse_options(
         }
         else if (option == PLUGIN_OPTION_OPT[0]) {
             parse_plugin_option(
-                optarg, argc, nr_plugins, plugins, plugin_options, error);
+                argc,
+                optarg,
+                nr_plugins,
+                plugins,
+                plugins_nr_options,
+                plugins_options,
+                error);
 
             if (ERROR_HAS(error)) {
                 return -1;

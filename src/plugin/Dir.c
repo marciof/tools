@@ -22,15 +22,11 @@ static bool is_available() {
 }
 
 static void run(
-        Plugin* plugin,
+        size_t nr_options,
         char* options[],
         Input* input,
         Array* outputs,
         Error* error) {
-
-    if (input->name == NULL) {
-        return;
-    }
 
     struct stat input_stat;
 
@@ -44,14 +40,14 @@ static void run(
         return;
     }
 
-    char* argv[1 + plugin->nr_options + 1 + 1 + 1];
+    char* argv[1 + nr_options + 1 + 1 + 1];
 
     argv[0] = EXTERNAL_BINARY;
-    argv[1 + plugin->nr_options] = "--";
-    argv[1 + plugin->nr_options + 1] = input->name;
-    argv[1 + plugin->nr_options + 1 + 1] = NULL;
+    argv[1 + nr_options] = "--";
+    argv[1 + nr_options + 1] = input->name;
+    argv[1 + nr_options + 1 + 1] = NULL;
 
-    for (size_t i = 0; i < plugin->nr_options; ++i) {
+    for (size_t i = 0; i < nr_options; ++i) {
         argv[i + 1] = options[i];
     }
 
@@ -80,7 +76,6 @@ Plugin Dir_Plugin = {
     "dir",
     "list directories via `" EXTERNAL_BINARY "`",
     true,
-    0,
     is_available,
     run,
 };

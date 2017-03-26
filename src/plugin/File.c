@@ -34,7 +34,7 @@ static int open_file(char* path, Error* error) {
 }
 
 static void run(
-        Plugin* plugin,
+        size_t nr_options,
         char* options[],
         Input* input,
         Array* outputs,
@@ -61,7 +61,6 @@ Plugin File_Plugin = {
     "file",
     "read files",
     false,
-    0,
     is_available,
     run,
 };

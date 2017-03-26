@@ -7,7 +7,6 @@
 #include "io.h"
 
 typedef struct Input {
-    // If unnamed, set to `NULL`.
     char* name;
     // If unsupported or when closed, set to `IO_NULL_FD`.
     int fd;
@@ -29,10 +28,9 @@ typedef struct Plugin {
     const char* name;
     const char* description;
     bool is_enabled;
-    size_t nr_options;
     bool (*is_available)();
     void (*run)(
-        struct Plugin* plugin,
+        size_t nr_options,
         char* options[],
         Input* input,
         Array* outputs,

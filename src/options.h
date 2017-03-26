@@ -4,7 +4,7 @@
 #include "Plugin.h"
 
 /**
- * @param plugin_options flat array of plugin options per plugin
+ * @param plugins_options flat array of plugin options per plugin
  * @return `argv` index of the first argument, or negative on error or help
  */
 int parse_options(
@@ -12,5 +12,6 @@ int parse_options(
     char* argv[],
     size_t nr_plugins,
     Plugin* plugins[],
-    char* plugin_options[],
+    size_t plugins_nr_options[],
+    char* plugins_options[],
     Error* error);

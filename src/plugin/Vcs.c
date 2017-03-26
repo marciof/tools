@@ -63,7 +63,7 @@ static bool is_input_valid(char* input, Error* error) {
 }
 
 static void run(
-        Plugin* plugin,
+        size_t nr_options,
         char* options[],
         Input* input,
         Array* outputs,
@@ -131,7 +131,6 @@ Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`",
     false,
-    0,
     is_available,
     run,
 };

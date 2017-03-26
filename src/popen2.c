@@ -148,9 +148,8 @@ int popen2_status(char* file, char* argv[], Error* error) {
     }
 
     ssize_t bytes_read;
-    char buffer[BUFSIZ];
-
-    while ((bytes_read = read(fd, buffer, BUFSIZ * sizeof(buffer[0]))) > 0);
+    uint8_t buffer[BUFSIZ];
+    while ((bytes_read = read(fd, buffer, BUFSIZ)) > 0);
 
     if ((bytes_read == -1) && (errno != EIO)) {
         Error_add(error, strerror(errno));
@@ -191,7 +190,7 @@ int wait_subprocess(pid_t child_pid, Error* error) {
     }
 
     if (!WIFEXITED(status)) {
-        Error_add(error, "Subprocess did not exit normally");
+        Error_add(error, "subprocess did not exit normally");
         return -1;
     }
 

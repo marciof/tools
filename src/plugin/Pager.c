@@ -344,7 +344,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 }
 
 static void run(
-        Plugin* plugin,
+        size_t nr_options,
         char* options[],
         Input* input,
         Array* outputs,
@@ -404,7 +404,6 @@ Plugin Pager_Plugin = {
     "pager",
     "page output via `" EXTERNAL_BINARY "` when needed",
     false,
-    0,
     is_available,
     run,
 };

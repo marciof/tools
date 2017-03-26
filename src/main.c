@@ -117,26 +117,6 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
             continue;
         }
 
-        if (input->fd == IO_NULL_FD) {
-            Error_add(error, "Unsupported input");
-            if (input->name != NULL) {
-                Error_add(error, input->name);
-            }
-            did_succeed = false;
-            break;
-        }
-
-        buffer = flush_input(input->fd, buffer, outputs, error);
-
-        if (ERROR_HAS(error)) {
-            if (input->name != NULL) {
-                Error_add(error, input->name);
-            }
-            Error_add(error, input->plugin->name);
-            did_succeed = false;
-            break;
-        }
-
         Input_close(input, error);
 
         if (ERROR_HAS(error)) {
@@ -156,11 +136,27 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
     return did_succeed;
 }*/
 
-static void flush_input(int input_fd, int output_fd, Error* error) {
+static bool flush_input(
+        Input* input,
+        int output_fd,
+        Plugin* plugin,
+        size_t nr_options,
+        char* options[],
+        Error* error) {
+
+    plugin->run(nr_options, options, input, NULL, error);
+
+    if (ERROR_HAS(error)) {
+        return false;
+    }
+    if (input->fd == IO_NULL_FD) {
+        return false;
+    }
+
     uint8_t buffer[BUFSIZ];
     ssize_t nr_read;
 
-    while ((nr_read = read(input_fd, buffer, BUFSIZ)) > 0) {
+    while ((nr_read = read(input->fd, buffer, BUFSIZ)) > 0) {
         size_t length = (size_t) nr_read;
         uint8_t* buffer_ptr = buffer;
 
@@ -169,7 +165,7 @@ static void flush_input(int input_fd, int output_fd, Error* error) {
 
             if (nr_written == -1) {
                 Error_add(error, strerror(errno));
-                return;
+                return false;
             }
 
             buffer_ptr += nr_written;
@@ -179,21 +175,34 @@ static void flush_input(int input_fd, int output_fd, Error* error) {
 
     if ((nr_read == -1) && (errno != EIO)) {
         Error_add(error, strerror(errno));
+        return false;
     }
+
+    Input_close(input, error);
+    return !ERROR_HAS(error);
 }
 
 int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
-    char* plugin_options[C_ARRAY_LENGTH(plugins) * argc];
+    char* plugins_options[C_ARRAY_LENGTH(plugins) * argc];
+    size_t plugins_nr_options[C_ARRAY_LENGTH(plugins)] = {0, 0, 0, 0, 0};
 
     int args_pos = parse_options(
-        argc, argv, C_ARRAY_LENGTH(plugins), plugins, plugin_options, &error);
+        argc,
+        argv,
+        C_ARRAY_LENGTH(plugins),
+        plugins,
+        plugins_nr_options,
+        plugins_options,
+        &error);
 
     if ((args_pos < 0) || (ERROR_HAS(&error))) {
         return Error_print(&error, stderr) ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
     for (int i = args_pos; i < argc; ++i) {
+        bool is_input_supported = false;
+
         Input input = {
             argv[i],
             IO_NULL_FD,
@@ -204,39 +213,32 @@ int main(int argc, char* argv[]) {
         for (size_t j = 0; j < C_ARRAY_LENGTH(plugins); ++j) {
             Plugin* plugin = plugins[j];
 
-            if (!plugin->is_enabled) {
-                continue;
+            if (plugin->is_enabled) {
+                is_input_supported = flush_input(
+                    &input,
+                    STDOUT_FILENO,
+                    plugin,
+                    plugins_nr_options[j],
+                    plugins_options + j * argc,
+                    &error);
+
+                if (ERROR_HAS(&error)) {
+                    Error_add(&error, plugin->name);
+                    Error_print(&error, stderr);
+                    return EXIT_FAILURE;
+                }
+
+                if (is_input_supported) {
+                    break;
+                }
             }
+        }
 
-            plugin->run(
-                plugin, plugin_options + j * argc, &input, NULL, &error);
-
-            if (ERROR_HAS(&error)) {
-                Error_add(&error, plugin->name);
-                Error_print(&error, stderr);
-                return EXIT_FAILURE;
-            }
-            if (input.fd == IO_NULL_FD) {
-                continue;
-            }
-
-            flush_input(input.fd, STDOUT_FILENO, &error);
-
-            if (ERROR_HAS(&error)) {
-                Error_add(&error, plugin->name);
-                Error_print(&error, stderr);
-                return EXIT_FAILURE;
-            }
-
-            input.close(&input, &error);
-
-            if (ERROR_HAS(&error)) {
-                Error_add(&error, plugin->name);
-                Error_print(&error, stderr);
-                return EXIT_FAILURE;
-            }
-
-            break;
+        if (!is_input_supported) {
+            Error_add(&error, "unsupported input");
+            Error_add(&error, input.name);
+            Error_print(&error, stderr);
+            return EXIT_FAILURE;
         }
     }
 

@@ -66,7 +66,7 @@ static bool is_available() {
 
 // Non-reentrant, may (re-)use static storage.
 static void run(
-        Plugin* plugin,
+        size_t nr_options,
         char* options[],
         Input* input,
         Array* outputs,
@@ -125,7 +125,6 @@ Plugin Stdin_Plugin = {
     "stdin",
     "read standard input",
     false,
-    0,
     is_available,
     run,
 };
