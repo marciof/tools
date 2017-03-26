@@ -29,28 +29,19 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
         "  -%c           display this help and exit\n"
         "  -%c NAME      disable a plugin\n"
         "  -%c NAME%sOPT  pass an option to a plugin\n",
-        *HELP_OPT,
-        *DISABLE_PLUGIN_OPT,
-        *PLUGIN_OPTION_OPT,
+        HELP_OPT[0],
+        DISABLE_PLUGIN_OPT[0],
+        PLUGIN_OPTION_OPT[0],
         PLUGIN_OPT_SEP);
 
     if (nr_plugins == 0) {
         return;
     }
 
-    bool needs_header = true;
+    fputs("\nPlugins:\n", stderr);
 
     for (size_t i = 0; i < nr_plugins; ++i) {
         Plugin* plugin = plugins[i];
-
-        if (plugin == NULL) {
-            continue;
-        }
-
-        if (needs_header) {
-            needs_header = false;
-            fputs("\nPlugins:\n", stderr);
-        }
 
         bool is_available
             = (plugin->is_available == PLUGIN_IS_AVAILABLE_ALWAYS)
@@ -66,29 +57,27 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
 static size_t find_plugin(
         char* name,
         size_t name_length,
-        Plugin* plugins[],
         size_t nr_plugins,
+        Plugin* plugins[],
         Error* error) {
 
     for (size_t i = 0; i < nr_plugins; ++i) {
-        if (plugins[i] != NULL) {
-            const char* other_name = plugins[i]->name;
+        const char* other_name = plugins[i]->name;
 
-            if (name_length != FIND_PLUGIN_BY_FULL_NAME) {
-                size_t j = 0;
+        if (name_length != FIND_PLUGIN_BY_FULL_NAME) {
+            size_t j = 0;
 
-                for (j = 0; (j < name_length) && (other_name[j] != '\0'); ++j) {
-                    if (other_name[j] != name[j]) {
-                        break;
-                    }
-                }
-                if (other_name[j] == '\0') {
-                    return i;
+            for (j = 0; (j < name_length) && (other_name[j] != '\0'); ++j) {
+                if (other_name[j] != name[j]) {
+                    break;
                 }
             }
-            else if (strcmp(other_name, name) == 0) {
+            if (other_name[j] == '\0') {
                 return i;
             }
+        }
+        else if (strcmp(other_name, name) == 0) {
+            return i;
         }
     }
 
@@ -98,14 +87,16 @@ static size_t find_plugin(
 
 static void parse_plugin_option(
         char* option,
-        Plugin* plugins[],
+        int argc,
         size_t nr_plugins,
+        Plugin* plugins[],
+        char* plugin_options[],
         Error* error) {
 
     char* separator = strstr(option, PLUGIN_OPT_SEP);
 
     bool is_option_missing = (separator == NULL)
-        || (separator[STATIC_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1] == '\0');
+        || (separator[C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1] == '\0');
 
     if (is_option_missing) {
         Error_add(error, "no plugin option specified");
@@ -120,29 +111,25 @@ static void parse_plugin_option(
     }
 
     size_t plugin_pos = find_plugin(
-        option, name_length, plugins, nr_plugins, error);
+        option, name_length, nr_plugins, plugins, error);
 
     if (ERROR_HAS(error)) {
         return;
     }
 
     Plugin* plugin = plugins[plugin_pos];
-    char* value = separator + STATIC_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1;
+    char* value = separator + C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1;
 
-    if (ARRAY_IS_NULL_INITIALIZED(&plugin->options)) {
-        Array_init(&plugin->options, error, value, NULL);
-    }
-    else {
-        Array_add(
-            &plugin->options, plugin->options.length, (intptr_t) value, error);
-    }
+    plugin_options[plugin_pos * argc + plugin->nr_options] = value;
+    ++plugin->nr_options;
 }
 
 int parse_options(
         int argc,
         char* argv[],
-        Plugin* plugins[],
         size_t nr_plugins,
+        Plugin* plugins[],
+        char* plugin_options[],
         Error* error) {
 
     int option;
@@ -150,13 +137,10 @@ int parse_options(
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == DISABLE_PLUGIN_OPT[0]) {
             size_t pos = find_plugin(
-                optarg, FIND_PLUGIN_BY_FULL_NAME, plugins, nr_plugins, error);
+                optarg, FIND_PLUGIN_BY_FULL_NAME, nr_plugins, plugins, error);
 
             if (ERROR_HAS(error)) {
                 return -1;
-            }
-            if (!ARRAY_IS_NULL_INITIALIZED(&plugins[pos]->options)) {
-                Array_deinit(&plugins[pos]->options);
             }
             plugins[pos]->is_enabled = false;
         }
@@ -165,7 +149,8 @@ int parse_options(
             return -1;
         }
         else if (option == PLUGIN_OPTION_OPT[0]) {
-            parse_plugin_option(optarg, plugins, nr_plugins, error);
+            parse_plugin_option(
+                optarg, argc, nr_plugins, plugins, plugin_options, error);
 
             if (ERROR_HAS(error)) {
                 return -1;

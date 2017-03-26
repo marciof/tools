@@ -93,7 +93,7 @@ static void open_inputs(
     }
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
     Array argv;
     size_t nr_args = 0;
 
@@ -169,14 +169,14 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
         open_inputs(plugin, inputs, &argv, inputs->length, error);
     }
 
-    Array_deinit(&argv);
+    Array_deinit(&argv);*/
 }
 
 Plugin Dir_Plugin = {
-    ARRAY_NULL_INITIALIZER,
-    "list directories via `" EXTERNAL_BINARY "`",
     "dir",
+    "list directories via `" EXTERNAL_BINARY "`",
     true,
+    0,
     is_available,
     run,
 };

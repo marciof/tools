@@ -29,7 +29,7 @@ static int open_file(char* path, Error* error) {
     return fd;
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
@@ -44,14 +44,14 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
                 input->plugin = plugin;
             }
         }
-    }
+    }*/
 }
 
 Plugin File_Plugin = {
-    ARRAY_NULL_INITIALIZER,
-    "read files",
     "file",
+    "read files",
     true,
+    0,
     PLUGIN_IS_AVAILABLE_ALWAYS,
     run,
 };

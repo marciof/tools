@@ -10,7 +10,7 @@
 #include "../io.h"
 #include "Stdin.h"
 
-static char fd_dir_path[STATIC_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
+static char fd_dir_path[C_ARRAY_LENGTH(((struct dirent*) NULL)->d_name)];
 
 // Non-reentrant, returns pointer to static storage.
 static char* get_fd_dir_path(int fd, Error* error) {
@@ -35,7 +35,7 @@ static char* get_fd_dir_path(int fd, Error* error) {
         return NULL;
     }
 
-    if (getcwd(fd_dir_path, STATIC_ARRAY_LENGTH(fd_dir_path)) == NULL) {
+    if (getcwd(fd_dir_path, C_ARRAY_LENGTH(fd_dir_path)) == NULL) {
         Error_add(error, strerror(errno));
 
         if (fchdir(cwd_fd) == -1) {
@@ -61,7 +61,7 @@ static char* get_fd_dir_path(int fd, Error* error) {
 }
 
 // Non-reentrant, may (re-)use static storage.
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
+static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
     int fd = STDIN_FILENO;
     struct stat fd_stat;
     Input* input;
@@ -108,14 +108,14 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
     }
     else {
         input->plugin = plugin;
-    }
+    }*/
 }
 
 Plugin Stdin_Plugin = {
-    ARRAY_NULL_INITIALIZER,
-    "read standard input",
     "stdin",
+    "read standard input",
     true,
+    0,
     PLUGIN_IS_AVAILABLE_ALWAYS,
     run,
 };

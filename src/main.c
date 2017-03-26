@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "Array.h"
 #include "io.h"
 #include "options.h"
 #include "plugin/Dir.h"
@@ -22,10 +21,10 @@ static Plugin* plugins[] = {
     &Pager_Plugin,
 };
 
-static void cleanup(Array* outputs, Error* error) {
+/*static void cleanup(Array* outputs, Error* error) {
     Error_print(error, stderr);
 
-    /*if (inputs != NULL) {
+    if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
             Input* input = (Input*) inputs->data[i];
 
@@ -45,7 +44,7 @@ static void cleanup(Array* outputs, Error* error) {
             Input_delete(input);
         }
         Array_deinit(inputs);
-    }*/
+    }
 
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
@@ -63,13 +62,13 @@ static void cleanup(Array* outputs, Error* error) {
         Array_deinit(outputs);
     }
 
-    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
+    for (size_t i = 0; i < C_ARRAY_LENGTH(plugins); ++i) {
         if (plugins[i] != NULL) {
             Array_deinit(&plugins[i]->options);
             plugins[i] = NULL;
         }
     }
-}
+}*/
 
 // Receives an optional previous `buffer` returning it or a new one when `NULL`,
 // so as to be able to reuse it across calls and minimize memory allocations.
@@ -200,7 +199,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
     }
 
     bool has_shown_help = parse_options(
-        argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &inputs, &error);
+        argc, argv, plugins, C_ARRAY_LENGTH(plugins), &inputs, &error);
 
     if (has_shown_help || ERROR_HAS(&error)) {
         cleanup(&inputs, NULL, &error);
@@ -214,7 +213,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
         return EXIT_FAILURE;
     }
 
-    for (size_t i = 0; i < STATIC_ARRAY_LENGTH(plugins); ++i) {
+    for (size_t i = 0; i < C_ARRAY_LENGTH(plugins); ++i) {
         Plugin* plugin = plugins[i];
 
         if (plugin == NULL) {
@@ -237,15 +236,14 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
 
 int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
+    char* plugin_options[C_ARRAY_LENGTH(plugins) * argc];
 
     int args_pos = parse_options(
-        argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
+        argc, argv, C_ARRAY_LENGTH(plugins), plugins, plugin_options, &error);
 
     if ((args_pos == -1) || (ERROR_HAS(&error))) {
-        cleanup(NULL, &error);
-        return ERROR_HAS(&error) ? EXIT_FAILURE : EXIT_SUCCESS;
+        return Error_print(&error, stderr) ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    cleanup(NULL, &error);
     return EXIT_SUCCESS;
 }

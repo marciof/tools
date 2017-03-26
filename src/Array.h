@@ -9,7 +9,7 @@
 #define /* bool */ ARRAY_IS_NULL_INITIALIZED(/* Array* */ array) \
     ((array)->data == NULL)
 
-#define /* size_t */ STATIC_ARRAY_LENGTH(array /* [] */) \
+#define /* size_t */ C_ARRAY_LENGTH(array /* [] */) \
     (sizeof(array) / sizeof((array)[0]))
 
 typedef struct {
