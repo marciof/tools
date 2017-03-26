@@ -16,7 +16,7 @@ static bool is_available() {
         NULL,
     };
 
-    Error error= ERROR_INITIALIZER;
+    Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
     return !ERROR_HAS(&error) && (status == 0);
 }

@@ -1,10 +1,9 @@
 #!/bin/sh
+set -u
 
-# Fix Valgrind location for tests that change `$PATH`.
-export VALGRIND_PATH="`which valgrind`"
-
-export VALGRIND_LEAK_CHECK="--leak-check=yes --show-reachable=yes"
+valgrind_path="$(command -v valgrind)"
+show_path="$(command -v show)"
 
 show() {
-    "$VALGRIND_PATH" -q $VALGRIND_LEAK_CHECK "$TESTDIR/../show" "$@"
+    "${valgrind_path:?}" -q --leak-check=yes --show-reachable=yes "${show_path:?}" "$@"
 }

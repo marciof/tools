@@ -97,6 +97,7 @@ static void parse_plugin_option(
 
     if (is_option_missing) {
         Error_add(error, "no plugin option specified");
+        Error_add(error, option);
         return;
     }
 
@@ -104,6 +105,7 @@ static void parse_plugin_option(
 
     if (name_length == 0) {
         Error_add(error, "no plugin name specified");
+        Error_add(error, option);
         return;
     }
 
@@ -111,6 +113,7 @@ static void parse_plugin_option(
         option, name_length, nr_plugins, plugins, error);
 
     if (ERROR_HAS(error)) {
+        Error_add(error, option);
         return;
     }
 
