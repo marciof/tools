@@ -22,10 +22,10 @@ static Plugin* plugins[] = {
     &Pager_Plugin,
 };
 
-static void cleanup(Array* inputs, Array* outputs, Error* error) {
+static void cleanup(Array* outputs, Error* error) {
     Error_print(error, stderr);
 
-    if (inputs != NULL) {
+    /*if (inputs != NULL) {
         for (size_t i = 0; i < inputs->length; ++i) {
             Input* input = (Input*) inputs->data[i];
 
@@ -45,7 +45,7 @@ static void cleanup(Array* inputs, Array* outputs, Error* error) {
             Input_delete(input);
         }
         Array_deinit(inputs);
-    }
+    }*/
 
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
@@ -188,7 +188,7 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
     return did_succeed;
 }
 
-int main(int argc, char* argv[]) {
+/*int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
     Array inputs, outputs;
 
@@ -233,4 +233,19 @@ int main(int argc, char* argv[]) {
     bool did_succeed = flush_inputs(&inputs, &outputs, &error);
     cleanup(&inputs, &outputs, &error);
     return did_succeed ? EXIT_SUCCESS: EXIT_FAILURE;
+}*/
+
+int main(int argc, char* argv[]) {
+    Error error = ERROR_INITIALIZER;
+
+    int args_pos = parse_options(
+        argc, argv, plugins, STATIC_ARRAY_LENGTH(plugins), &error);
+
+    if ((args_pos == -1) || (ERROR_HAS(&error))) {
+        cleanup(NULL, &error);
+        return ERROR_HAS(&error) ? EXIT_FAILURE : EXIT_SUCCESS;
+    }
+
+    cleanup(NULL, &error);
+    return EXIT_SUCCESS;
 }

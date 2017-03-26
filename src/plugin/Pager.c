@@ -398,6 +398,7 @@ Plugin Pager_Plugin = {
     ARRAY_NULL_INITIALIZER,
     "page output via `" EXTERNAL_BINARY "` when needed",
     "pager",
+    true,
     is_available,
     run,
 };

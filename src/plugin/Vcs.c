@@ -125,6 +125,7 @@ Plugin Vcs_Plugin = {
     ARRAY_NULL_INITIALIZER,
     "show VCS revisions via `" EXTERNAL_BINARY "`",
     "vcs",
+    true,
     is_available,
     run,
 };

@@ -115,6 +115,7 @@ Plugin Stdin_Plugin = {
     ARRAY_NULL_INITIALIZER,
     "read standard input",
     "stdin",
+    true,
     PLUGIN_IS_AVAILABLE_ALWAYS,
     run,
 };

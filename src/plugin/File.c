@@ -51,6 +51,7 @@ Plugin File_Plugin = {
     ARRAY_NULL_INITIALIZER,
     "read files",
     "file",
+    true,
     PLUGIN_IS_AVAILABLE_ALWAYS,
     run,
 };

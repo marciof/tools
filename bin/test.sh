@@ -77,6 +77,7 @@ for test_file; do
         rm -rf "${test_scratch_dir:?}"
 
         if diff -u "$test_file" "$test_dir/$test_output"; then
+            echo "$test_file: ok"
             rm "$test_dir/$test_script" "$test_dir/$test_output"
         fi
     fi

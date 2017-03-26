@@ -176,6 +176,7 @@ Plugin Dir_Plugin = {
     ARRAY_NULL_INITIALIZER,
     "list directories via `" EXTERNAL_BINARY "`",
     "dir",
+    true,
     is_available,
     run,
 };

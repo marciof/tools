@@ -77,6 +77,7 @@ void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
 void Array_deinit(Array* array) {
     if (array->data != array->buffer) {
         free(array->data);
+        array->data = NULL;
     }
 }
 

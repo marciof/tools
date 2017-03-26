@@ -34,6 +34,7 @@ typedef struct Plugin {
     Array options;
     const char* description;
     const char* name;
+    bool is_enabled;
     // If always supported, set to `PLUGIN_IS_AVAILABLE_ALWAYS`.
     bool (*is_available)();
     // The `inputs` array is sparse, individual elements may be `NULL`.
