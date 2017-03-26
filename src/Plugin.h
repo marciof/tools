@@ -6,11 +6,7 @@
 #include "Error.h"
 #include "io.h"
 
-#define PLUGIN_IS_AVAILABLE_ALWAYS NULL
-
 typedef struct Input {
-    // If unsupported, set to `NULL`.
-    struct Plugin* plugin;
     // If unnamed, set to `NULL`.
     char* name;
     // If unsupported or when closed, set to `IO_NULL_FD`.
@@ -34,16 +30,17 @@ typedef struct Plugin {
     const char* description;
     bool is_enabled;
     size_t nr_options;
-    // If always supported, set to `PLUGIN_IS_AVAILABLE_ALWAYS`.
     bool (*is_available)();
-    // The `inputs` array is sparse, individual elements may be `NULL`.
-    void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
+    void (*run)(
+        struct Plugin* plugin,
+        char* options[],
+        Input* input,
+        Array* outputs,
+        Error* error);
 } Plugin;
 
 void Input_close(Input* input, Error* error);
 void Input_close_subprocess(Input* input, Error* error);
-void Input_delete(Input* input);
-Input* Input_new(char* name, int fd, Error* error);
 
 void Output_delete(Output* output);
 Output* Output_new(Plugin* plugin, Error* error);

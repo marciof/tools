@@ -343,8 +343,14 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
     (*buffer)->length = 0;
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
-    bool is_tty = io_is_tty(STDOUT_FILENO, error);
+static void run(
+        Plugin* plugin,
+        char* options[],
+        Input* input,
+        Array* outputs,
+        Error* error) {
+
+    /*bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
     if (ERROR_HAS(error) || !is_tty) {
         return;
@@ -397,7 +403,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
 Plugin Pager_Plugin = {
     "pager",
     "page output via `" EXTERNAL_BINARY "` when needed",
-    true,
+    false,
     0,
     is_available,
     run,

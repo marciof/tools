@@ -35,27 +35,6 @@ void Input_close_subprocess(Input* input, Error* error) {
     }
 }
 
-void Input_delete(Input* input) {
-    free(input);
-}
-
-Input* Input_new(char* name, int fd, Error* error) {
-    Input* input = (Input*) malloc(sizeof(*input));
-
-    if (input == NULL) {
-        Error_add(error, strerror(errno));
-        return NULL;
-    }
-
-    input->plugin = NULL;
-    input->name = name;
-    input->fd = fd;
-    input->arg = (intptr_t) NULL;
-    input->close = NULL;
-
-    return input;
-}
-
 void Output_delete(Output* output) {
     free(output);
 }

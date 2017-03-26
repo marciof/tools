@@ -32,6 +32,3 @@ add_executable(${PROJECT_NAME}
     src/main.c)
 
 target_link_libraries(${PROJECT_NAME} pthread util)
-
-add_executable(pty src/pty.c)
-target_link_libraries(pty util)

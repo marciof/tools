@@ -60,9 +60,19 @@ static char* get_fd_dir_path(int fd, Error* error) {
     return fd_dir_path;
 }
 
+static bool is_available() {
+    return true;
+}
+
 // Non-reentrant, may (re-)use static storage.
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
-    int fd = STDIN_FILENO;
+static void run(
+        Plugin* plugin,
+        char* options[],
+        Input* input,
+        Array* outputs,
+        Error* error) {
+
+    /*int fd = STDIN_FILENO;
     struct stat fd_stat;
     Input* input;
     size_t position;
@@ -114,8 +124,8 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
 Plugin Stdin_Plugin = {
     "stdin",
     "read standard input",
-    true,
+    false,
     0,
-    PLUGIN_IS_AVAILABLE_ALWAYS,
+    is_available,
     run,
 };

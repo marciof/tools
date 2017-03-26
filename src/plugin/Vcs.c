@@ -62,8 +62,14 @@ static bool is_input_valid(char* input, Error* error) {
     return popen2_status(args[0], args, error) == 0;
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
-    Array argv = ARRAY_NULL_INITIALIZER;
+static void run(
+        Plugin* plugin,
+        char* options[],
+        Input* input,
+        Array* outputs,
+        Error* error) {
+
+    /*Array argv = ARRAY_NULL_INITIALIZER;
 
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
@@ -124,7 +130,7 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {/*
 Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`",
-    true,
+    false,
     0,
     is_available,
     run,

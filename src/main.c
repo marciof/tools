@@ -22,30 +22,6 @@ static Plugin* plugins[] = {
 };
 
 /*static void cleanup(Array* outputs, Error* error) {
-    Error_print(error, stderr);
-
-    if (inputs != NULL) {
-        for (size_t i = 0; i < inputs->length; ++i) {
-            Input* input = (Input*) inputs->data[i];
-
-            if (input == NULL) {
-                continue;
-            }
-
-            if (input->fd != IO_NULL_FD) {
-                Error input_error = ERROR_INITIALIZER;
-                Input_close(input, &input_error);
-
-                if (ERROR_HAS(&input_error)) {
-                    Error_add(&input_error, input->plugin->name);
-                    Error_print(&input_error, stderr);
-                }
-            }
-            Input_delete(input);
-        }
-        Array_deinit(inputs);
-    }
-
     if (outputs != NULL) {
         for (size_t i = 0; i < outputs->length; ++i) {
             Output* output = (Output*) outputs->data[i];
@@ -61,16 +37,9 @@ static Plugin* plugins[] = {
         }
         Array_deinit(outputs);
     }
-
-    for (size_t i = 0; i < C_ARRAY_LENGTH(plugins); ++i) {
-        if (plugins[i] != NULL) {
-            Array_deinit(&plugins[i]->options);
-            plugins[i] = NULL;
-        }
-    }
 }*/
 
-// Receives an optional previous `buffer` returning it or a new one when `NULL`,
+/*// Receives an optional previous `buffer` returning it or a new one when `NULL`,
 // so as to be able to reuse it across calls and minimize memory allocations.
 static Buffer* flush_input(
         int fd, Buffer* buffer, Array* outputs, Error* error) {
@@ -185,54 +154,33 @@ static bool flush_inputs(Array* inputs, Array* outputs, Error* error) {
     }
 
     return did_succeed;
-}
-
-/*int main(int argc, char* argv[]) {
-    Error error = ERROR_INITIALIZER;
-    Array inputs, outputs;
-
-    Array_init(&inputs, &error, NULL);
-
-    if (ERROR_HAS(&error)) {
-        cleanup(NULL, NULL, &error);
-        return EXIT_FAILURE;
-    }
-
-    bool has_shown_help = parse_options(
-        argc, argv, plugins, C_ARRAY_LENGTH(plugins), &inputs, &error);
-
-    if (has_shown_help || ERROR_HAS(&error)) {
-        cleanup(&inputs, NULL, &error);
-        return has_shown_help ? EXIT_SUCCESS : EXIT_FAILURE;
-    }
-
-    Array_init(&outputs, &error, NULL);
-
-    if (ERROR_HAS(&error)) {
-        cleanup(&inputs, NULL, &error);
-        return EXIT_FAILURE;
-    }
-
-    for (size_t i = 0; i < C_ARRAY_LENGTH(plugins); ++i) {
-        Plugin* plugin = plugins[i];
-
-        if (plugin == NULL) {
-            continue;
-        }
-
-        plugin->run(plugin, &inputs, &outputs, &error);
-
-        if (ERROR_HAS(&error)) {
-            Error_add(&error, plugin->name);
-            cleanup(&inputs, &outputs, &error);
-            return EXIT_FAILURE;
-        }
-    }
-
-    bool did_succeed = flush_inputs(&inputs, &outputs, &error);
-    cleanup(&inputs, &outputs, &error);
-    return did_succeed ? EXIT_SUCCESS: EXIT_FAILURE;
 }*/
+
+static void flush_input(int input_fd, int output_fd, Error* error) {
+    uint8_t buffer[BUFSIZ];
+    ssize_t nr_read;
+
+    while ((nr_read = read(input_fd, buffer, BUFSIZ)) > 0) {
+        size_t length = (size_t) nr_read;
+        uint8_t* buffer_ptr = buffer;
+
+        while (length > 0) {
+            ssize_t nr_written = write(output_fd, buffer_ptr, length);
+
+            if (nr_written == -1) {
+                Error_add(error, strerror(errno));
+                return;
+            }
+
+            buffer_ptr += nr_written;
+            length -= nr_written;
+        }
+    }
+
+    if ((nr_read == -1) && (errno != EIO)) {
+        Error_add(error, strerror(errno));
+    }
+}
 
 int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
@@ -241,8 +189,55 @@ int main(int argc, char* argv[]) {
     int args_pos = parse_options(
         argc, argv, C_ARRAY_LENGTH(plugins), plugins, plugin_options, &error);
 
-    if ((args_pos == -1) || (ERROR_HAS(&error))) {
+    if ((args_pos < 0) || (ERROR_HAS(&error))) {
         return Error_print(&error, stderr) ? EXIT_FAILURE : EXIT_SUCCESS;
+    }
+
+    for (int i = args_pos; i < argc; ++i) {
+        Input input = {
+            argv[i],
+            IO_NULL_FD,
+            (intptr_t) NULL,
+            NULL,
+        };
+
+        for (size_t j = 0; j < C_ARRAY_LENGTH(plugins); ++j) {
+            Plugin* plugin = plugins[j];
+
+            if (!plugin->is_enabled) {
+                continue;
+            }
+
+            plugin->run(
+                plugin, plugin_options + j * argc, &input, NULL, &error);
+
+            if (ERROR_HAS(&error)) {
+                Error_add(&error, plugin->name);
+                Error_print(&error, stderr);
+                return EXIT_FAILURE;
+            }
+            if (input.fd == IO_NULL_FD) {
+                continue;
+            }
+
+            flush_input(input.fd, STDOUT_FILENO, &error);
+
+            if (ERROR_HAS(&error)) {
+                Error_add(&error, plugin->name);
+                Error_print(&error, stderr);
+                return EXIT_FAILURE;
+            }
+
+            input.close(&input, &error);
+
+            if (ERROR_HAS(&error)) {
+                Error_add(&error, plugin->name);
+                Error_print(&error, stderr);
+                return EXIT_FAILURE;
+            }
+
+            break;
+        }
     }
 
     return EXIT_SUCCESS;
