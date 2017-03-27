@@ -23,22 +23,24 @@ static void open_default_input(
         char* options[],
         Error* error) {
 
-    struct stat fd_stat;
+    struct stat input_stat;
 
-    if (fstat(STDIN_FILENO, &fd_stat) == -1) {
+    if (fstat(STDIN_FILENO, &input_stat) == -1) {
         Error_add(error, strerror(errno));
         return;
     }
 
-    if (S_ISDIR(fd_stat.st_mode)) {
+    if (S_ISDIR(input_stat.st_mode)) {
         Error_add(error, "unable to read directory");
         return;
     }
 
-    bool has_fd_input = io_has_input(STDIN_FILENO, error);
+    if (!S_ISFIFO(input_stat.st_mode)) {
+        bool has_fd_input = io_has_input(STDIN_FILENO, error);
 
-    if (ERROR_HAS(error) || !has_fd_input) {
-        return;
+        if (ERROR_HAS(error) || !has_fd_input) {
+            return;
+        }
     }
 
     input->name = "<stdin>";

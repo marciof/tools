@@ -8,15 +8,19 @@ Display piped input:
   $ echo "Hello world!" | show
   Hello world!
 
+Display slow piped input:
+
+  $ (sleep 1 && echo foobar) | show
+  foobar
+
 Display input file:
 
   $ show < file
   Bob
 
-Don't display stdin when there are named inputs:
+Display NUL device:
 
-  $ echo Alice | show .
-  file
+  $ show < /dev/null
 
 Display input directory:
 
@@ -24,6 +28,7 @@ Display input directory:
   stdin: unable to read directory
   [1]
 
-Display NUL device:
+Don't display stdin when there are named inputs:
 
-  $ show < /dev/null
+  $ echo Alice | show .
+  file
