@@ -7,6 +7,12 @@
 #include "../io.h"
 #include "Stdin.h"
 
+static void close_input(Input* input, Error* error) {
+    if (close(input->fd) == -1) {
+        Error_add(error, strerror(errno));
+    }
+}
+
 static bool is_available() {
     return true;
 }
@@ -37,6 +43,7 @@ static void open_default_input(
 
     input->name = "<stdin>";
     input->fd = STDIN_FILENO;
+    input->close = close_input;
 }
 
 Plugin Stdin_Plugin = {

@@ -149,7 +149,7 @@ static bool flush_input(
         return false;
     }
 
-    Input_close(input, error);
+    input->close(input, error);
 
     if (ERROR_HAS(error)) {
         Error_add(error, input->name);

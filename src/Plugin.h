@@ -6,9 +6,6 @@
 #include "Error.h"
 #include "io.h"
 
-/** Call `close` when closing a plugin. */
-#define INPUT_CLOSE_DEFAULT NULL
-
 typedef struct Input {
     /** `NULL` when a plugin is run with no inputs to get a default one. */
     char* name;
@@ -40,8 +37,6 @@ typedef struct Plugin {
         Input* input, size_t options_length, char* options[], Error* error);
 } Plugin;
 
-void Input_close(Input* input, Error* error);
 void Input_close_subprocess(Input* input, Error* error);
-
 void Output_delete(Output* output);
 Output* Output_new(Plugin* plugin, Error* error);

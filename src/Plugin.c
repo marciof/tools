@@ -5,17 +5,6 @@
 #include "Plugin.h"
 #include "popen2.h"
 
-void Input_close(Input* input, Error* error) {
-    if (input->close != INPUT_CLOSE_DEFAULT) {
-        input->close(input, error);
-    }
-    else if (close(input->fd) == -1) {
-        Error_add(error, strerror(errno));
-    }
-
-    input->fd = IO_NULL_FD;
-}
-
 void Input_close_subprocess(Input* input, Error* error) {
     if (close(input->fd) == -1) {
         Error_add(error, strerror(errno));
@@ -26,11 +15,7 @@ void Input_close_subprocess(Input* input, Error* error) {
     int status = wait_subprocess((pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 
-    if (ERROR_HAS(error)) {
-        return;
-    }
-
-    if (status != 0) {
+    if (!ERROR_HAS(error) && (status != 0)) {
         Error_add(error, "subprocess exited with an error code");
     }
 }
