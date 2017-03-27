@@ -21,29 +21,11 @@ static bool is_available() {
     return !ERROR_HAS(&error) && (status == 0);
 }
 
-static void run(
+static void open_input(
+        Input* input,
         size_t options_length,
         char* options[],
-        Input* input,
-        Array* outputs,
         Error* error) {
-
-    if (input->name != NULL) {
-        struct stat input_stat;
-
-        if (stat(input->name, &input_stat) == -1) {
-            if (errno != ENOENT) {
-                Error_add(error, strerror(errno));
-            }
-            return;
-        }
-        if (!S_ISDIR(input_stat.st_mode)) {
-            return;
-        }
-    }
-    else {
-        input->name = ".";
-    }
 
     char* argv[1 + options_length + 1 + 1 + 1];
 
@@ -77,10 +59,41 @@ static void run(
     }
 }
 
+static void open_default_input(
+        Input* input,
+        size_t options_length,
+        char* options[],
+        Error* error) {
+
+    input->name = ".";
+    open_input(input, options_length, options, error);
+}
+
+static void open_named_input(
+        Input* input,
+        size_t options_length,
+        char* options[],
+        Error* error) {
+
+    struct stat input_stat;
+
+    if (stat(input->name, &input_stat) == -1) {
+        if (errno != ENOENT) {
+            Error_add(error, strerror(errno));
+        }
+        return;
+    }
+
+    if (S_ISDIR(input_stat.st_mode)) {
+        open_input(input, options_length, options, error);
+    }
+}
+
 Plugin Dir_Plugin = {
     "dir",
-    "list directories via `" EXTERNAL_BINARY "`",
+    "list directories via `" EXTERNAL_BINARY "`, cwd by default",
     true,
     is_available,
-    run,
+    open_default_input,
+    open_named_input,
 };

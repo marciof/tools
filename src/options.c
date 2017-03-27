@@ -43,10 +43,10 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
     for (size_t i = 0; i < nr_plugins; ++i) {
         Plugin* plugin = plugins[i];
 
-        fprintf(stderr, "  %-13s%s%s\n",
+        fprintf(stderr, "%c %-13s%s\n",
+            plugin->is_available() ? ' ' : 'x',
             plugin->name,
-            plugin->description,
-            plugin->is_available() ? "" : " (UNAVAILABLE)");
+            plugin->description);
     }
 }
 

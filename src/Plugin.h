@@ -32,12 +32,12 @@ typedef struct Plugin {
     const char* description;
     bool is_enabled;
     bool (*is_available)();
-    void (*run)(
-        size_t options_length,
-        char* options[],
-        Input* input,
-        Array* outputs,
-        Error* error);
+    /** `NULL` if it can't open default inputs. */
+    void (*open_default_input)(
+        Input* input, size_t options_length, char* options[], Error* error);
+    /** `NULL` if it can't open named inputs. */
+    void (*open_named_input)(
+        Input* input, size_t options_length, char* options[], Error* error);
 } Plugin;
 
 void Input_close(Input* input, Error* error);

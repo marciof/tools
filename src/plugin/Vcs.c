@@ -62,11 +62,10 @@ static bool is_input_valid(char* input, Error* error) {
     return popen2_status(args[0], args, error) == 0;
 }
 
-static void run(
+static void open_named_input(
+        Input* input,
         size_t options_length,
         char* options[],
-        Input* input,
-        Array* outputs,
         Error* error) {
 
     /*Array argv = ARRAY_NULL_INITIALIZER;
@@ -132,5 +131,6 @@ Plugin Vcs_Plugin = {
     "show VCS revisions via `" EXTERNAL_BINARY "`",
     false,
     is_available,
-    run,
+    NULL,
+    open_named_input,
 };

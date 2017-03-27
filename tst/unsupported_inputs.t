@@ -8,8 +8,8 @@ Complain about non-supported input:
   doesnt_exist: unsupported input
   [1]
 
-Deactivate non-supported plugin automatically:
+Deactivate non-supported plugins automatically:
 
-  $ PATH=/bin show @
+  $ PATH= show .
   @: unsupported input
   [1]

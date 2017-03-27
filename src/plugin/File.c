@@ -33,11 +33,10 @@ static int open_file(char* path, Error* error) {
     return fd;
 }
 
-static void run(
+static void open_named_input(
+        Input* input,
         size_t options_length,
         char* options[],
-        Input* input,
-        Array* outputs,
         Error* error) {
 
     /*for (size_t i = 0; i < inputs->length; ++i) {
@@ -62,5 +61,6 @@ Plugin File_Plugin = {
     "read files",
     false,
     is_available,
-    run,
+    NULL,
+    open_named_input,
 };

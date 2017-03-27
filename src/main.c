@@ -92,6 +92,9 @@ static Buffer* flush_input(
 }
 */
 
+/**
+ * @return whether or not the input was successfully flushed
+ */
 static bool flush_input(
         Input* input,
         int output_fd,
@@ -100,7 +103,18 @@ static bool flush_input(
         char* options[],
         Error* error) {
 
-    plugin->run(options_length, options, input, NULL, error);
+    if (input->name == NULL) {
+        if (plugin->open_default_input == NULL) {
+            return false;
+        }
+        plugin->open_default_input(input, options_length, options, error);
+    }
+    else {
+        if (plugin->open_named_input == NULL) {
+            return false;
+        }
+        plugin->open_named_input(input, options_length, options, error);
+    }
 
     if (ERROR_HAS(error)) {
         return false;
