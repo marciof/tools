@@ -6,12 +6,15 @@
 #include "Error.h"
 #include "io.h"
 
+/** Call `close` when closing a plugin. */
+#define INPUT_CLOSE_DEFAULT NULL
+
 typedef struct Input {
+    /** `NULL` when a plugin is run with no inputs to get a default one. */
     char* name;
-    // If unsupported or when closed, set to `IO_NULL_FD`.
+    /** `IO_NULL_FD` if unsupported or when closed. */
     int fd;
     intptr_t arg;
-    // Calls `close` by default.
     void (*close)(struct Input*, Error* error);
 } Input;
 
@@ -30,7 +33,7 @@ typedef struct Plugin {
     bool is_enabled;
     bool (*is_available)();
     void (*run)(
-        size_t nr_options,
+        size_t options_length,
         char* options[],
         Input* input,
         Array* outputs,

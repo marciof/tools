@@ -33,6 +33,6 @@ List directory without permission to read:
   $ chmod u-r cant_read
   $ show cant_read
   ls: cannot open directory 'cant_read': Permission denied
-  dir: subprocess exited with an error code
+  dir: cant_read: subprocess exited with an error code
   [1]
   $ chmod u+r cant_read

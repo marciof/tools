@@ -22,32 +22,37 @@ static bool is_available() {
 }
 
 static void run(
-        size_t nr_options,
+        size_t options_length,
         char* options[],
         Input* input,
         Array* outputs,
         Error* error) {
 
-    struct stat input_stat;
+    if (input->name != NULL) {
+        struct stat input_stat;
 
-    if (stat(input->name, &input_stat) == -1) {
-        if (errno != ENOENT) {
-            Error_add(error, strerror(errno));
+        if (stat(input->name, &input_stat) == -1) {
+            if (errno != ENOENT) {
+                Error_add(error, strerror(errno));
+            }
+            return;
         }
-        return;
+        if (!S_ISDIR(input_stat.st_mode)) {
+            return;
+        }
     }
-    if (!S_ISDIR(input_stat.st_mode)) {
-        return;
+    else {
+        input->name = ".";
     }
 
-    char* argv[1 + nr_options + 1 + 1 + 1];
+    char* argv[1 + options_length + 1 + 1 + 1];
 
     argv[0] = EXTERNAL_BINARY;
-    argv[1 + nr_options] = "--";
-    argv[1 + nr_options + 1] = input->name;
-    argv[1 + nr_options + 1 + 1] = NULL;
+    argv[1 + options_length] = "--";
+    argv[1 + options_length + 1] = input->name;
+    argv[1 + options_length + 1 + 1] = NULL;
 
-    for (size_t i = 0; i < nr_options; ++i) {
+    for (size_t i = 0; i < options_length; ++i) {
         argv[i + 1] = options[i];
     }
 

@@ -6,7 +6,7 @@
 #include "popen2.h"
 
 void Input_close(Input* input, Error* error) {
-    if (input->close != NULL) {
+    if (input->close != INPUT_CLOSE_DEFAULT) {
         input->close(input, error);
     }
     else if (close(input->fd) == -1) {

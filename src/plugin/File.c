@@ -34,7 +34,7 @@ static int open_file(char* path, Error* error) {
 }
 
 static void run(
-        size_t nr_options,
+        size_t options_length,
         char* options[],
         Input* input,
         Array* outputs,

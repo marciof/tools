@@ -18,7 +18,7 @@
 )
 
 #define ERROR_UNKNOWN_PLUGIN "no such plugin"
-#define FIND_PLUGIN_BY_FULL_NAME 0
+#define FIND_PLUGIN_FULL_NAME 0
 
 static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
@@ -60,7 +60,7 @@ static size_t find_plugin(
     for (size_t i = 0; i < nr_plugins; ++i) {
         const char* other_name = plugins[i]->name;
 
-        if (name_length != FIND_PLUGIN_BY_FULL_NAME) {
+        if (name_length != FIND_PLUGIN_FULL_NAME) {
             size_t j = 0;
 
             for (j = 0; (j < name_length) && (other_name[j] != '\0'); ++j) {
@@ -82,17 +82,18 @@ static size_t find_plugin(
 }
 
 static void parse_plugin_option(
-        int argc,
         char* option,
-        size_t nr_plugins,
+        size_t plugins_length,
         Plugin* plugins[],
-        size_t plugins_nr_options[],
-        char* plugins_options[],
+        size_t max_nr_options_per_plugin,
+        size_t nr_options_per_plugin[],
+        char* options_per_plugin[],
         Error* error) {
 
     char* separator = strstr(option, PLUGIN_OPT_SEP);
 
-    bool is_option_missing = (separator == NULL)
+    bool is_option_missing
+        = (separator == NULL)
         || (separator[C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1] == '\0');
 
     if (is_option_missing) {
@@ -110,7 +111,7 @@ static void parse_plugin_option(
     }
 
     size_t pos = find_plugin(
-        option, name_length, nr_plugins, plugins, error);
+        option, name_length, plugins_length, plugins, error);
 
     if (ERROR_HAS(error)) {
         Error_add(error, option);
@@ -118,17 +119,22 @@ static void parse_plugin_option(
     }
 
     char* value = separator + C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1;
-    plugins_options[pos * argc + plugins_nr_options[pos]] = value;
-    ++plugins_nr_options[pos];
+
+    options_per_plugin
+        [pos * max_nr_options_per_plugin + nr_options_per_plugin[pos]]
+        = value;
+
+    ++nr_options_per_plugin[pos];
 }
 
 int parse_options(
         int argc,
         char* argv[],
-        size_t nr_plugins,
+        size_t plugins_length,
         Plugin* plugins[],
-        size_t plugins_nr_options[],
-        char* plugins_options[],
+        size_t max_nr_options_per_plugin,
+        size_t nr_options_per_plugin[],
+        char* options_per_plugin[],
         Error* error) {
 
     int option;
@@ -136,7 +142,7 @@ int parse_options(
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == DISABLE_PLUGIN_OPT[0]) {
             size_t pos = find_plugin(
-                optarg, FIND_PLUGIN_BY_FULL_NAME, nr_plugins, plugins, error);
+                optarg, FIND_PLUGIN_FULL_NAME, plugins_length, plugins, error);
 
             if (ERROR_HAS(error)) {
                 return -1;
@@ -144,17 +150,17 @@ int parse_options(
             plugins[pos]->is_enabled = false;
         }
         else if (option == HELP_OPT[0]) {
-            display_help(plugins, nr_plugins);
+            display_help(plugins, plugins_length);
             return -1;
         }
         else if (option == PLUGIN_OPTION_OPT[0]) {
             parse_plugin_option(
-                argc,
                 optarg,
-                nr_plugins,
+                plugins_length,
                 plugins,
-                plugins_nr_options,
-                plugins_options,
+                max_nr_options_per_plugin,
+                nr_options_per_plugin,
+                options_per_plugin,
                 error);
 
             if (ERROR_HAS(error)) {

@@ -344,7 +344,7 @@ static void Output_write(Output* output, Buffer** buffer, Error* error) {
 }
 
 static void run(
-        size_t nr_options,
+        size_t options_length,
         char* options[],
         Input* input,
         Array* outputs,

@@ -66,7 +66,7 @@ static bool is_available() {
 
 // Non-reentrant, may (re-)use static storage.
 static void run(
-        size_t nr_options,
+        size_t options_length,
         char* options[],
         Input* input,
         Array* outputs,
