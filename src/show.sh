@@ -18,22 +18,6 @@ mode_options_file=
 mode_options_stdin=
 mode_options_vcs=
 
-mode_can_dir() {
-    return 0
-}
-
-mode_can_file() {
-    return 0
-}
-
-mode_can_stdin() {
-    return 0
-}
-
-mode_can_vcs() {
-    command -v git >/dev/null
-}
-
 mode_run_dir() {
     if [ -d "$1" ]; then
         run_with_mode_options "$mode_options_dir" "$1" pty ls
@@ -112,7 +96,6 @@ run_with_mode_options() {
 
 print_usage() {
     local mode
-    local unavailable
 
     cat <<USAGE
 Usage: $(basename "$0") [OPTION]... [INPUT]...
@@ -127,14 +110,7 @@ Modes:
 USAGE
 
     for mode in stdin file dir vcs; do
-        if ! "mode_can_$mode"; then
-            unavailable=' (UNAVAILABLE)'
-        else
-            unavailable=
-        fi
-
-        printf "  %-13s%s%s\n" \
-            "$mode" "$(var "mode_description_$mode")" "$unavailable"
+        printf "  %-13s%s\n" "$mode" "$(var "mode_description_$mode")"
     done
 }
 
