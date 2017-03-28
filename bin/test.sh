@@ -7,20 +7,24 @@ is_compile_only=0
 
 compile_t_to_sh() {
     local test_dir="$1"
-    local eot_marker="EOT_$(head -c3 < /dev/urandom | od -An -tx1 | tr -d ' ')"
+    local random_token="$(head -c3 < /dev/urandom | od -An -tx1 | tr -d ' ')"
+    local eot="EOT_$random_token"
+    local log="LOG_$random_token"
 
     cat <<EOT
 #!/bin/sh
 set -u
 TESTDIR="$test_dir"
+$log="\$(mktemp)"
+trap 'rm "\$$log"' EXIT
 EOT
 
     sed -E '/^  /! s/^/#/' \
         | sed -E 's/^  \$ //' \
         | grep -v -E '^  ' \
-        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot_marker'\n  \$ \1\n$eot_marker\n\1 2>\&1 | sed -E 's=^=  ='/" \
+        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot'\n  \$ \1\n$eot\n{ \1 ;} >\"\$$log\" 2>\&1 ; sed -E 's=^=  =' \"\$$log\"/" \
         | sed -E "s/^#([^\\\$\"\`'(){}<>;|&-]*)$/echo \1/" \
-        | sed -E "s/^#(.*)\$/cat <<'$eot_marker'\n\1\n$eot_marker/"
+        | sed -E "s/^#(.*)\$/cat <<'$eot'\n\1\n$eot/"
 }
 
 print_usage() {
