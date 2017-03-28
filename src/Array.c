@@ -8,7 +8,7 @@
 
 static void change_capacity(Array* array, size_t size, Error* error) {
     if (size < array->length) {
-        Error_add(error, "Array capacity is smaller than its length");
+        Error_add(error, "array capacity is smaller than its length");
         return;
     }
 
@@ -40,7 +40,7 @@ static void change_capacity(Array* array, size_t size, Error* error) {
 
 void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
     if (pos > array->length) {
-        Error_add(error, "Out of bounds array position for adding");
+        Error_add(error, "out of bounds array position for adding");
         return;
     }
 
@@ -77,6 +77,7 @@ void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
 void Array_deinit(Array* array) {
     if (array->data != array->buffer) {
         free(array->data);
+        array->data = NULL;
     }
 }
 
@@ -133,7 +134,7 @@ void Array_init(Array* array, Error* error, ...) {
 
 intptr_t Array_remove(Array* array, size_t pos, Error* error) {
     if (pos >= array->length) {
-        Error_add(error, "Out of bounds array position for removal");
+        Error_add(error, "out of bounds array position for removal");
         return 0;
     }
 

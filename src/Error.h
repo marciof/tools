@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdio.h>
 
 #define ERROR_MESSAGE_STACK_SIZE 8
@@ -16,4 +17,4 @@ void Error_add(Error* error, const char* message);
 void Error_copy(Error* error, Error* source);
 
 // Errors while printing are silently discarded.
-void Error_print(Error* error, FILE* stream);
+bool Error_print(Error* error, FILE* stream);

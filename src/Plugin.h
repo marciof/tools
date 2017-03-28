@@ -6,17 +6,12 @@
 #include "Error.h"
 #include "io.h"
 
-#define PLUGIN_IS_AVAILABLE_ALWAYS NULL
-
 typedef struct Input {
-    // If unsupported, set to `NULL`.
-    struct Plugin* plugin;
-    // If unnamed, set to `NULL`.
+    /** `NULL` when a plugin is run with no inputs to get a default one. */
     char* name;
-    // If unsupported or when closed, set to `IO_NULL_FD`.
+    /** `IO_NULL_FD` if unsupported or when closed. */
     int fd;
     intptr_t arg;
-    // Calls `close` by default.
     void (*close)(struct Input*, Error* error);
 } Input;
 
@@ -30,20 +25,18 @@ typedef struct Output {
 } Output;
 
 typedef struct Plugin {
-    // If no plugin options, it satisfies `ARRAY_IS_NULL_INITIALIZED`.
-    Array options;
-    const char* description;
     const char* name;
-    // If always supported, set to `PLUGIN_IS_AVAILABLE_ALWAYS`.
+    const char* description;
+    bool is_enabled;
     bool (*is_available)();
-    // The `inputs` array is sparse, individual elements may be `NULL`.
-    void (*run)(struct Plugin*, Array* inputs, Array* outputs, Error* error);
+    /** `NULL` if it can't open default inputs. */
+    void (*open_default_input)(
+        Input* input, size_t options_length, char* options[], Error* error);
+    /** `NULL` if it can't open named inputs. */
+    void (*open_named_input)(
+        Input* input, size_t options_length, char* options[], Error* error);
 } Plugin;
 
-void Input_close(Input* input, Error* error);
 void Input_close_subprocess(Input* input, Error* error);
-void Input_delete(Input* input);
-Input* Input_new(char* name, int fd, Error* error);
-
 void Output_delete(Output* output);
 Output* Output_new(Plugin* plugin, Error* error);

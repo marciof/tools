@@ -5,6 +5,10 @@
 #include "../io.h"
 #include "File.h"
 
+static bool is_available() {
+    return true;
+}
+
 static int open_file(char* path, Error* error) {
     struct stat path_stat;
 
@@ -29,8 +33,13 @@ static int open_file(char* path, Error* error) {
     return fd;
 }
 
-static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
-    for (size_t i = 0; i < inputs->length; ++i) {
+static void open_named_input(
+        Input* input,
+        size_t options_length,
+        char* options[],
+        Error* error) {
+
+    /*for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
 
         if ((input != NULL) && (input->fd == IO_NULL_FD)) {
@@ -44,13 +53,14 @@ static void run(Plugin* plugin, Array* inputs, Array* outputs, Error* error) {
                 input->plugin = plugin;
             }
         }
-    }
+    }*/
 }
 
 Plugin File_Plugin = {
-    ARRAY_NULL_INITIALIZER,
-    "read files",
     "file",
-    PLUGIN_IS_AVAILABLE_ALWAYS,
-    run,
+    "read files",
+    false,
+    is_available,
+    NULL,
+    open_named_input,
 };

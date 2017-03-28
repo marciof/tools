@@ -39,7 +39,7 @@ bool io_has_input(int fd, Error* error) {
 }
 
 bool io_is_tty(int fd, Error* error) {
-    bool is_tty = (isatty(fd) == 1) ? true : false;
+    bool is_tty = (isatty(fd) != 0);
 
     if (!is_tty && (errno != ENOTTY)) {
         Error_add(error, strerror(errno));

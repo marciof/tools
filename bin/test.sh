@@ -1,26 +1,34 @@
 #!/bin/sh
+# https://bitbucket.org/brodie/cram/
+
 set -e -u
 
 compile_option=c
 help_option=h
-is_compile_only=0
+is_compile_only=
 
 compile_t_to_sh() {
     local test_dir="$1"
-    local eot_marker="EOT_$(head -c3 < /dev/urandom | od -An -tx1 | tr -d ' ')"
+    local random_token="$(head -c3 < /dev/urandom | od -An -tx1 | tr -d ' ')"
+    local eot="EOT_$random_token"
+    local log="LOG_$random_token"
+    local print_log="print_log_$random_token"
 
     cat <<EOT
 #!/bin/sh
 set -u
 TESTDIR="$test_dir"
+$log="\$(mktemp)"
+trap 'rm "\$$log"' EXIT
+alias $print_log='echo "[\$?]" | grep -vF "[0]" >>"\$$log"; sed "s/^/  /" "\$$log"'
 EOT
 
     sed -E '/^  /! s/^/#/' \
         | sed -E 's/^  \$ //' \
         | grep -v -E '^  ' \
-        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot_marker'\n  \$ \1\n$eot_marker\n\1 2>\&1 | sed -E 's=^=  ='/" \
+        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot'\n  \$ \1\n$eot\n{ \1 ;} >\"\$$log\" 2>\&1; $print_log/" \
         | sed -E "s/^#([^\\\$\"\`'(){}<>;|&-]*)$/echo \1/" \
-        | sed -E "s/^#(.*)\$/cat <<'$eot_marker'\n\1\n$eot_marker/"
+        | sed -E "s/^#(.*)\$/cat <<'$eot'\n\1\n$eot/"
 }
 
 print_usage() {
@@ -67,7 +75,7 @@ for test_file; do
     compile_t_to_sh "$abs_test_dir" < "$test_file" > "$test_dir/$test_script"
     chmod +x "$test_dir/$test_script"
 
-    if [ "$is_compile_only" -eq 0 ]; then
+    if [ -z "$is_compile_only" ]; then
         test_scratch_dir="$(mktemp -d)"
 
         cd "$test_scratch_dir"
@@ -77,6 +85,7 @@ for test_file; do
         rm -rf "${test_scratch_dir:?}"
 
         if diff -u "$test_file" "$test_dir/$test_output"; then
+            echo "$test_file: ok"
             rm "$test_dir/$test_script" "$test_dir/$test_output"
         fi
     fi

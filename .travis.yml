@@ -7,12 +7,8 @@ addons:
    - make
    - gcc
    # Test.
-   - python-pip
    - valgrind
-install:
-- export PATH=$HOME/.local/bin:$PATH
-- pip install --user cram
 script:
 - cmake .
 - make
-- cram -v tst/
+- ./bin/test.sh tst/*.t

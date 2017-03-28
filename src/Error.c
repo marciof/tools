@@ -16,7 +16,7 @@ void Error_copy(Error* error, Error* source) {
     }
 }
 
-void Error_print(Error* error, FILE* stream) {
+bool Error_print(Error* error, FILE* stream) {
     if (ERROR_HAS(error)) {
         for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
             const char* message = (*error)[i];
@@ -32,5 +32,9 @@ void Error_print(Error* error, FILE* stream) {
 
             fprintf(stream, "%s", message);
         }
+        return true;
+    }
+    else {
+        return false;
     }
 }
