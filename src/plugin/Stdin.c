@@ -30,11 +30,6 @@ static void open_default_input(
         return;
     }
 
-    if (S_ISDIR(input_stat.st_mode)) {
-        Error_add(error, "unable to read directory");
-        return;
-    }
-
     if (!S_ISFIFO(input_stat.st_mode)) {
         bool has_fd_input = io_has_input(STDIN_FILENO, error);
 
@@ -43,7 +38,6 @@ static void open_default_input(
         }
     }
 
-    input->name = "<stdin>";
     input->fd = STDIN_FILENO;
     input->close = close_input;
 }

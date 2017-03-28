@@ -25,7 +25,7 @@ Display NUL device:
 Display input directory:
 
   $ show < .
-  stdin: unable to read directory
+  stdin: Is a directory
   [1]
 
 Don't display stdin when there are named inputs:

@@ -145,14 +145,19 @@ static bool flush_input(
 
     if ((nr_read == -1) && (errno != EIO)) {
         Error_add(error, strerror(errno));
-        Error_add(error, input->name);
+
+        if (input->name != NULL) {
+            Error_add(error, input->name);
+        }
         return false;
     }
 
     input->close(input, error);
 
     if (ERROR_HAS(error)) {
-        Error_add(error, input->name);
+        if (input->name != NULL) {
+            Error_add(error, input->name);
+        }
         return false;
     }
 
