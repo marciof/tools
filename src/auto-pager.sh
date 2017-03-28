@@ -5,7 +5,7 @@ buffer_file="$(mktemp)"
 trap 'rm "$buffer_file"' EXIT
 
 nr_buffered_lines=0
-max_nr_lines="$(($(tput lines) / 2))"
+max_nr_lines="$(($(tput lines) / 3))"
 
 # Can't use `head` here since it causes `git` to stop output abruptly.
 while IFS= read -r buffered_line; do
