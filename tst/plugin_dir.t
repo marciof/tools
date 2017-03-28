@@ -33,6 +33,17 @@ List directory with leading dashes in its name:
   $ show -- --dir2
   file2
 
+Pipe output:
+
+  $ show . | head -n1
+  dir1
+
+List contents of link:
+
+  $ ln -s dir1 dirL
+  $ show dirL
+  file1
+
 List directory without permission to read:
 
   $ mkdir cant_read
