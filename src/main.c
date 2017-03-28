@@ -127,41 +127,20 @@ static bool flush_input(
     ssize_t nr_read;
 
     while ((nr_read = read(input->fd, buffer, BUFSIZ)) > 0) {
-        size_t length = (size_t) nr_read;
-        uint8_t* buffer_ptr = buffer;
+        io_write(output_fd, buffer, (size_t) nr_read, error);
 
-        while (length > 0) {
-            ssize_t nr_written = write(output_fd, buffer_ptr, length);
-
-            if (nr_written == -1) {
-                Error_add(error, strerror(errno));
-                return false;
-            }
-
-            buffer_ptr += nr_written;
-            length -= nr_written;
+        if (ERROR_HAS(error)) {
+            return false;
         }
     }
 
     if ((nr_read == -1) && (errno != EIO)) {
         Error_add(error, strerror(errno));
-
-        if (input->name != NULL) {
-            Error_add(error, input->name);
-        }
         return false;
     }
 
     input->close(input, error);
-
-    if (ERROR_HAS(error)) {
-        if (input->name != NULL) {
-            Error_add(error, input->name);
-        }
-        return false;
-    }
-
-    return true;
+    return !ERROR_HAS(error);
 }
 
 static void flush_inputs(
@@ -195,6 +174,9 @@ static void flush_inputs(
                     error);
 
                 if (ERROR_HAS(error)) {
+                    if (input.name != NULL) {
+                        Error_add(error, input.name);
+                    }
                     Error_add(error, plugin->name);
                     return;
                 }
