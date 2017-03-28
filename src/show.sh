@@ -127,10 +127,10 @@ Modes:
 USAGE
 
     for mode in stdin file dir vcs; do
-        if "mode_can_$mode"; then
-            unavailable=
-        else
+        if ! "mode_can_$mode"; then
             unavailable=' (UNAVAILABLE)'
+        else
+            unavailable=
         fi
 
         printf "  %-13s%s%s\n" \
