@@ -1,4 +1,10 @@
 #!/bin/sh
-set -e -u
-export SHOW_PTY="$(command -v valgrind) -q --leak-check=yes --show-reachable=yes pty"
-alias show.sh='$TESTDIR/../src/show.sh'
+
+# Fix Valgrind location for tests that change `$PATH`.
+export VALGRIND_PATH="`which valgrind`"
+
+export VALGRIND_LEAK_CHECK="--leak-check=yes --show-reachable=yes"
+
+show() {
+    "$VALGRIND_PATH" -q $VALGRIND_LEAK_CHECK "$TESTDIR/../show" "$@"
+}
