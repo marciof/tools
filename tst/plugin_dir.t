@@ -7,13 +7,19 @@ Setup:
 List current directory by default:
 
   $ show
-  --dir2
   dir1
+  --dir2
 
 List directory:
 
   $ show dir1
   file1
+
+List several directories at once:
+
+  $ show dir1 ./--dir2
+  file1
+  file2
 
 List directory with a custom option:
 
