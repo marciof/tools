@@ -2,7 +2,6 @@
 set -e -u
 
 status_cant_execute=126
-arg_separator="$(printf "\036")" # ASCII RS
 
 disable_mode_opt=d
 help_opt=h
@@ -65,18 +64,19 @@ disable_mode() {
 }
 
 add_mode_option() {
-    local name="${1%%=?*}"
-
-    if [ ${#name} -eq ${#1} -o ${#name} -eq 0 ]; then
+    if ! echo "$1" | grep -E -q '[^=]=.'; then
         echo "$1: missing mode name/option" >&2
         return 1
     fi
 
+    local name="$(echo "$1" | sed -E 's/=.+$//')"
     assert_mode_exists "$name"
-    local option="${1#?*=}"
+
+    local option="$(echo "$1" | sed -E -e 's/^[^=]+=//' -e 's/@/@@/g')"
     local current="$(var "mode_options_$name")"
 
-    export "mode_options_$name=$current${current:+$arg_separator}$option"
+    # Concatenate mode options separated by "@0", with "@" escaped as "@@".
+    export "mode_options_$name=$current${current:+@0}$option"
     return 0
 }
 
@@ -85,8 +85,9 @@ run_with_mode_options() {
     local input="$2"
     shift 2
 
-    printf "%s" "$options${options:+$arg_separator}$input" \
-        | tr "$arg_separator" '\0' \
+    # Split mode options by "@0", with "@@" unescaped as "@".
+    printf "%s" "$options${options:+@0}$input" \
+        | sed -E -e 's/@0/\x0/g' -e 's/@@/@/g' \
         | xargs -0 -- "$@"
 }
 
