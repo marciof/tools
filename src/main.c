@@ -124,20 +124,16 @@ static bool flush_input(
         struct Plugin_Setup* plugin_setup,
         Error* error) {
 
-    if (input->name == NULL) {
-        if (plugin_setup->plugin->open_default_input == NULL) {
-            return false;
-        }
-        plugin_setup->plugin->open_default_input(
-            input, plugin_setup->argc, plugin_setup->argv, error);
+    void (*open_input)(struct Input*, size_t, char*[], Error*)
+        = (input->name == NULL)
+            ? plugin_setup->plugin->open_default_input
+            : plugin_setup->plugin->open_named_input;
+
+    if (open_input == NULL) {
+        return false;
     }
-    else {
-        if (plugin_setup->plugin->open_named_input == NULL) {
-            return false;
-        }
-        plugin_setup->plugin->open_named_input(
-            input, plugin_setup->argc, plugin_setup->argv, error);
-    }
+
+    open_input(input, plugin_setup->argc, plugin_setup->argv, error);
 
     if (ERROR_HAS(error)) {
         return false;
@@ -210,10 +206,10 @@ static void flush_inputs(
 int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
     int output_fd = STDOUT_FILENO;
-    char* plugin_options_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
+    char* plugin_argv_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
 
     for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
-        plugins_setup[i].argv = plugin_options_storage + i * argc;
+        plugins_setup[i].argv = plugin_argv_storage + i * argc;
     }
 
     int args_pos = parse_options(
