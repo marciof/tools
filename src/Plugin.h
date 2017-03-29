@@ -12,16 +12,16 @@ struct Input {
     /** `IO_NULL_FD` if unsupported or when closed. */
     int fd;
     intptr_t arg;
-    void (*close)(struct Input*, Error* error);
+    void (*close)(struct Input* input, Error* error);
 };
 
 struct Output {
     struct Plugin* plugin;
     intptr_t arg;
-    void (*close)(struct Output*, Error* error);
+    void (*close)(struct Output* output, Error* error);
     // If all data is flushed, `buffer->length` is set to `0`.
     // If `buffer` ownership is transferred to a plugin, it is set to `NULL`.
-    void (*write)(struct Output*, struct Buffer** buffer, Error* error);
+    void (*write)(struct Output* output, struct Buffer** buffer, Error* error);
 };
 
 struct Plugin {

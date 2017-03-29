@@ -2,61 +2,55 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "../io.h"
 #include "File.h"
+
+static void close_file(struct Input* input, Error* error) {
+    if (close(input->fd) == -1) {
+        Error_add(error, strerror(errno));
+    }
+    else {
+        input->fd = IO_NULL_FD;
+    }
+}
 
 static bool is_available() {
     return true;
 }
 
-static int open_file(char* path, Error* error) {
-    struct stat path_stat;
-
-    if (stat(path, &path_stat) == -1) {
-        if (errno != ENOENT) {
-            Error_add(error, strerror(errno));
-        }
-        return IO_NULL_FD;
-    }
-
-    if (S_ISDIR(path_stat.st_mode)) {
-        return IO_NULL_FD;
-    }
-
-    int fd = open(path, O_RDONLY);
-
-    if (fd == -1) {
-        Error_add(error, strerror(errno));
-        return IO_NULL_FD;
-    }
-
-    return fd;
-}
-
 static void open_named_input(
         struct Input* input, size_t argc, char* argv[], Error* error) {
 
-    /*for (size_t i = 0; i < inputs->length; ++i) {
-        Input* input = (Input*) inputs->data[i];
+    struct stat input_stat;
 
-        if ((input != NULL) && (input->fd == IO_NULL_FD)) {
-            input->fd = open_file(input->name, error);
-
-            if (ERROR_HAS(error)) {
-                Error_add(error, input->name);
-                return;
-            }
-            else if (input->fd != IO_NULL_FD) {
-                input->plugin = plugin;
-            }
+    if (stat(input->name, &input_stat) == -1) {
+        if (errno != ENOENT) {
+            Error_add(error, strerror(errno));
         }
-    }*/
+        return;
+    }
+
+    if (S_ISDIR(input_stat.st_mode)) {
+        return;
+    }
+
+    int fd = open(input->name, O_RDONLY);
+
+    if (fd == -1) {
+        Error_add(error, strerror(errno));
+    }
+    else {
+        input->fd = fd;
+        input->close = close_file;
+    }
 }
 
 struct Plugin File_Plugin = {
     "file",
     "read files",
-    false,
+    true,
     is_available,
     NULL,
     open_named_input,

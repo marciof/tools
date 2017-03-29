@@ -11,6 +11,9 @@ static void close_input(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
         Error_add(error, strerror(errno));
     }
+    else {
+        input->fd = IO_NULL_FD;
+    }
 }
 
 static bool is_available() {
