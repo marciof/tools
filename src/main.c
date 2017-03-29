@@ -210,7 +210,7 @@ static void flush_inputs(
 int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
     int output_fd = STDOUT_FILENO;
-    char* plugin_options_storage[C_ARRAY_LENGTH(plugins_setup) * argc];
+    char* plugin_options_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
 
     for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
         plugins_setup[i].argv = plugin_options_storage + i * argc;
