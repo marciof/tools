@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
     char* plugin_argv_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
 
     for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
-        plugins_setup[i].argv = plugin_argv_storage + i * argc;
+        plugins_setup[i].argv = plugin_argv_storage + i * (argc - 1);
     }
 
     int args_pos = parse_options(
