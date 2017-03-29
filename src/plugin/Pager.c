@@ -403,7 +403,6 @@ static void open_named_input(
 struct Plugin Pager_Plugin = {
     "pager",
     "page output via `" EXTERNAL_BINARY "`, when needed",
-    false,
     is_available,
     NULL,
     open_named_input,

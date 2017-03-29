@@ -127,7 +127,6 @@ static void open_named_input(
 struct Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`",
-    false,
     is_available,
     NULL,
     open_named_input,

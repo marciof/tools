@@ -82,7 +82,6 @@ static void open_named_input(
 struct Plugin Dir_Plugin = {
     "dir",
     "list directories via `" EXTERNAL_BINARY "`, cwd by default",
-    true,
     is_available,
     open_default_input,
     open_named_input,

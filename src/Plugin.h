@@ -27,7 +27,6 @@ struct Output {
 struct Plugin {
     const char* name;
     const char* description;
-    bool is_enabled;
     bool (*is_available)();
     /** `NULL` if it can't open default inputs. */
     void (*open_default_input)(
@@ -35,6 +34,13 @@ struct Plugin {
     /** `NULL` if it can't open named inputs. */
     void (*open_named_input)(
         struct Input* input, size_t argc, char* argv[], Error* error);
+};
+
+struct Plugin_Setup {
+    struct Plugin* plugin;
+    bool is_enabled;
+    size_t argc;
+    char** argv;
 };
 
 void Input_close_subprocess(struct Input* input, Error* error);

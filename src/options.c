@@ -18,9 +18,11 @@
 )
 
 #define ERROR_UNKNOWN_PLUGIN "no such plugin"
-#define FIND_PLUGIN_FULL_NAME 0
+#define FIND_BY_FULL_NAME 0
 
-static void display_help(struct Plugin* plugins[], size_t nr_plugins) {
+static void display_help(
+        size_t nr_plugins, struct Plugin_Setup plugins_setup[]) {
+
     fprintf(stderr,
         "Usage: show [OPTION]... [INPUT]...\n"
         "Version: 0.12.0\n"
@@ -41,7 +43,7 @@ static void display_help(struct Plugin* plugins[], size_t nr_plugins) {
     fputs("\nPlugins:\n", stderr);
 
     for (size_t i = 0; i < nr_plugins; ++i) {
-        struct Plugin* plugin = plugins[i];
+        struct Plugin* plugin = plugins_setup[i].plugin;
 
         fprintf(stderr, "%c %-13s%s\n",
             plugin->is_available() ? ' ' : 'x',
@@ -54,13 +56,13 @@ static size_t find_plugin(
         char* name,
         size_t name_length,
         size_t nr_plugins,
-        struct Plugin* plugins[],
+        struct Plugin_Setup plugins_setup[],
         Error* error) {
 
     for (size_t i = 0; i < nr_plugins; ++i) {
-        const char* other_name = plugins[i]->name;
+        const char* other_name = plugins_setup[i].plugin->name;
 
-        if (name_length != FIND_PLUGIN_FULL_NAME) {
+        if (name_length != FIND_BY_FULL_NAME) {
             size_t j = 0;
 
             for (j = 0; (j < name_length) && (other_name[j] != '\0'); ++j) {
@@ -83,11 +85,8 @@ static size_t find_plugin(
 
 static void parse_plugin_option(
         char* option,
-        size_t plugins_length,
-        struct Plugin* plugins[],
-        size_t max_nr_options_per_plugin,
-        size_t nr_options_per_plugin[],
-        char* options_per_plugin[],
+        size_t nr_plugins,
+        struct Plugin_Setup plugins_setup[],
         Error* error) {
 
     char* separator = strstr(option, PLUGIN_OPT_SEP);
@@ -111,30 +110,25 @@ static void parse_plugin_option(
     }
 
     size_t pos = find_plugin(
-        option, name_length, plugins_length, plugins, error);
+        option, name_length, nr_plugins, plugins_setup, error);
 
     if (ERROR_HAS(error)) {
         Error_add(error, option);
         return;
     }
 
+    struct Plugin_Setup* plugin_setup = &plugins_setup[pos];
     char* value = separator + C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1;
 
-    options_per_plugin
-        [pos * max_nr_options_per_plugin + nr_options_per_plugin[pos]]
-        = value;
-
-    ++nr_options_per_plugin[pos];
+    plugin_setup->argv[plugin_setup->argc] = value;
+    ++plugins_setup[pos].argc;
 }
 
 int parse_options(
         int argc,
         char* argv[],
-        size_t plugins_length,
-        struct Plugin* plugins[],
-        size_t max_nr_options_per_plugin,
-        size_t nr_options_per_plugin[],
-        char* options_per_plugin[],
+        size_t nr_plugins,
+        struct Plugin_Setup plugins_setup[],
         Error* error) {
 
     int option;
@@ -142,26 +136,19 @@ int parse_options(
     while ((option = getopt(argc, argv, ALL_OPTS)) != -1) {
         if (option == DISABLE_PLUGIN_OPT[0]) {
             size_t pos = find_plugin(
-                optarg, FIND_PLUGIN_FULL_NAME, plugins_length, plugins, error);
+                optarg, FIND_BY_FULL_NAME, nr_plugins, plugins_setup, error);
 
             if (ERROR_HAS(error)) {
                 return -1;
             }
-            plugins[pos]->is_enabled = false;
+            plugins_setup[pos].is_enabled = false;
         }
         else if (option == HELP_OPT[0]) {
-            display_help(plugins, plugins_length);
+            display_help(nr_plugins, plugins_setup);
             return -1;
         }
         else if (option == PLUGIN_OPTION_OPT[0]) {
-            parse_plugin_option(
-                optarg,
-                plugins_length,
-                plugins,
-                max_nr_options_per_plugin,
-                nr_options_per_plugin,
-                options_per_plugin,
-                error);
+            parse_plugin_option(optarg, nr_plugins, plugins_setup, error);
 
             if (ERROR_HAS(error)) {
                 return -1;

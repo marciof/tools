@@ -50,7 +50,6 @@ static void open_named_input(
 struct Plugin File_Plugin = {
     "file",
     "read files",
-    true,
     is_available,
     NULL,
     open_named_input,

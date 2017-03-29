@@ -45,7 +45,6 @@ static void open_default_input(
 struct Plugin Stdin_Plugin = {
     "stdin",
     "read standard input, by default",
-    true,
     is_available,
     open_default_input,
     NULL,

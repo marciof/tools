@@ -13,15 +13,38 @@
 #include "plugin/Stdin.h"
 #include "plugin/Vcs.h"
 
-static struct Plugin* plugins[] = {
-    &Stdin_Plugin,
-    &File_Plugin,
-    &Dir_Plugin,
-    &Vcs_Plugin,
-    &Pager_Plugin,
+static struct Plugin_Setup plugins_setup[] = {
+    {
+        &Stdin_Plugin,
+        true,
+        0,
+        NULL,
+    },
+    {
+        &File_Plugin,
+        true,
+        0,
+        NULL,
+    },
+    {
+        &Dir_Plugin,
+        true,
+        0,
+        NULL,
+    },
+    {
+        &Vcs_Plugin,
+        false,
+        0,
+        NULL,
+    },
+    {
+        &Pager_Plugin,
+        false,
+        0,
+        NULL,
+    },
 };
-
-static size_t nr_options_per_plugin[C_ARRAY_LENGTH(plugins)] = {0, 0, 0, 0, 0};
 
 /*
 // Receives an optional previous `buffer` returning it or a new one when `NULL`,
@@ -98,22 +121,22 @@ static Buffer* flush_input(
 static bool flush_input(
         struct Input* input,
         int output_fd,
-        struct Plugin* plugin,
-        size_t options_length,
-        char* options[],
+        struct Plugin_Setup* plugin_setup,
         Error* error) {
 
     if (input->name == NULL) {
-        if (plugin->open_default_input == NULL) {
+        if (plugin_setup->plugin->open_default_input == NULL) {
             return false;
         }
-        plugin->open_default_input(input, options_length, options, error);
+        plugin_setup->plugin->open_default_input(
+            input, plugin_setup->argc, plugin_setup->argv, error);
     }
     else {
-        if (plugin->open_named_input == NULL) {
+        if (plugin_setup->plugin->open_named_input == NULL) {
             return false;
         }
-        plugin->open_named_input(input, options_length, options, error);
+        plugin_setup->plugin->open_named_input(
+            input, plugin_setup->argc, plugin_setup->argv, error);
     }
 
     if (ERROR_HAS(error)) {
@@ -144,20 +167,15 @@ static bool flush_input(
 }
 
 static void flush_inputs(
-        size_t inputs_length,
-        char* inputs[],
-        int output_fd,
-        size_t max_nr_options_per_plugin,
-        char* options_per_plugin[],
-        Error* error) {
+        size_t inputs_length, char* inputs[], int output_fd, Error* error) {
 
     for (size_t i = 0; i < inputs_length; ++i) {
         bool is_input_supported = false;
 
-        for (size_t j = 0; j < C_ARRAY_LENGTH(plugins); ++j) {
-            struct Plugin* plugin = plugins[j];
+        for (size_t j = 0; j < C_ARRAY_LENGTH(plugins_setup); ++j) {
+            struct Plugin_Setup* plugin_setup = &plugins_setup[j];
 
-            if (plugin->is_enabled) {
+            if (plugin_setup->is_enabled) {
                 struct Input input = {
                     inputs[i],
                     IO_NULL_FD,
@@ -166,18 +184,13 @@ static void flush_inputs(
                 };
 
                 is_input_supported = flush_input(
-                    &input,
-                    output_fd,
-                    plugin,
-                    nr_options_per_plugin[j],
-                    options_per_plugin + j * max_nr_options_per_plugin,
-                    error);
+                    &input, output_fd, plugin_setup, error);
 
                 if (ERROR_HAS(error)) {
                     if (input.name != NULL) {
                         Error_add(error, input.name);
                     }
-                    Error_add(error, plugin->name);
+                    Error_add(error, plugin_setup->plugin->name);
                     return;
                 }
                 if (is_input_supported) {
@@ -197,17 +210,14 @@ static void flush_inputs(
 int main(int argc, char* argv[]) {
     Error error = ERROR_INITIALIZER;
     int output_fd = STDOUT_FILENO;
-    char* options_per_plugin[C_ARRAY_LENGTH(plugins) * argc];
+    char* plugin_options_storage[C_ARRAY_LENGTH(plugins_setup) * argc];
+
+    for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
+        plugins_setup[i].argv = plugin_options_storage + i * argc;
+    }
 
     int args_pos = parse_options(
-        argc,
-        argv,
-        C_ARRAY_LENGTH(plugins),
-        plugins,
-        (size_t) argc,
-        nr_options_per_plugin,
-        options_per_plugin,
-        &error);
+        argc, argv, C_ARRAY_LENGTH(plugins_setup), plugins_setup, &error);
 
     if ((args_pos < 0) || (ERROR_HAS(&error))) {
         return Error_print(&error, stderr) ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -215,17 +225,11 @@ int main(int argc, char* argv[]) {
 
     if (args_pos == argc) {
         char* input = NULL;
-        flush_inputs(
-            1, &input, output_fd, (size_t) argc, options_per_plugin, &error);
+        flush_inputs(1, &input, output_fd, &error);
     }
     else {
         flush_inputs(
-            (size_t) (argc - args_pos),
-            argv + args_pos,
-            output_fd,
-            (size_t) argc,
-            options_per_plugin,
-            &error);
+            (size_t) (argc - args_pos), argv + args_pos, output_fd, &error);
     }
 
     if (ERROR_HAS(&error)) {
