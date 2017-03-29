@@ -20,7 +20,7 @@ set -u
 TESTDIR="$test_dir"
 $log="\$(mktemp)"
 trap 'rm "\$$log"' EXIT
-alias $print_log='echo "[\$?]" | grep -vF "[0]" >>"\$$log"; sed "s/^/  /" "\$$log"'
+alias $print_log='echo "[\$?]" | grep -vF "[0]" >>"\$$log"; sed -E -e "s/^(\s*)$/\1 (esc)/" -e "s/^/  /" "\$$log"'
 EOT
 
     sed -E '/^  /! s/^/#/' \
