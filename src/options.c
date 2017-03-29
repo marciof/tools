@@ -20,7 +20,7 @@
 #define ERROR_UNKNOWN_PLUGIN "no such plugin"
 #define FIND_PLUGIN_FULL_NAME 0
 
-static void display_help(Plugin* plugins[], size_t nr_plugins) {
+static void display_help(struct Plugin* plugins[], size_t nr_plugins) {
     fprintf(stderr,
         "Usage: show [OPTION]... [INPUT]...\n"
         "Version: 0.12.0\n"
@@ -41,7 +41,7 @@ static void display_help(Plugin* plugins[], size_t nr_plugins) {
     fputs("\nPlugins:\n", stderr);
 
     for (size_t i = 0; i < nr_plugins; ++i) {
-        Plugin* plugin = plugins[i];
+        struct Plugin* plugin = plugins[i];
 
         fprintf(stderr, "%c %-13s%s\n",
             plugin->is_available() ? ' ' : 'x',
@@ -54,7 +54,7 @@ static size_t find_plugin(
         char* name,
         size_t name_length,
         size_t nr_plugins,
-        Plugin* plugins[],
+        struct Plugin* plugins[],
         Error* error) {
 
     for (size_t i = 0; i < nr_plugins; ++i) {
@@ -84,7 +84,7 @@ static size_t find_plugin(
 static void parse_plugin_option(
         char* option,
         size_t plugins_length,
-        Plugin* plugins[],
+        struct Plugin* plugins[],
         size_t max_nr_options_per_plugin,
         size_t nr_options_per_plugin[],
         char* options_per_plugin[],
@@ -131,7 +131,7 @@ int parse_options(
         int argc,
         char* argv[],
         size_t plugins_length,
-        Plugin* plugins[],
+        struct Plugin* plugins[],
         size_t max_nr_options_per_plugin,
         size_t nr_options_per_plugin[],
         char* options_per_plugin[],

@@ -5,13 +5,13 @@
 #include <unistd.h>
 #include "io.h"
 
-void Buffer_delete(Buffer* buffer) {
+void Buffer_delete(struct Buffer* buffer) {
     free(buffer);
 }
 
-Buffer* Buffer_new(size_t max_length, Error* error) {
-    Buffer* buffer = (Buffer*) malloc(
-        offsetof(Buffer, data) + sizeof(buffer->data[0]) * max_length);
+struct Buffer* Buffer_new(size_t max_length, Error* error) {
+    struct Buffer* buffer = (struct Buffer*) malloc(
+        offsetof(struct Buffer, data) + sizeof(buffer->data[0]) * max_length);
 
     if (buffer == NULL) {
         Error_add(error, strerror(errno));

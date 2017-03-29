@@ -1,10 +1,11 @@
 #include <unistd.h>
+#include "../Array.h"
 #include "../popen2.h"
 #include "Vcs.h"
 
 #define EXTERNAL_BINARY "git"
 
-static void init_argv(Array* argv, Array* options, Error* error) {
+static void init_argv(struct Array* argv, struct Array* options, Error* error) {
     Array_init(argv, error,
         EXTERNAL_BINARY, "--no-pager", "show", NULL);
 
@@ -63,12 +64,9 @@ static bool is_input_valid(char* input, Error* error) {
 }
 
 static void open_named_input(
-        Input* input,
-        size_t options_length,
-        char* options[],
-        Error* error) {
+        struct Input* input, size_t argc, char* argv[], Error* error) {
 
-    /*Array argv = ARRAY_NULL_INITIALIZER;
+    /*struct Array argv = ARRAY_NULL_INITIALIZER;
 
     for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
@@ -126,7 +124,7 @@ static void open_named_input(
     }*/
 }
 
-Plugin Vcs_Plugin = {
+struct Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`",
     false,

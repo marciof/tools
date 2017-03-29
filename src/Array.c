@@ -6,7 +6,7 @@
 
 #define DEFAULT_CAPACITY_INCREASE (1.5)
 
-static void change_capacity(Array* array, size_t size, Error* error) {
+static void change_capacity(struct Array* array, size_t size, Error* error) {
     if (size < array->length) {
         Error_add(error, "array capacity is smaller than its length");
         return;
@@ -38,7 +38,7 @@ static void change_capacity(Array* array, size_t size, Error* error) {
     array->capacity = size;
 }
 
-void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
+void Array_add(struct Array* array, size_t pos, intptr_t item, Error* error) {
     if (pos > array->length) {
         Error_add(error, "out of bounds array position for adding");
         return;
@@ -71,31 +71,31 @@ void Array_add(Array* array, size_t pos, intptr_t element, Error* error) {
     }
 
     ++array->length;
-    array->data[pos] = element;
+    array->data[pos] = item;
 }
 
-void Array_deinit(Array* array) {
+void Array_deinit(struct Array* array) {
     if (array->data != array->buffer) {
         free(array->data);
         array->data = NULL;
     }
 }
 
-void Array_extend(Array* array, Array* elements, Error* error) {
-    if (elements->length == 0) {
+void Array_extend(struct Array* array, struct Array* items, Error* error) {
+    if (items->length == 0) {
         return;
     }
 
-    if (array->length > (SIZE_MAX - elements->length)) {
+    if (array->length > (SIZE_MAX - items->length)) {
         Error_add(error, strerror(ENOMEM));
         return;
     }
 
-    if ((array->length + elements->length) >= array->capacity) {
+    if ((array->length + items->length) >= array->capacity) {
         size_t capacity = (size_t)
-            (array->capacity * DEFAULT_CAPACITY_INCREASE + elements->length);
+            (array->capacity * DEFAULT_CAPACITY_INCREASE + items->length);
 
-        if (capacity < (array->length + elements->length)) {
+        if (capacity < (array->length + items->length)) {
             capacity = SIZE_MAX; // cap overflow
         }
 
@@ -106,12 +106,12 @@ void Array_extend(Array* array, Array* elements, Error* error) {
         }
     }
 
-    for (size_t i = 0; i < elements->length; ++i, ++array->length) {
-        array->data[array->length] = elements->data[i];
+    for (size_t i = 0; i < items->length; ++i, ++array->length) {
+        array->data[array->length] = items->data[i];
     }
 }
 
-void Array_init(Array* array, Error* error, ...) {
+void Array_init(struct Array* array, Error* error, ...) {
     array->length = 0;
     array->capacity = ARRAY_INITIAL_CAPACITY;
     array->data = array->buffer;
@@ -132,7 +132,7 @@ void Array_init(Array* array, Error* error, ...) {
     va_end(args);
 }
 
-intptr_t Array_remove(Array* array, size_t pos, Error* error) {
+intptr_t Array_remove(struct Array* array, size_t pos, Error* error) {
     if (pos >= array->length) {
         Error_add(error, "out of bounds array position for removal");
         return 0;

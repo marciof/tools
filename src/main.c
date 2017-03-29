@@ -13,7 +13,7 @@
 #include "plugin/Stdin.h"
 #include "plugin/Vcs.h"
 
-static Plugin* plugins[] = {
+static struct Plugin* plugins[] = {
     &Stdin_Plugin,
     &File_Plugin,
     &Dir_Plugin,
@@ -96,9 +96,9 @@ static Buffer* flush_input(
  * @return whether or not the input was successfully flushed
  */
 static bool flush_input(
-        Input* input,
+        struct Input* input,
         int output_fd,
-        Plugin* plugin,
+        struct Plugin* plugin,
         size_t options_length,
         char* options[],
         Error* error) {
@@ -155,10 +155,10 @@ static void flush_inputs(
         bool is_input_supported = false;
 
         for (size_t j = 0; j < C_ARRAY_LENGTH(plugins); ++j) {
-            Plugin* plugin = plugins[j];
+            struct Plugin* plugin = plugins[j];
 
             if (plugin->is_enabled) {
-                Input input = {
+                struct Input input = {
                     inputs[i],
                     IO_NULL_FD,
                     (intptr_t) NULL,

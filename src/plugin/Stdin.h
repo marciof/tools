@@ -1,4 +1,4 @@
 #pragma once
 #include "../Plugin.h"
 
-extern Plugin Stdin_Plugin;
+extern struct Plugin Stdin_Plugin;

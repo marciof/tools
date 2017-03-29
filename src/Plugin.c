@@ -5,7 +5,7 @@
 #include "Plugin.h"
 #include "popen2.h"
 
-void Input_close_subprocess(Input* input, Error* error) {
+void Input_close_subprocess(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
         Error_add(error, strerror(errno));
         input->fd = IO_NULL_FD;
@@ -20,12 +20,12 @@ void Input_close_subprocess(Input* input, Error* error) {
     }
 }
 
-void Output_delete(Output* output) {
+void Output_delete(struct Output* output) {
     free(output);
 }
 
-Output* Output_new(Plugin* plugin, Error* error) {
-    Output* output = (Output*) malloc(sizeof(*output));
+struct Output* Output_new(struct Plugin* plugin, Error* error) {
+    struct Output* output = (struct Output*) malloc(sizeof(*output));
 
     if (output == NULL) {
         Error_add(error, strerror(errno));

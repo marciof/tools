@@ -1,4 +1,4 @@
 #pragma once
 #include "../Plugin.h"
 
-extern Plugin Vcs_Plugin;
+extern struct Plugin Vcs_Plugin;

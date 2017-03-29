@@ -22,27 +22,23 @@ static bool is_available() {
 }
 
 static void open_input(
-        Input* input,
-        size_t options_length,
-        char* options[],
-        Error* error) {
+        struct Input* input, size_t argc, char* argv[], Error* error) {
 
-    char* argv[1 + options_length + 1 + 1 + 1];
-
-    argv[0] = EXTERNAL_BINARY;
-    argv[1 + options_length] = "--";
-    argv[1 + options_length + 1] = input->name;
-    argv[1 + options_length + 1 + 1] = NULL;
-
-    for (size_t i = 0; i < options_length; ++i) {
-        argv[i + 1] = options[i];
-    }
-
+    char* exec_argv[1 + argc + 1 + 1 + 1];
     pid_t child_pid;
 
+    exec_argv[0] = EXTERNAL_BINARY;
+    exec_argv[1 + argc] = "--";
+    exec_argv[1 + argc + 1] = input->name;
+    exec_argv[1 + argc + 1 + 1] = NULL;
+
+    for (size_t i = 0; i < argc; ++i) {
+        exec_argv[i + 1] = argv[i];
+    }
+
     int fd = popen2(
-        argv[0],
-        argv,
+        exec_argv[0],
+        exec_argv,
         true,
         IO_NULL_FD,
         IO_NULL_FD,
@@ -60,20 +56,14 @@ static void open_input(
 }
 
 static void open_default_input(
-        Input* input,
-        size_t options_length,
-        char* options[],
-        Error* error) {
+        struct Input* input, size_t argc, char* argv[], Error* error) {
 
     input->name = ".";
-    open_input(input, options_length, options, error);
+    open_input(input, argc, argv, error);
 }
 
 static void open_named_input(
-        Input* input,
-        size_t options_length,
-        char* options[],
-        Error* error) {
+        struct Input* input, size_t argc, char* argv[], Error* error) {
 
     struct stat input_stat;
 
@@ -85,11 +75,11 @@ static void open_named_input(
     }
 
     if (S_ISDIR(input_stat.st_mode)) {
-        open_input(input, options_length, options, error);
+        open_input(input, argc, argv, error);
     }
 }
 
-Plugin Dir_Plugin = {
+struct Plugin Dir_Plugin = {
     "dir",
     "list directories via `" EXTERNAL_BINARY "`, cwd by default",
     true,

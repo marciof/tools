@@ -8,13 +8,13 @@
 #define IO_NULL_FD ((int) -1)
 
 // Use always as a pointer only, never by value.
-typedef struct {
+struct Buffer {
     size_t length;
     char data[];
-} Buffer;
+};
 
-void Buffer_delete(Buffer* buffer);
-Buffer* Buffer_new(size_t max_length, Error* error);
+void Buffer_delete(struct Buffer* buffer);
+struct Buffer* Buffer_new(size_t max_length, Error* error);
 
 bool io_has_input(int fd, Error* error);
 bool io_is_tty(int fd, Error* error);

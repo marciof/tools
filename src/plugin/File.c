@@ -34,10 +34,7 @@ static int open_file(char* path, Error* error) {
 }
 
 static void open_named_input(
-        Input* input,
-        size_t options_length,
-        char* options[],
-        Error* error) {
+        struct Input* input, size_t argc, char* argv[], Error* error) {
 
     /*for (size_t i = 0; i < inputs->length; ++i) {
         Input* input = (Input*) inputs->data[i];
@@ -56,7 +53,7 @@ static void open_named_input(
     }*/
 }
 
-Plugin File_Plugin = {
+struct Plugin File_Plugin = {
     "file",
     "read files",
     false,
