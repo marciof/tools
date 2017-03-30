@@ -175,7 +175,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
 int wait_subprocess(pid_t child_pid, Error* error) {
     int status;
 
-    if ((waitpid(child_pid, &status, 0) == -1) && (errno != ECHILD)) {
+    if (waitpid(child_pid, &status, 0) == -1) {
         Error_add(error, strerror(errno));
         return -1;
     }
