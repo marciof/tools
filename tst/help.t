@@ -6,7 +6,7 @@ Help screen:
 
   $ show -h
   Usage: show [OPTION]... [INPUT]...
-  Version: \d+(\.\d+)(\.\d+) (re)
+  Version: 0.12.0
    (esc)
   Options:
     -h           display this help and exit
@@ -24,7 +24,7 @@ Show unavailable plugins in the help screen:
 
   $ PATH= show -h
   Usage: show [OPTION]... [INPUT]...
-  Version: \d+(\.\d+)(\.\d+) (re)
+  Version: 0.12.0
    (esc)
   Options:
     -h           display this help and exit
