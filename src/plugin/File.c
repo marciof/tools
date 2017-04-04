@@ -1,6 +1,4 @@
-#include <errno.h>
 #include <fcntl.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -9,7 +7,7 @@
 
 static void close_file(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
     }
     else {
         input->fd = IO_NULL_FD;
@@ -27,7 +25,7 @@ static void open_named_input(
 
     if (stat(input->name, &input_stat) == -1) {
         if (errno != ENOENT) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
         }
         return;
     }
@@ -39,7 +37,7 @@ static void open_named_input(
     int fd = open(input->name, O_RDONLY);
 
     if (fd == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
     }
     else {
         input->fd = fd;

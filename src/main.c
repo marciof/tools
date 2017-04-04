@@ -1,9 +1,7 @@
-#include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include "io.h"
 #include "options.h"
@@ -154,7 +152,7 @@ static bool flush_input(
     }
 
     if ((nr_read == -1) && (errno != EIO)) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return false;
     }
 
@@ -167,13 +165,14 @@ static void flush_inputs(
 
     for (size_t i = 0; i < inputs_length; ++i) {
         bool is_input_supported = false;
+        char* input_name = inputs[i];
 
         for (size_t j = 0; j < C_ARRAY_LENGTH(plugins_setup); ++j) {
             struct Plugin_Setup* plugin_setup = &plugins_setup[j];
 
             if (plugin_setup->is_enabled) {
                 struct Input input = {
-                    inputs[i],
+                    input_name,
                     IO_NULL_FD,
                     (intptr_t) NULL,
                     NULL,
@@ -184,9 +183,9 @@ static void flush_inputs(
 
                 if (ERROR_HAS(error)) {
                     if (input.name != NULL) {
-                        Error_add(error, input.name);
+                        ERROR_ADD_STRING(error, input.name);
                     }
-                    Error_add(error, plugin_setup->plugin->name);
+                    ERROR_ADD_STRING(error, plugin_setup->plugin->name);
                     return;
                 }
                 if (is_input_supported) {
@@ -196,8 +195,8 @@ static void flush_inputs(
         }
 
         if (!is_input_supported) {
-            Error_add(error, "unsupported input");
-            Error_add(error, inputs[i]);
+            ERROR_ADD_STRING(error, "unsupported input");
+            ERROR_ADD_STRING(error, input_name);
             return;
         }
     }

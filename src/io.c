@@ -1,7 +1,5 @@
-#include <errno.h>
 #include <poll.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include "io.h"
 
@@ -14,7 +12,7 @@ struct Buffer* Buffer_new(size_t max_length, Error* error) {
         offsetof(struct Buffer, data) + sizeof(buffer->data[0]) * max_length);
 
     if (buffer == NULL) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return NULL;
     }
 
@@ -31,7 +29,7 @@ bool io_has_input(int fd, Error* error) {
     int nr_fds = poll(&fd_poll, 1, 0);
 
     if (nr_fds == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return false;
     }
 
@@ -42,7 +40,7 @@ bool io_is_tty(int fd, Error* error) {
     bool is_tty = (isatty(fd) != 0);
 
     if (!is_tty && (errno != ENOTTY)) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return false;
     }
 
@@ -54,7 +52,7 @@ void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error) {
         ssize_t bytes_written = write(fd, data, nr_bytes);
 
         if (bytes_written == -1) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
             return;
         }
 

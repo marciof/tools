@@ -1,9 +1,7 @@
-#include <errno.h>
 #include <fcntl.h>
 #include <pty.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "io.h"
@@ -23,14 +21,14 @@ static int popen2_pipe(
     int rw_fds[2];
 
     if (pipe(rw_fds) == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return IO_NULL_FD;
     }
 
     pid_t child_pid = fork();
 
     if (child_pid == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return IO_NULL_FD;
     }
     else if (child_pid) {
@@ -38,7 +36,7 @@ static int popen2_pipe(
         int fd_return = is_read ? rw_fds[0] : rw_fds[1];
 
         if (close(fd_close) == -1) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
             return IO_NULL_FD;
         }
 
@@ -79,7 +77,7 @@ static int popen2_pty(
     pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return IO_NULL_FD;
     }
     else if (child_pid) {
@@ -117,7 +115,7 @@ int popen2(
         bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
         if (ERROR_HAS(error)) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
             return IO_NULL_FD;
         }
 
@@ -133,7 +131,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     int discard_fd = open("/dev/null", O_RDWR);
 
     if (discard_fd == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return -1;
     }
 
@@ -152,7 +150,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     while ((bytes_read = read(fd, buffer, BUFSIZ)) > 0);
 
     if ((bytes_read == -1) && (errno != EIO)) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         close(discard_fd);
         return -1;
     }
@@ -165,7 +163,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     }
 
     if (close(discard_fd) == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return -1;
     }
 
@@ -176,7 +174,7 @@ int wait_subprocess(pid_t child_pid, Error* error) {
     int status;
 
     if (waitpid(child_pid, &status, 0) == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return -1;
     }
 
@@ -184,13 +182,13 @@ int wait_subprocess(pid_t child_pid, Error* error) {
         int child_signal = WTERMSIG(status);
 
         if (child_signal == EXECVP_ENOENT_FAILED_SIGNAL) {
-            Error_add(error, strerror(ENOENT));
+            ERROR_ADD_ERRNO(error, ENOENT);
             return -1;
         }
     }
 
     if (!WIFEXITED(status)) {
-        Error_add(error, "subprocess did not exit normally");
+        ERROR_ADD_STRING(error, "subprocess did not exit normally");
         return -1;
     }
 

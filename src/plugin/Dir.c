@@ -1,5 +1,3 @@
-#include <errno.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -46,7 +44,7 @@ static void open_input(
         error);
 
     if (ERROR_HAS(error)) {
-        Error_add(error, "`" EXTERNAL_BINARY "`");
+        ERROR_ADD_STRING(error, "`" EXTERNAL_BINARY "`");
     }
     else {
         input->fd = fd;
@@ -69,7 +67,7 @@ static void open_named_input(
 
     if (stat(input->name, &input_stat) == -1) {
         if (errno != ENOENT) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
         }
         return;
     }

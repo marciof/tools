@@ -1,6 +1,4 @@
-#include <errno.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../Error.h"
@@ -9,7 +7,7 @@
 
 static void close_input(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
     }
     else {
         input->fd = IO_NULL_FD;
@@ -26,7 +24,7 @@ static void open_default_input(
     struct stat input_stat;
 
     if (fstat(STDIN_FILENO, &input_stat) == -1) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return;
     }
 

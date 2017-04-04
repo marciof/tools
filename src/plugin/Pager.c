@@ -1,9 +1,7 @@
-#include <errno.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -81,7 +79,7 @@ static void protect_buffer(struct Pager* pager, bool do_lock, Error* error) {
             (&pager->timer_mutex);
 
         if (error_nr) {
-            Error_add(error, strerror(error_nr));
+            ERROR_ADD_ERRNO(error, error_nr);
         }
     }
 }
@@ -126,7 +124,7 @@ void* flush_buffer_timer(void* arg) {
     timeout.tv_usec = 500 * 1000;
 
     if (select(0, NULL, NULL, NULL, &timeout) == -1) {
-        Error_add(&pager->timer_error, strerror(errno));
+        ERROR_ADD_ERRNO(&pager->timer_error, errno);
     }
     else {
         flush_buffer(pager, STDOUT_FILENO, &pager->timer_error);
@@ -193,7 +191,7 @@ static bool buffer_input(
             &pager->timer_thread, NULL, flush_buffer_timer, pager);
 
         if (error_nr) {
-            Error_add(error, strerror(error_nr));
+            ERROR_ADD_ERRNO(error, error_nr);
             return false;
         }
 
@@ -201,7 +199,7 @@ static bool buffer_input(
 
         // FIXME: stop thread?
         if (error_nr) {
-            Error_add(error, strerror(error_nr));
+            ERROR_ADD_ERRNO(error, error_nr);
             return false;
         }
 
@@ -223,21 +221,21 @@ static void Pager_delete(struct Pager* pager, Error* error) {
         int error_nr = pthread_cancel(pager->timer_thread);
 
         if (error_nr && (error_nr != ESRCH)) {
-            Error_add(error, strerror(error_nr));
+            ERROR_ADD_ERRNO(error, error_nr);
             return;
         }
 
         error_nr = pthread_join(pager->timer_thread, NULL);
 
         if (error_nr) {
-            Error_add(error, strerror(error_nr));
+            ERROR_ADD_ERRNO(error, error_nr);
             return;
         }
 
         error_nr = pthread_mutex_destroy(&pager->timer_mutex);
 
         if (error_nr) {
-            Error_add(error, strerror(error_nr));
+            ERROR_ADD_ERRNO(error, error_nr);
             return;
         }
     }
@@ -249,7 +247,7 @@ static void Pager_delete(struct Pager* pager, Error* error) {
     Array_deinit(&pager->buffers);
 
     if ((pager->fd != IO_NULL_FD) && (close(pager->fd) == -1)) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return;
     }
 
@@ -257,7 +255,7 @@ static void Pager_delete(struct Pager* pager, Error* error) {
         int status = wait_subprocess(pager->child_pid, error);
 
         if (ERROR_HAS(error) || (status != 0)) {
-            Error_add(error, "`" EXTERNAL_BINARY "`");
+            ERROR_ADD_STRING(error, "`" EXTERNAL_BINARY "`");
             return;
         }
     }
@@ -269,7 +267,7 @@ static struct Pager* Pager_new(struct Array* options, Error* error) {
     struct Pager* pager = (struct Pager*) malloc(sizeof(*pager));
 
     if (pager == NULL) {
-        Error_add(error, strerror(errno));
+        ERROR_ADD_ERRNO(error, errno);
         return NULL;
     }
 
@@ -324,8 +322,8 @@ static void Output_write(
             error);
 
         if (ERROR_HAS(error)) {
-            Error_add(error, strerror(errno));
-            Error_add(error, "`" EXTERNAL_BINARY "`");
+            ERROR_ADD_ERRNO(error, errno);
+            ERROR_ADD_STRING(error, "`" EXTERNAL_BINARY "`");
             Array_deinit(&argv);
             return;
         }

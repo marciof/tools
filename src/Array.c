@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +7,7 @@
 
 static void change_capacity(struct Array* array, size_t size, Error* error) {
     if (size < array->length) {
-        Error_add(error, "array capacity is smaller than its length");
+        ERROR_ADD_STRING(error, "array capacity is smaller than its length");
         return;
     }
 
@@ -16,7 +15,7 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
         array->data = (intptr_t*) malloc(size * sizeof(array->data[0]));
 
         if (array->data == NULL) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
             array->data = array->buffer;
             return;
         }
@@ -28,7 +27,7 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
         void* data = realloc(array->data, size * sizeof(array->data[0]));
 
         if (data == NULL) {
-            Error_add(error, strerror(errno));
+            ERROR_ADD_ERRNO(error, errno);
             return;
         }
 
@@ -40,12 +39,12 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
 
 void Array_add(struct Array* array, size_t pos, intptr_t item, Error* error) {
     if (pos > array->length) {
-        Error_add(error, "out of bounds array position for adding");
+        ERROR_ADD_STRING(error, "out of bounds array position for adding");
         return;
     }
 
     if (array->length == SIZE_MAX) {
-        Error_add(error, strerror(ENOMEM));
+        ERROR_ADD_ERRNO(error, ENOMEM);
         return;
     }
 
@@ -87,7 +86,7 @@ void Array_extend(struct Array* array, struct Array* items, Error* error) {
     }
 
     if (array->length > (SIZE_MAX - items->length)) {
-        Error_add(error, strerror(ENOMEM));
+        ERROR_ADD_ERRNO(error, ENOMEM);
         return;
     }
 
@@ -134,7 +133,7 @@ void Array_init(struct Array* array, Error* error, ...) {
 
 intptr_t Array_remove(struct Array* array, size_t pos, Error* error) {
     if (pos >= array->length) {
-        Error_add(error, "out of bounds array position for removal");
+        ERROR_ADD_STRING(error, "out of bounds array position for removal");
         return 0;
     }
 

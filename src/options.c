@@ -79,7 +79,7 @@ static size_t find_plugin(
         }
     }
 
-    Error_add(error, ERROR_UNKNOWN_PLUGIN);
+    ERROR_ADD_STRING(error, ERROR_UNKNOWN_PLUGIN);
     return 0;
 }
 
@@ -96,16 +96,16 @@ static void parse_plugin_option(
         || (separator[C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        Error_add(error, "no plugin option specified");
-        Error_add(error, option);
+        ERROR_ADD_STRING(error, "no plugin option specified");
+        ERROR_ADD_STRING(error, option);
         return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        Error_add(error, "no plugin name specified");
-        Error_add(error, option);
+        ERROR_ADD_STRING(error, "no plugin name specified");
+        ERROR_ADD_STRING(error, option);
         return;
     }
 
@@ -113,7 +113,7 @@ static void parse_plugin_option(
         option, name_length, nr_plugins, plugins_setup, error);
 
     if (ERROR_HAS(error)) {
-        Error_add(error, option);
+        ERROR_ADD_STRING(error, option);
         return;
     }
 
@@ -155,7 +155,7 @@ int parse_options(
             }
         }
         else {
-            Error_add(error, "try '-" HELP_OPT "' for more information");
+            ERROR_ADD_STRING(error, "try '-" HELP_OPT "' for more information");
             return -1;
         }
     }

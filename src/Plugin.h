@@ -25,8 +25,8 @@ struct Output {
 };
 
 struct Plugin {
-    const char* name;
-    const char* description;
+    char* name;
+    char* description;
     bool (*is_available)();
     /** `NULL` if it can't open default inputs. */
     void (*open_default_input)(
