@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e -u
 
 if ! echo "$-" | grep -q i; then
     return 0
@@ -19,9 +18,7 @@ _have() {
 child_dir="$(readlink -e "$(dirname "$BASH_SOURCE")")"
 
 for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
-    set +e +u
     . "$child_dir/$(basename "$child")"
-    set -e -u
     echo "* Loaded: $child" >&2
 done
 
@@ -62,9 +59,9 @@ bind '"\e[3;5~": kill-word' # ctrl-delete
 _color_off='\e[0m'
 _yellow='\e[0;33m'
 
-if [ -n "${BASHRC_CUSTOM_LOCATION:-}" ]; then
+if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
     _host_prompt=" \[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\]"
-elif [ -n "${SSH_CLIENT:-}" -o -n "${SSH_TTY:-}" ]; then
+elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
     _host_prompt=" \[$_yellow\]\\u@\\h\[$_color_off\]"
 else
     _host_prompt=
@@ -80,7 +77,7 @@ if _have show; then
 fi
 
 if _have ag; then
-    if [ -n "${PAGER:-}" ]; then
+    if [ -n "$PAGER" ]; then
         alias f="$NAME --follow --hidden --pager \"$PAGER\""
     else
         alias f="$NAME --follow --hidden"
@@ -135,7 +132,7 @@ if _have git; then
 
     for ALIAS in sa sb sc sd sh sl sp sr ss st; do
         eval "_${ALIAS}() { _load_git_completions; }"
-        eval "complete -F _${ALIAS} ${ALIAS}"
+        eval "complete -F _$ALIAS $ALIAS"
     done
 
     if ! command -v __git_ps1 > /dev/null; then
@@ -150,9 +147,8 @@ _jobs_nr_ps1() {
     [ $jobs -gt 0 ] && echo " $jobs"
 }
 
-if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
+if [ -z "$BASHRC_KEEP_PROMPT" ]; then
     export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
 fi
 
 unset -f _have
-set +e +u
