@@ -28,24 +28,24 @@ char* Error_describe_string(intptr_t arg) {
 }
 
 bool Error_print(Error* error, FILE* stream) {
-    if (ERROR_HAS(error)) {
-        for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
-            struct Error_Cause* cause = &(*error)[i];
-
-            if (cause->describe == NULL) {
-                fprintf(stream, "\n");
-                break;
-            }
-
-            if (i > 0) {
-                fprintf(stream, ": ");
-            }
-
-            fprintf(stream, "%s", cause->describe(cause->arg));
-        }
-        return true;
-    }
-    else {
+    if (!ERROR_HAS(error)) {
         return false;
     }
+
+    for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
+        struct Error_Cause* cause = &(*error)[i];
+
+        if (cause->describe == NULL) {
+            fprintf(stream, "\n");
+            break;
+        }
+
+        if (i > 0) {
+            fprintf(stream, ": ");
+        }
+
+        fprintf(stream, "%s", cause->describe(cause->arg));
+    }
+
+    return true;
 }

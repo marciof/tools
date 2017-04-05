@@ -35,4 +35,8 @@ void Error_add(Error* error, char* (*describe)(intptr_t), intptr_t arg);
 void Error_copy(Error* error, Error* source);
 char* Error_describe_errno(intptr_t arg);
 char* Error_describe_string(intptr_t arg);
+
+/**
+ * @return `true` if there was an error, or `false` otherwsie
+ */
 bool Error_print(Error* error, FILE* stream);
