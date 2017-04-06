@@ -7,7 +7,7 @@
 
 static void change_capacity(struct Array* array, size_t size, Error* error) {
     if (size < array->length) {
-        ERROR_ADD_STRING(error, "array capacity is smaller than its length");
+        Error_add_string(error, "array capacity is smaller than its length");
         return;
     }
 
@@ -15,7 +15,7 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
         array->data = (intptr_t*) malloc(size * sizeof(array->data[0]));
 
         if (array->data == NULL) {
-            ERROR_ADD_ERRNO(error, errno);
+            Error_add_errno(error, errno);
             array->data = array->buffer;
             return;
         }
@@ -27,7 +27,7 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
         void* data = realloc(array->data, size * sizeof(array->data[0]));
 
         if (data == NULL) {
-            ERROR_ADD_ERRNO(error, errno);
+            Error_add_errno(error, errno);
             return;
         }
 
@@ -39,12 +39,12 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
 
 void Array_add(struct Array* array, size_t pos, intptr_t item, Error* error) {
     if (pos > array->length) {
-        ERROR_ADD_STRING(error, "out of bounds array position for adding");
+        Error_add_string(error, "out of bounds array position for adding");
         return;
     }
 
     if (array->length == SIZE_MAX) {
-        ERROR_ADD_ERRNO(error, ENOMEM);
+        Error_add_errno(error, ENOMEM);
         return;
     }
 
@@ -58,7 +58,7 @@ void Array_add(struct Array* array, size_t pos, intptr_t item, Error* error) {
 
         change_capacity(array, capacity, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             return;
         }
     }
@@ -86,7 +86,7 @@ void Array_extend(struct Array* array, struct Array* items, Error* error) {
     }
 
     if (array->length > (SIZE_MAX - items->length)) {
-        ERROR_ADD_ERRNO(error, ENOMEM);
+        Error_add_errno(error, ENOMEM);
         return;
     }
 
@@ -100,7 +100,7 @@ void Array_extend(struct Array* array, struct Array* items, Error* error) {
 
         change_capacity(array, capacity, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             return;
         }
     }
@@ -121,7 +121,7 @@ void Array_init(struct Array* array, Error* error, ...) {
     for (intptr_t arg; (arg = va_arg(args, intptr_t)) != (intptr_t) NULL;) {
         Array_add(array, array->length, arg, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             va_end(args);
             Array_deinit(array);
             return;
@@ -133,7 +133,7 @@ void Array_init(struct Array* array, Error* error, ...) {
 
 intptr_t Array_remove(struct Array* array, size_t pos, Error* error) {
     if (pos >= array->length) {
-        ERROR_ADD_STRING(error, "out of bounds array position for removal");
+        Error_add_string(error, "out of bounds array position for removal");
         return 0;
     }
 

@@ -16,7 +16,7 @@ static bool is_available() {
 
     Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
-    return !ERROR_HAS(&error) && (status == 0);
+    return !Error_has(&error) && (status == 0);
 }
 
 static void open_input(
@@ -43,8 +43,8 @@ static void open_input(
         &child_pid,
         error);
 
-    if (ERROR_HAS(error)) {
-        ERROR_ADD_STRING(error, "`" EXTERNAL_BINARY "`");
+    if (Error_has(error)) {
+        Error_add_string(error, "`" EXTERNAL_BINARY "`");
     }
     else {
         input->fd = fd;
@@ -67,7 +67,7 @@ static void open_named_input(
 
     if (stat(input->name, &input_stat) == -1) {
         if (errno != ENOENT) {
-            ERROR_ADD_ERRNO(error, errno);
+            Error_add_errno(error, errno);
         }
         return;
     }

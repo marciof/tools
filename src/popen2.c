@@ -21,14 +21,14 @@ static int popen2_pipe(
     int rw_fds[2];
 
     if (pipe(rw_fds) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return IO_NULL_FD;
     }
 
     pid_t child_pid = fork();
 
     if (child_pid == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return IO_NULL_FD;
     }
     else if (child_pid) {
@@ -36,7 +36,7 @@ static int popen2_pipe(
         int fd_return = is_read ? rw_fds[0] : rw_fds[1];
 
         if (close(fd_close) == -1) {
-            ERROR_ADD_ERRNO(error, errno);
+            Error_add_errno(error, errno);
             return IO_NULL_FD;
         }
 
@@ -77,7 +77,7 @@ static int popen2_pty(
     pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
 
     if (child_pid == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return IO_NULL_FD;
     }
     else if (child_pid) {
@@ -114,8 +114,8 @@ int popen2(
     if (is_read) {
         bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
-        if (ERROR_HAS(error)) {
-            ERROR_ADD_ERRNO(error, errno);
+        if (Error_has(error)) {
+            Error_add_errno(error, errno);
             return IO_NULL_FD;
         }
 
@@ -131,7 +131,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     int discard_fd = open("/dev/null", O_RDWR);
 
     if (discard_fd == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return -1;
     }
 
@@ -140,7 +140,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     int fd = popen2(
         file, argv, true, discard_fd, discard_fd, &child_pid, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         close(discard_fd);
         return -1;
     }
@@ -150,20 +150,20 @@ int popen2_status(char* file, char* argv[], Error* error) {
     while ((bytes_read = read(fd, buffer, BUFSIZ)) > 0);
 
     if ((bytes_read == -1) && (errno != EIO)) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         close(discard_fd);
         return -1;
     }
 
     int status = wait_subprocess(child_pid, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         close(discard_fd);
         return -1;
     }
 
     if (close(discard_fd) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return -1;
     }
 
@@ -174,7 +174,7 @@ int wait_subprocess(pid_t child_pid, Error* error) {
     int status;
 
     if (waitpid(child_pid, &status, 0) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return -1;
     }
 
@@ -182,13 +182,13 @@ int wait_subprocess(pid_t child_pid, Error* error) {
         int child_signal = WTERMSIG(status);
 
         if (child_signal == EXECVP_ENOENT_FAILED_SIGNAL) {
-            ERROR_ADD_ERRNO(error, ENOENT);
+            Error_add_errno(error, ENOENT);
             return -1;
         }
     }
 
     if (!WIFEXITED(status)) {
-        ERROR_ADD_STRING(error, "subprocess did not exit normally");
+        Error_add_string(error, "subprocess did not exit normally");
         return -1;
     }
 

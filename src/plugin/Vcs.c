@@ -9,14 +9,14 @@ static void init_argv(struct Array* argv, struct Array* options, Error* error) {
     Array_init(argv, error,
         EXTERNAL_BINARY, "--no-pager", "show", NULL);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return;
     }
 
     if (!ARRAY_IS_NULL_INITIALIZED(options)) {
         Array_extend(argv, options, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             Array_deinit(argv);
             return;
         }
@@ -24,14 +24,14 @@ static void init_argv(struct Array* argv, struct Array* options, Error* error) {
 
     Array_add(argv, argv->length, (intptr_t) "INPUT_NAME_PLACEHOLDER", error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         Array_deinit(argv);
         return;
     }
 
     Array_add(argv, argv->length, (intptr_t) NULL, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         Array_deinit(argv);
     }
 }
@@ -46,7 +46,7 @@ static bool is_available() {
     Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
 
-    return !ERROR_HAS(&error) && (status == 0);
+    return !Error_has(&error) && (status == 0);
 }
 
 static bool is_input_valid(char* input, Error* error) {
@@ -81,7 +81,7 @@ static void open_named_input(
 
         bool is_valid = is_input_valid(input->name, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             Error_add(error, "`" EXTERNAL_BINARY "`");
             return;
         }
@@ -91,7 +91,7 @@ static void open_named_input(
         if (ARRAY_IS_NULL_INITIALIZED(&argv)) {
             init_argv(&argv, &plugin->options, error);
 
-            if (ERROR_HAS(error)) {
+            if (Error_has(error)) {
                 return;
             }
         }
@@ -108,7 +108,7 @@ static void open_named_input(
             &child_pid,
             error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             Error_add(error, "`" EXTERNAL_BINARY "`");
             return;
         }

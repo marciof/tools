@@ -12,7 +12,7 @@ struct Buffer* Buffer_new(size_t max_length, Error* error) {
         offsetof(struct Buffer, data) + sizeof(buffer->data[0]) * max_length);
 
     if (buffer == NULL) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return NULL;
     }
 
@@ -29,7 +29,7 @@ bool io_has_input(int fd, Error* error) {
     int nr_fds = poll(&fd_poll, 1, 0);
 
     if (nr_fds == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return false;
     }
 
@@ -40,7 +40,7 @@ bool io_is_tty(int fd, Error* error) {
     bool is_tty = (isatty(fd) != 0);
 
     if (!is_tty && (errno != ENOTTY)) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return false;
     }
 
@@ -52,7 +52,7 @@ void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error) {
         ssize_t bytes_written = write(fd, data, nr_bytes);
 
         if (bytes_written == -1) {
-            ERROR_ADD_ERRNO(error, errno);
+            Error_add_errno(error, errno);
             return;
         }
 

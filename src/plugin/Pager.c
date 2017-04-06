@@ -40,14 +40,14 @@ static void get_terminal_size(int signal_nr) {
 static void init_argv(struct Array* argv, struct Array* options, Error* error) {
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return;
     }
 
     if (!ARRAY_IS_NULL_INITIALIZED(options)) {
         Array_extend(argv, options, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             Array_deinit(argv);
             return;
         }
@@ -55,7 +55,7 @@ static void init_argv(struct Array* argv, struct Array* options, Error* error) {
 
     Array_add(argv, argv->length, (intptr_t) NULL, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         Array_deinit(argv);
     }
 }
@@ -70,7 +70,7 @@ static bool is_available() {
     Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
 
-    return !ERROR_HAS(&error) && (status == 0);
+    return !Error_has(&error) && (status == 0);
 }
 
 static void protect_buffer(struct Pager* pager, bool do_lock, Error* error) {
@@ -79,7 +79,7 @@ static void protect_buffer(struct Pager* pager, bool do_lock, Error* error) {
             (&pager->timer_mutex);
 
         if (error_nr) {
-            ERROR_ADD_ERRNO(error, error_nr);
+            Error_add_errno(error, error_nr);
         }
     }
 }
@@ -87,7 +87,7 @@ static void protect_buffer(struct Pager* pager, bool do_lock, Error* error) {
 static void flush_buffer(struct Pager* pager, int default_fd, Error* error) {
     protect_buffer(pager, true, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return;
     }
 
@@ -106,7 +106,7 @@ static void flush_buffer(struct Pager* pager, int default_fd, Error* error) {
 
         Buffer_delete(buffer);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             pager->buffers.data[i] = (intptr_t) NULL;
             return;
         }
@@ -124,7 +124,7 @@ void* flush_buffer_timer(void* arg) {
     timeout.tv_usec = 500 * 1000;
 
     if (select(0, NULL, NULL, NULL, &timeout) == -1) {
-        ERROR_ADD_ERRNO(&pager->timer_error, errno);
+        Error_add_errno(&pager->timer_error, errno);
     }
     else {
         flush_buffer(pager, STDOUT_FILENO, &pager->timer_error);
@@ -169,20 +169,20 @@ static bool buffer_input(
 
     protect_buffer(pager, true, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return false;
     }
 
     Array_add(
         &pager->buffers, pager->buffers.length, (intptr_t) *buffer, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return false;
     }
 
     protect_buffer(pager, false, error);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return false;
     }
 
@@ -191,7 +191,7 @@ static bool buffer_input(
             &pager->timer_thread, NULL, flush_buffer_timer, pager);
 
         if (error_nr) {
-            ERROR_ADD_ERRNO(error, error_nr);
+            Error_add_errno(error, error_nr);
             return false;
         }
 
@@ -199,7 +199,7 @@ static bool buffer_input(
 
         // FIXME: stop thread?
         if (error_nr) {
-            ERROR_ADD_ERRNO(error, error_nr);
+            Error_add_errno(error, error_nr);
             return false;
         }
 
@@ -212,7 +212,7 @@ static bool buffer_input(
 
 static void Pager_delete(struct Pager* pager, Error* error) {
     if (pager->has_timer) {
-        if (ERROR_HAS(&pager->timer_error)) {
+        if (Error_has(&pager->timer_error)) {
             // FIXME: don't discard errors
             Error_copy(error, &pager->timer_error);
             return;
@@ -221,21 +221,21 @@ static void Pager_delete(struct Pager* pager, Error* error) {
         int error_nr = pthread_cancel(pager->timer_thread);
 
         if (error_nr && (error_nr != ESRCH)) {
-            ERROR_ADD_ERRNO(error, error_nr);
+            Error_add_errno(error, error_nr);
             return;
         }
 
         error_nr = pthread_join(pager->timer_thread, NULL);
 
         if (error_nr) {
-            ERROR_ADD_ERRNO(error, error_nr);
+            Error_add_errno(error, error_nr);
             return;
         }
 
         error_nr = pthread_mutex_destroy(&pager->timer_mutex);
 
         if (error_nr) {
-            ERROR_ADD_ERRNO(error, error_nr);
+            Error_add_errno(error, error_nr);
             return;
         }
     }
@@ -247,15 +247,15 @@ static void Pager_delete(struct Pager* pager, Error* error) {
     Array_deinit(&pager->buffers);
 
     if ((pager->fd != IO_NULL_FD) && (close(pager->fd) == -1)) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return;
     }
 
     if (pager->child_pid != -1) {
         int status = wait_subprocess(pager->child_pid, error);
 
-        if (ERROR_HAS(error) || (status != 0)) {
-            ERROR_ADD_STRING(error, "`" EXTERNAL_BINARY "`");
+        if (Error_has(error) || (status != 0)) {
+            Error_add_string(error, "`" EXTERNAL_BINARY "`");
             return;
         }
     }
@@ -267,13 +267,13 @@ static struct Pager* Pager_new(struct Array* options, Error* error) {
     struct Pager* pager = (struct Pager*) malloc(sizeof(*pager));
 
     if (pager == NULL) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return NULL;
     }
 
     Array_init(&pager->buffers, error, NULL);
 
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         free(pager);
         return NULL;
     }
@@ -285,7 +285,7 @@ static struct Pager* Pager_new(struct Array* options, Error* error) {
     pager->fd = IO_NULL_FD;
     pager->child_pid = -1;
 
-    ERROR_CLEAR(&pager->timer_error);
+    Error_clear(&pager->timer_error);
     return pager;
 }
 
@@ -308,7 +308,7 @@ static void Output_write(
         struct Array argv;
         init_argv(&argv, pager->options, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             return;
         }
 
@@ -321,9 +321,9 @@ static void Output_write(
             &pager->child_pid,
             error);
 
-        if (ERROR_HAS(error)) {
-            ERROR_ADD_ERRNO(error, errno);
-            ERROR_ADD_STRING(error, "`" EXTERNAL_BINARY "`");
+        if (Error_has(error)) {
+            Error_add_errno(error, errno);
+            Error_add_string(error, "`" EXTERNAL_BINARY "`");
             Array_deinit(&argv);
             return;
         }
@@ -331,7 +331,7 @@ static void Output_write(
         Array_deinit(&argv);
         flush_buffer(pager, fd, error);
 
-        if (ERROR_HAS(error)) {
+        if (Error_has(error)) {
             return;
         }
     }
@@ -350,7 +350,7 @@ static void open_named_input(
 
     /*bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
-    if (ERROR_HAS(error) || !is_tty) {
+    if (Error_has(error) || !is_tty) {
         return;
     }
 
@@ -375,7 +375,7 @@ static void open_named_input(
     Output* output = Output_new(plugin, error);
 
     // FIXME: cleanup signal handler
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         return;
     }
 
@@ -384,7 +384,7 @@ static void open_named_input(
     output->arg = (intptr_t) Pager_new(&plugin->options, error);
 
     // FIXME: cleanup signal handler
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         Output_delete(output);
         return;
     }
@@ -392,7 +392,7 @@ static void open_named_input(
     Array_add(outputs, outputs->length, (intptr_t) output, error);
 
     // FIXME: cleanup signal handler
-    if (ERROR_HAS(error)) {
+    if (Error_has(error)) {
         Pager_delete((struct Pager*) output->arg, error);
         Output_delete(output);
     }*/

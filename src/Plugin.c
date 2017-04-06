@@ -5,7 +5,7 @@
 
 void Input_close_subprocess(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         input->fd = IO_NULL_FD;
         return;
     }
@@ -13,8 +13,8 @@ void Input_close_subprocess(struct Input* input, Error* error) {
     int status = wait_subprocess((pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 
-    if (!ERROR_HAS(error) && (status != 0)) {
-        ERROR_ADD_STRING(error, "subprocess exited with an error code");
+    if (!Error_has(error) && (status != 0)) {
+        Error_add_string(error, "subprocess exited with an error code");
     }
 }
 
@@ -26,7 +26,7 @@ struct Output* Output_new(struct Plugin* plugin, Error* error) {
     struct Output* output = (struct Output*) malloc(sizeof(*output));
 
     if (output == NULL) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return NULL;
     }
 

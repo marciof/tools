@@ -7,7 +7,7 @@
 
 static void close_input(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
     }
     else {
         input->fd = IO_NULL_FD;
@@ -24,14 +24,14 @@ static void open_default_input(
     struct stat input_stat;
 
     if (fstat(STDIN_FILENO, &input_stat) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
         return;
     }
 
     if (!S_ISFIFO(input_stat.st_mode)) {
         bool has_fd_input = io_has_input(STDIN_FILENO, error);
 
-        if (ERROR_HAS(error) || !has_fd_input) {
+        if (Error_has(error) || !has_fd_input) {
             return;
         }
     }

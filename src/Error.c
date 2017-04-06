@@ -2,6 +2,14 @@
 #include <sys/types.h>
 #include "Error.h"
 
+static char* Error_describe_errno(intptr_t arg) {
+    return strerror((int) arg);
+}
+
+static char* Error_describe_string(intptr_t arg) {
+    return (char*) arg;
+}
+
 void Error_add(Error* error, char* (*describe)(intptr_t), intptr_t arg) {
     for (ssize_t i = ERROR_MESSAGE_STACK_SIZE - 1 - 1; i >= 0; --i) {
         (*error)[i + 1] = (*error)[i];
@@ -13,22 +21,30 @@ void Error_add(Error* error, char* (*describe)(intptr_t), intptr_t arg) {
     cause->arg = arg;
 }
 
+void Error_add_errno(Error* error, int nr) {
+    Error_add(error, Error_describe_errno, nr);
+}
+
+void Error_add_string(Error* error, char* message) {
+    Error_add(error, Error_describe_string, (intptr_t) message);
+}
+
+void Error_clear(Error* error) {
+    (*error)[0].describe = NULL;
+}
+
 void Error_copy(Error* error, Error* source) {
     for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
         (*error)[i] = (*source)[i];
     }
 }
 
-char* Error_describe_errno(intptr_t arg) {
-    return strerror((int) arg);
-}
-
-char* Error_describe_string(intptr_t arg) {
-    return (char*) arg;
+bool Error_has(Error* error) {
+    return (*error)[0].describe != NULL;
 }
 
 bool Error_print(Error* error, FILE* stream) {
-    if (!ERROR_HAS(error)) {
+    if (!Error_has(error)) {
         return false;
     }
 

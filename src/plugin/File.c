@@ -7,7 +7,7 @@
 
 static void close_file(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
     }
     else {
         input->fd = IO_NULL_FD;
@@ -25,7 +25,7 @@ static void open_named_input(
 
     if (stat(input->name, &input_stat) == -1) {
         if (errno != ENOENT) {
-            ERROR_ADD_ERRNO(error, errno);
+            Error_add_errno(error, errno);
         }
         return;
     }
@@ -37,7 +37,7 @@ static void open_named_input(
     int fd = open(input->name, O_RDONLY);
 
     if (fd == -1) {
-        ERROR_ADD_ERRNO(error, errno);
+        Error_add_errno(error, errno);
     }
     else {
         input->fd = fd;

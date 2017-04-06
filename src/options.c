@@ -79,7 +79,7 @@ static size_t find_plugin(
         }
     }
 
-    ERROR_ADD_STRING(error, ERROR_UNKNOWN_PLUGIN);
+    Error_add_string(error, ERROR_UNKNOWN_PLUGIN);
     return 0;
 }
 
@@ -96,24 +96,24 @@ static void parse_plugin_option(
         || (separator[C_ARRAY_LENGTH(PLUGIN_OPT_SEP) - 1] == '\0');
 
     if (is_option_missing) {
-        ERROR_ADD_STRING(error, "no plugin option specified");
-        ERROR_ADD_STRING(error, option);
+        Error_add_string(error, "no plugin option specified");
+        Error_add_string(error, option);
         return;
     }
 
     size_t name_length = (separator - option);
 
     if (name_length == 0) {
-        ERROR_ADD_STRING(error, "no plugin name specified");
-        ERROR_ADD_STRING(error, option);
+        Error_add_string(error, "no plugin name specified");
+        Error_add_string(error, option);
         return;
     }
 
     size_t pos = find_plugin(
         option, name_length, nr_plugins, plugins_setup, error);
 
-    if (ERROR_HAS(error)) {
-        ERROR_ADD_STRING(error, option);
+    if (Error_has(error)) {
+        Error_add_string(error, option);
         return;
     }
 
@@ -138,7 +138,7 @@ int parse_options(
             size_t pos = find_plugin(
                 optarg, FIND_BY_FULL_NAME, nr_plugins, plugins_setup, error);
 
-            if (ERROR_HAS(error)) {
+            if (Error_has(error)) {
                 return -1;
             }
             plugins_setup[pos].is_enabled = false;
@@ -150,12 +150,12 @@ int parse_options(
         else if (option == PLUGIN_OPTION_OPT[0]) {
             parse_plugin_option(optarg, nr_plugins, plugins_setup, error);
 
-            if (ERROR_HAS(error)) {
+            if (Error_has(error)) {
                 return -1;
             }
         }
         else {
-            ERROR_ADD_STRING(error, "try '-" HELP_OPT "' for more information");
+            Error_add_string(error, "try '-" HELP_OPT "' for more information");
             return -1;
         }
     }
