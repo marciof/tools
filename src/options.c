@@ -57,7 +57,7 @@ static size_t find_plugin(
         size_t name_length,
         size_t nr_plugins,
         struct Plugin_Setup plugins_setup[],
-        Error* error) {
+        struct Error* error) {
 
     for (size_t i = 0; i < nr_plugins; ++i) {
         const char* other_name = plugins_setup[i].plugin->name;
@@ -87,7 +87,7 @@ static void parse_plugin_option(
         char* option,
         size_t nr_plugins,
         struct Plugin_Setup plugins_setup[],
-        Error* error) {
+        struct Error* error) {
 
     char* separator = strstr(option, PLUGIN_OPT_SEP);
 
@@ -129,7 +129,7 @@ int parse_options(
         char* argv[],
         size_t nr_plugins,
         struct Plugin_Setup plugins_setup[],
-        Error* error) {
+        struct Error* error) {
 
     int option;
 

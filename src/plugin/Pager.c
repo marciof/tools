@@ -17,7 +17,7 @@
 
 struct Pager {
     bool has_timer;
-    Error timer_error;
+    struct Error timer_error;
     pthread_t timer_thread;
     pthread_mutex_t timer_mutex;
     struct Array buffers;
@@ -37,7 +37,9 @@ static void get_terminal_size(int signal_nr) {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal);
 }
 
-static void init_argv(struct Array* argv, struct Array* options, Error* error) {
+static void init_argv(
+        struct Array* argv, struct Array* options, struct Error* error) {
+
     Array_init(argv, error, EXTERNAL_BINARY, NULL);
 
     if (Error_has(error)) {
@@ -67,13 +69,15 @@ static bool is_available() {
         NULL,
     };
 
-    Error error = ERROR_INITIALIZER;
+    struct Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
 
     return !Error_has(&error) && (status == 0);
 }
 
-static void protect_buffer(struct Pager* pager, bool do_lock, Error* error) {
+static void protect_buffer(
+        struct Pager* pager, bool do_lock, struct Error* error) {
+
     if (pager->has_timer) {
         int error_nr = (do_lock ? pthread_mutex_lock : pthread_mutex_unlock)
             (&pager->timer_mutex);
@@ -84,7 +88,9 @@ static void protect_buffer(struct Pager* pager, bool do_lock, Error* error) {
     }
 }
 
-static void flush_buffer(struct Pager* pager, int default_fd, Error* error) {
+static void flush_buffer(
+        struct Pager* pager, int default_fd, struct Error* error) {
+
     protect_buffer(pager, true, error);
 
     if (Error_has(error)) {
@@ -134,7 +140,7 @@ void* flush_buffer_timer(void* arg) {
 }
 
 static bool buffer_input(
-        struct Pager* pager, struct Buffer** buffer, Error* error) {
+        struct Pager* pager, struct Buffer** buffer, struct Error* error) {
 
     bool should_buffer = true;
 
@@ -210,7 +216,7 @@ static bool buffer_input(
     return true;
 }
 
-static void Pager_delete(struct Pager* pager, Error* error) {
+static void Pager_delete(struct Pager* pager, struct Error* error) {
     if (pager->has_timer) {
         if (Error_has(&pager->timer_error)) {
             // FIXME: don't discard errors
@@ -252,7 +258,7 @@ static void Pager_delete(struct Pager* pager, Error* error) {
     }
 
     if (pager->child_pid != -1) {
-        int status = popen_wait(pager->child_pid, error);
+        int status = popen2_wait(pager->child_pid, error);
 
         if (Error_has(error) || (status != 0)) {
             Error_add_string(error, "`" EXTERNAL_BINARY "`");
@@ -263,7 +269,7 @@ static void Pager_delete(struct Pager* pager, Error* error) {
     free(pager);
 }
 
-static struct Pager* Pager_new(struct Array* options, Error* error) {
+static struct Pager* Pager_new(struct Array* options, struct Error* error) {
     struct Pager* pager = (struct Pager*) malloc(sizeof(*pager));
 
     if (pager == NULL) {
@@ -289,14 +295,14 @@ static struct Pager* Pager_new(struct Array* options, Error* error) {
     return pager;
 }
 
-static void Output_close(struct Output* output, Error* error) {
+static void Output_close(struct Output* output, struct Error* error) {
     struct Pager* pager = (struct Pager*) output->arg;
     flush_buffer(pager, STDOUT_FILENO, error);
     Pager_delete(pager, error);
 }
 
 static void Output_write(
-        struct Output* output, struct Buffer** buffer, Error* error) {
+        struct Output* output, struct Buffer** buffer, struct Error* error) {
 
     struct Pager* pager = (struct Pager*) output->arg;
 
@@ -346,7 +352,7 @@ static void Output_write(
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], Error* error) {
+        struct Input* input, size_t argc, char* argv[], struct Error* error) {
 
     /*bool is_tty = io_is_tty(STDOUT_FILENO, error);
 

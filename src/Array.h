@@ -20,9 +20,11 @@ struct Array {
 };
 
 // Argument list must end with a `NULL`.
-void Array_init(struct Array* array, Error* error, ...);
+void Array_init(struct Array* array, struct Error* error, ...);
 
-void Array_add(struct Array* array, size_t pos, intptr_t item, Error* error);
+void Array_add(
+    struct Array* array, size_t pos, intptr_t item, struct Error* error);
 void Array_deinit(struct Array* array);
-void Array_extend(struct Array* array, struct Array* items, Error* error);
-intptr_t Array_remove(struct Array* array, size_t pos, Error* error);
+void Array_extend(
+    struct Array* array, struct Array* items, struct Error* error);
+intptr_t Array_remove(struct Array* array, size_t pos, struct Error* error);

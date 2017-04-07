@@ -14,14 +14,14 @@ int popen2(
     int out_fd,
     int err_fd,
     pid_t* pid,
-    Error* error);
+    struct Error* error);
 
-int popen2_status(char* file, char* argv[], Error* error);
+int popen2_status(char* file, char* argv[], struct Error* error);
 
 /**
- * Use to wait for subprocesses started by `popen2`.
+ * Wait for subprocesses started by `popen2`.
  *
- * @param error adds `errno` `ENOENT` if the subprocess doesn't exist
+ * @param error adds `errno` `ENOENT` if the executable doesn't exist
  * @return subprocess exit status code
  */
-int popen_wait(pid_t child_pid, Error* error);
+int popen2_wait(pid_t child_pid, struct Error* error);

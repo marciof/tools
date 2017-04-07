@@ -10,54 +10,51 @@ static char* Error_describe_string(intptr_t arg) {
     return (char*) arg;
 }
 
-void Error_add(Error* error, char* (*describe)(intptr_t), intptr_t arg) {
-    for (ssize_t i = ERROR_MESSAGE_STACK_SIZE - 1 - 1; i >= 0; --i) {
-        (*error)[i + 1] = (*error)[i];
+void Error_add(struct Error* error, char* (*describe)(intptr_t), intptr_t arg) {
+    for (ssize_t i = ERROR_STACK_SIZE - 1 - 1; i >= 0; --i) {
+        error->arg[i + 1] = error->arg[i];
+        error->describe[i + 1] = error->describe[i];
     }
 
-    struct Error_Cause* cause = &(*error)[0];
-
-    cause->arg = arg;
-    cause->describe = describe;
+    error->arg[0] = arg;
+    error->describe[0] = describe;
 }
 
-void Error_add_errno(Error* error, int nr) {
+void Error_add_errno(struct Error* error, int nr) {
     Error_add(error, Error_describe_errno, nr);
 }
 
-void Error_add_string(Error* error, char* message) {
+void Error_add_string(struct Error* error, char* message) {
     Error_add(error, Error_describe_string, (intptr_t) message);
 }
 
-void Error_clear(Error* error) {
-    (*error)[0].describe = NULL;
+void Error_clear(struct Error* error) {
+    error->describe[0] = NULL;
 }
 
-void Error_copy(Error* error, Error* source) {
-    for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
-        (*error)[i] = (*source)[i];
+void Error_copy(struct Error* error, struct Error* source) {
+    for (size_t i = 0; i < ERROR_STACK_SIZE; ++i) {
+        error->arg[i] = source->arg[i];
+        error->describe[i] = source->describe[i];
     }
 }
 
-bool Error_has(Error* error) {
-    return (*error)[0].describe != NULL;
+bool Error_has(struct Error* error) {
+    return error->describe[0] != NULL;
 }
 
-bool Error_has_errno(Error* error, int nr) {
-    struct Error_Cause* cause = &(*error)[0];
-    return (cause->describe == Error_describe_errno)
-        && (cause->arg == nr);
+bool Error_has_errno(struct Error* error, int nr) {
+    return (error->describe[0] == Error_describe_errno)
+        && (error->arg[0] == nr);
 }
 
-bool Error_print(Error* error, FILE* stream) {
+bool Error_print(struct Error* error, FILE* stream) {
     if (!Error_has(error)) {
         return false;
     }
 
-    for (size_t i = 0; i < ERROR_MESSAGE_STACK_SIZE; ++i) {
-        struct Error_Cause* cause = &(*error)[i];
-
-        if (cause->describe == NULL) {
+    for (size_t i = 0; i < ERROR_STACK_SIZE; ++i) {
+        if (error->describe[i] == NULL) {
             fprintf(stream, "\n");
             break;
         }
@@ -66,7 +63,7 @@ bool Error_print(Error* error, FILE* stream) {
             fprintf(stream, ": ");
         }
 
-        fprintf(stream, "%s", cause->describe(cause->arg));
+        fprintf(stream, "%s", error->describe[i](error->arg[i]));
     }
 
     return true;

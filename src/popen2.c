@@ -16,7 +16,7 @@ static int popen2_pipe(
         int out_fd,
         int err_fd,
         pid_t* pid,
-        Error* error) {
+        struct Error* error) {
 
     int rw_fds[2];
 
@@ -71,7 +71,7 @@ static int popen2_pty(
         int out_fd,
         int err_fd,
         pid_t* pid,
-        Error* error) {
+        struct Error* error) {
 
     int child_fd_out;
     pid_t child_pid = forkpty(&child_fd_out, NULL, NULL, NULL);
@@ -109,7 +109,7 @@ int popen2(
         int out_fd,
         int err_fd,
         pid_t* pid,
-        Error* error) {
+        struct Error* error) {
 
     if (is_read) {
         bool is_tty = io_is_tty(STDOUT_FILENO, error);
@@ -127,7 +127,7 @@ int popen2(
     return popen2_pipe(file, argv, is_read, out_fd, err_fd, pid, error);
 }
 
-int popen2_status(char* file, char* argv[], Error* error) {
+int popen2_status(char* file, char* argv[], struct Error* error) {
     int discard_fd = open("/dev/null", O_RDWR);
 
     if (discard_fd == -1) {
@@ -155,7 +155,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
         return -1;
     }
 
-    int status = popen_wait(child_pid, error);
+    int status = popen2_wait(child_pid, error);
 
     if (Error_has(error)) {
         close(discard_fd);
@@ -170,7 +170,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     return status;
 }
 
-int popen_wait(pid_t child_pid, Error* error) {
+int popen2_wait(pid_t child_pid, struct Error* error) {
     int status;
 
     if (waitpid(child_pid, &status, 0) == -1) {

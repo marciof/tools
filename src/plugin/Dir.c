@@ -8,14 +8,14 @@
 
 #define EXTERNAL_BINARY "ls"
 
-static bool close_subprocess(struct Input* input, Error* error) {
+static bool close_subprocess(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
         input->fd = IO_NULL_FD;
         return true;
     }
 
-    int status = popen_wait((pid_t) input->arg, error);
+    int status = popen2_wait((pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 
     if (Error_has_errno(error, ENOENT)) {
@@ -37,13 +37,13 @@ static bool is_available() {
         NULL,
     };
 
-    Error error = ERROR_INITIALIZER;
+    struct Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
     return !Error_has(&error) && (status == 0);
 }
 
 static void open_input(
-        struct Input* input, size_t argc, char* argv[], Error* error) {
+        struct Input* input, size_t argc, char* argv[], struct Error* error) {
 
     char* exec_argv[1 + argc + 1 + 1 + 1];
     pid_t child_pid;
@@ -77,14 +77,14 @@ static void open_input(
 }
 
 static void open_default_input(
-        struct Input* input, size_t argc, char* argv[], Error* error) {
+        struct Input* input, size_t argc, char* argv[], struct Error* error) {
 
     input->name = ".";
     open_input(input, argc, argv, error);
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], Error* error) {
+        struct Input* input, size_t argc, char* argv[], struct Error* error) {
 
     struct stat input_stat;
 

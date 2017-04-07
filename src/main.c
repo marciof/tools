@@ -118,9 +118,9 @@ static bool flush_input(
         struct Input* input,
         int output_fd,
         struct Plugin_Setup* plugin_setup,
-        Error* error) {
+        struct Error* error) {
 
-    void (*open_input)(struct Input*, size_t, char*[], Error*)
+    void (*open_input)(struct Input*, size_t, char*[], struct Error*)
         = (input->name == NULL)
             ? plugin_setup->plugin->open_default_input
             : plugin_setup->plugin->open_named_input;
@@ -158,7 +158,10 @@ static bool flush_input(
 }
 
 static void flush_inputs(
-        size_t inputs_length, char* inputs[], int output_fd, Error* error) {
+        size_t inputs_length,
+        char* inputs[],
+        int output_fd,
+        struct Error* error) {
 
     for (size_t i = 0; i < inputs_length; ++i) {
         bool is_input_supported = false;
@@ -202,7 +205,7 @@ static void flush_inputs(
 }
 
 int main(int argc, char* argv[]) {
-    Error error = ERROR_INITIALIZER;
+    struct Error error = ERROR_INITIALIZER;
     int output_fd = STDOUT_FILENO;
     char* plugin_argv_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
 

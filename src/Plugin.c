@@ -5,7 +5,7 @@ void Output_delete(struct Output* output) {
     free(output);
 }
 
-struct Output* Output_new(struct Plugin* plugin, Error* error) {
+struct Output* Output_new(struct Plugin* plugin, struct Error* error) {
     struct Output* output = (struct Output*) malloc(sizeof(*output));
 
     if (output == NULL) {

@@ -5,7 +5,7 @@
 #include "../io.h"
 #include "File.h"
 
-static bool close_file(struct Input* input, Error* error) {
+static bool close_file(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
     }
@@ -20,7 +20,7 @@ static bool is_available() {
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], Error* error) {
+        struct Input* input, size_t argc, char* argv[], struct Error* error) {
 
     struct stat input_stat;
 

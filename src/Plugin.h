@@ -13,16 +13,17 @@ struct Input {
     int fd;
     intptr_t arg;
     /** @return `false` if the plugin is unavailable, `true` otherwise */
-    bool (*close)(struct Input* input, Error* error);
+    bool (*close)(struct Input* input, struct Error* error);
 };
 
 struct Output {
     struct Plugin* plugin;
     intptr_t arg;
-    void (*close)(struct Output* output, Error* error);
+    void (*close)(struct Output* output, struct Error* error);
     // If all data is flushed, `buffer->length` is set to `0`.
     // If `buffer` ownership is transferred to a plugin, it is set to `NULL`.
-    void (*write)(struct Output* output, struct Buffer** buffer, Error* error);
+    void (*write)(
+        struct Output* output, struct Buffer** buffer, struct Error* error);
 };
 
 struct Plugin {
@@ -31,10 +32,10 @@ struct Plugin {
     bool (*is_available)();
     /** `NULL` if it can't open default inputs. */
     void (*open_default_input)(
-        struct Input* input, size_t argc, char* argv[], Error* error);
+        struct Input* input, size_t argc, char* argv[], struct Error* error);
     /** `NULL` if it can't open named inputs. */
     void (*open_named_input)(
-        struct Input* input, size_t argc, char* argv[], Error* error);
+        struct Input* input, size_t argc, char* argv[], struct Error* error);
 };
 
 struct Plugin_Setup {
@@ -45,4 +46,4 @@ struct Plugin_Setup {
 };
 
 void Output_delete(struct Output* output);
-struct Output* Output_new(struct Plugin* plugin, Error* error);
+struct Output* Output_new(struct Plugin* plugin, struct Error* error);

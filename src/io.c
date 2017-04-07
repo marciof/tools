@@ -7,7 +7,7 @@ void Buffer_delete(struct Buffer* buffer) {
     free(buffer);
 }
 
-struct Buffer* Buffer_new(size_t max_length, Error* error) {
+struct Buffer* Buffer_new(size_t max_length, struct Error* error) {
     struct Buffer* buffer = (struct Buffer*) malloc(
         offsetof(struct Buffer, data) + sizeof(buffer->data[0]) * max_length);
 
@@ -20,7 +20,7 @@ struct Buffer* Buffer_new(size_t max_length, Error* error) {
     return buffer;
 }
 
-bool io_has_input(int fd, Error* error) {
+bool io_has_input(int fd, struct Error* error) {
     struct pollfd fd_poll;
 
     fd_poll.fd = fd;
@@ -36,7 +36,7 @@ bool io_has_input(int fd, Error* error) {
     return (nr_fds == 1) && (fd_poll.revents & POLLIN);
 }
 
-bool io_is_tty(int fd, Error* error) {
+bool io_is_tty(int fd, struct Error* error) {
     bool is_tty = (isatty(fd) != 0);
 
     if (!is_tty && (errno != ENOTTY)) {
@@ -47,7 +47,7 @@ bool io_is_tty(int fd, Error* error) {
     return is_tty;
 }
 
-void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error) {
+void io_write(int fd, uint8_t* data, size_t nr_bytes, struct Error* error) {
     while (nr_bytes > 0) {
         ssize_t bytes_written = write(fd, data, nr_bytes);
 

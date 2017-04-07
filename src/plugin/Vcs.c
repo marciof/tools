@@ -5,7 +5,9 @@
 
 #define EXTERNAL_BINARY "git"
 
-static void init_argv(struct Array* argv, struct Array* options, Error* error) {
+static void init_argv(
+        struct Array* argv, struct Array* options, struct Error* error) {
+
     Array_init(argv, error,
         EXTERNAL_BINARY, "--no-pager", "show", NULL);
 
@@ -43,13 +45,13 @@ static bool is_available() {
         NULL,
     };
 
-    Error error = ERROR_INITIALIZER;
+    struct Error error = ERROR_INITIALIZER;
     int status = popen2_status(argv[0], argv, &error);
 
     return !Error_has(&error) && (status == 0);
 }
 
-static bool is_input_valid(char* input, Error* error) {
+static bool is_input_valid(char* input, struct Error* error) {
     char* args[] = {
         EXTERNAL_BINARY,
         "--no-pager",
@@ -64,7 +66,7 @@ static bool is_input_valid(char* input, Error* error) {
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], Error* error) {
+        struct Input* input, size_t argc, char* argv[], struct Error* error) {
 
     /*struct Array argv = ARRAY_NULL_INITIALIZER;
 

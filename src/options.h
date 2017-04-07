@@ -9,4 +9,4 @@ int parse_options(
     char* argv[],
     size_t nr_plugins,
     struct Plugin_Setup plugins_setup[],
-    Error* error);
+    struct Error* error);

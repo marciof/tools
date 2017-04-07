@@ -14,8 +14,8 @@ struct Buffer {
 };
 
 void Buffer_delete(struct Buffer* buffer);
-struct Buffer* Buffer_new(size_t max_length, Error* error);
+struct Buffer* Buffer_new(size_t max_length, struct Error* error);
 
-bool io_has_input(int fd, Error* error);
-bool io_is_tty(int fd, Error* error);
-void io_write(int fd, uint8_t* data, size_t nr_bytes, Error* error);
+bool io_has_input(int fd, struct Error* error);
+bool io_is_tty(int fd, struct Error* error);
+void io_write(int fd, uint8_t* data, size_t nr_bytes, struct Error* error);

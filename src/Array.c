@@ -5,7 +5,9 @@
 
 #define DEFAULT_CAPACITY_INCREASE (1.5)
 
-static void change_capacity(struct Array* array, size_t size, Error* error) {
+static void change_capacity(
+        struct Array* array, size_t size, struct Error* error) {
+
     if (size < array->length) {
         Error_add_string(error, "array capacity is smaller than its length");
         return;
@@ -37,7 +39,9 @@ static void change_capacity(struct Array* array, size_t size, Error* error) {
     array->capacity = size;
 }
 
-void Array_add(struct Array* array, size_t pos, intptr_t item, Error* error) {
+void Array_add(
+        struct Array* array, size_t pos, intptr_t item, struct Error* error) {
+
     if (pos > array->length) {
         Error_add_string(error, "out of bounds array position for adding");
         return;
@@ -80,7 +84,9 @@ void Array_deinit(struct Array* array) {
     }
 }
 
-void Array_extend(struct Array* array, struct Array* items, Error* error) {
+void Array_extend(
+        struct Array* array, struct Array* items, struct Error* error) {
+
     if (items->length == 0) {
         return;
     }
@@ -110,7 +116,7 @@ void Array_extend(struct Array* array, struct Array* items, Error* error) {
     }
 }
 
-void Array_init(struct Array* array, Error* error, ...) {
+void Array_init(struct Array* array, struct Error* error, ...) {
     array->length = 0;
     array->capacity = ARRAY_INITIAL_CAPACITY;
     array->data = array->buffer;
@@ -131,7 +137,7 @@ void Array_init(struct Array* array, Error* error, ...) {
     va_end(args);
 }
 
-intptr_t Array_remove(struct Array* array, size_t pos, Error* error) {
+intptr_t Array_remove(struct Array* array, size_t pos, struct Error* error) {
     if (pos >= array->length) {
         Error_add_string(error, "out of bounds array position for removal");
         return 0;
