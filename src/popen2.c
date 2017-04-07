@@ -155,7 +155,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
         return -1;
     }
 
-    int status = wait_subprocess(child_pid, error);
+    int status = popen_wait(child_pid, error);
 
     if (Error_has(error)) {
         close(discard_fd);
@@ -170,7 +170,7 @@ int popen2_status(char* file, char* argv[], Error* error) {
     return status;
 }
 
-int wait_subprocess(pid_t child_pid, Error* error) {
+int popen_wait(pid_t child_pid, Error* error) {
     int status;
 
     if (waitpid(child_pid, &status, 0) == -1) {

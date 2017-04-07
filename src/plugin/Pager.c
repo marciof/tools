@@ -252,7 +252,7 @@ static void Pager_delete(struct Pager* pager, Error* error) {
     }
 
     if (pager->child_pid != -1) {
-        int status = wait_subprocess(pager->child_pid, error);
+        int status = popen_wait(pager->child_pid, error);
 
         if (Error_has(error) || (status != 0)) {
             Error_add_string(error, "`" EXTERNAL_BINARY "`");

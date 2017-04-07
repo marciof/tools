@@ -10,7 +10,7 @@ void Input_close_subprocess(struct Input* input, Error* error) {
         return;
     }
 
-    int status = wait_subprocess((pid_t) input->arg, error);
+    int status = popen_wait((pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 
     if (!Error_has(error) && (status != 0)) {

@@ -18,5 +18,10 @@ int popen2(
 
 int popen2_status(char* file, char* argv[], Error* error);
 
-// Use to wait for subprocesses started by `popen2`.
-int wait_subprocess(pid_t child_pid, Error* error);
+/**
+ * Use to wait for subprocesses started by `popen2`.
+ *
+ * @param error adds `errno` `ENOENT` if the subprocess doesn't exist
+ * @return subprocess exit status code
+ */
+int popen_wait(pid_t child_pid, Error* error);
