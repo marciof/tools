@@ -17,8 +17,8 @@ void Error_add(Error* error, char* (*describe)(intptr_t), intptr_t arg) {
 
     struct Error_Cause* cause = &(*error)[0];
 
-    cause->describe = describe;
     cause->arg = arg;
+    cause->describe = describe;
 }
 
 void Error_add_errno(Error* error, int nr) {
@@ -41,6 +41,12 @@ void Error_copy(Error* error, Error* source) {
 
 bool Error_has(Error* error) {
     return (*error)[0].describe != NULL;
+}
+
+bool Error_has_errno(Error* error, int nr) {
+    struct Error_Cause* cause = &(*error)[0];
+    return (cause->describe == Error_describe_errno)
+        && (cause->arg == nr);
 }
 
 bool Error_print(Error* error, FILE* stream) {

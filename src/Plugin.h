@@ -12,7 +12,8 @@ struct Input {
     /** `IO_NULL_FD` if unsupported or when closed. */
     int fd;
     intptr_t arg;
-    void (*close)(struct Input* input, Error* error);
+    /** @return `false` if the plugin is unavailable, `true` otherwise */
+    bool (*close)(struct Input* input, Error* error);
 };
 
 struct Output {
@@ -43,6 +44,5 @@ struct Plugin_Setup {
     char** argv;
 };
 
-void Input_close_subprocess(struct Input* input, Error* error);
 void Output_delete(struct Output* output);
 struct Output* Output_new(struct Plugin* plugin, Error* error);

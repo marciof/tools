@@ -3,9 +3,7 @@
 #include "Error.h"
 #include "Plugin.h"
 
-/**
- * @return `argv` index of the first non-option, or negative on error or help
- */
+/** @return `argv` index of the first non-option, or negative on error/help */
 int parse_options(
     int argc,
     char* argv[],

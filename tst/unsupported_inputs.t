@@ -11,5 +11,9 @@ Complain about non-supported input:
 Deactivate non-supported plugins automatically:
 
   $ PATH= show .
-  @: unsupported input
+  .: unsupported input
   [1]
+
+Do nothing without inputs and no available plugins:
+
+  $ PATH= show

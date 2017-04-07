@@ -113,9 +113,7 @@ static Buffer* flush_input(
 }
 */
 
-/**
- * @return whether or not the input was successfully flushed
- */
+/** @return whether or not the input was successfully flushed */
 static bool flush_input(
         struct Input* input,
         int output_fd,
@@ -156,8 +154,7 @@ static bool flush_input(
         return false;
     }
 
-    input->close(input, error);
-    return !Error_has(error);
+    return input->close(input, error);
 }
 
 static void flush_inputs(
@@ -182,8 +179,8 @@ static void flush_inputs(
                     &input, output_fd, plugin_setup, error);
 
                 if (Error_has(error)) {
-                    if (input.name != NULL) {
-                        Error_add_string(error, input.name);
+                    if (input_name != NULL) {
+                        Error_add_string(error, input_name);
                     }
                     Error_add_string(error, plugin_setup->plugin->name);
                     return;
@@ -195,8 +192,10 @@ static void flush_inputs(
         }
 
         if (!is_input_supported) {
-            Error_add_string(error, "unsupported input");
-            Error_add_string(error, input_name);
+            if (input_name != NULL) {
+                Error_add_string(error, "unsupported input");
+                Error_add_string(error, input_name);
+            }
             return;
         }
     }

@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -6,6 +7,28 @@
 #include "Dir.h"
 
 #define EXTERNAL_BINARY "ls"
+
+static bool close_subprocess(struct Input* input, Error* error) {
+    if (close(input->fd) == -1) {
+        Error_add_errno(error, errno);
+        input->fd = IO_NULL_FD;
+        return true;
+    }
+
+    int status = popen_wait((pid_t) input->arg, error);
+    input->fd = IO_NULL_FD;
+
+    if (Error_has_errno(error, ENOENT)) {
+        Error_clear(error);
+        return false;
+    }
+
+    if (!Error_has(error) && (status != 0)) {
+        Error_add_string(error, "subprocess exited with an error code");
+    }
+
+    return true;
+}
 
 static bool is_available() {
     char* argv[] = {
@@ -49,7 +72,7 @@ static void open_input(
     else {
         input->fd = fd;
         input->arg = (intptr_t) child_pid;
-        input->close = Input_close_subprocess;
+        input->close = close_subprocess;
     }
 }
 

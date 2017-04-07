@@ -5,13 +5,14 @@
 #include "../io.h"
 #include "Stdin.h"
 
-static void close_input(struct Input* input, Error* error) {
+static bool close_input(struct Input* input, Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
     }
     else {
         input->fd = IO_NULL_FD;
     }
+    return true;
 }
 
 static bool is_available() {
