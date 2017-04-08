@@ -127,6 +127,17 @@ int popen2(
     return popen2_pipe(file, argv, is_read, out_fd, err_fd, pid, error);
 }
 
+bool popen2_check(char* file, char* argv[], struct Error* error) {
+    int status = popen2_status(file, argv, error);
+
+    if (Error_has_errno(error, ENOENT)) {
+        Error_clear(error);
+        return false;
+    }
+
+    return !Error_has(error) && (status == 0);
+}
+
 int popen2_status(char* file, char* argv[], struct Error* error) {
     int discard_fd = open("/dev/null", O_RDWR);
 

@@ -15,7 +15,7 @@ static bool close_input(struct Input* input, struct Error* error) {
     return true;
 }
 
-static bool is_available() {
+static bool is_available(struct Error* error) {
     return true;
 }
 

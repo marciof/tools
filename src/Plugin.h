@@ -30,7 +30,7 @@ struct Output {
 struct Plugin {
     char* name;
     char* description;
-    bool (*is_available)();
+    bool (*is_available)(struct Error* error);
     /** `NULL` if it can't open default inputs. */
     void (*open_default_input)(
         struct Input* input, size_t argc, char* argv[], struct Error* error);

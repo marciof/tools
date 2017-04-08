@@ -20,6 +20,9 @@ int popen2(
     pid_t* pid,
     struct Error* error);
 
+/** @return `true` if it exited successfully, `false` on `ENOENT` or on error */
+bool popen2_check(char* file, char* argv[], struct Error* error);
+
 int popen2_status(char* file, char* argv[], struct Error* error);
 
 /**

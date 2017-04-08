@@ -43,10 +43,12 @@ static void display_help(
     fputs("\nPlugins:\n", stderr);
 
     for (size_t i = 0; i < nr_plugins; ++i) {
+        struct Error error = ERROR_INITIALIZER;
         struct Plugin* plugin = plugins_setup[i].plugin;
+        bool is_available = plugin->is_available(&error);
 
         fprintf(stderr, "%c %-13s%s\n",
-            plugin->is_available() ? ' ' : 'x',
+            is_available ? ' ' : Error_has(&error) ? '?' : 'x',
             plugin->name,
             plugin->description);
     }

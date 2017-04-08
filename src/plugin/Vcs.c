@@ -38,17 +38,14 @@ static void init_argv(
     }
 }
 
-static bool is_available() {
+static bool is_available(struct Error* error) {
     char* argv[] = {
         EXTERNAL_BINARY,
         "--version",
         NULL,
     };
 
-    struct Error error = ERROR_INITIALIZER;
-    int status = popen2_status(argv[0], argv, &error);
-
-    return !Error_has(&error) && (status == 0);
+    return popen2_check(argv[0], argv, error);
 }
 
 static bool is_input_valid(char* input, struct Error* error) {
