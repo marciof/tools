@@ -1,6 +1,6 @@
 #!/bin/sh
 # https://bitbucket.org/brodie/cram/
-set -x
+
 set -e -u
 
 compile_option=c
@@ -16,6 +16,7 @@ compile_t_to_sh() {
 
     cat <<EOT
 #!/bin/sh
+set -x
 set -u
 TESTDIR="$test_dir"
 $log="\$(mktemp)"
@@ -79,6 +80,7 @@ for test_file; do
         test_scratch_dir="$(mktemp -d)"
 
         cd "$test_scratch_dir"
+        set -x
         "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"
         cd "$current_dir"
 
