@@ -16,7 +16,6 @@ compile_t_to_sh() {
 
     cat <<EOT
 #!/bin/sh
-set -x
 set -u
 TESTDIR="$test_dir"
 $log="\$(mktemp)"
@@ -79,7 +78,6 @@ for test_file; do
     if [ -z "$is_compile_only" ]; then
         test_scratch_dir="$(mktemp -d)"
         cd "$test_scratch_dir"
-        set -x
 
         if ! "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"; then
             echo "$test_file: err" >&2
