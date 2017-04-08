@@ -5,12 +5,10 @@
 #include "Array.h"
 #include "Buffer.h"
 #include "Error.h"
-#include "io.h"
 
 struct Input {
     /** `NULL` when a plugin is run with no inputs to get a default one. */
     char* name;
-    /** `IO_NULL_FD` if unsupported or when closed. */
     int fd;
     intptr_t arg;
     /** @param error `ENOENT` if the plugin is unavailable */

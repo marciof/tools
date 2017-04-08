@@ -20,9 +20,16 @@ int popen2(
     pid_t* pid,
     struct Error* error);
 
-/** @return `true` if it exited successfully, `false` on `ENOENT` or on error */
+/**
+ * Wraps `popen2_status`.
+ * @return `true` if it exited successfully, `false` on `ENOENT` or on error
+ */
 bool popen2_check(char* file, char* argv[], struct Error* error);
 
+/** Wraps `popen2_wait`. */
+void popen2_close(int fd, pid_t child_pid, struct Error* error);
+
+/** Wraps `popen2` and `popen2_wait`. */
 int popen2_status(char* file, char* argv[], struct Error* error);
 
 /**

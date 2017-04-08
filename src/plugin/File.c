@@ -9,9 +9,7 @@ static void close_file(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
     }
-    else {
-        input->fd = IO_NULL_FD;
-    }
+    input->fd = IO_NULL_FD;
 }
 
 static bool is_available(struct Error* error) {

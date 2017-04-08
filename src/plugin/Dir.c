@@ -9,22 +9,8 @@
 #define EXTERNAL_BINARY "ls"
 
 static void close_subprocess(struct Input* input, struct Error* error) {
-    if (close(input->fd) == -1) {
-        Error_add_errno(error, errno);
-        input->fd = IO_NULL_FD;
-        return;
-    }
-
-    int status = popen2_wait((pid_t) input->arg, error);
+    popen2_close(input->fd, (pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
-
-    if (Error_has_errno(error, ENOENT)) {
-        return;
-    }
-
-    if (!Error_has(error) && (status != 0)) {
-        Error_add_string(error, "subprocess exited with an error code");
-    }
 }
 
 static bool is_available(struct Error* error) {

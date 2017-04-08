@@ -138,6 +138,23 @@ bool popen2_check(char* file, char* argv[], struct Error* error) {
     return !Error_has(error) && (status == 0);
 }
 
+void popen2_close(int fd, pid_t child_pid, struct Error* error) {
+    if (close(fd) == -1) {
+        Error_add_errno(error, errno);
+        return;
+    }
+
+    int status = popen2_wait(child_pid, error);
+
+    if (Error_has_errno(error, ENOENT)) {
+        return;
+    }
+
+    if (!Error_has(error) && (status != 0)) {
+        Error_add_string(error, "subprocess exited with an error code");
+    }
+}
+
 int popen2_status(char* file, char* argv[], struct Error* error) {
     int discard_fd = open("/dev/null", O_RDWR);
 

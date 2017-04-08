@@ -63,6 +63,7 @@ static void init_argv(
     }
 }
 
+// FIXME
 static bool is_available(struct Error* error) {
     char* argv[] = {
         EXTERNAL_BINARY,

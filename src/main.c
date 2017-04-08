@@ -32,7 +32,7 @@ static struct Plugin_Setup plugins_setup[] = {
     },
     {
         &Vcs_Plugin,
-        false,
+        true,
         0,
         NULL,
     },
@@ -149,6 +149,7 @@ static bool flush_input(
         }
     }
 
+    // FIXME: don't ignore `EIO`
     if ((nr_read == -1) && (errno != EIO)) {
         Error_add_errno(error, errno);
         return false;
