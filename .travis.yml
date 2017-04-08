@@ -11,4 +11,6 @@ addons:
 script:
 - cmake .
 - make
+- which sh
+- echo $SHELL
 - ./bin/test.sh tst/*.t
