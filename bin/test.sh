@@ -65,6 +65,7 @@ process_options() {
 process_options "$@"
 shift $((OPTIND - 1))
 current_dir="$(pwd)"
+exit_status=0
 
 for test_file; do
     test_dir="$(dirname "$test_file")"
@@ -89,6 +90,10 @@ for test_file; do
         if diff -u "$test_file" "$test_dir/$test_output"; then
             echo "$test_file: ok"
             rm "$test_dir/$test_script" "$test_dir/$test_output"
+        else
+            exit_status=1
         fi
     fi
 done
+
+exit "$exit_status"
