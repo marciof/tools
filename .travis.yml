@@ -11,4 +11,5 @@ addons:
 script:
 - cmake .
 - make
+- readlink -e /bin/sh
 - ./bin/test.sh tst/*.t

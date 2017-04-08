@@ -27,7 +27,7 @@ EOT
     sed -E '/^  /! s/^/#/' \
         | sed -E 's/^  \$ //' \
         | grep -v -E '^  ' \
-        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot'\n  \$ \1\n$eot\n{ \1 ;} >\"\$$log\" 2>\&1; $print_log/" \
+        | sed -E "/^#/! s/^(.+)\$/true\ncat <<'$eot'\n  \$ \1\n$eot\nfalse\n{ \1 ;} >\"\$$log\" 2>\&1; $print_log/" \
         | sed -E "s/^#([^\\\$\"\`'(){}<>;|&-]*)$/echo \1/" \
         | sed -E "s/^#(.*)\$/cat <<'$eot'\n\1\n$eot/"
 }
