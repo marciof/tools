@@ -27,7 +27,7 @@ EOT
     sed -E '/^  /! s/^/#/' \
         | sed -E 's/^  \$ //' \
         | grep -v -E '^  ' \
-        | sed -E "/^#/! s/^(.+)\$/true\ncat <<'$eot'\n  \$ \1\n$eot\nfalse\n{ \1 ;} >\"\$$log\" 2>\&1; $print_log/" \
+        | sed -E "/^#/! s/^(.+)\$/cat <<'$eot'\n  \$ \1\n$eot\n{ \1 ;} >\"\$$log\" 2>\&1; $print_log/" \
         | sed -E "s/^#([^\\\$\"\`'(){}<>;|&-]*)$/echo \1/" \
         | sed -E "s/^#(.*)\$/cat <<'$eot'\n\1\n$eot/"
 }
@@ -56,7 +56,7 @@ process_options() {
                 exit 0
                 ;;
             ?)
-                printf "Try '-%s' for more information.\n" "$help_option" 2>&1
+                printf "Try '-%s' for more information.\n" "$help_option" >&2
                 exit 1
                 ;;
         esac
@@ -78,12 +78,14 @@ for test_file; do
 
     if [ -z "$is_compile_only" ]; then
         test_scratch_dir="$(mktemp -d)"
-
         cd "$test_scratch_dir"
         set -x
-        "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"
-        cd "$current_dir"
 
+        if ! "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"; then
+            echo "$test_file: err" >&2
+        fi
+
+        cd "$current_dir"
         rm -rf "${test_scratch_dir:?}"
 
         if diff -u "$test_file" "$test_dir/$test_output"; then
