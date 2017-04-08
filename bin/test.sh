@@ -1,6 +1,6 @@
 #!/bin/sh
 # https://bitbucket.org/brodie/cram/
-
+set -x
 set -e -u
 
 compile_option=c
