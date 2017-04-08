@@ -8,26 +8,23 @@
 
 #define EXTERNAL_BINARY "ls"
 
-static bool close_subprocess(struct Input* input, struct Error* error) {
+static void close_subprocess(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
         input->fd = IO_NULL_FD;
-        return true;
+        return;
     }
 
     int status = popen2_wait((pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 
     if (Error_has_errno(error, ENOENT)) {
-        Error_clear(error);
-        return false;
+        return;
     }
 
     if (!Error_has(error) && (status != 0)) {
         Error_add_string(error, "subprocess exited with an error code");
     }
-
-    return true;
 }
 
 static bool is_available(struct Error* error) {
@@ -47,12 +44,12 @@ static void open_input(
     pid_t child_pid;
 
     exec_argv[0] = EXTERNAL_BINARY;
-    exec_argv[1 + argc] = "--";
-    exec_argv[1 + argc + 1] = input->name;
-    exec_argv[1 + argc + 1 + 1] = NULL;
+    exec_argv[0 + 1 + argc] = "--";
+    exec_argv[0 + 1 + argc + 1] = input->name;
+    exec_argv[0 + 1 + argc + 1 + 1] = NULL;
 
     for (size_t i = 0; i < argc; ++i) {
-        exec_argv[i + 1] = argv[i];
+        exec_argv[0 + 1 + i] = argv[i];
     }
 
     int fd = popen2(

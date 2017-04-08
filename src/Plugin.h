@@ -13,8 +13,8 @@ struct Input {
     /** `IO_NULL_FD` if unsupported or when closed. */
     int fd;
     intptr_t arg;
-    /** @return `false` if the plugin is unavailable, `true` otherwise */
-    bool (*close)(struct Input* input, struct Error* error);
+    /** @param error `ENOENT` if the plugin is unavailable */
+    void (*close)(struct Input* input, struct Error* error);
 };
 
 struct Output {

@@ -5,14 +5,13 @@
 #include "../io.h"
 #include "File.h"
 
-static bool close_file(struct Input* input, struct Error* error) {
+static void close_file(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
     }
     else {
         input->fd = IO_NULL_FD;
     }
-    return true;
 }
 
 static bool is_available(struct Error* error) {

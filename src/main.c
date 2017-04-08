@@ -154,7 +154,14 @@ static bool flush_input(
         return false;
     }
 
-    return input->close(input, error);
+    input->close(input, error);
+
+    if (Error_has_errno(error, ENOENT)) {
+        Error_clear(error);
+        return false;
+    }
+
+    return !Error_has(error);
 }
 
 static void flush_inputs(
@@ -164,7 +171,7 @@ static void flush_inputs(
         struct Error* error) {
 
     for (size_t i = 0; i < inputs_length; ++i) {
-        bool is_input_supported = false;
+        bool was_input_flushed = false;
         char* input_name = inputs[i];
 
         for (size_t j = 0; j < C_ARRAY_LENGTH(plugins_setup); ++j) {
@@ -178,7 +185,7 @@ static void flush_inputs(
                     NULL,
                 };
 
-                is_input_supported = flush_input(
+                was_input_flushed = flush_input(
                     &input, output_fd, plugin_setup, error);
 
                 if (Error_has(error)) {
@@ -188,13 +195,13 @@ static void flush_inputs(
                     Error_add_string(error, plugin_setup->plugin->name);
                     return;
                 }
-                if (is_input_supported) {
+                if (was_input_flushed) {
                     break;
                 }
             }
         }
 
-        if (!is_input_supported) {
+        if (!was_input_flushed) {
             if (input_name != NULL) {
                 Error_add_string(error, "unsupported input");
                 Error_add_string(error, input_name);
