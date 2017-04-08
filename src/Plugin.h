@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "Array.h"
+#include "Buffer.h"
 #include "Error.h"
 #include "io.h"
 

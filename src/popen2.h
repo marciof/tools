@@ -3,10 +3,14 @@
 #include <sys/types.h>
 #include "Error.h"
 
-// If `is_read`, returns a file descriptor for reading the subprocess output,
-// otherwise returns a file descriptor for writing to the subprocess input.
-// Uses a pseudo-TTY when reading and when stdout is a TTY.
-// Redirects `out_fd` and `err_fd` when either one isn't `IO_NULL_FD`.
+/**
+ * Uses a pseudo-TTY when `is_read` is `true` and `stdout` is a TTY.
+ *
+ * @param is_read `true`/`false` to read/write the subprocess output/input
+ * @param out_fd where to redirect `stdout` to unless `IO_NULL_FD`
+ * @param err_fd where to redirect `stderr` to unless `IO_NULL_FD`
+ * @return file descriptor for reading/writing the subprocess output/input
+ */
 int popen2(
     char* file,
     char* argv[],

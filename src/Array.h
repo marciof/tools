@@ -19,7 +19,7 @@ struct Array {
     size_t capacity;
 };
 
-// Argument list must end with a `NULL`.
+/** @param ... items to add, ending in `NULL` */
 void Array_init(struct Array* array, struct Error* error, ...);
 
 void Array_add(

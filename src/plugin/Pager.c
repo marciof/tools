@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include "../Array.h"
+#include "../Buffer.h"
 #include "../io.h"
 #include "../popen2.h"
 #include "Pager.h"
