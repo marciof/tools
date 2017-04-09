@@ -113,7 +113,7 @@ static Buffer* flush_input(
 }
 */
 
-/** @return whether or not the input was successfully flushed */
+/** @return `true` if the input was successfully flushed, `false` otherwise */
 static bool flush_input(
         struct Input* input,
         int output_fd,
@@ -131,10 +131,7 @@ static bool flush_input(
 
     open_input(input, plugin_setup->argc, plugin_setup->argv, error);
 
-    if (Error_has(error)) {
-        return false;
-    }
-    if (input->fd == IO_NULL_FD) {
+    if (Error_has(error) || (input->fd == IO_NULL_FD)) {
         return false;
     }
 
@@ -214,7 +211,6 @@ static void flush_inputs(
 
 int main(int argc, char* argv[]) {
     struct Error error = ERROR_INITIALIZER;
-    int output_fd = STDOUT_FILENO;
     char* plugin_argv_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
 
     for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
@@ -230,11 +226,11 @@ int main(int argc, char* argv[]) {
 
     if (args_pos == argc) {
         char* input = NULL;
-        flush_inputs(1, &input, output_fd, &error);
+        flush_inputs(1, &input, STDOUT_FILENO, &error);
     }
     else {
         flush_inputs(
-            (size_t) (argc - args_pos), argv + args_pos, output_fd, &error);
+            (size_t) (argc - args_pos), argv + args_pos, STDOUT_FILENO, &error);
     }
 
     if (Error_has(&error)) {
