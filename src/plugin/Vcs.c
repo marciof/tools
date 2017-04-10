@@ -11,7 +11,7 @@ static void close_subprocess(struct Input* input, struct Error* error) {
     input->fd = IO_NULL_FD;
 }
 
-static bool is_available(struct Error* error) {
+static bool is_available(struct Plugin* plugin, struct Error* error) {
     char* argv[] = {
         EXTERNAL_BINARY,
         "--version",
@@ -36,7 +36,11 @@ static bool is_input_valid(char* input, struct Error* error) {
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], struct Error* error) {
+        struct Plugin* plugin,
+        struct Input* input,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
 
     if (!is_input_valid(input->name, error) || Error_has(error)) {
         return;
@@ -77,6 +81,7 @@ static void open_named_input(
 struct Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`",
+    (intptr_t) NULL,
     is_available,
     NULL,
     open_named_input,

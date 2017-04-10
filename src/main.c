@@ -120,7 +120,8 @@ static bool flush_input(
         struct Plugin_Setup* plugin_setup,
         struct Error* error) {
 
-    void (*open_input)(struct Input*, size_t, char*[], struct Error*)
+    void (*open_input)
+        (struct Plugin*, struct Input*, size_t, char*[], struct Error*)
         = (input->name == NULL)
             ? plugin_setup->plugin->open_default_input
             : plugin_setup->plugin->open_named_input;
@@ -129,7 +130,12 @@ static bool flush_input(
         return false;
     }
 
-    open_input(input, plugin_setup->argc, plugin_setup->argv, error);
+    open_input(
+        plugin_setup->plugin,
+        input,
+        plugin_setup->argc,
+        plugin_setup->argv,
+        error);
 
     if (Error_has(error) || (input->fd == IO_NULL_FD)) {
         return false;

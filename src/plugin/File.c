@@ -12,12 +12,16 @@ static void close_file(struct Input* input, struct Error* error) {
     input->fd = IO_NULL_FD;
 }
 
-static bool is_available(struct Error* error) {
+static bool is_available(struct Plugin* plugin, struct Error* error) {
     return true;
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], struct Error* error) {
+        struct Plugin* plugin,
+        struct Input* input,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
 
     struct stat input_stat;
 
@@ -46,6 +50,7 @@ static void open_named_input(
 struct Plugin File_Plugin = {
     "file",
     "read files",
+    (intptr_t) NULL,
     is_available,
     NULL,
     open_named_input,

@@ -28,13 +28,24 @@ struct Output {
 struct Plugin {
     char* name;
     char* description;
-    bool (*is_available)(struct Error* error);
+    intptr_t arg;
+    bool (*is_available)(struct Plugin* plugin, struct Error* error);
+
     /** `NULL` if it can't open default inputs. */
     void (*open_default_input)(
-        struct Input* input, size_t argc, char* argv[], struct Error* error);
+        struct Plugin* plugin,
+        struct Input* input,
+        size_t argc,
+        char* argv[],
+        struct Error* error);
+
     /** `NULL` if it can't open named inputs. */
     void (*open_named_input)(
-        struct Input* input, size_t argc, char* argv[], struct Error* error);
+        struct Plugin* plugin,
+        struct Input* input,
+        size_t argc,
+        char* argv[],
+        struct Error* error);
 };
 
 struct Plugin_Setup {

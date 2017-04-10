@@ -64,7 +64,7 @@ static void init_argv(
 }
 
 // FIXME
-static bool is_available(struct Error* error) {
+static bool is_available(struct Plugin* plugin, struct Error* error) {
     char* argv[] = {
         EXTERNAL_BINARY,
         "--version",
@@ -351,7 +351,11 @@ static void Output_write(
 }
 
 static void open_named_input(
-        struct Input* input, size_t argc, char* argv[], struct Error* error) {
+        struct Plugin* plugin,
+        struct Input* input,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
 
     /*bool is_tty = io_is_tty(STDOUT_FILENO, error);
 
@@ -406,6 +410,7 @@ static void open_named_input(
 struct Plugin Pager_Plugin = {
     "pager",
     "page output via `" EXTERNAL_BINARY "`, when needed",
+    (intptr_t) NULL,
     is_available,
     NULL,
     open_named_input,

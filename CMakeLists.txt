@@ -18,6 +18,8 @@ add_executable(${PROJECT_NAME}
     src/io.h
     src/popen2.c
     src/popen2.h
+    src/signal2.c
+    src/signal2.h
     src/Plugin.c
     src/Plugin.h
     src/plugin/Stdin.c

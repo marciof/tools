@@ -12,12 +12,16 @@ static void close_input(struct Input* input, struct Error* error) {
     input->fd = IO_NULL_FD;
 }
 
-static bool is_available(struct Error* error) {
+static bool is_available(struct Plugin* plugin, struct Error* error) {
     return true;
 }
 
 static void open_default_input(
-        struct Input* input, size_t argc, char* argv[], struct Error* error) {
+        struct Plugin* plugin,
+        struct Input* input,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
 
     struct stat input_stat;
 
@@ -41,6 +45,7 @@ static void open_default_input(
 struct Plugin Stdin_Plugin = {
     "stdin",
     "read standard input, by default",
+    (intptr_t) NULL,
     is_available,
     open_default_input,
     NULL,

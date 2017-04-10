@@ -45,7 +45,7 @@ static void display_help(
     for (size_t i = 0; i < nr_plugins; ++i) {
         struct Error error = ERROR_INITIALIZER;
         struct Plugin* plugin = plugins_setup[i].plugin;
-        bool is_available = plugin->is_available(&error);
+        bool is_available = plugin->is_available(plugin, &error);
 
         fprintf(stderr, "%c %-13s%s\n",
             is_available ? ' ' : Error_has(&error) ? '?' : 'x',
