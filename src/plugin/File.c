@@ -5,7 +5,7 @@
 #include "../io.h"
 #include "File.h"
 
-static void close_file(struct Input* input, struct Error* error) {
+static void close_input(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
     }
@@ -16,12 +16,16 @@ static bool is_available(struct Plugin* plugin, struct Error* error) {
     return true;
 }
 
-static void open_named_input(
+static void open_input(
         struct Plugin* plugin,
         struct Input* input,
         size_t argc,
         char* argv[],
         struct Error* error) {
+
+    if (input->name == NULL) {
+        return;
+    }
 
     struct stat input_stat;
 
@@ -43,7 +47,7 @@ static void open_named_input(
     }
     else {
         input->fd = fd;
-        input->close = close_file;
+        input->close = close_input;
     }
 }
 
@@ -52,6 +56,5 @@ struct Plugin File_Plugin = {
     "read files",
     (intptr_t) NULL,
     is_available,
-    NULL,
-    open_named_input,
+    open_input,
 };

@@ -6,7 +6,7 @@
 
 #define EXTERNAL_BINARY "git"
 
-static void close_subprocess(struct Input* input, struct Error* error) {
+static void close_input(struct Input* input, struct Error* error) {
     popen2_close(input->fd, (pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 }
@@ -35,7 +35,7 @@ static bool is_input_valid(char* input, struct Error* error) {
     return popen2_check(args[0], args, error);
 }
 
-static void open_named_input(
+static void open_input(
         struct Plugin* plugin,
         struct Input* input,
         size_t argc,
@@ -74,7 +74,7 @@ static void open_named_input(
     else {
         input->fd = fd;
         input->arg = (intptr_t) child_pid;
-        input->close = close_subprocess;
+        input->close = close_input;
     }
 }
 
@@ -83,6 +83,5 @@ struct Plugin Vcs_Plugin = {
     "show VCS revisions via `" EXTERNAL_BINARY "`",
     (intptr_t) NULL,
     is_available,
-    NULL,
-    open_named_input,
+    open_input,
 };

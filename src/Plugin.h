@@ -30,17 +30,7 @@ struct Plugin {
     char* description;
     intptr_t arg;
     bool (*is_available)(struct Plugin* plugin, struct Error* error);
-
-    /** `NULL` if it can't open default inputs. */
-    void (*open_default_input)(
-        struct Plugin* plugin,
-        struct Input* input,
-        size_t argc,
-        char* argv[],
-        struct Error* error);
-
-    /** `NULL` if it can't open named inputs. */
-    void (*open_named_input)(
+    void (*open_input)(
         struct Plugin* plugin,
         struct Input* input,
         size_t argc,

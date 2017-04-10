@@ -9,7 +9,7 @@
 
 #define EXTERNAL_BINARY "ls"
 
-static void close_subprocess(struct Input* input, struct Error* error) {
+static void close_input(struct Input* input, struct Error* error) {
     popen2_close(input->fd, (pid_t) input->arg, error);
     input->fd = IO_NULL_FD;
 }
@@ -33,6 +33,23 @@ static void open_input(
         size_t argc,
         char* argv[],
         struct Error* error) {
+
+    if (input->name == NULL) {
+        input->name = ".";
+    }
+
+    struct stat input_stat;
+
+    if (stat(input->name, &input_stat) == -1) {
+        if (errno != ENOENT) {
+            Error_add_errno(error, errno);
+        }
+        return;
+    }
+
+    if (!S_ISDIR(input_stat.st_mode)) {
+        return;
+    }
 
     if (!(bool) plugin->arg) {
         // signal2(SIGCHLD, (intptr_t) input, sigchld_handler, error);
@@ -70,39 +87,7 @@ static void open_input(
     else {
         input->fd = fd;
         input->arg = (intptr_t) child_pid;
-        input->close = close_subprocess;
-    }
-}
-
-static void open_default_input(
-        struct Plugin* plugin,
-        struct Input* input,
-        size_t argc,
-        char* argv[],
-        struct Error* error) {
-
-    input->name = ".";
-    open_input(plugin, input, argc, argv, error);
-}
-
-static void open_named_input(
-        struct Plugin* plugin,
-        struct Input* input,
-        size_t argc,
-        char* argv[],
-        struct Error* error) {
-
-    struct stat input_stat;
-
-    if (stat(input->name, &input_stat) == -1) {
-        if (errno != ENOENT) {
-            Error_add_errno(error, errno);
-        }
-        return;
-    }
-
-    if (S_ISDIR(input_stat.st_mode)) {
-        open_input(plugin, input, argc, argv, error);
+        input->close = close_input;
     }
 }
 
@@ -111,6 +96,5 @@ struct Plugin Dir_Plugin = {
     "list directories via `" EXTERNAL_BINARY "`, cwd by default",
     (intptr_t) false, // has installed signal handler?
     is_available,
-    open_default_input,
-    open_named_input,
+    open_input,
 };

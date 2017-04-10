@@ -350,7 +350,7 @@ static void Output_write(
     (*buffer)->length = 0;
 }
 
-static void open_named_input(
+static void open_input(
         struct Plugin* plugin,
         struct Input* input,
         size_t argc,
@@ -412,6 +412,5 @@ struct Plugin Pager_Plugin = {
     "page output via `" EXTERNAL_BINARY "`, when needed",
     (intptr_t) NULL,
     is_available,
-    NULL,
-    open_named_input,
+    open_input,
 };
