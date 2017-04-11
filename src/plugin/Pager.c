@@ -103,7 +103,7 @@ static void flush_buffer(
     for (size_t i = 0; i < pager->buffers.length; ++i) {
         struct Buffer* buffer = (struct Buffer*) pager->buffers.data[i];
 
-        io_write(
+        io_write_all(
             pager->fd,
             (uint8_t*) buffer->data,
             buffer->length * sizeof(buffer->data[0]),
@@ -341,7 +341,7 @@ static void Output_write(
         }
     }
 
-    io_write(
+    io_write_all(
         pager->fd,
         (uint8_t*) (*buffer)->data,
         (*buffer)->length * sizeof((*buffer)->data[0]),

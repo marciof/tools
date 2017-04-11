@@ -131,21 +131,22 @@ static bool flush_input(
         return false;
     }
 
-    uint8_t buffer[BUFSIZ];
-    ssize_t nr_read;
-
-    while ((nr_read = read(input->fd, buffer, BUFSIZ)) > 0) {
-        io_write(output_fd, buffer, (size_t) nr_read, error);
+    while (true) {
+        char buffer[BUFSIZ];
+        size_t nr_read = input->read(input, buffer, BUFSIZ, error);
 
         if (Error_has(error)) {
             return false;
         }
-    }
+        if (nr_read == 0) {
+            break;
+        }
 
-    // FIXME: don't ignore `EIO`
-    if ((nr_read == -1) && (errno != EIO)) {
-        Error_add_errno(error, errno);
-        return false;
+        io_write_all(output_fd, buffer, nr_read, error);
+
+        if (Error_has(error)) {
+            return false;
+        }
     }
 
     input->close(input, error);
@@ -176,6 +177,7 @@ static void flush_inputs(
                     input_name,
                     IO_NULL_FD,
                     (intptr_t) NULL,
+                    NULL,
                     NULL,
                 };
 

@@ -11,8 +11,11 @@ struct Input {
     char* name;
     int fd;
     intptr_t arg;
-    /** @param error `ENOENT` if the plugin is unavailable */
+    /** @param error `errno` `ENOENT` if the plugin is unavailable */
     void (*close)(struct Input* input, struct Error* error);
+    /** @return read count, or `0` on end of input or error */
+    size_t (*read)(
+        struct Input* input, char* buffer, size_t length, struct Error* error);
 };
 
 struct Output {

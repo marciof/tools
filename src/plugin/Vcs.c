@@ -11,6 +11,22 @@ static void close_input(struct Input* input, struct Error* error) {
     input->fd = IO_NULL_FD;
 }
 
+static size_t read_input(
+        struct Input* input, char* buffer, size_t length, struct Error* error) {
+
+    ssize_t nr_bytes_read = read(input->fd, buffer, length * sizeof(buffer[0]));
+
+    if (nr_bytes_read < 0) {
+        // FIXME: don't ignore `EIO`
+        if (errno != EIO) {
+            Error_add_errno(error, errno);
+        }
+        return 0;
+    }
+
+    return nr_bytes_read / sizeof(buffer[0]);
+}
+
 static bool is_available(struct Plugin* plugin, struct Error* error) {
     char* argv[] = {
         EXTERNAL_BINARY,
@@ -70,12 +86,13 @@ static void open_input(
 
     if (Error_has(error)) {
         Error_add_string(error, "`" EXTERNAL_BINARY "`");
+        return;
     }
-    else {
-        input->fd = fd;
-        input->arg = (intptr_t) child_pid;
-        input->close = close_input;
-    }
+
+    input->fd = fd;
+    input->arg = (intptr_t) child_pid;
+    input->close = close_input;
+    input->read = read_input;
 }
 
 struct Plugin Vcs_Plugin = {

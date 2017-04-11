@@ -12,6 +12,19 @@ static void close_input(struct Input* input, struct Error* error) {
     input->fd = IO_NULL_FD;
 }
 
+static size_t read_input(
+        struct Input* input, char* buffer, size_t length, struct Error* error) {
+
+    ssize_t nr_bytes_read = read(input->fd, buffer, length * sizeof(buffer[0]));
+
+    if (nr_bytes_read < 0) {
+        Error_add_errno(error, errno);
+        return 0;
+    }
+
+    return nr_bytes_read / sizeof(buffer[0]);
+}
+
 static bool is_available(struct Plugin* plugin, struct Error* error) {
     return true;
 }
@@ -44,6 +57,7 @@ static void open_input(
 
     input->fd = STDIN_FILENO;
     input->close = close_input;
+    input->read = read_input;
 }
 
 struct Plugin Stdin_Plugin = {

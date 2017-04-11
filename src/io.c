@@ -1,5 +1,6 @@
 #include <poll.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include "io.h"
 
@@ -30,7 +31,7 @@ bool io_is_tty(int fd, struct Error* error) {
     return is_tty;
 }
 
-void io_write(int fd, uint8_t* data, size_t nr_bytes, struct Error* error) {
+void io_write_all(int fd, void* data, size_t nr_bytes, struct Error* error) {
     while (nr_bytes > 0) {
         ssize_t bytes_written = write(fd, data, nr_bytes);
 
@@ -40,6 +41,6 @@ void io_write(int fd, uint8_t* data, size_t nr_bytes, struct Error* error) {
         }
 
         nr_bytes -= bytes_written;
-        data += bytes_written;
+        data = ((uint8_t*) data) + bytes_written;
     }
 }
