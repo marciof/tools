@@ -31,7 +31,6 @@ static size_t read_input(
     return nr_bytes_read / sizeof(buffer[0]);
 }
 
-
 static bool is_available(struct Plugin* plugin, struct Error* error) {
     char* argv[] = {
         EXTERNAL_BINARY,
@@ -40,6 +39,19 @@ static bool is_available(struct Plugin* plugin, struct Error* error) {
     };
 
     return popen2_check(argv[0], argv, error);
+}
+
+static bool is_directory(char* path, struct Error* error) {
+    struct stat input_stat;
+
+    if (stat(path, &input_stat) == -1) {
+        if (errno != ENOENT) {
+            Error_add_errno(error, errno);
+        }
+        return false;
+    }
+
+    return S_ISDIR(input_stat.st_mode);
 }
 
 static void sigchld_handler(int signum, intptr_t arg) {
@@ -55,17 +67,7 @@ static void open_input(
     if (input->name == NULL) {
         input->name = ".";
     }
-
-    struct stat input_stat;
-
-    if (stat(input->name, &input_stat) == -1) {
-        if (errno != ENOENT) {
-            Error_add_errno(error, errno);
-        }
-        return;
-    }
-
-    if (!S_ISDIR(input_stat.st_mode)) {
+    else if (!is_directory(input->name, error) || Error_has(error)) {
         return;
     }
 
@@ -79,7 +81,6 @@ static void open_input(
     }
 
     char* exec_argv[1 + argc + 1 + 1 + 1];
-    pid_t child_pid;
 
     exec_argv[0] = EXTERNAL_BINARY;
     exec_argv[0 + 1 + argc] = "--";
@@ -90,13 +91,13 @@ static void open_input(
         exec_argv[0 + 1 + i] = argv[i];
     }
 
-    int fd = popen2(
+    input->fd = popen2(
         exec_argv[0],
         exec_argv,
         true,
         IO_NULL_FD,
         IO_NULL_FD,
-        &child_pid,
+        (pid_t*) &input->arg,
         error);
 
     if (Error_has(error)) {
@@ -104,8 +105,6 @@ static void open_input(
         return;
     }
 
-    input->fd = fd;
-    input->arg = (intptr_t) child_pid;
     input->close = close_input;
     input->read = read_input;
 }

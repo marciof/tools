@@ -17,7 +17,7 @@ Help screen:
     stdin        read standard input, by default
     file         read files
     dir          list directories via `ls`, cwd by default
-    vcs          show VCS revisions via `git`
+    vcs          show VCS revisions via `git`, HEAD by default
     pager        page output via `less`, when needed
 
 Show unavailable plugins in the help screen:
@@ -35,5 +35,5 @@ Show unavailable plugins in the help screen:
     stdin        read standard input, by default
     file         read files
   x dir          list directories via `ls`, cwd by default
-  x vcs          show VCS revisions via `git`
+  x vcs          show VCS revisions via `git`, HEAD by default
   x pager        page output via `less`, when needed

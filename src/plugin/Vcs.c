@@ -58,12 +58,14 @@ static void open_input(
         char* argv[],
         struct Error* error) {
 
-    if (!is_input_valid(input->name, error) || Error_has(error)) {
+    if (input->name == NULL) {
+        input->name = "HEAD";
+    }
+    else if (!is_input_valid(input->name, error) || Error_has(error)) {
         return;
     }
 
     char* exec_argv[1 + argc + 1 + 1 + 1 + 1];
-    pid_t child_pid;
 
     exec_argv[0] = EXTERNAL_BINARY;
     exec_argv[0 + 1 + argc] = "--no-pager";
@@ -75,13 +77,13 @@ static void open_input(
         exec_argv[0 + 1 + i ] = argv[i];
     }
 
-    int fd = popen2(
+    input->fd = popen2(
         exec_argv[0],
         exec_argv,
         true,
         IO_NULL_FD,
         IO_NULL_FD,
-        &child_pid,
+        (pid_t*) &input->arg,
         error);
 
     if (Error_has(error)) {
@@ -89,15 +91,13 @@ static void open_input(
         return;
     }
 
-    input->fd = fd;
-    input->arg = (intptr_t) child_pid;
     input->close = close_input;
     input->read = read_input;
 }
 
 struct Plugin Vcs_Plugin = {
     "vcs",
-    "show VCS revisions via `" EXTERNAL_BINARY "`",
+    "show VCS revisions via `" EXTERNAL_BINARY "`, HEAD by default",
     (intptr_t) NULL,
     is_available,
     open_input,

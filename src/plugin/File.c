@@ -54,14 +54,13 @@ static void open_input(
         return;
     }
 
-    int fd = open(input->name, O_RDONLY);
+    input->fd = open(input->name, O_RDONLY);
 
-    if (fd == -1) {
+    if (input->fd == -1) {
         Error_add_errno(error, errno);
         return;
     }
 
-    input->fd = fd;
     input->close = close_input;
     input->read = read_input;
 }
