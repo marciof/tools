@@ -1,11 +1,16 @@
 #include <fcntl.h>
-#include <pty.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "io.h"
 #include "popen2.h"
+
+#ifdef __APPLE__
+    #include <util.h>
+#else
+    #include <pty.h>
+#endif
 
 #define EXECVP_ENOENT_FAILED_SIGNAL SIGUSR1
 
