@@ -54,6 +54,14 @@ In `/etc/apt/sources.list`:
     deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
     deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
 
+# Firefox Flash Bluetooth #
+
+    flashplugin-nonfree-extrasound
+
+Or:
+
+    libflashsupport-pulse
+
 # Digital clock format #
 
     %-l:%M%P %a %-m/%-e
