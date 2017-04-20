@@ -143,7 +143,7 @@ if _have git; then
 fi
 
 _jobs_nr_ps1() {
-    local jobs=$(jobs -p | wc -l)
+    local jobs=$(jobs -p -r -s | wc -l)
     [ $jobs -gt 0 ] && echo " $jobs"
 }
 
