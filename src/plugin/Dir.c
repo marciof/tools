@@ -5,30 +5,20 @@
 #include "../Error.h"
 #include "../io.h"
 #include "../popen2.h"
-#include "../signal2.h"
 #include "Dir.h"
 
 #define EXTERNAL_BINARY "ls"
 
 static void close_input(struct Input* input, struct Error* error) {
-    popen2_close(input->fd, (pid_t) input->arg, error);
-    input->fd = IO_NULL_FD;
+    if (input->arg != 0) {
+        popen2_close(input->fd, (pid_t) input->arg, error);
+    }
 }
 
 static size_t read_input(
         struct Input* input, char* buffer, size_t length, struct Error* error) {
 
-    ssize_t nr_bytes_read = read(input->fd, buffer, length * sizeof(buffer[0]));
-
-    if (nr_bytes_read < 0) {
-        // FIXME: don't ignore `EIO`
-        if (errno != EIO) {
-            Error_add_errno(error, errno);
-        }
-        return 0;
-    }
-
-    return nr_bytes_read / sizeof(buffer[0]);
+    return popen2_read(input->fd, buffer, length, (pid_t*) &input->arg, error);
 }
 
 static bool is_available(struct Plugin* plugin, struct Error* error) {
@@ -54,9 +44,6 @@ static bool is_directory(char* path, struct Error* error) {
     return S_ISDIR(input_stat.st_mode);
 }
 
-static void sigchld_handler(int signum, intptr_t arg) {
-}
-
 static void open_input(
         struct Plugin* plugin,
         struct Input* input,
@@ -69,15 +56,6 @@ static void open_input(
     }
     else if (!is_directory(input->name, error) || Error_has(error)) {
         return;
-    }
-
-    if (!(bool) plugin->arg) {
-        // signal2(SIGCHLD, (intptr_t) input, sigchld_handler, error);
-
-        if (Error_has(error)) {
-            return;
-        }
-        plugin->arg = (bool) true;
     }
 
     char* exec_argv[1 + argc + 1 + 1 + 1];
@@ -112,7 +90,6 @@ static void open_input(
 struct Plugin Dir_Plugin = {
     "dir",
     "list directories via `" EXTERNAL_BINARY "`, cwd by default",
-    (intptr_t) false, // has installed signal handler?
     is_available,
     open_input,
 };

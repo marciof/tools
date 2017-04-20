@@ -257,7 +257,7 @@ static void Pager_delete(struct Pager* pager, struct Error* error) {
     }
 
     if (pager->child_pid != -1) {
-        int status = popen2_wait(pager->child_pid, error);
+        int status = popen2_wait(pager->child_pid, NULL, 0, error);
 
         if (Error_has(error) || (status != 0)) {
             Error_add_string(error, "`" EXTERNAL_BINARY "`");
@@ -410,7 +410,6 @@ static void open_input(
 struct Plugin Pager_Plugin = {
     "pager",
     "page output via `" EXTERNAL_BINARY "`, when needed",
-    (intptr_t) NULL,
     is_available,
     open_input,
 };

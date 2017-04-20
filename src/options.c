@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include "Array.h"
 #include "options.h"
 
 #define PLUGIN_OPT_SEP "="

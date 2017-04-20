@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include "../Array.h"
 #include "../io.h"
 #include "../popen2.h"
 #include "Vcs.h"
@@ -7,24 +6,15 @@
 #define EXTERNAL_BINARY "git"
 
 static void close_input(struct Input* input, struct Error* error) {
-    popen2_close(input->fd, (pid_t) input->arg, error);
-    input->fd = IO_NULL_FD;
+    if (input->arg != 0) {
+        popen2_close(input->fd, (pid_t) input->arg, error);
+    }
 }
 
 static size_t read_input(
         struct Input* input, char* buffer, size_t length, struct Error* error) {
 
-    ssize_t nr_bytes_read = read(input->fd, buffer, length * sizeof(buffer[0]));
-
-    if (nr_bytes_read < 0) {
-        // FIXME: don't ignore `EIO`
-        if (errno != EIO) {
-            Error_add_errno(error, errno);
-        }
-        return 0;
-    }
-
-    return nr_bytes_read / sizeof(buffer[0]);
+    return popen2_read(input->fd, buffer, length, (pid_t*) &input->arg, error);
 }
 
 static bool is_available(struct Plugin* plugin, struct Error* error) {
@@ -74,7 +64,7 @@ static void open_input(
     exec_argv[0 + 1 + argc + 1 + 1 + 1] = NULL;
 
     for (size_t i = 0; i < argc; ++i) {
-        exec_argv[0 + 1 + i ] = argv[i];
+        exec_argv[0 + 1 + i] = argv[i];
     }
 
     input->fd = popen2(
@@ -98,7 +88,6 @@ static void open_input(
 struct Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`, HEAD by default",
-    (intptr_t) NULL,
     is_available,
     open_input,
 };

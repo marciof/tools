@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "Array.h"
 #include "Buffer.h"
 #include "Error.h"
 
@@ -31,7 +30,6 @@ struct Output {
 struct Plugin {
     char* name;
     char* description;
-    intptr_t arg;
     bool (*is_available)(struct Plugin* plugin, struct Error* error);
     void (*open_input)(
         struct Plugin* plugin,

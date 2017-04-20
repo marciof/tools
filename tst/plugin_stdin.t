@@ -1,7 +1,7 @@
 Setup:
 
   $ . "$TESTDIR/setup.sh"
-  $ echo Bob > file
+  $ echo Bob > file1
 
 Display piped input:
 
@@ -15,7 +15,7 @@ Display slow piped input:
 
 Display input file:
 
-  $ show < file
+  $ show < file1
   Bob
 
 Display NUL device:
@@ -31,4 +31,4 @@ Display input directory:
 Don't display stdin when there are named inputs:
 
   $ echo Alice | show .
-  file
+  file1

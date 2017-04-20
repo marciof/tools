@@ -9,7 +9,6 @@ static void close_input(struct Input* input, struct Error* error) {
     if (close(input->fd) == -1) {
         Error_add_errno(error, errno);
     }
-    input->fd = IO_NULL_FD;
 }
 
 static size_t read_input(
@@ -63,7 +62,6 @@ static void open_input(
 struct Plugin Stdin_Plugin = {
     "stdin",
     "read standard input, by default",
-    (intptr_t) NULL,
     is_available,
     open_input,
 };

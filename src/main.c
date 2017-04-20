@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "Array.h"
 #include "io.h"
 #include "options.h"
 #include "plugin/Dir.h"

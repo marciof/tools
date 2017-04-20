@@ -13,6 +13,7 @@
 #endif
 
 #define EXECVP_ENOENT_FAILED_SIGNAL SIGUSR1
+#define ERROR_SUBPROCESS_EXIT_FAILURE "subprocess exited with an error code"
 
 static int popen2_pipe(
         char* file,
@@ -143,21 +144,60 @@ bool popen2_check(char* file, char* argv[], struct Error* error) {
     return !Error_has(error) && (status == 0);
 }
 
-void popen2_close(int fd, pid_t child_pid, struct Error* error) {
+void popen2_close(int fd, pid_t pid, struct Error* error) {
     if (close(fd) == -1) {
         Error_add_errno(error, errno);
         return;
     }
 
-    int status = popen2_wait(child_pid, error);
+    int status = popen2_wait(pid, NULL, 0, error);
 
     if (Error_has_errno(error, ENOENT)) {
         return;
     }
 
     if (!Error_has(error) && (status != 0)) {
-        Error_add_string(error, "subprocess exited with an error code");
+        Error_add_string(error, ERROR_SUBPROCESS_EXIT_FAILURE);
     }
+}
+
+size_t popen2_read(
+        int fd, char* buffer, size_t length, pid_t* pid, struct Error* error) {
+
+    ssize_t nr_bytes_read = read(fd, buffer, length * sizeof(buffer[0]));
+
+    if (nr_bytes_read >= 0) {
+        return nr_bytes_read / sizeof(buffer[0]);
+    }
+
+    if (errno != EIO) {
+        Error_add_errno(error, errno);
+        return 0;
+    }
+
+    int read_errno = errno;
+
+    if (close(fd) == -1) {
+        Error_add_errno(error, errno);
+        return 0;
+    }
+
+    pid_t actual_child_pid;
+    int status = popen2_wait(*pid, &actual_child_pid, WNOHANG, error);
+
+    if (!Error_has(error)) {
+        if (actual_child_pid == 0) {
+            Error_add_errno(error, read_errno);
+        }
+        else if (status != 0) {
+            Error_add_string(error, ERROR_SUBPROCESS_EXIT_FAILURE);
+        }
+        else {
+            *pid = 0;
+        };
+    }
+
+    return 0;
 }
 
 int popen2_status(char* file, char* argv[], struct Error* error) {
@@ -188,7 +228,7 @@ int popen2_status(char* file, char* argv[], struct Error* error) {
         return -1;
     }
 
-    int status = popen2_wait(child_pid, error);
+    int status = popen2_wait(child_pid, NULL, 0, error);
 
     if (Error_has(error)) {
         close(discard_fd);
@@ -203,11 +243,26 @@ int popen2_status(char* file, char* argv[], struct Error* error) {
     return status;
 }
 
-int popen2_wait(pid_t child_pid, struct Error* error) {
-    int status;
+int popen2_wait(
+        pid_t pid,
+        pid_t* actual_pid,
+        int waitpid_options,
+        struct Error* error) {
 
-    if (waitpid(child_pid, &status, 0) == -1) {
+    int status;
+    pid_t discard_pid;
+
+    if (actual_pid == NULL) {
+        actual_pid = &discard_pid;
+    }
+
+    *actual_pid = waitpid(pid, &status, waitpid_options);
+
+    if (*actual_pid == -1) {
         Error_add_errno(error, errno);
+        return -1;
+    }
+    else if (*actual_pid == 0) {
         return -1;
     }
 
