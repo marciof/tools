@@ -33,3 +33,7 @@ add_executable(${PROJECT_NAME}
     src/main.c)
 
 target_link_libraries(${PROJECT_NAME} pthread util)
+
+enable_testing()
+add_test(lint cppcheck --error-exitcode=1 --quiet --enable=all "${PROJECT_SOURCE_DIR}/src/")
+add_test(functional "${PROJECT_SOURCE_DIR}/bin/test.sh" "${PROJECT_SOURCE_DIR}/tst/")

@@ -7,8 +7,9 @@ addons:
    - make
    - gcc
    # Test.
+   - cppcheck
    - valgrind
 script:
 - cmake .
 - make
-- ./bin/test.sh tst/*.t
+- ctest --output-on-failure

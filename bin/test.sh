@@ -62,22 +62,18 @@ process_options() {
     done
 }
 
-process_options "$@"
-shift $((OPTIND - 1))
-current_dir="$(pwd)"
-exit_status=0
-
-for test_file; do
-    test_dir="$(dirname "$test_file")"
-    abs_test_dir="$(readlink -e "$test_dir")"
-    test_script="$(basename "$test_file" .t).sh"
-    test_output="$(basename "$test_file" .t).err"
+run_test() {
+    local test_file="$1"
+    local test_dir="$(dirname "$test_file")"
+    local abs_test_dir="$(readlink -e "$test_dir")"
+    local test_script="$(basename "$test_file" .t).sh"
+    local test_output="$(basename "$test_file" .t).err"
 
     compile_t_to_sh "$abs_test_dir" < "$test_file" > "$test_dir/$test_script"
     chmod +x "$test_dir/$test_script"
 
     if [ -z "$is_compile_only" ]; then
-        test_scratch_dir="$(mktemp -d)"
+        local test_scratch_dir="$(mktemp -d)"
         cd "$test_scratch_dir"
 
         if ! "$abs_test_dir/$test_script" > "$abs_test_dir/$test_output"; then
@@ -91,6 +87,27 @@ for test_file; do
             echo "$test_file: ok"
             rm "$test_dir/$test_script" "$test_dir/$test_output"
         else
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+process_options "$@"
+shift $((OPTIND - 1))
+current_dir="$(pwd)"
+exit_status=0
+
+for test_path; do
+    if [ -d "$test_path" ]; then
+        for test_file in "${test_path%/}"/*.t; do
+            if ! run_test "$test_file"; then
+                exit_status=1
+            fi
+        done
+    else
+        if ! run_test "$test_path"; then
             exit_status=1
         fi
     fi
