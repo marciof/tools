@@ -18,19 +18,20 @@ struct Input {
 };
 
 struct Output {
-    struct Plugin* plugin;
-    intptr_t arg;
+    int fd;
     void (*close)(struct Output* output, struct Error* error);
-    // If all data is flushed, `buffer->length` is set to `0`.
-    // If `buffer` ownership is transferred to a plugin, it is set to `NULL`.
     void (*write)(
-        struct Output* output, struct Buffer** buffer, struct Error* error);
+        struct Output* output,
+        char* buffer,
+        size_t length,
+        struct Error* error);
 };
 
 struct Plugin {
     char* name;
     char* description;
     bool (*is_available)(struct Plugin* plugin, struct Error* error);
+    /** @param input `fd` is `IO_NULL_FD` when plugin doesn't support it */
     void (*open_input)(
         struct Plugin* plugin,
         struct Input* input,
@@ -45,6 +46,3 @@ struct Plugin_Setup {
     size_t argc;
     char** argv;
 };
-
-void Output_delete(struct Output* output);
-struct Output* Output_new(struct Plugin* plugin, struct Error* error);
