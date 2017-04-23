@@ -6,9 +6,6 @@
 #include "Stdin.h"
 
 static void close_input(struct Input* input, struct Error* error) {
-    if (close(input->fd) == -1) {
-        Error_add_errno(error, errno);
-    }
 }
 
 static size_t read_input(
