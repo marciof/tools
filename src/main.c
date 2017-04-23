@@ -13,106 +13,12 @@
 #include "plugin/Vcs.h"
 
 static struct Plugin_Setup plugins_setup[] = {
-    {
-        &Stdin_Plugin,
-        true,
-        0,
-        NULL,
-    },
-    {
-        &File_Plugin,
-        true,
-        0,
-        NULL,
-    },
-    {
-        &Dir_Plugin,
-        true,
-        0,
-        NULL,
-    },
-    {
-        &Vcs_Plugin,
-        true,
-        0,
-        NULL,
-    },
-    {
-        &Pager_Plugin,
-        false,
-        0,
-        NULL,
-    },
+    {&Stdin_Plugin, true, 0, NULL},
+    {&File_Plugin, true, 0, NULL},
+    {&Dir_Plugin, true, 0, NULL},
+    {&Vcs_Plugin, true, 0, NULL},
+    {&Pager_Plugin, true, 0, NULL},
 };
-
-/*
-// Receives an optional previous `buffer` returning it or a new one when `NULL`,
-// so as to be able to reuse it across calls and minimize memory allocations.
-static Buffer* flush_input(
-        int fd, Buffer* buffer, Array* outputs, Error* error) {
-
-    ssize_t bytes_read;
-
-    if (buffer == NULL) {
-        buffer = Buffer_new(BUFSIZ, error);
-
-        if (Error_has(error)) {
-            return NULL;
-        }
-    }
-
-    while ((bytes_read = read(
-            fd, buffer->data, BUFSIZ * sizeof(buffer->data[0]))) > 0) {
-
-        buffer->length = (size_t) (bytes_read / sizeof(buffer->data[0]));
-        bool has_flushed = false;
-
-        for (size_t i = 0; i < outputs->length; ++i) {
-            Output* output = (Output*) outputs->data[i];
-            output->write(output, &buffer, error);
-
-            if (Error_has(error)) {
-                Error_add(error, output->plugin->name);
-                return buffer;
-            }
-
-            if (buffer == NULL) {
-                buffer = Buffer_new(BUFSIZ, error);
-
-                if (Error_has(error)) {
-                    Error_add(error, output->plugin->name);
-                    return buffer;
-                }
-                has_flushed = true;
-                break;
-            }
-
-            if (buffer->length == 0) {
-                has_flushed = true;
-                break;
-            }
-        }
-
-        if (!has_flushed) {
-            io_write(
-                STDOUT_FILENO,
-                (uint8_t*) buffer->data,
-                buffer->length * sizeof(buffer->data[0]),
-                error);
-
-            if (Error_has(error)) {
-                return buffer;
-            }
-        }
-    }
-
-    if ((bytes_read == -1) && (errno != EIO)) {
-        Error_add(error, strerror(errno));
-    }
-
-    return buffer;
-}
-*/
 
 /** @return `true` if the input was successfully flushed, `false` otherwise */
 static bool flush_input(
@@ -143,7 +49,7 @@ static bool flush_input(
             break;
         }
 
-        io_write_all(output_fd, buffer, nr_read, error);
+        io_write_all(output_fd, buffer, nr_read * sizeof(buffer[0]), error);
 
         if (Error_has(error)) {
             return false;
@@ -173,28 +79,30 @@ static void flush_inputs(
         for (size_t j = 0; j < C_ARRAY_LENGTH(plugins_setup); ++j) {
             struct Plugin_Setup* plugin_setup = &plugins_setup[j];
 
-            if (plugin_setup->is_enabled) {
-                struct Input input = {
-                    input_name,
-                    IO_NULL_FD,
-                    (intptr_t) NULL,
-                    NULL,
-                    NULL,
-                };
+            if (!plugin_setup->is_enabled) {
+                continue;
+            }
 
-                was_input_flushed = flush_input(
-                    &input, output_fd, plugin_setup, error);
+            struct Input input = {
+                input_name,
+                IO_NULL_FD,
+                (intptr_t) NULL,
+                NULL,
+                NULL,
+            };
 
-                if (Error_has(error)) {
-                    if (input_name != NULL) {
-                        Error_add_string(error, input_name);
-                    }
-                    Error_add_string(error, plugin_setup->plugin->name);
-                    return;
+            was_input_flushed = flush_input(
+                &input, output_fd, plugin_setup, error);
+
+            if (Error_has(error)) {
+                if (input_name != NULL) {
+                    Error_add_string(error, input_name);
                 }
-                if (was_input_flushed) {
-                    break;
-                }
+                Error_add_string(error, plugin_setup->plugin->name);
+                return;
+            }
+            if (was_input_flushed) {
+                break;
             }
         }
 
