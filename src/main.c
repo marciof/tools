@@ -20,6 +20,11 @@ static struct Plugin_Setup plugins_setup[] = {
     {&Pager_Plugin, true, 0, NULL},
 };
 
+// Plus one for the default of `stdout`.
+static struct Output outputs[C_ARRAY_LENGTH(plugins_setup) + 1];
+
+static size_t outputs_length = 0;
+
 static void Stdout_close(struct Output* output, struct Error* error) {
 }
 
@@ -32,16 +37,29 @@ static void Stdout_write(
     io_write_all(output->fd, buffer, length * sizeof(buffer[0]), error);
 }
 
-static struct Output Stdout = {
-    STDOUT_FILENO,
-    Stdout_close,
-    Stdout_write
-};
+static void close_outputs(struct Error* error) {
+    for (size_t i = 0; i < outputs_length; ++i) {
+        outputs[i].close(&outputs[i], error);
+
+        if (Error_has(error)) {
+            break;
+        }
+    }
+}
+
+static void write_to_outputs(char* buffer, size_t length, struct Error* error) {
+    for (size_t i = 0; i < outputs_length; ++i) {
+        outputs[i].write(&outputs[i], buffer, length, error);
+
+        if (Error_has(error)) {
+            break;
+        }
+    }
+}
 
 /** @return `true` if the input was successfully flushed, `false` otherwise */
 static bool flush_input(
         struct Input* input,
-        struct Output* output,
         struct Plugin_Setup* plugin_setup,
         struct Error* error) {
 
@@ -67,7 +85,7 @@ static bool flush_input(
             break;
         }
 
-        output->write(output, buffer, nr_read, error);
+        write_to_outputs(buffer, nr_read, error);
 
         if (Error_has(error)) {
             return false;
@@ -85,10 +103,7 @@ static bool flush_input(
 }
 
 static void flush_inputs(
-        size_t inputs_length,
-        char* input_names[],
-        struct Output* output,
-        struct Error* error) {
+        size_t inputs_length, char* input_names[], struct Error* error) {
 
     for (size_t i = 0; i < inputs_length; ++i) {
         bool was_input_flushed = false;
@@ -109,8 +124,7 @@ static void flush_inputs(
                 NULL,
             };
 
-            was_input_flushed = flush_input(
-                &input, output, plugin_setup, error);
+            was_input_flushed = flush_input(&input, plugin_setup, error);
 
             if (Error_has(error)) {
                 if (input_name != NULL) {
@@ -137,7 +151,6 @@ static void flush_inputs(
 int main(int argc, char* argv[]) {
     struct Error error = ERROR_INITIALIZER;
     char* plugin_argv_storage[C_ARRAY_LENGTH(plugins_setup) * (argc - 1)];
-    struct Output* output = &Stdout;
 
     for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
         plugins_setup[i].argv = plugin_argv_storage + i * (argc - 1);
@@ -150,17 +163,22 @@ int main(int argc, char* argv[]) {
         return Error_print(&error, stderr) ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
+    struct Output* output = &outputs[0];
+    output->fd = STDOUT_FILENO;
+    output->close = Stdout_close;
+    output->write = Stdout_write;
+    ++outputs_length;
+
     if (args_pos == argc) {
         char* input_name = NULL;
-        flush_inputs(1, &input_name, output, &error);
+        flush_inputs(1, &input_name, &error);
     }
     else {
-        flush_inputs(
-            (size_t) (argc - args_pos), argv + args_pos, output, &error);
+        flush_inputs((size_t) (argc - args_pos), argv + args_pos, &error);
     }
 
     if (!Error_has(&error)) {
-        output->close(output, &error);
+        close_outputs(&error);
     }
 
     if (Error_has(&error)) {
