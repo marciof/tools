@@ -17,7 +17,7 @@ static struct Plugin_Setup plugins_setup[] = {
     {&File_Plugin, true, 0, NULL},
     {&Dir_Plugin, true, 0, NULL},
     {&Vcs_Plugin, true, 0, NULL},
-    {&Pager_Plugin, true, 0, NULL},
+    {&Pager_Plugin, false, 0, NULL},
 };
 
 // Plus one for `stdout` as default.
@@ -25,16 +25,17 @@ static struct Output outputs[C_ARRAY_LENGTH(plugins_setup) + 1];
 
 static size_t outputs_length = 0;
 
-static void Stdout_close(struct Output* output, struct Error* error) {
+static void close_stdout(struct Output* output, struct Error* error) {
 }
 
-static void Stdout_write(
+static size_t write_stdout(
         struct Output* output,
         char* buffer,
         size_t length,
         struct Error* error) {
 
     io_write_all(output->fd, buffer, length * sizeof(buffer[0]), error);
+    return Error_has(error) ? 0 : length;
 }
 
 static void close_outputs(struct Error* error) {
@@ -50,8 +51,12 @@ static void close_outputs(struct Error* error) {
 static void open_outputs(struct Error* error) {
     for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
         struct Plugin_Setup* plugin_setup = &plugins_setup[i];
-        struct Output* output = &outputs[outputs_length];
 
+        if (!plugin_setup->is_enabled) {
+            continue;
+        }
+
+        struct Output* output = &outputs[outputs_length];
         output->fd = IO_NULL_FD;
 
         plugin_setup->plugin->open_output(
@@ -71,20 +76,31 @@ static void open_outputs(struct Error* error) {
         }
     }
 
-    struct Output* Stdout = &outputs[outputs_length];
-    Stdout->fd = STDOUT_FILENO;
-    Stdout->close = Stdout_close;
-    Stdout->write = Stdout_write;
-    ++outputs_length;
+    if (outputs_length == 0) {
+        struct Output* default_output = &outputs[outputs_length];
+
+        default_output->fd = STDOUT_FILENO;
+        default_output->close = close_stdout;
+        default_output->write = write_stdout;
+
+        ++outputs_length;
+    }
 }
 
 static void write_to_outputs(char* buffer, size_t length, struct Error* error) {
     for (size_t i = 0; i < outputs_length; ++i) {
-        outputs[i].write(&outputs[i], buffer, length, error);
+        size_t written_length = outputs[i].write(
+            &outputs[i], buffer, length, error);
 
         if (Error_has(error)) {
+            return;
+        }
+        if (written_length == length) {
             break;
         }
+
+        buffer += written_length;
+        length -= written_length;
     }
 }
 

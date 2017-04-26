@@ -24,9 +24,11 @@ struct Input {
 
 struct Output {
     int fd;
+    intptr_t arg;
     void (*close)(struct Output* output, struct Error* error);
 
-    void (*write)(
+    /** @return written count, or `0` on error */
+    size_t (*write)(
         struct Output* output,
         char* buffer,
         size_t length,
