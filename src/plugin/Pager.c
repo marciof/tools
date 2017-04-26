@@ -22,9 +22,18 @@ static void open_input(
         struct Error* error) {
 }
 
+static void open_output(
+        struct Plugin* plugin,
+        struct Output* output,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
+}
+
 struct Plugin Pager_Plugin = {
     "pager",
     "page output via `" EXTERNAL_BINARY "`, when needed",
     is_available,
     open_input,
+    open_output,
 };

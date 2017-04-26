@@ -20,7 +20,7 @@ static struct Plugin_Setup plugins_setup[] = {
     {&Pager_Plugin, true, 0, NULL},
 };
 
-// Plus one for the default of `stdout`.
+// Plus one for `stdout` as default.
 static struct Output outputs[C_ARRAY_LENGTH(plugins_setup) + 1];
 
 static size_t outputs_length = 0;
@@ -42,9 +42,40 @@ static void close_outputs(struct Error* error) {
         outputs[i].close(&outputs[i], error);
 
         if (Error_has(error)) {
-            break;
+            return;
         }
     }
+}
+
+static void open_outputs(struct Error* error) {
+    for (size_t i = 0; i < C_ARRAY_LENGTH(plugins_setup); ++i) {
+        struct Plugin_Setup* plugin_setup = &plugins_setup[i];
+        struct Output* output = &outputs[outputs_length];
+
+        output->fd = IO_NULL_FD;
+
+        plugin_setup->plugin->open_output(
+            plugin_setup->plugin,
+            output,
+            plugin_setup->argc,
+            plugin_setup->argv,
+            error);
+
+        if (Error_has(error)) {
+            Error_add_string(error, plugin_setup->plugin->name);
+            return;
+        }
+
+        if (output->fd != IO_NULL_FD) {
+            ++outputs_length;
+        }
+    }
+
+    struct Output* Stdout = &outputs[outputs_length];
+    Stdout->fd = STDOUT_FILENO;
+    Stdout->close = Stdout_close;
+    Stdout->write = Stdout_write;
+    ++outputs_length;
 }
 
 static void write_to_outputs(char* buffer, size_t length, struct Error* error) {
@@ -163,11 +194,12 @@ int main(int argc, char* argv[]) {
         return Error_print(&error, stderr) ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    struct Output* output = &outputs[0];
-    output->fd = STDOUT_FILENO;
-    output->close = Stdout_close;
-    output->write = Stdout_write;
-    ++outputs_length;
+    open_outputs(&error);
+
+    if (Error_has(&error)) {
+        Error_print(&error, stderr);
+        return EXIT_FAILURE;
+    }
 
     if (args_pos == argc) {
         char* input_name = NULL;

@@ -87,9 +87,18 @@ static void open_input(
     input->read = read_input;
 }
 
+static void open_output(
+        struct Plugin* plugin,
+        struct Output* output,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
+}
+
 struct Plugin Dir_Plugin = {
     "dir",
     "list directories via `" EXTERNAL_BINARY "`, cwd by default",
     is_available,
     open_input,
+    open_output,
 };

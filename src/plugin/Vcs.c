@@ -85,9 +85,18 @@ static void open_input(
     input->read = read_input;
 }
 
+static void open_output(
+        struct Plugin* plugin,
+        struct Output* output,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
+}
+
 struct Plugin Vcs_Plugin = {
     "vcs",
     "show VCS revisions via `" EXTERNAL_BINARY "`, HEAD by default",
     is_available,
     open_input,
+    open_output,
 };

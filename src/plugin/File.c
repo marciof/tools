@@ -64,9 +64,18 @@ static void open_input(
     input->read = read_input;
 }
 
+static void open_output(
+        struct Plugin* plugin,
+        struct Output* output,
+        size_t argc,
+        char* argv[],
+        struct Error* error) {
+}
+
 struct Plugin File_Plugin = {
     "file",
     "read files",
     is_available,
     open_input,
+    open_output,
 };
