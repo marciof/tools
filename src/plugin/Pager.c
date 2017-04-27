@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "../io.h"
 #include "../popen2.h"
 #include "Pager.h"
@@ -38,13 +39,18 @@ static void open_input(
 }
 
 // FIXME: pass-through signals, such as Ctrl+C
-// FIXME: auto-disable when not in TTY mode
 static void open_output(
         struct Plugin* plugin,
         struct Output* output,
         size_t argc,
         char* argv[],
         struct Error* error) {
+
+    bool is_tty = io_is_tty(STDOUT_FILENO, error);
+
+    if (Error_has(error) || !is_tty) {
+        return;
+    }
 
     char* exec_argv[1 + argc + 1];
 
