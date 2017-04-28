@@ -5,6 +5,8 @@
 #include "Array.h"
 #include "signal2.h"
 
+#define ERROR_UNKNOWN_SIGNAL_HANDLER "no such signal handler"
+
 struct Handler {
     int signum;
     intptr_t arg;
@@ -23,7 +25,7 @@ static void signal2_handler(int signum) {
     }
 }
 
-void signal2(
+intptr_t* signal2_add(
         int signum,
         intptr_t arg,
         void (*callback)(int signum, intptr_t arg),
@@ -33,7 +35,7 @@ void signal2(
 
     if (sigaction(signum, NULL, &current_sa) == -1) {
         Error_add_errno(error, errno);
-        return;
+        return NULL;
     }
 
     bool has_foreign_handler
@@ -43,30 +45,15 @@ void signal2(
 
     if (has_foreign_handler) {
         Error_add_string(error, "foreign sigaction handler already installed");
-        return;
+        return NULL;
     }
-
-    struct Handler* handler = (struct Handler*) malloc(sizeof(*handler));
-
-    if (handler == NULL) {
-        Error_add_errno(error, errno);
-        return;
-    }
-
-    handler->signum = signum;
-    handler->arg = arg;
-    handler->callback = callback;
 
     if (ARRAY_IS_NULL_INITIALIZED(&handlers)) {
-        Array_init(&handlers, error, handler, NULL);
-    }
-    else {
-        Array_add(&handlers, handlers.length, (intptr_t) handler, error);
-    }
+        Array_init(&handlers, error, NULL);
 
-    if (Error_has(error)) {
-        free(handler);
-        return;
+        if (Error_has(error)) {
+            return NULL;
+        }
     }
 
     struct sigaction new_sa;
@@ -77,7 +64,47 @@ void signal2(
 
     if (sigaction(signum, &new_sa, NULL) == -1) {
         Error_add_errno(error, errno);
-        free(handler);
+        return NULL;
+    }
+
+    struct Handler* handler = (struct Handler*) malloc(sizeof(*handler));
+
+    if (handler == NULL) {
+        Error_add_errno(error, errno);
+        return NULL;
+    }
+
+    handler->signum = signum;
+    handler->arg = arg;
+    handler->callback = callback;
+
+    Array_add(&handlers, handlers.length, (intptr_t) handler, error);
+    return &handler->arg;
+}
+
+void signal2_remove(
+        int signum,
+        intptr_t arg,
+        void (*callback)(int signum, intptr_t arg),
+        struct Error* error) {
+
+    if (ARRAY_IS_NULL_INITIALIZED(&handlers)) {
+        Error_add_string(error, ERROR_UNKNOWN_SIGNAL_HANDLER);
         return;
     }
+
+    for (size_t i = 0; i < handlers.length; ++i) {
+        struct Handler* handler = (struct Handler*) handlers.data[i];
+
+        bool is_match = (handler->signum == signum)
+            && (handler->arg == arg)
+            && (handler->callback == callback);
+
+        if (is_match) {
+            Array_remove(&handlers, i, error);
+            return;
+        }
+    }
+
+    Error_add_string(error, ERROR_UNKNOWN_SIGNAL_HANDLER);
 }

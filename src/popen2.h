@@ -10,6 +10,7 @@
  * @param out_fd where to redirect `stdout` to unless `IO_NULL_FD`
  * @param err_fd where to redirect `stderr` to unless `IO_NULL_FD`
  * @return file descriptor for reading/writing the subprocess output/input
+ *         or `IO_NULL_FD` on error
  */
 int popen2(
     char* file,

@@ -1,10 +1,13 @@
 #include <unistd.h>
 #include "../io.h"
 #include "../popen2.h"
+#include "../signal2.h"
 #include "Pager.h"
 
 // Don't use `pager` as it's not available on all systems.
 #define EXTERNAL_BINARY "less"
+
+#define INVALID_PID ((pid_t) -1)
 
 static void close_output(struct Output* output, struct Error* error) {
     popen2_close(output->fd, (pid_t) output->arg, error);
@@ -30,6 +33,11 @@ static bool is_available(struct Plugin* plugin, struct Error* error) {
     return popen2_check(argv[0], argv, error);
 }
 
+// FIXME: remove signal handler when child exists
+// FIXME: not currently being called on Ctrl+C in the child
+static void sigint_handler(int signum, intptr_t arg) {
+}
+
 static void open_input(
         struct Plugin* plugin,
         struct Input* input,
@@ -52,8 +60,14 @@ static void open_output(
         return;
     }
 
-    char* exec_argv[1 + argc + 1];
+    intptr_t* signal_arg = signal2_add(
+        SIGINT, INVALID_PID, sigint_handler, error);
 
+    if (Error_has(error)) {
+        return;
+    }
+
+    char* exec_argv[1 + argc + 1];
     exec_argv[0] = EXTERNAL_BINARY;
     exec_argv[0 + 1 + argc] = "--";
     exec_argv[0 + 1 + argc + 1] = NULL;
@@ -73,11 +87,13 @@ static void open_output(
 
     if (Error_has(error)) {
         Error_add_string(error, "`" EXTERNAL_BINARY "`");
+        signal2_remove(SIGINT, INVALID_PID, sigint_handler, error);
         return;
     }
 
     output->close = close_output;
     output->write = write_output;
+    *signal_arg = output->arg;
 }
 
 struct Plugin Pager_Plugin = {

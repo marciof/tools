@@ -59,7 +59,6 @@ static void open_input(
     }
 
     char* exec_argv[1 + argc + 1 + 1 + 1];
-
     exec_argv[0] = EXTERNAL_BINARY;
     exec_argv[0 + 1 + argc] = "--";
     exec_argv[0 + 1 + argc + 1] = input->name;
