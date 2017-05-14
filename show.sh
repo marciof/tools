@@ -19,22 +19,6 @@ mode_options_file=
 mode_options_stdin=
 mode_options_vcs=
 
-mode_can_dir() {
-    return 0
-}
-
-mode_can_file() {
-    return 0
-}
-
-mode_can_stdin() {
-    return 0
-}
-
-mode_can_vcs() {
-    command -v git >/dev/null
-}
-
 mode_run_dir() {
     if [ -d "$1" ]; then
         run_with_mode_options "$mode_options_dir" "$1" $pty ls
@@ -57,6 +41,10 @@ mode_run_stdin() {
     else
         return $status_cant_execute
     fi
+}
+
+mode_can_vcs() {
+    command -v git >/dev/null
 }
 
 mode_run_vcs() {
@@ -127,7 +115,7 @@ Modes:
 USAGE
 
     for mode in stdin file dir vcs; do
-        if "mode_can_$mode"; then
+        if ! type "mode_can_$mode" >/dev/null || "mode_can_$mode"; then
             unavailable=
         else
             unavailable=' (UNAVAILABLE)'
