@@ -115,16 +115,15 @@ Options:
 Plugins:
 USAGE
 
-    # FIXME: change unavailable message to 'x' or '?'
     for plugin in stdin file dir vcs; do
         if ! type "plugin_can_$plugin" >/dev/null || "plugin_can_$plugin"; then
-            unavailable=
+            availability=' '
         else
-            unavailable=' (UNAVAILABLE)'
+            availability='x'
         fi
 
-        printf '  %-13s%s%s\n' \
-            "$plugin" "$(var "plugin_description_$plugin")" "$unavailable"
+        printf '%c %-13s%s%s\n' \
+            "$availability" "$plugin" "$(var "plugin_description_$plugin")"
     done
 
     if [ -z "$pty" ]; then
