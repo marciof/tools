@@ -170,7 +170,7 @@ if ! plugin_run_stdin && [ $# -eq 0 ]; then
     set -- .
 fi
 
-# FIXME: use separate `auto-pager.sh` (do only one thing)
+# FIXME: use `autopager.sh` (keep separate; do only one thing and well)
 for input; do
     for plugin in file dir vcs; do
         if "plugin_run_$plugin" "$input"; then
