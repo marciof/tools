@@ -22,16 +22,16 @@ if ! IFS= read -r line; then
     exit $?
 fi
 
+echo "$line" >>"$buffer_file"
 pager_fifo="$(mktemp -u)"
 mkfifo "$pager_fifo"
 
 pipe_to_pager_fifo() {
     trap 'rm "$buffer_file" "$pager_fifo"' EXIT
-    cat "$buffer_file" > "$pager_fifo"
-    echo "$line" > "$pager_fifo"
-    cat > "$pager_fifo"
+    cat "$buffer_file" >"$pager_fifo"
+    cat >"$pager_fifo"
 }
 
 # Use `exec` on the pager to correctly receive signals.
 { pipe_to_pager_fifo <&3 3<&- & } 3<&0
-exec less < "$pager_fifo"
+exec less <"$pager_fifo"
