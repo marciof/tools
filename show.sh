@@ -85,9 +85,13 @@ run_with_mode_options() {
     local input="$2"
     shift 2
 
-    printf "%s" "$options${options:+$arg_separator}$input" \
-        | tr "$arg_separator" '\0' \
-        | xargs -0 -- "$@"
+    if [ -z "$options" ]; then
+        "$@" "$input"
+    else
+        printf "%s" "$options${options:+$arg_separator}$input" \
+            | tr "$arg_separator" '\0' \
+            | xargs -0 -- "$@"
+    fi
 }
 
 print_usage() {
