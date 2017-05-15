@@ -1,11 +1,16 @@
 #include <errno.h>
-#include <pty.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#ifdef __APPLE__
+    #include <util.h>
+#else
+    #include <pty.h>
+#endif
 
 // FIXME: handle interactive programs such as `less` or `nano`?
 // FIXME: handle signals? SIGINT, SIGTSTP
