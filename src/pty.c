@@ -7,7 +7,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-// FIXME: need to handle interactive programs such as `less` or `nano`?
+// FIXME: handle interactive programs such as `less` or `nano`?
+// FIXME: handle signals? SIGINT, SIGTSTP
 int main(int argc, char* argv[]) {
     if (argc <= 1) {
         return EXIT_FAILURE;

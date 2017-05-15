@@ -5,37 +5,58 @@ status_cant_execute=126
 arg_separator="$(printf '\036')" # ASCII RS
 pty="${SHOW_PTY:-pty}"
 
-disable_plugin_opt=d
+disable_mode_opt=d
 help_opt=h
-plugin_option_opt=p
+mode_option_opt=p
 
-plugin_description_dir='list directories via `ls`, cwd by default'
-plugin_description_file='read files'
-plugin_description_stdin='read standard input, by default'
-plugin_description_vcs='show VCS revisions via `git`, HEAD by default'
+mode_description_dir='list directories via `ls`, cwd by default'
+mode_description_file='read files'
+mode_description_pager='page output via `less`, when needed'
+mode_description_stdin='read standard input, by default'
+mode_description_vcs='show VCS revisions via `git`, HEAD by default'
 
-plugin_options_dir=
-plugin_options_file=
-plugin_options_stdin=
-plugin_options_vcs=
+mode_options_dir=
+mode_options_file=
+mode_options_pager=
+mode_options_stdin=
+mode_options_vcs=
 
-plugin_run_dir() {
+mode_can_pager() {
+    # FIXME: don't assume `autopager.sh` uses `less`
+    command -v less >/dev/null
+}
+
+mode_can_vcs() {
+    command -v git >/dev/null
+}
+
+mode_run_dir() {
     if [ -d "$1" ]; then
-        run_with_plugin_options "$plugin_options_dir" "$1" $pty ls
+        run_with_mode_options "$mode_options_dir" "$1" $pty ls
     else
         return "$status_cant_execute"
     fi
 }
 
-plugin_run_file() {
+mode_run_file() {
     if [ -e "$1" -a ! -d "$1" ]; then
-        run_with_plugin_options "$plugin_options_file" "$1" cat
+        run_with_mode_options "$mode_options_file" "$1" cat
     else
         return "$status_cant_execute"
     fi
 }
 
-plugin_run_stdin() {
+# FIXME: inline `autopager.sh` here?
+mode_run_pager() {
+    if [ -t 1 ]; then
+        # FIXME: pass options to `autopager.sh`
+        autopager.sh
+    else
+        return "$status_cant_execute"
+    fi
+}
+
+mode_run_stdin() {
     if [ ! -t 0 ]; then
         cat
     else
@@ -43,49 +64,45 @@ plugin_run_stdin() {
     fi
 }
 
-plugin_can_vcs() {
-    command -v git >/dev/null
-}
-
-plugin_run_vcs() {
+mode_run_vcs() {
     if git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
-        run_with_plugin_options "$plugin_options_vcs" "$1" $pty git --no-pager show
+        run_with_mode_options "$mode_options_vcs" "$1" $pty git --no-pager show
     else
         return "$status_cant_execute"
     fi
 }
 
-assert_plugin_exists() {
-    if ! type "plugin_run_$1" >/dev/null; then
-        echo "$1: no such plugin" >&2
+assert_mode_exists() {
+    if ! type "mode_run_$1" >/dev/null; then
+        echo "$1: no such mode" >&2
         return 1
     else
         return 0
     fi
 }
 
-disable_plugin() {
-    assert_plugin_exists "$1"
-    eval "plugin_run_$1() { return $status_cant_execute; }"
+disable_mode() {
+    assert_mode_exists "$1"
+    eval "mode_run_$1() { return $status_cant_execute; }"
 }
 
-add_plugin_option() {
+add_mode_option() {
     local name="${1%%=?*}"
 
     if [ ${#name} -eq ${#1} -o ${#name} -eq 0 ]; then
-        echo "$1: missing plugin name/option" >&2
+        echo "$1: missing mode name/option" >&2
         return 1
     fi
 
-    assert_plugin_exists "$name"
+    assert_mode_exists "$name"
     local option="${1#?*=}"
-    local current="$(var "plugin_options_$name")"
+    local current="$(var "mode_options_$name")"
 
-    export "plugin_options_$name=$current${current:+$arg_separator}$option"
+    export "mode_options_$name=$current${current:+$arg_separator}$option"
     return 0
 }
 
-run_with_plugin_options() {
+run_with_mode_options() {
     local options="$1"
     local input="$2"
     shift 2
@@ -100,7 +117,7 @@ run_with_plugin_options() {
 }
 
 print_usage() {
-    local plugin
+    local mode
     local unavailable
 
     cat <<USAGE
@@ -109,42 +126,42 @@ Version: 0.12.0
 
 Options:
   -$help_opt           display this help and exit
-  -$disable_plugin_opt NAME      disable a plugin
-  -$plugin_option_opt NAME=OPT  pass an option to a plugin
+  -$disable_mode_opt NAME      disable a mode
+  -$mode_option_opt NAME=OPT  pass an option to a mode
 
-Plugins:
+Mode:
 USAGE
 
-    for plugin in stdin file dir vcs; do
-        if ! type "plugin_can_$plugin" >/dev/null || "plugin_can_$plugin"; then
+    for mode in stdin file dir vcs pager; do
+        if ! type "mode_can_$mode" >/dev/null || "mode_can_$mode"; then
             availability=' '
         else
             availability='x'
         fi
 
         printf '%c %-13s%s%s\n' \
-            "$availability" "$plugin" "$(var "plugin_description_$plugin")"
+            "$availability" "$mode" "$(var "mode_description_$mode")"
     done
 
     if [ -z "$pty" ]; then
-        printf '\nWarning: pty wrapper command not found\n' >&2
+        printf '\nWarning: `pty` wrapper command not found\n' >&2
     fi
 }
 
 process_options() {
     local option
 
-    while getopts "$disable_plugin_opt:$help_opt$plugin_option_opt:" option "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:" option "$@"; do
         case "$option" in
-            "$disable_plugin_opt")
-                disable_plugin "$OPTARG"
+            "$disable_mode_opt")
+                disable_mode "$OPTARG"
                 ;;
             "$help_opt")
                 print_usage
                 exit 0
                 ;;
-            "$plugin_option_opt")
-                add_plugin_option "$OPTARG"
+            "$mode_option_opt")
+                add_mode_option "$OPTARG"
                 ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
@@ -152,6 +169,28 @@ process_options() {
                 ;;
         esac
     done
+}
+
+run_input_modes() {
+    local input
+    local mode
+
+    if ! mode_run_stdin && [ $# -eq 0 ]; then
+        set -- .
+    fi
+
+    for input; do
+        for mode in file dir vcs; do
+            if "mode_run_$mode" "$input"; then
+                continue 2
+            fi
+        done
+
+        echo "$input: unsupported input" >&2
+        return 1
+    done
+
+    return 0
 }
 
 var() {
@@ -164,21 +203,4 @@ fi
 
 process_options "$@"
 shift $((OPTIND - 1))
-
-if ! plugin_run_stdin && [ $# -eq 0 ]; then
-    set -- .
-fi
-
-# FIXME: use `autopager.sh` (keep separate; do only one thing and well)
-for input; do
-    for plugin in file dir vcs; do
-        if "plugin_run_$plugin" "$input"; then
-            continue 2
-        fi
-    done
-
-    echo "$input: Unsupported input" >&2
-    exit 1
-done
-
-exit 0
+run_input_modes "$@" | { mode_run_pager || cat; }
