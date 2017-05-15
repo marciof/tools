@@ -73,9 +73,6 @@ fi
 
 if _have show.sh; then
     alias s="$NAME -p dir=-Fh -p dir=--color=auto -p dir=--group-directories-first -p dir=--dereference-command-line-symlink-to-dir"
-fi
-
-if _have autopager.sh; then
     export PAGER="$NAME"
 fi
 
