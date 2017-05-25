@@ -73,7 +73,7 @@ mode_run_vcs() {
 }
 
 assert_mode_exists() {
-    if ! type "mode_run_$1" >/dev/null; then
+    if ! type "mode_run_$1" >/dev/null 2>&1; then
         echo "$1: no such mode" >&2
         return 1
     else
@@ -133,7 +133,7 @@ Mode:
 USAGE
 
     for mode in stdin file dir vcs pager; do
-        if ! type "mode_can_$mode" >/dev/null || "mode_can_$mode"; then
+        if ! type "mode_can_$mode" >/dev/null 2>&1 || "mode_can_$mode"; then
             availability=' '
         else
             availability='x'
