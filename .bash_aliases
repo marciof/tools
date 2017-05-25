@@ -31,7 +31,6 @@ _have lesspipe && eval "$($NAME)"
 
 export HISTCONTROL=ignoredups
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
-export PATH="$PATH:~/.local/bin"
 export PROMPT_DIRTRIM=2
 export PYTHONDONTWRITEBYTECODE=x
 
