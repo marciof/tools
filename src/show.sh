@@ -2,8 +2,8 @@
 set -e -u
 
 status_cant_execute=126
-arg_separator="$(printf '\036')" # ASCII RS
-pty="${SHOW_PTY:-pty}"
+arg_var_separator="$(printf '\036')" # ASCII RS
+pty="$(command -v "${SHOW_PTY:-pty}" || echo)"
 
 disable_mode_opt=d
 help_opt=h
@@ -98,7 +98,7 @@ add_mode_option() {
     local option="${1#?*=}"
     local current="$(var "mode_options_$name")"
 
-    export "mode_options_$name=$current${current:+$arg_separator}$option"
+    export "mode_options_$name=$current${current:+$arg_var_separator}$option"
     return 0
 }
 
@@ -110,8 +110,8 @@ run_with_mode_options() {
     if [ -z "$options" ]; then
         "$@" "$input"
     else
-        printf '%s' "$options${options:+$arg_separator}$input" \
-            | tr "$arg_separator" '\0' \
+        printf '%s' "$options${options:+$arg_var_separator}$input" \
+            | tr "$arg_var_separator" '\0' \
             | xargs -0 -- "$@"
     fi
 }
@@ -144,7 +144,7 @@ USAGE
     done
 
     if [ -z "$pty" ]; then
-        printf '\nWarning: `pty` wrapper command not found\n' >&2
+        printf '\nWarning: `pty` wrapper helper command not found\n' >&2
     fi
 }
 
@@ -196,10 +196,6 @@ run_input_modes() {
 var() {
     eval echo "\$$1"
 }
-
-if ! command -v "$pty" >/dev/null; then
-    pty=
-fi
 
 process_options "$@"
 shift $((OPTIND - 1))
