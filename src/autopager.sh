@@ -22,7 +22,7 @@ if ! IFS= read -r buffered_line; then
     exit $?
 fi
 
-echo "$buffered_line" >>"$buffer_file"
+printf '%s\n' "$buffered_line" >>"$buffer_file"
 pager_fifo="$(mktemp -u)"
 mkfifo "$pager_fifo"
 
