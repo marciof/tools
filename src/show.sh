@@ -3,7 +3,7 @@ set -e -u
 
 status_cant_execute=126
 arg_var_separator="$(printf '\036')" # ASCII RS
-pty="$(command -v "${SHOW_PTY:-pty}" || echo)"
+pty="$(command -v "${SHOW_PTY:-pty}" || true)"
 
 disable_mode_opt=d
 help_opt=h
