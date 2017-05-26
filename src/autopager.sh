@@ -28,8 +28,7 @@ mkfifo "$pager_fifo"
 
 pipe_to_pager_fifo() {
     trap 'rm "$pager_fifo"' EXIT
-    cat "$buffer_file" >"$pager_fifo"
-    cat >"$pager_fifo"
+    cat "$buffer_file" - >"$pager_fifo"
 }
 
 { pipe_to_pager_fifo <&3 3<&- & } 3<&0
