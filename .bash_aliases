@@ -72,7 +72,7 @@ fi
 
 if _have show.sh; then
     alias s="$NAME -p dir=-Fh -p dir=--color=auto -p dir=--group-directories-first -p dir=--dereference-command-line-symlink-to-dir"
-    export PAGER="$NAME"
+    export PAGER="$NAME" GIT_PAGER="$NAME"
 fi
 
 if _have ag; then
