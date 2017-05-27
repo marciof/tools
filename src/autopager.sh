@@ -32,4 +32,4 @@ pipe_to_pager_fifo() {
 }
 
 { pipe_to_pager_fifo <&3 3<&- & } 3<&0
-less <"$pager_fifo"
+less "$@" <"$pager_fifo"
