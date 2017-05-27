@@ -119,7 +119,7 @@ run_with_mode_options() {
         printf %s "$options${options:+$arg_var_separator}$input" \
             | xargs -d "$arg_var_separator" -- "$@"
     else
-        local args_file="$(mktemp)"
+        local args_file="$(mktemp -t show.xargs.XXXXXXXXXX)"
         trap 'rm "$args_file"' EXIT
 
         printf %s "$options${options:+$arg_var_separator}$input" >"$args_file"
