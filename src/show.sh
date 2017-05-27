@@ -117,8 +117,7 @@ run_with_mode_options() {
         "$@" "$input"
     else
         printf '%s' "$options${options:+$arg_var_separator}$input" \
-            | tr "$arg_var_separator" '\0' \
-            | xargs -0 -- "$@"
+            | xargs -d "$arg_var_separator" -- "$@"
     fi
 }
 
