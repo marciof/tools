@@ -19,7 +19,7 @@ done
 
 if ! IFS= read -r buffered_line; then
     cat "$buffer_file"
-    exit $?
+    exit "$?"
 fi
 
 printf '%s\n' "$buffered_line" >>"$buffer_file"

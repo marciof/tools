@@ -28,7 +28,7 @@ mode_options_vcs=
 
 mode_run_dir() {
     if [ -d "$1" ]; then
-        run_with_mode_options "$mode_options_dir" "$1" false $pty_if_tty ls
+        run_with_mode_options "$mode_options_dir" "$1" '' $pty_if_tty ls
     else
         return "$status_cant_execute"
     fi
@@ -36,7 +36,7 @@ mode_run_dir() {
 
 mode_run_file() {
     if [ -e "$1" -a ! -d "$1" ]; then
-        run_with_mode_options "$mode_options_file" "$1" false cat
+        run_with_mode_options "$mode_options_file" "$1" '' cat
     else
         return "$status_cant_execute"
     fi
@@ -50,7 +50,7 @@ mode_can_pager() {
 # FIXME: inline `autopager.sh` here?
 mode_run_pager() {
     if [ -n "$pty_if_tty" ]; then
-        run_with_mode_options "$mode_options_pager" "-" true autopager.sh
+        run_with_mode_options "$mode_options_pager" - Y autopager.sh
     else
         return "$status_cant_execute"
     fi
@@ -58,7 +58,7 @@ mode_run_pager() {
 
 mode_run_stdin() {
     if [ ! -t 0 ]; then
-        cat
+        run_with_mode_options "$mode_options_stdin" - Y cat
     else
         return "$status_cant_execute"
     fi
@@ -70,7 +70,7 @@ mode_can_vcs() {
 
 mode_run_vcs() {
     if git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
-        run_with_mode_options "$mode_options_vcs" "$1" false \
+        run_with_mode_options "$mode_options_vcs" "$1" '' \
             $pty_if_tty git --no-pager show
     else
         return "$status_cant_execute"
@@ -110,20 +110,20 @@ add_mode_option() {
 run_with_mode_options() {
     local options="$1"
     local input="$2"
-    local need_stdin="$3"
+    local uses_stdin="$3"
     shift 3
 
     if [ -z "$options" ]; then
         "$@" "$input"
-    elif "$need_stdin"; then
-        args_file="$(mktemp)"
+    elif [ -z "$uses_stdin" ]; then
+        printf %s "$options${options:+$arg_var_separator}$input" \
+            | xargs -d "$arg_var_separator" -- "$@"
+    else
+        local args_file="$(mktemp)"
         trap 'rm "$args_file"' EXIT
 
-        printf '%s' "$options${options:+$arg_var_separator}$input" >"$args_file"
+        printf %s "$options${options:+$arg_var_separator}$input" >"$args_file"
         xargs -a "$args_file" -d "$arg_var_separator" -- "$@"
-    else
-        printf '%s' "$options${options:+$arg_var_separator}$input" \
-            | xargs -d "$arg_var_separator" -- "$@"
     fi
 }
 
@@ -147,7 +147,7 @@ USAGE
         if ! type "mode_can_$mode" >/dev/null 2>&1 || "mode_can_$mode"; then
             availability=' '
         else
-            availability='x'
+            availability=x
         fi
 
         printf '%c %-13s%s%s\n' \
