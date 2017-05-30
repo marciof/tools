@@ -6,9 +6,9 @@ help_opt=h
 mode_option_opt=p
 
 mode_description_dir='list directories via `ls`, cwd by default'
-mode_description_file='read files'
+mode_description_file='read files via `cat`'
 mode_description_pager='page output via `less`, when needed'
-mode_description_stdin='read standard input, by default'
+mode_description_stdin='read standard input via `cat`'
 mode_description_vcs='show VCS revisions via `git`, HEAD by default'
 
 mode_options_dir=
@@ -48,7 +48,7 @@ mode_can_pager() {
     command -v less >/dev/null
 }
 
-# FIXME: inline `autopager.sh` here?
+# FIXME: inline `autopager.sh` here
 mode_run_pager() {
     if [ -t 1 ]; then
         run_with_mode_options "$mode_options_pager" - Y autopager.sh
