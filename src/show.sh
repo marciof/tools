@@ -1,15 +1,6 @@
 #!/bin/sh
 set -e -u
 
-status_cant_execute=126
-arg_var_separator="$(printf '\036')" # ASCII RS
-pty="$(command -v "${SHOW_PTY:-pty}" || true)"
-pty_if_tty="$pty"
-
-if [ ! -t 1 ]; then
-    pty_if_tty=
-fi
-
 disable_mode_opt=d
 help_opt=h
 mode_option_opt=p
@@ -25,6 +16,16 @@ mode_options_file=
 mode_options_pager=
 mode_options_stdin=
 mode_options_vcs=
+
+status_cant_execute=126
+arg_var_separator="$(printf '\036')" # ASCII RS
+
+pty="$(command -v "${SHOW_PTY:-pty}" || true)"
+pty_if_tty="$pty"
+
+if [ ! -t 1 ]; then
+    pty_if_tty=
+fi
 
 mode_run_dir() {
     if [ -d "$1" ]; then
@@ -49,7 +50,7 @@ mode_can_pager() {
 
 # FIXME: inline `autopager.sh` here?
 mode_run_pager() {
-    if [ -n "$pty_if_tty" ]; then
+    if [ -t 1 ]; then
         run_with_mode_options "$mode_options_pager" - Y autopager.sh
     else
         return "$status_cant_execute"
@@ -120,7 +121,7 @@ run_with_mode_options() {
             | xargs -d "$arg_var_separator" -- "$@"
     else
         local args_file="$(mktemp -t show.xargs.XXXXXXXXXX)"
-        trap 'rm "$args_file"' EXIT
+        trap "rm $args_file" EXIT
 
         printf %s "$options${options:+$arg_var_separator}$input" >"$args_file"
         xargs -a "$args_file" -d "$arg_var_separator" -- "$@"

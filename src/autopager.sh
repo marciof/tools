@@ -2,7 +2,7 @@
 set -e -u
 
 buffer_file="$(mktemp -t autopager.buffer.XXXXXXXXXX)"
-trap 'rm "$buffer_file"' EXIT
+trap "rm $buffer_file" EXIT
 
 nr_buffered_lines=0
 max_nr_buffered_lines="$(($(tput lines) / 2))"
@@ -24,12 +24,8 @@ fi
 
 printf '%s\n' "$buffered_line" >>"$buffer_file"
 pager_fifo="$(mktemp -t -u autopager.fifo.XXXXXXXXXX)"
+trap "rm $pager_fifo" EXIT
 mkfifo "$pager_fifo"
 
-pipe_to_pager_fifo() {
-    trap 'rm "$pager_fifo"' EXIT
-    cat "$buffer_file" - >"$pager_fifo"
-}
-
-{ pipe_to_pager_fifo <&3 3<&- & } 3<&0
+{ cat "$buffer_file" - >"$pager_fifo" <&3 3<&- & } 3<&0
 less "$@" <"$pager_fifo"
