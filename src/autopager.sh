@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e -u
 
-buffer_file="$(mktemp -t autopager.buffer.XXXXXXXXXX)"
+buffer_file="$(mktemp)"
 trap "rm $buffer_file" EXIT
 
 nr_buffered_lines=0
@@ -23,7 +23,7 @@ if ! IFS= read -r buffered_line; then
 fi
 
 printf '%s\n' "$buffered_line" >>"$buffer_file"
-pager_fifo="$(mktemp -t -u autopager.fifo.XXXXXXXXXX)"
+pager_fifo="$(mktemp -u)"
 trap "rm $pager_fifo" EXIT
 mkfifo "$pager_fifo"
 
