@@ -43,18 +43,43 @@ mode_run_file() {
     fi
 }
 
-# FIXME: don't assume `autopager.sh` uses `less`
 mode_can_pager() {
     command -v less >/dev/null
 }
 
-# FIXME: inline `autopager.sh` here
 mode_run_pager() {
-    if [ -t 1 ]; then
-        run_with_mode_options "$mode_options_pager" - Y autopager.sh
-    else
+    if [ ! -t 1 ]; then
         return "$status_cant_execute"
     fi
+
+    local buffer_file="$(mktemp)"
+    trap "rm $buffer_file" EXIT
+
+    local nr_buffered_lines=0
+    local max_nr_buffered_lines="$(($(tput lines) / 2))"
+
+    # Can't use `head` here since it causes `git` to stop output abruptly.
+    while IFS= read -r buffered_line; do
+        nr_buffered_lines=$((nr_buffered_lines + 1))
+        printf '%s\n' "$buffered_line" >>"$buffer_file"
+
+        if [ "$nr_buffered_lines" -ge "$max_nr_buffered_lines" ]; then
+            break
+        fi
+    done
+
+    if ! IFS= read -r buffered_line; then
+        cat "$buffer_file"
+        exit "$?"
+    fi
+
+    printf '%s\n' "$buffered_line" >>"$buffer_file"
+    local pager_fifo="$(mktemp -u)"
+    trap "rm $pager_fifo" EXIT
+    mkfifo "$pager_fifo"
+
+    { cat "$buffer_file" - >"$pager_fifo" <&3 3<&- & } 3<&0
+    run_with_mode_options "$mode_options_pager" - Y less <"$pager_fifo"
 }
 
 mode_run_stdin() {
