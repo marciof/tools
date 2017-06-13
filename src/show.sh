@@ -20,19 +20,24 @@ mode_options_vcs=
 status_cant_execute=126
 arg_var_separator="$(printf '\036')" # ASCII RS
 
-pty="$(command -v "${SHOW_PTY:-pty}" || true)"
-pty_if_tty="$pty"
-
-if [ ! -t 1 ]; then
-    pty_if_tty=
+if [ -t 1 ]; then
+    is_tty_out=Y
+else
+    is_tty_out=
 fi
 
 mode_run_dir() {
-    if [ -d "$1" ]; then
-        run_with_mode_options "$mode_options_dir" "$1" '' $pty_if_tty ls
-    else
+    if [ ! -d "$1" ]; then
         return "$status_cant_execute"
     fi
+
+    local tty_flags=
+
+    if [ -n "$is_tty_out" ]; then
+        tty_flags='-C --color=always'
+    fi
+
+    run_with_mode_options "$mode_options_dir" "$1" '' ls $tty_flags
 }
 
 mode_run_file() {
@@ -48,7 +53,7 @@ mode_can_pager() {
 }
 
 mode_run_pager() {
-    if [ ! -t 1 ]; then
+    if [ -z "$is_tty_out" ]; then
         return "$status_cant_execute"
     fi
 
@@ -95,12 +100,18 @@ mode_can_vcs() {
 }
 
 mode_run_vcs() {
-    if git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
-        run_with_mode_options "$mode_options_vcs" "$1" '' \
-            $pty_if_tty git --no-pager show
-    else
+    if ! git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
         return "$status_cant_execute"
     fi
+
+    local tty_flags=
+
+    if [ -n "$is_tty_out" ]; then
+        tty_flags='--color=always'
+    fi
+
+    run_with_mode_options "$mode_options_vcs" "$1" '' \
+        git --no-pager show $tty_flags
 }
 
 assert_mode_exists() {
@@ -179,10 +190,6 @@ USAGE
         printf '%c %-13s%s%s\n' \
             "$availability" "$mode" "$(var "mode_description_$mode")"
     done
-
-    if [ -z "$pty" ]; then
-        printf '\nWarning: `pty` wrapper helper command not found\n' >&2
-    fi
 }
 
 process_options() {
