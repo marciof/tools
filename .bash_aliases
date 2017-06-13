@@ -71,7 +71,7 @@ if _have micro nano; then
 fi
 
 if _have show.sh; then
-    alias s="$NAME -p dir=-Fh -p dir=--color=auto -p dir=--group-directories-first -p dir=--dereference-command-line-symlink-to-dir"
+    alias s="$NAME -p dir=-Fh -p dir=--group-directories-first -p dir=--dereference-command-line-symlink-to-dir"
     export PAGER="$NAME" GIT_PAGER="$NAME"
 fi
 
