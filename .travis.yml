@@ -1,0 +1,15 @@
+language: c
+addons:
+ apt:
+   packages:
+   # Build.
+   - cmake
+   - make
+   - gcc
+   # Test.
+   - cppcheck
+   - valgrind
+script:
+- cmake .
+- make
+- ctest --output-on-failure

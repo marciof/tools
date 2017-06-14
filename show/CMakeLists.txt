@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 2.6)
+project(show C)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pedantic-errors -Wall -Wextra -Wno-unused-parameter")
+endif()
+
+add_executable(${PROJECT_NAME}
+    src/Error.c
+    src/Error.h
+    src/Array.c
+    src/Array.h
+    src/Buffer.c
+    src/Buffer.h
+    src/options.c
+    src/options.h
+    src/io.c
+    src/io.h
+    src/popen2.c
+    src/popen2.h
+    src/Plugin.h
+    src/signal2.c
+    src/signal2.h
+    src/plugin/Stdin.c
+    src/plugin/Stdin.h
+    src/plugin/Dir.c
+    src/plugin/Dir.h
+    src/plugin/Vcs.c
+    src/plugin/Vcs.h
+    src/plugin/File.c
+    src/plugin/File.h
+    src/plugin/Pager.c
+    src/plugin/Pager.h
+    src/main.c)
+
+target_link_libraries(${PROJECT_NAME} pthread util)
+
+add_executable(pty src/pty.c)
+target_link_libraries(pty util)
+
+enable_testing()
+add_test(lint cppcheck --error-exitcode=1 --quiet --enable=all "${PROJECT_SOURCE_DIR}/src/")
+add_test(functional "${PROJECT_SOURCE_DIR}/bin/test.sh" "${PROJECT_SOURCE_DIR}/tst/")
