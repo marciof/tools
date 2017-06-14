@@ -170,7 +170,6 @@ print_usage() {
 
     cat <<USAGE
 Usage: $(basename "$0") [OPTION]... [INPUT]...
-Version: 0.12.0
 
 Options:
   -$help_opt           display this help and exit
