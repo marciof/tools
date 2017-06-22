@@ -1,37 +1,33 @@
-# Wifi firmware #
+# Wifi firmware
 
 https://packages.debian.org/stretch/all/firmware-iwlwifi/download
 
-# High DPI scaling #
+# High DPI scaling
 
 Appearance: Xfce, Greybird color style, Breeze icons, Breeze window style
 
 ## WM/DE ##
 
-In `/usr/share/lightdm/lightdm.conf.d/02_custom.conf`:
+`/usr/share/lightdm/lightdm.conf.d/02_custom.conf`:
 
     [Seat:*]
     xserver-command=X -core -dpi 145
     greeter-hide-users=false
 
-In `/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_custom.conf`:
+`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_custom.conf`:
 
     [greeter]
     xft-dpi=145
 
 ## Firefox ##
 
-In `about:config` set:
+`about:config`:
 
     layout.css.devPixelsPerPx=1.5
 
-Fix diagonal scrolling screen tearing, in `about:config` set:
-
-    layers.acceleration.force-enabled=true
-
 ## Qt4 ##
 
-Change font size in:
+Change font size:
 
     qtconfig
 
@@ -45,7 +41,7 @@ Logout and login to apply:
 
     xfconf-query -c xsettings -p /Xft/DPI -s 145
 
-# Apt repositories #
+# Apt repositories
 
 In `/etc/apt/sources.list`:
 
@@ -54,32 +50,33 @@ In `/etc/apt/sources.list`:
     deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
     deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
 
-# Firefox Flash Bluetooth #
+# Firefox
 
-    flashplugin-nonfree-extrasound
+## Flash Bluetooth
+
+    apt install flashplugin-nonfree-extrasound
 
 Or:
 
-    libflashsupport-pulse
+    apt install libflashsupport-pulse
 
-# Digital clock format #
+## Diagonal scrolling screen tearing
+
+`about:config`:
+
+    layers.acceleration.force-enabled=true
+
+# Opera Flash
+
+1. Download: https://get.adobe.com/flashplayer/
+2. Extract all files to: `/usr/lib/pepperflashplugin-nonfree/`
+
+# Digital clock format
 
     %-l:%M%P %a %-m/%-e
 
-# Mouse speed #
+# Mouse speed
 
-In `~/.xsessionrc`:
+`~/.xsessionrc`:
 
     xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
-
-# Emacs #
-
-- spacemacs.org
-- YASnippet
-- Magit
-- Restclient
-- Multiple-cursors
-- Jump to any point in the screen: https://www.youtube.com/watch?v=UZkpmegySnc
-- Rainbow mode
-- paredit
-- @emacsrocks
