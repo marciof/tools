@@ -3,7 +3,7 @@ set -e -u
 
 disable_mode_opt=d
 help_opt=h
-mode_option_opt=p
+mode_opt=p
 
 mode_description_dir='list directories via `ls`, cwd by default'
 mode_description_file='read files via `cat`'
@@ -31,13 +31,13 @@ mode_run_dir() {
         return "$status_cant_execute"
     fi
 
-    local tty_flags=
+    set -- "$@" '' ls
 
     if [ -n "$is_tty_out" ]; then
-        tty_flags='-C --color=always'
+        set -- "$@" -C --color=always
     fi
 
-    run_with_mode_options "$mode_options_dir" "$1" '' ls $tty_flags
+    run_with_mode_options "$mode_options_dir" "$@"
 }
 
 mode_run_file() {
@@ -57,36 +57,37 @@ mode_run_pager() {
         return "$status_cant_execute"
     fi
 
-    local buffer_file
-    buffer_file="$(mktemp)"
-    trap "rm $buffer_file" EXIT
+    _pager_buffer_file="$(mktemp)"
+    trap "rm $_pager_buffer_file" EXIT
 
-    local nr_buffered_lines=0
-    local max_nr_buffered_lines="$(($(tput lines) / 2))"
+    _pager_buffer_len=0
+    _pager_buffer_max_len="$(($(tput lines) / 2))"
 
     # Can't use `head` here since it causes `git` to stop output abruptly.
     while IFS= read -r buffered_line; do
-        nr_buffered_lines=$((nr_buffered_lines + 1))
-        printf '%s\n' "$buffered_line" >>"$buffer_file"
+        _pager_buffer_len=$((_pager_buffer_len + 1))
+        printf '%s\n' "$buffered_line" >>"$_pager_buffer_file"
 
-        if [ "$nr_buffered_lines" -ge "$max_nr_buffered_lines" ]; then
+        if [ "$_pager_buffer_len" -ge "$_pager_buffer_max_len" ]; then
             break
         fi
     done
 
+    unset _pager_num_buffer_lines _pager_max_buffer_lines
+
     if ! IFS= read -r buffered_line; then
-        cat "$buffer_file"
+        cat "$_pager_buffer_file"
         exit "$?"
     fi
 
-    printf '%s\n' "$buffered_line" >>"$buffer_file"
-    local pager_fifo
-    pager_fifo="$(mktemp -u)"
-    trap "rm $pager_fifo" EXIT
-    mkfifo "$pager_fifo"
+    printf '%s\n' "$buffered_line" >>"$_pager_buffer_file"
+    _pager_fifo="$(mktemp -u)"
+    trap "rm $_pager_fifo" EXIT
+    mkfifo "$_pager_fifo"
 
-    { cat "$buffer_file" - >"$pager_fifo" <&3 3<&- & } 3<&0
-    run_with_mode_options "$mode_options_pager" - Y less <"$pager_fifo"
+    { cat "$_pager_buffer_file" - >"$_pager_fifo" <&3 3<&- & } 3<&0
+    run_with_mode_options "$mode_options_pager" - Y less <"$_pager_fifo"
+    unset _pager_buffer_file _pager_fifo
 }
 
 mode_run_stdin() {
@@ -106,14 +107,13 @@ mode_run_vcs() {
         return "$status_cant_execute"
     fi
 
-    local tty_flags=
+    set -- "$@" '' git --no-pager show
 
     if [ -n "$is_tty_out" ]; then
-        tty_flags='--color=always'
+        set -- "$@" --color=always
     fi
 
-    run_with_mode_options "$mode_options_vcs" "$1" '' \
-        git --no-pager show $tty_flags
+    run_with_mode_options "$mode_options_vcs" "$@"
 }
 
 assert_mode_exists() {
@@ -131,75 +131,78 @@ disable_mode() {
 }
 
 add_mode_option() {
-    local name="${1%%=?*}"
+    _add_opt_name="${1%%=?*}"
 
-    if [ ${#name} -eq ${#1} -o ${#name} -eq 0 ]; then
+    if [ ${#_add_opt_name} -eq ${#1} -o ${#_add_opt_name} -eq 0 ]; then
         echo "$1: missing mode name/option" >&2
+        unset _add_opt_name
         return 1
     fi
 
-    assert_mode_exists "$name"
-    local option="${1#?*=}"
-    local current
-    current="$(var "mode_options_$name")"
+    assert_mode_exists "$_add_opt_name"
+    _add_opt_option="${1#?*=}"
+    _add_opt_current="$(var "mode_options_$_add_opt_name")"
 
-    export "mode_options_$name=$current${current:+$arg_var_separator}$option"
+    export "mode_options_$_add_opt_name=$_add_opt_current${_add_opt_current:+$arg_var_separator}$_add_opt_option"
+    unset _add_opt_name _add_opt_option _add_opt_current
     return 0
 }
 
 run_with_mode_options() {
-    local options="$1"
-    local input="$2"
-    local uses_stdin="$3"
+    _run_opts="$1"
+    _run_input="$2"
+    _run_uses_stdin="$3"
     shift 3
 
-    if [ -z "$options" ]; then
-        "$@" "$input"
-    elif [ -z "$uses_stdin" ]; then
-        printf %s "$options${options:+$arg_var_separator}$input" \
+    if [ -z "$_run_opts" ]; then
+        "$@" "$_run_input"
+    elif [ -z "$_run_uses_stdin" ]; then
+        printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
             | xargs -d "$arg_var_separator" -- "$@"
     else
-        local args_file
-        args_file="$(mktemp)"
-        trap "rm $args_file" EXIT
+        _run_args_file="$(mktemp)"
+        trap "rm $_run_args_file" EXIT
 
-        printf %s "$options${options:+$arg_var_separator}$input" >"$args_file"
-        xargs -a "$args_file" -d "$arg_var_separator" -- "$@"
+        printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
+            >"$_run_args_file"
+        xargs -a "$_run_args_file" -d "$arg_var_separator" -- "$@"
+        unset _run_args_file
     fi
+
+    unset _run_options _run_input _run_uses_stdin
 }
 
 print_usage() {
-    local mode
-    local availability
-
     cat <<USAGE
 Usage: $(basename "$0") [OPTION]... [INPUT]...
 
 Options:
   -$help_opt           display this help and exit
   -$disable_mode_opt NAME      disable a mode
-  -$mode_option_opt NAME=OPT  pass an option to a mode
+  -$mode_opt NAME=OPT  pass an option to a mode
 
 Mode:
 USAGE
 
-    for mode in stdin file dir vcs pager; do
-        if ! type "mode_can_$mode" >/dev/null 2>&1 || "mode_can_$mode"; then
-            availability=' '
+    for _help_mode in stdin file dir vcs pager; do
+        if ! type "mode_can_$_help_mode" >/dev/null 2>&1 \
+            || "mode_can_$_help_mode"
+        then
+            _help_has=' '
         else
-            availability=x
+            _help_has=x
         fi
 
-        printf '%c %-13s%s%s\n' \
-            "$availability" "$mode" "$(var "mode_description_$mode")"
+        printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
+            "$(var "mode_description_$_help_mode")"
     done
+
+    unset _help_mode _help_has
 }
 
 process_options() {
-    local option
-
-    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:" option "$@"; do
-        case "$option" in
+    while getopts "$disable_mode_opt:$help_opt$mode_opt:" _getopt_opt "$@"; do
+        case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
                 ;;
@@ -207,36 +210,38 @@ process_options() {
                 print_usage
                 exit 0
                 ;;
-            "$mode_option_opt")
+            "$mode_opt")
                 add_mode_option "$OPTARG"
                 ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
+                unset _getopt_opt
                 return 1
                 ;;
         esac
     done
+
+    unset _getopt_opt
 }
 
 run_input_modes() {
-    local input
-    local mode
-
     if ! mode_run_stdin && [ $# -eq 0 ]; then
         set -- .
     fi
 
-    for input; do
-        for mode in file dir vcs; do
-            if "mode_run_$mode" "$input"; then
+    for _run_all_input; do
+        for _run_all_mode in file dir vcs; do
+            if "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
             fi
         done
 
-        echo "$input: unsupported input" >&2
+        echo "$_run_all_input: unsupported input" >&2
+        unset _run_all_input _run_all_mode
         return 1
     done
 
+    unset _run_all_input _run_all_mode
     return 0
 }
 
