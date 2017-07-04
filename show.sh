@@ -57,7 +57,8 @@ mode_run_pager() {
         return "$status_cant_execute"
     fi
 
-    local buffer_file="$(mktemp)"
+    local buffer_file
+    buffer_file="$(mktemp)"
     trap "rm $buffer_file" EXIT
 
     local nr_buffered_lines=0
@@ -79,7 +80,8 @@ mode_run_pager() {
     fi
 
     printf '%s\n' "$buffered_line" >>"$buffer_file"
-    local pager_fifo="$(mktemp -u)"
+    local pager_fifo
+    pager_fifo="$(mktemp -u)"
     trap "rm $pager_fifo" EXIT
     mkfifo "$pager_fifo"
 
@@ -138,7 +140,8 @@ add_mode_option() {
 
     assert_mode_exists "$name"
     local option="${1#?*=}"
-    local current="$(var "mode_options_$name")"
+    local current
+    current="$(var "mode_options_$name")"
 
     export "mode_options_$name=$current${current:+$arg_var_separator}$option"
     return 0
@@ -156,7 +159,8 @@ run_with_mode_options() {
         printf %s "$options${options:+$arg_var_separator}$input" \
             | xargs -d "$arg_var_separator" -- "$@"
     else
-        local args_file="$(mktemp)"
+        local args_file
+        args_file="$(mktemp)"
         trap "rm $args_file" EXIT
 
         printf %s "$options${options:+$arg_var_separator}$input" >"$args_file"
@@ -166,7 +170,7 @@ run_with_mode_options() {
 
 print_usage() {
     local mode
-    local unavailable
+    local availability
 
     cat <<USAGE
 Usage: $(basename "$0") [OPTION]... [INPUT]...
