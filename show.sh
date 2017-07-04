@@ -1,15 +1,22 @@
 #!/bin/sh
+# shellcheck disable=SC2039
+
 set -e -u
 
 disable_mode_opt=d
 help_opt=h
 mode_opt=p
 
-mode_description_dir='list directories via `ls`, cwd by default'
-mode_description_file='read files via `cat`'
-mode_description_pager='page output via `less`, when needed'
-mode_description_stdin='read standard input via `cat`'
-mode_description_vcs='show VCS revisions via `git`, HEAD by default'
+# shellcheck disable=SC2034
+mode_help_dir='list directories via "ls", cwd by default'
+# shellcheck disable=SC2034
+mode_help_file='read files via "cat"'
+# shellcheck disable=SC2034
+mode_help_pager='page output via "less", when needed'
+# shellcheck disable=SC2034
+mode_help_stdin='read standard input via "cat"'
+# shellcheck disable=SC2034
+mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
 mode_options_dir=
 mode_options_file=
@@ -41,7 +48,7 @@ mode_run_dir() {
 }
 
 mode_run_file() {
-    if [ -e "$1" -a ! -d "$1" ]; then
+    if [ -e "$1" ] && [ ! -d "$1" ]; then
         run_with_mode_options "$mode_options_file" "$1" '' cat
     else
         return "$status_cant_execute"
@@ -58,7 +65,7 @@ mode_run_pager() {
     fi
 
     _pager_buffer_file="$(mktemp)"
-    trap "rm $_pager_buffer_file" EXIT
+    trap 'rm '"$_pager_buffer_file" EXIT
 
     _pager_buffer_len=0
     _pager_buffer_max_len="$(($(tput lines) / 2))"
@@ -82,7 +89,7 @@ mode_run_pager() {
 
     printf '%s\n' "$buffered_line" >>"$_pager_buffer_file"
     _pager_fifo="$(mktemp -u)"
-    trap "rm $_pager_fifo" EXIT
+    trap 'rm '"$_pager_fifo" EXIT
     mkfifo "$_pager_fifo"
 
     { cat "$_pager_buffer_file" - >"$_pager_fifo" <&3 3<&- & } 3<&0
@@ -133,7 +140,7 @@ disable_mode() {
 add_mode_option() {
     _add_opt_name="${1%%=?*}"
 
-    if [ ${#_add_opt_name} -eq ${#1} -o ${#_add_opt_name} -eq 0 ]; then
+    if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
         echo "$1: missing mode name/option" >&2
         unset _add_opt_name
         return 1
@@ -161,7 +168,7 @@ run_with_mode_options() {
             | xargs -d "$arg_var_separator" -- "$@"
     else
         _run_args_file="$(mktemp)"
-        trap "rm $_run_args_file" EXIT
+        trap 'rm '"$_run_args_file" EXIT
 
         printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
             >"$_run_args_file"
@@ -194,7 +201,7 @@ USAGE
         fi
 
         printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
-            "$(var "mode_description_$_help_mode")"
+            "$(var "mode_help_$_help_mode")"
     done
 
     unset _help_mode _help_has
@@ -251,4 +258,6 @@ var() {
 
 process_options "$@"
 shift $((OPTIND - 1))
+
+# FIXME: pass-through mode's exit status code on error
 run_input_modes "$@" | { mode_run_pager || cat; }
