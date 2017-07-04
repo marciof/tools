@@ -24,8 +24,8 @@ class Node:
 def find_level(root):
     queue = [root]
 
-    curr_nr_nodes = 1
-    next_nr_nodes = 0
+    curr_num_nodes = 1
+    next_num_nodes = 0
 
     best_level = 0
     best_sum = float('+inf')
@@ -36,15 +36,15 @@ def find_level(root):
     while len(queue) > 0:
         node = queue.pop(0)
         curr_sum += node.value
-        curr_nr_nodes -= 1
+        curr_num_nodes -= 1
 
         for child in node.list_children():
             queue.append(child)
-            next_nr_nodes += 1
+            next_num_nodes += 1
 
-        if curr_nr_nodes == 0:
-            curr_nr_nodes = next_nr_nodes
-            next_nr_nodes = 0
+        if curr_num_nodes == 0:
+            curr_num_nodes = next_num_nodes
+            next_num_nodes = 0
 
             if curr_sum < best_sum:
                 best_level = curr_level

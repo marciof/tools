@@ -141,13 +141,13 @@ if _have git; then
     fi
 fi
 
-_jobs_nr_ps1() {
+_job_count_ps1() {
     local jobs=$(jobs -p -r -s | wc -l)
     [ $jobs -gt 0 ] && echo " $jobs"
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_jobs_nr_ps1)\[$_color_off\]\\$ "
+    export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$_color_off\]\\$ "
 fi
 
 unset -f _have

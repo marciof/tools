@@ -25,28 +25,28 @@ def is_in_trouble(attendance):
     Space: O(1)
     """
 
-    nr_absent = 0
-    nr_late = 0
+    num_absent = 0
+    num_late = 0
 
     for record in attendance:
         if record == ABSENT:
-            nr_absent += 1
+            num_absent += 1
 
-            if nr_absent == 2:
+            if num_absent == 2:
                 return True
         elif record == LATE:
-            nr_late += 1
+            num_late += 1
 
-            if nr_late == 3:
+            if num_late == 3:
                 return True
 
             continue
 
-        nr_late = 0
+        num_late = 0
 
     return False
 
-def generate_pass(length, nr_absent = 0, nr_late = 0):
+def generate_pass(length, num_absent = 0, num_late = 0):
     """
     Time: O(3^n)
     Space: O(n.3^n)
@@ -57,15 +57,15 @@ def generate_pass(length, nr_absent = 0, nr_late = 0):
 
     combinations = []
 
-    for c in generate_pass(length - 1, nr_absent, 0):
+    for c in generate_pass(length - 1, num_absent, 0):
         combinations.append(OK + c)
 
-    if nr_absent == 0:
-        for c in generate_pass(length - 1, nr_absent + 1, 0):
+    if num_absent == 0:
+        for c in generate_pass(length - 1, num_absent + 1, 0):
             combinations.append(ABSENT + c)
 
-    if nr_late <= 1:
-        for c in generate_pass(length - 1, nr_absent, nr_late + 1):
+    if num_late <= 1:
+        for c in generate_pass(length - 1, num_absent, num_late + 1):
             combinations.append(LATE + c)
 
     return combinations

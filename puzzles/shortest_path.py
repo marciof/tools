@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 """
-Find shortest path from road `start` to a road containing `house` nr.
+Find shortest path from road `start` to a road containing `house` number.
 
 https://en.wikipedia.org/wiki/Breadth-first_search
 

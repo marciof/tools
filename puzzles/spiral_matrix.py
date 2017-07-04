@@ -21,29 +21,29 @@ def create_spiral(size):
     matrix = [[0] * size for _ in range(size)]
     x = y = int((size - 1) / 2)
     curr_direction = 0
-    nr_sides_so_far = 0
+    num_sides_so_far = 0
     side_length_so_far = 0
     max_side_length = 1
-    nr = 1
+    num = 1
 
     while (y >= 0) and (x >= 0) and (y < size) and (x < size):
-        matrix[y][x] = nr
-        nr += 1
+        matrix[y][x] = num
+        num += 1
         side_length_so_far += 1
 
         if side_length_so_far == max_side_length:
-            nr_sides_so_far += 1
+            num_sides_so_far += 1
             side_length_so_far = 0
             curr_direction = (curr_direction + 1) % len(clockwise_direction)
 
-        if nr_sides_so_far < 4:
+        if num_sides_so_far < 4:
             x += clockwise_direction[curr_direction].x
             y += clockwise_direction[curr_direction].y
         else:
             x += clockwise_direction[-1].x
             y += clockwise_direction[-1].y
 
-            nr_sides_so_far = 0
+            num_sides_so_far = 0
             max_side_length += 2
 
     return matrix

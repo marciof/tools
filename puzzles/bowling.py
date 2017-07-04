@@ -18,14 +18,14 @@ Rules:
 - 1 turn = up to 2 tries
 
 - If on first try of his turn he knocks down all the pins (a strike)
-  then turn over and turn score = 10 + nr. of pins knocked down in his next 2
+  then turn over and turn score = 10 + num. of pins knocked down in his next 2
   tries
 
 - If in 2 tries he knocks them all down (a spare)
-  then turn score = 10 + nr. of pins knocked down on his next 1 try
+  then turn score = 10 + num. of pins knocked down on his next 1 try
 
 - If in 2 tries he does not knock them all down
-  then turn score = nr. of pins knocked down in his 2 tries
+  then turn score = num. of pins knocked down in his 2 tries
 
 - If he gets a spare or strike in the last turn
   then gets one or two more tries (part of the same turn), respectively.
@@ -36,8 +36,8 @@ Rules:
 
 import unittest
 
-_NR_TURNS = 10
-_NR_PINS = 10
+_NUM_TURNS = 10
+_NUM_PINS = 10
 
 
 class Error (Exception):
@@ -54,83 +54,83 @@ class _NormalTurnType:
         return True
 
     def score(self, turn, next_turns):
-        return sum(turn.nr_pins_per_try)
+        return sum(turn.num_pins_per_try)
 
     @property
-    def nr_bonus_tries(self):
+    def num_bonus_tries(self):
         return 0
 
     @property
-    def nr_tries(self):
+    def num_tries(self):
         return 2
 
     def __str__(self):
         return '<%s: tries=%s bonus=%s>' % (
           type(self).__name__,
-          self.nr_tries,
-          self.nr_bonus_tries)
+          self.num_tries,
+          self.num_bonus_tries)
 
 class _SpecialTurnType (_NormalTurnType):
     def __init__(self,
-            nr_tries,
-            nr_bonus_tries,
-            nr_next_tries_for_points,
-            points):
+             num_tries,
+             num_bonus_tries,
+             num_next_tries_for_points,
+             points):
 
-        self._nr_tries = nr_tries
-        self._nr_bonus_tries = nr_bonus_tries
-        self._nr_next_tries_for_points = nr_next_tries_for_points
+        self._num_tries = num_tries
+        self._num_bonus_tries = num_bonus_tries
+        self._num_next_tries_for_points = num_next_tries_for_points
         self._points = points
 
     def is_of(self, turn):
-        nr_pins_per_try = turn.nr_pins_per_try
+        num_pins_per_try = turn.num_pins_per_try
 
-        return ((len(nr_pins_per_try) >= self._nr_tries)
-            and (sum(nr_pins_per_try[:self._nr_tries]) == _NR_PINS))
+        return ((len(num_pins_per_try) >= self._num_tries)
+            and (sum(num_pins_per_try[:self._num_tries]) == _NUM_PINS))
 
     def score(self, turn, next_turns):
-        next_tries = turn.nr_pins_per_try[self._nr_tries:]
+        next_tries = turn.num_pins_per_try[self._num_tries:]
 
         for next_turn in next_turns:
-            if len(next_tries) >= self._nr_next_tries_for_points:
+            if len(next_tries) >= self._num_next_tries_for_points:
                 break
-            next_tries.extend(next_turn.nr_pins_per_try)
+            next_tries.extend(next_turn.num_pins_per_try)
 
-        return self._points + sum(next_tries[:self._nr_next_tries_for_points])
-
-    @property
-    def nr_bonus_tries(self):
-        return self._nr_bonus_tries
+        return self._points + sum(next_tries[:self._num_next_tries_for_points])
 
     @property
-    def nr_tries(self):
-        return self._nr_tries
+    def num_bonus_tries(self):
+        return self._num_bonus_tries
+
+    @property
+    def num_tries(self):
+        return self._num_tries
 
 NORMAL_TURN_TYPE = _NormalTurnType()
 
 SPARE_TURN_TYPE = _SpecialTurnType(
-    nr_tries = 2,
-    nr_bonus_tries = 1,
-    nr_next_tries_for_points = 1,
+    num_tries= 2,
+    num_bonus_tries= 1,
+    num_next_tries_for_points= 1,
     points = 10)
 
 STRIKE_TURN_TYPE = _SpecialTurnType(
-    nr_tries = 1,
-    nr_bonus_tries = 2,
-    nr_next_tries_for_points = 2,
+    num_tries= 1,
+    num_bonus_tries= 2,
+    num_next_tries_for_points= 2,
     points = 10)
 
 class Turn:
     def __init__(self):
-        self._nr_pins_per_try = []
+        self._num_pins_per_try = []
         self._is_bonus_enabled = False
         self._type = NORMAL_TURN_TYPE
 
-    def add_try(self, nr_pins):
+    def add_try(self, num_pins):
         if self.has_finished():
             raise TurnHasFinishedError()
 
-        self._nr_pins_per_try.append(nr_pins)
+        self._num_pins_per_try.append(num_pins)
 
         if self._type is NORMAL_TURN_TYPE:
             for turn_type in [SPARE_TURN_TYPE, STRIKE_TURN_TYPE]:
@@ -143,11 +143,11 @@ class Turn:
 
     def has_finished(self):
         if self._is_bonus_enabled:
-            nr_bonus_tries = self._type.nr_bonus_tries
+            num_bonus_tries = self._type.num_bonus_tries
         else:
-            nr_bonus_tries = 0
+            num_bonus_tries = 0
 
-        return ((self.try_nr > (self._type.nr_tries + nr_bonus_tries))
+        return ((self.try_num > (self._type.num_tries + num_bonus_tries))
             or (not self._is_bonus_enabled
                 and (self._type is not NORMAL_TURN_TYPE)))
 
@@ -158,36 +158,36 @@ class Turn:
         return '<turn %s: done=%s try=%s pins=%s type=%s>' % (
             id(self),
             self.has_finished(),
-            self.try_nr,
-            self._nr_pins_per_try,
+            self.try_num,
+            self._num_pins_per_try,
             self._type)
 
     @property
-    def nr_pins_per_try(self):
-        return list(self._nr_pins_per_try)
+    def num_pins_per_try(self):
+        return list(self._num_pins_per_try)
 
     @property
-    def try_nr(self):
-        return len(self._nr_pins_per_try) + 1
+    def try_num(self):
+        return len(self._num_pins_per_try) + 1
 
 class Game:
     def __init__(self):
         self._turns = [Turn()]
 
-    def add_try(self, nr_pins):
+    def add_try(self, num_pins):
         if self.has_finished():
             raise GameHasFinishedError()
 
-        self._current_turn.add_try(nr_pins)
+        self._current_turn.add_try(num_pins)
 
         if self._current_turn.has_finished():
-            if self.turn_nr >= _NR_TURNS:
+            if self.turn_num >= _NUM_TURNS:
                 self._current_turn.enable_bonus()
             else:
                 self._turns.append(Turn())
 
     def has_finished(self):
-        return ((self.turn_nr >= _NR_TURNS)
+        return ((self.turn_num >= _NUM_TURNS)
             and self._current_turn.has_finished())
 
     def score(self):
@@ -205,29 +205,29 @@ class Game:
         return self._turns[-1]
 
     @property
-    def try_nr(self):
-        return self._current_turn.try_nr
+    def try_num(self):
+        return self._current_turn.try_num
 
     @property
-    def turn_nr(self):
+    def turn_num(self):
         return len(self._turns)
 
-def read_input_nr_pins():
-    nr_pins = None
+def read_input_num_pins():
+    num_pins = None
 
-    while nr_pins is None:
+    while num_pins is None:
         try:
-            nr_pins = int(input('# pins: '), base = 10)
+            num_pins = int(input('# pins: '), base = 10)
         except ValueError:
             pass
         else:
-            if (nr_pins < 0) or (nr_pins > _NR_PINS):
-                nr_pins = None
+            if (num_pins < 0) or (num_pins > _NUM_PINS):
+                num_pins = None
 
-        if nr_pins is None:
-            print('Please enter a valid nr. of pins (>= 0, <= %s).' % _NR_PINS)
+        if num_pins is None:
+            print('Please enter a valid num. of pins (>= 0, <= %s).' % _NUM_PINS)
 
-    return nr_pins
+    return num_pins
 
 class TestFunctional (unittest.TestCase):
     def setUp(self):
@@ -238,20 +238,20 @@ class TestFunctional (unittest.TestCase):
         self.assertTrue(self.game.has_finished())
 
     def test_all_misses(self):
-        for nr_pins in 10 * [9, 0]:
-            self.game.add_try(nr_pins)
+        for num_pins in 10 * [9, 0]:
+            self.game.add_try(num_pins)
 
         self.assertEqual(self.game.score(), 90)
 
     def test_all_spares(self):
-        for nr_pins in 10 * [5, 5] + [5]:
-            self.game.add_try(nr_pins)
+        for num_pins in 10 * [5, 5] + [5]:
+            self.game.add_try(num_pins)
 
         self.assertEqual(self.game.score(), 150)
 
     def test_all_strikes(self):
-        for nr_pins in 12 * [10]:
-            self.game.add_try(nr_pins)
+        for num_pins in 12 * [10]:
+            self.game.add_try(num_pins)
 
         self.assertEqual(self.game.score(), 300)
 
@@ -281,18 +281,18 @@ class TestTurn (unittest.TestCase):
         self.assertFalse(self.turn.has_finished())
         self.assertTrue(NORMAL_TURN_TYPE.is_of(self.turn))
 
-        self.assertEqual(self.turn.try_nr, 1)
+        self.assertEqual(self.turn.try_num, 1)
         self.assertEqual(self.turn.score([]), 0)
 
     def test_normal_turn(self):
-        nr_pins_per_try = [1, 2]
+        num_pins_per_try = [1, 2]
 
-        for nr_pins in nr_pins_per_try:
-            self.turn.add_try(nr_pins)
+        for num_pins in num_pins_per_try:
+            self.turn.add_try(num_pins)
 
         self.assertTrue(self.turn.has_finished())
         self.assertTrue(NORMAL_TURN_TYPE.is_of(self.turn))
-        self.assertEqual(self.turn.try_nr, len(nr_pins_per_try) + 1)
+        self.assertEqual(self.turn.try_num, len(num_pins_per_try) + 1)
 
         spare = self.new_spare_turn()
         strike = self.new_strike_turn()
@@ -300,17 +300,17 @@ class TestTurn (unittest.TestCase):
         for next_turns in [], [spare], [strike]:
             self.assertEqual(
                 self.turn.score(next_turns),
-                sum(nr_pins_per_try))
+                sum(num_pins_per_try))
 
     def test_spare_turn(self):
-        nr_pins_per_try = [7, 3]
+        num_pins_per_try = [7, 3]
 
-        for nr_pins in nr_pins_per_try:
-            self.turn.add_try(nr_pins)
+        for num_pins in num_pins_per_try:
+            self.turn.add_try(num_pins)
 
         self.assertTrue(self.turn.has_finished())
         self.assertTrue(SPARE_TURN_TYPE.is_of(self.turn))
-        self.assertEqual(self.turn.try_nr, len(nr_pins_per_try) + 1)
+        self.assertEqual(self.turn.try_num, len(num_pins_per_try) + 1)
 
         spare = self.new_spare_turn()
         strike = self.new_strike_turn()
@@ -319,18 +319,18 @@ class TestTurn (unittest.TestCase):
             self.assertEqual(
                 self.turn.score(next_turns),
                 10 + sum(map(
-                    lambda t: t.nr_pins_per_try[0],
+                    lambda t: t.num_pins_per_try[0],
                     next_turns)))
 
     def test_strike_turn(self):
-        nr_pins_per_try = [10]
+        num_pins_per_try = [10]
 
-        for nr_pins in nr_pins_per_try:
-            self.turn.add_try(nr_pins)
+        for num_pins in num_pins_per_try:
+            self.turn.add_try(num_pins)
 
         self.assertTrue(self.turn.has_finished())
         self.assertTrue(STRIKE_TURN_TYPE.is_of(self.turn))
-        self.assertEqual(self.turn.try_nr, len(nr_pins_per_try) + 1)
+        self.assertEqual(self.turn.try_num, len(num_pins_per_try) + 1)
 
         spare = self.new_spare_turn()
         strike = self.new_strike_turn()
@@ -339,15 +339,15 @@ class TestTurn (unittest.TestCase):
             self.assertEqual(
                 self.turn.score(next_turns),
                 10 + sum(map(
-                    lambda t: sum(t.nr_pins_per_try[:2]),
+                    lambda t: sum(t.num_pins_per_try[:2]),
                     next_turns)))
 
 if __name__ == '__main__':
     game = Game()
 
     while not game.has_finished():
-        print('Turn/Try: %s/%s' % (game.turn_nr, game.try_nr))
-        game.add_try(read_input_nr_pins())
+        print('Turn/Try: %s/%s' % (game.turn_num, game.try_num))
+        game.add_try(read_input_num_pins())
         print()
 
     print('Score:', game.score())

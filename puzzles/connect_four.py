@@ -21,7 +21,7 @@ UP_RIGHT = Direction(x = +1, y = +1)
 DOWN_LEFT = Direction(x = -1, y = -1)
 DOWN_RIGHT = Direction(x = +1, y = -1)
 
-def is_winner(color, x, y, board, max_nr_pieces = 4):
+def is_winner(color, x, y, board, max_num_pieces = 4):
     directions = [
         (UP, DOWN),
         (LEFT, RIGHT),
@@ -30,7 +30,7 @@ def is_winner(color, x, y, board, max_nr_pieces = 4):
     ]
 
     for forward, opposite in directions:
-        nr_pieces = 1
+        num_pieces = 1
 
         for direction in forward, opposite:
             curr_x = x + direction.x
@@ -44,11 +44,11 @@ def is_winner(color, x, y, board, max_nr_pieces = 4):
                 if board[curr_y][curr_x] != color:
                     break
 
-                nr_pieces += 1
+                num_pieces += 1
                 curr_x += direction.x
                 curr_y += direction.y
 
-                if nr_pieces >= max_nr_pieces:
+                if num_pieces >= max_num_pieces:
                     return True
 
     return False

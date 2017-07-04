@@ -43,11 +43,11 @@ class Test (unittest.TestCase):
         l = reverse(Node(1))
         self.assertListEqual(l.to_array(), [1])
 
-    def test_reverse_even_nr_nodes(self):
+    def test_reverse_even_num_nodes(self):
         l = reverse(Node(1, Node(2)))
         self.assertListEqual(l.to_array(), [2, 1])
 
-    def test_reverse_odd_nr_nodes(self):
+    def test_reverse_odd_num_nodes(self):
         l = reverse(Node(1, Node(2, Node(3))))
         self.assertListEqual(l.to_array(), [3, 2, 1])
 

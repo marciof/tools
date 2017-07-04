@@ -12,16 +12,16 @@ import math
 import unittest
 
 def list_pairs_functional(numbers, total):
-    needed_nrs = set()
+    needed_nums = set()
     pairs = []
 
     for n in numbers:
         target = total - n
 
-        if n in needed_nrs:
+        if n in needed_nums:
             pairs.append((n, target))
         else:
-            needed_nrs.add(target)
+            needed_nums.add(target)
     
     return pairs
 
