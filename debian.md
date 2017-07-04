@@ -19,12 +19,6 @@ Appearance: Xfce, Greybird color style, Breeze icons, Breeze window style
     [greeter]
     xft-dpi=145
 
-## Firefox ##
-
-`about:config`:
-
-    layout.css.devPixelsPerPx=1.5
-
 ## Qt4 ##
 
 Change font size:
@@ -41,32 +35,15 @@ Logout and login to apply:
 
     xfconf-query -c xsettings -p /Xft/DPI -s 145
 
-# Apt repositories
+# Mouse speed
 
-In `/etc/apt/sources.list`:
+`~/.xsessionrc`:
 
-    deb http://httpredir.debian.org/debian stretch contrib main non-free
-    deb-src http://httpredir.debian.org/debian stretch contrib main non-free
-    deb http://security.debian.org/debian-security/ stretch/updates main contrib non-free
-    deb-src http://security.debian.org/debian-security/ stretch/updates main contrib non-free
+    xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
 
-# Firefox
+Run `./dbus-xsessionrc.sh` at login.
 
-## Flash Bluetooth
-
-    apt install flashplugin-nonfree-extrasound
-
-Or:
-
-    apt install libflashsupport-pulse
-
-## Diagonal scrolling screen tearing
-
-`about:config`:
-
-    layers.acceleration.force-enabled=true
-
-# Opera Flash
+# Opera with Flash
 
 1. Download: https://get.adobe.com/flashplayer/
 2. Extract all files to: `/usr/lib/pepperflashplugin-nonfree/`
@@ -74,9 +51,3 @@ Or:
 # Digital clock format
 
     %-l:%M%P %a %-m/%-e
-
-# Mouse speed
-
-`~/.xsessionrc`:
-
-    xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
