@@ -260,4 +260,5 @@ process_options "$@"
 shift $((OPTIND - 1))
 
 # FIXME: pass-through mode's exit status code on error
+# TODO: show intraline (word) colored diff
 run_input_modes "$@" | { mode_run_pager || cat; }
