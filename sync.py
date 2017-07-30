@@ -78,3 +78,29 @@ if __name__ == "__main__":
     sync = OneDriveSync()
     sync.authenticate()
     sync.list_changes()
+
+# from boxsdk import OAuth2, Client
+#
+# # FIXME: handle client secret
+# oauth = OAuth2(
+#     client_id = '',
+#     client_secret = '')
+#
+# # FIXME: spin webserver
+# auth_url, csrf_token = oauth.get_authorization_url('http://localhost')
+# print(auth_url)
+# print(csrf_token)
+#
+# # FIXME: allow URL
+# auth_code = input('Paste your code here: ')
+#
+# # FIXME: save session
+# access_token, refresh_token = oauth.authenticate(auth_code)
+#
+# client = Client(oauth)
+# root_folder = client.folder(folder_id='0').get()
+# print('folder owner: ' + root_folder.owned_by['login'])
+# print('folder name: ' + root_folder['name'])
+#
+# # FIXME: get changes
+# print(root_folder.get_items(limit=100, offset=0))
