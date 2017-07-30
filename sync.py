@@ -6,7 +6,10 @@ from urllib.parse import parse_qs, urlparse
 import webbrowser
 
 # external
+import appdirs
 import onedrivesdk
+import onedrivesdk.session
+from overrides import overrides
 
 class Sync (metaclass = ABCMeta):
     @abstractmethod
@@ -17,23 +20,46 @@ class Sync (metaclass = ABCMeta):
     def list_changes(self):
         pass
 
+class OneDriveAppDirsSession (onedrivesdk.session.Session):
+    @overrides
+    def save_session(self, **save_session_kwargs):
+        print('save', appdirs.user_cache_dir(appname = 'lsync'))
+        return super().save_session(**save_session_kwargs)
+
+    @staticmethod
+    @overrides
+    def load_session(**load_session_kwargs):
+        print('load', appdirs.user_cache_dir(appname = 'lsync'))
+        return onedrivesdk.session.Session.load_session(**load_session_kwargs)
+
 class OneDriveSync (Sync):
 
-    def __init__(self):
-        # FIXME: make configurable as default arguments
-        api_base_url = 'https://api.onedrive.com/v1.0/'
-        http_provider = onedrivesdk.HttpProvider()
+    def __init__(self,
+            client_id = '8eaa14b1-642c-4085-a308-82cdc21e32eb',
+            client_secret = None,
+            api_base_url = 'https://api.onedrive.com/v1.0/',
+            redirect_url = 'https://login.microsoftonline.com/common/oauth2/nativeclient',
+            scopes = ('wl.signin', 'wl.offline_access', 'onedrive.readwrite'),
+            http_provider = None,
+            session_type = OneDriveAppDirsSession):
 
-        # FIXME: check scopes
+        if http_provider is None:
+            http_provider = onedrivesdk.HttpProvider()
+
+        self.client_secret = client_secret
+        self.redirect_url = redirect_url
+
         self.auth_provider = onedrivesdk.AuthProvider(
             http_provider = http_provider,
-            client_id = '8eaa14b1-642c-4085-a308-82cdc21e32eb',
-            scopes = ['wl.signin', 'wl.offline_access', 'onedrive.readwrite'])
+            client_id = client_id,
+            scopes = scopes,
+            session_type = session_type)
 
         self.client = onedrivesdk.OneDriveClient(
             api_base_url, self.auth_provider, http_provider)
 
     # FIXME: decouple from session save/load and save in proper folder
+    @overrides
     def authenticate(self):
         try:
             self.auth_provider.load_session()
@@ -44,20 +70,21 @@ class OneDriveSync (Sync):
             print('Press ENTER now to open the browser.')
             input()
 
-            redirect_url = 'https://login.microsoftonline.com/common/oauth2/nativeclient'
-            webbrowser.open(self.auth_provider.get_auth_url(redirect_url))
+            # FIXME: handle deny
+            webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
             auth_url = input('Paste the final URL here and then press ENTER: ')
 
             # FIXME: handle parser errors
             auth_code = parse_qs(urlparse(auth_url).query)['code']
 
             self.auth_provider.authenticate(
-                auth_code, redirect_url, client_secret = None)
+                auth_code, self.redirect_url, self.client_secret)
             self.auth_provider.save_session()
         else:
             # FIXME: how often to refresh?
             self.auth_provider.refresh_token()
 
+    @overrides
     def list_changes(self):
         # FIXME: use logging (syslog?)
         print('Checking for changes')
@@ -81,21 +108,29 @@ if __name__ == "__main__":
 
 # from boxsdk import OAuth2, Client
 #
-# # FIXME: handle client secret
-# oauth = OAuth2(
-#     client_id = '',
-#     client_secret = '')
+# # FIXME: handle client secret storage
+# import os
 #
-# # FIXME: spin webserver
-# auth_url, csrf_token = oauth.get_authorization_url('http://localhost')
+# oauth = OAuth2(
+#     client_id = os.environ['BOX_API_CLIENT_ID'],
+#     client_secret = os.environ['BOX_API_CLIENT_SECRET'],
+#     access_token = None,
+#     refresh_token = None)
+#
+# auth_url, csrf_token = oauth.get_authorization_url('https://api.box.com/oauth2')
 # print(auth_url)
 # print(csrf_token)
 #
 # # FIXME: allow URL
+# # FIXME: verify CSRF
 # auth_code = input('Paste your code here: ')
 #
 # # FIXME: save session
+# # FIXME: handle deny
 # access_token, refresh_token = oauth.authenticate(auth_code)
+#
+# print('access token', access_token)
+# print('refresh token', refresh_token)
 #
 # client = Client(oauth)
 # root_folder = client.folder(folder_id='0').get()
