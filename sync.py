@@ -2,6 +2,8 @@
 
 # standard
 from abc import ABCMeta, abstractmethod
+import os
+import os.path
 from urllib.parse import parse_qs, urlparse
 import webbrowser
 
@@ -10,6 +12,29 @@ import appdirs
 import onedrivesdk
 import onedrivesdk.session
 from overrides import overrides
+
+class NoFileConfigFound (Exception):
+    pass
+
+class FileConfig:
+
+    def __init__(self, folder):
+        self.path = os.path.join(
+            appdirs.user_config_dir(appname = 'lsync'),
+            folder)
+
+    def set(self, filename, value):
+        os.makedirs(self.path, exist_ok = True)
+
+        with open(os.path.join(self.path, filename), 'w') as config:
+            print(value, file = config, end = '')
+
+    def get(self, filename):
+        try:
+            with open(os.path.join(self.path, filename), 'r') as config:
+                return config.read()
+        except FileNotFoundError:
+            return None
 
 class Sync (metaclass = ABCMeta):
     @abstractmethod
@@ -20,17 +45,56 @@ class Sync (metaclass = ABCMeta):
     def list_changes(self):
         pass
 
-class OneDriveAppDirsSession (onedrivesdk.session.Session):
+class OneDriveFileConfigSession (onedrivesdk.session.Session):
+
+    config = FileConfig('onedrive')
+
+    @overrides
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     @overrides
     def save_session(self, **save_session_kwargs):
-        print('save', appdirs.user_cache_dir(appname = 'lsync'))
-        return super().save_session(**save_session_kwargs)
+        print('save')
+
+        self.config.set('token-type', self.token_type)
+        self.config.set('expires-at', str(int(self._expires_at)))
+        self.config.set('scopes', '\n'.join(self.scope))
+        self.config.set('access-token', self.access_token)
+        self.config.set('client-id', self.client_id)
+        self.config.set('auth-server-url', self.auth_server_url)
+        self.config.set('redirect-uri', self.redirect_uri)
+
+        if self.refresh_token is not None:
+            self.config.set('refresh-token', self.refresh_token)
+
+        if self.client_secret is not None:
+            self.config.set('client-secret', self.client_secret)
 
     @staticmethod
     @overrides
     def load_session(**load_session_kwargs):
-        print('load', appdirs.user_cache_dir(appname = 'lsync'))
-        return onedrivesdk.session.Session.load_session(**load_session_kwargs)
+        print('load')
+
+        config = OneDriveFileConfigSession.config
+        expires_at = config.get('expires-at')
+
+        if expires_at is None:
+            raise NoFileConfigFound()
+
+        session = OneDriveFileConfigSession(
+            token_type = config.get('token-type'),
+            expires_in = '0',
+            scope_string = ' '.join(config.get('scopes').splitlines()),
+            access_token = config.get('access-token'),
+            client_id = config.get('client-id'),
+            auth_server_url = config.get('auth-server-url'),
+            redirect_uri = config.get('redirect-uri'),
+            refresh_token = config.get('refresh-token'),
+            client_secret = config.get('client-secret'))
+
+        session._expires_at = int(expires_at)
+        return session
 
 class OneDriveSync (Sync):
 
@@ -41,7 +105,7 @@ class OneDriveSync (Sync):
             redirect_url = 'https://login.microsoftonline.com/common/oauth2/nativeclient',
             scopes = ('wl.signin', 'wl.offline_access', 'onedrive.readwrite'),
             http_provider = None,
-            session_type = OneDriveAppDirsSession):
+            session_type = OneDriveFileConfigSession):
 
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
@@ -58,19 +122,19 @@ class OneDriveSync (Sync):
         self.client = onedrivesdk.OneDriveClient(
             api_base_url, self.auth_provider, http_provider)
 
-    # FIXME: decouple from session save/load and save in proper folder
     @overrides
     def authenticate(self):
         try:
             self.auth_provider.load_session()
-        except FileNotFoundError:
+        except NoFileConfigFound:
             # FIXME: GUI
             print('Sync needs your permission to access your OneDrive.')
-            print('After logging in, copy and paste the final URL here.')
+            print("After logging in, you'll get to a blank page. Copy the URL and paste here.")
             print('Press ENTER now to open the browser.')
             input()
 
             # FIXME: handle deny
+            # FIXME: Opera debug output?
             webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
             auth_url = input('Paste the final URL here and then press ENTER: ')
 

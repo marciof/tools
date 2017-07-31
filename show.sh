@@ -260,6 +260,7 @@ process_options "$@"
 shift $((OPTIND - 1))
 
 # FIXME: pass-through mode's exit status code on error
+# FIXME: won't print files that don't end in a newline?
 # TODO: show intraline (word) colored diff
 # TODO: pydoc
 run_input_modes "$@" | { mode_run_pager || cat; }
