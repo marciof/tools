@@ -2,6 +2,7 @@
 
 # standard
 from abc import ABCMeta, abstractmethod
+from argparse import ArgumentParser
 import os
 import os.path
 from urllib.parse import parse_qs, urlparse
@@ -16,6 +17,7 @@ from overrides import overrides
 class NoFileConfigFound (Exception):
     pass
 
+# FIXME: proper permissions for sensitive data such as session
 class FileConfig:
 
     def __init__(self, folder):
@@ -47,6 +49,7 @@ class Sync (metaclass = ABCMeta):
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
+    # FIXME: reuse name from services command line
     config = FileConfig('onedrive')
 
     @overrides
@@ -57,6 +60,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
     def save_session(self, **save_session_kwargs):
         print('save')
 
+        # FIXME: refactor config key names as @property
         self.config.set('token-type', self.token_type)
         self.config.set('expires-at', str(int(self._expires_at)))
         self.config.set('scopes', '\n'.join(self.scope))
@@ -165,10 +169,36 @@ class OneDriveSync (Sync):
         print('#', collection_page.next_page_link)
         print('#', collection_page.delta_link)
 
-if __name__ == "__main__":
-    sync = OneDriveSync()
+services = {'onedrive': OneDriveSync}
+
+# FIXME: decouple auth from login
+def do_login_command(args):
+    print('login', args)
+    sync = services[args.service]()
+    sync.authenticate()
+
+def do_start_command(args):
+    print('start', args)
+    sync = services[args.service]()
     sync.authenticate()
     sync.list_changes()
+
+# FIXME: add logout command
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    command_parser = parser.add_subparsers(dest = 'command')
+    command_parser.required = True
+
+    login_parser = command_parser.add_parser('login', help = 'login to service')
+    login_parser.add_argument('service', help = 'service', choices = services)
+    login_parser.set_defaults(func = do_login_command)
+
+    start_parser = command_parser.add_parser('start', help = 'start sync')
+    start_parser.add_argument('service', help = 'service', choices = services)
+    start_parser.set_defaults(func = do_start_command)
+
+    args = parser.parse_args()
+    args.func(args)
 
 # from boxsdk import OAuth2, Client
 #
