@@ -38,13 +38,17 @@ class FileConfig:
         except FileNotFoundError:
             return None
 
-class Sync (metaclass = ABCMeta):
+class Client (metaclass = ABCMeta):
     @abstractmethod
-    def authenticate(self):
+    def authenticate_session(self):
         pass
 
     @abstractmethod
-    def list_changes(self):
+    def authenticate_url(self, url):
+        pass
+
+    @abstractmethod
+    def login(self):
         pass
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
@@ -100,7 +104,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         session._expires_at = int(expires_at)
         return session
 
-class OneDriveSync (Sync):
+class OneDriveClient (Client):
 
     def __init__(self,
             client_id = '8eaa14b1-642c-4085-a308-82cdc21e32eb',
@@ -127,32 +131,21 @@ class OneDriveSync (Sync):
             api_base_url, self.auth_provider, http_provider)
 
     @overrides
-    def authenticate(self):
-        try:
-            self.auth_provider.load_session()
-        except NoFileConfigFound:
-            # FIXME: GUI
-            print('Sync needs your permission to access your OneDrive.')
-            print("After logging in, you'll get to a blank page. Copy the URL and paste here.")
-            print('Press ENTER now to open the browser.')
-            input()
-
-            # FIXME: handle deny
-            # FIXME: Opera debug output?
-            webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
-            auth_url = input('Paste the final URL here and then press ENTER: ')
-
-            # FIXME: handle parser errors
-            auth_code = parse_qs(urlparse(auth_url).query)['code']
-
-            self.auth_provider.authenticate(
-                auth_code, self.redirect_url, self.client_secret)
-            self.auth_provider.save_session()
-        else:
-            # FIXME: how often to refresh?
-            self.auth_provider.refresh_token()
+    def authenticate_session(self):
+        # FIXME: how often to refresh?
+        self.auth_provider.load_session()
+        self.auth_provider.refresh_token()
 
     @overrides
+    def authenticate_url(self, url):
+        # FIXME: handle deny
+        # FIXME: handle parser errors
+        auth_code = parse_qs(urlparse(url).query)['code']
+
+        self.auth_provider.authenticate(
+            auth_code, self.redirect_url, self.client_secret)
+        self.auth_provider.save_session()
+
     def list_changes(self):
         # FIXME: use logging (syslog?)
         print('Checking for changes')
@@ -163,24 +156,32 @@ class OneDriveSync (Sync):
         collection_page = self.client.item(id = 'root').delta(token).get()
 
         for item in collection_page:
-            print('-', item.name, item.parent_reference.path)
+            print('-', item.id, item.name, item.parent_reference.path)
 
         print('#', collection_page.token)
         print('#', collection_page.next_page_link)
         print('#', collection_page.delta_link)
 
-services = {'onedrive': OneDriveSync}
+    @overrides
+    def login(self):
+        # FIXME: Opera debug output?
+        webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
-# FIXME: decouple auth from login
+services = {'onedrive': OneDriveClient}
+
 def do_login_command(args):
     print('login', args)
-    sync = services[args.service]()
-    sync.authenticate()
+    client = services[args.service]()
+
+    if args.auth_url is None:
+        client.login()
+    else:
+        client.authenticate_url(args.auth_url)
 
 def do_start_command(args):
     print('start', args)
     sync = services[args.service]()
-    sync.authenticate()
+    sync.authenticate_session()
     sync.list_changes()
 
 # FIXME: add logout command
@@ -191,6 +192,7 @@ if __name__ == "__main__":
 
     login_parser = command_parser.add_parser('login', help = 'login to service')
     login_parser.add_argument('service', help = 'service', choices = services)
+    login_parser.add_argument('auth_url', help = 'authentication URL', nargs = '?')
     login_parser.set_defaults(func = do_login_command)
 
     start_parser = command_parser.add_parser('start', help = 'start sync')
