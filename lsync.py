@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
 import os
 import os.path
+import sys
 from urllib.parse import parse_qs, urlparse
 import webbrowser
 
@@ -14,7 +15,11 @@ import onedrivesdk
 import onedrivesdk.session
 from overrides import overrides
 
-class NoFileConfigFound (Exception):
+class Error (Exception):
+    def __str__(self):
+        return ' '.join(self.args)
+
+class NoFileConfigFound (Error):
     pass
 
 # FIXME: proper permissions for sensitive data such as session
@@ -62,9 +67,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
     @overrides
     def save_session(self, **save_session_kwargs):
-        print('save')
-
-        # FIXME: refactor config key names as @property
+        # FIXME: refactor config key names as @property?
         self.config.set('token-type', self.token_type)
         self.config.set('expires-at', str(int(self._expires_at)))
         self.config.set('scopes', '\n'.join(self.scope))
@@ -82,8 +85,6 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
     @staticmethod
     @overrides
     def load_session(**load_session_kwargs):
-        print('load')
-
         config = OneDriveFileConfigSession.config
         expires_at = config.get('expires-at')
 
@@ -104,6 +105,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         session._expires_at = int(expires_at)
         return session
 
+# FIXME: refresh token based on expires-at
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -132,15 +134,20 @@ class OneDriveClient (Client):
 
     @overrides
     def authenticate_session(self):
-        # FIXME: how often to refresh?
         self.auth_provider.load_session()
         self.auth_provider.refresh_token()
 
     @overrides
     def authenticate_url(self, url):
-        # FIXME: handle deny
-        # FIXME: handle parser errors
-        auth_code = parse_qs(urlparse(url).query)['code']
+        try:
+            parsed_url = urlparse(url)
+        except ValueError:
+            raise Error('Invalid authentication URL:', url)
+
+        auth_code = parse_qs(parsed_url.query).get('code')
+
+        if auth_code is None:
+            raise Error('No authentication code found in URL:', url)
 
         self.auth_provider.authenticate(
             auth_code, self.redirect_url, self.client_secret)
@@ -170,7 +177,6 @@ class OneDriveClient (Client):
 services = {'onedrive': OneDriveClient}
 
 def do_login_command(args):
-    print('login', args)
     client = services[args.service]()
 
     if args.auth_url is None:
@@ -179,12 +185,10 @@ def do_login_command(args):
         client.authenticate_url(args.auth_url)
 
 def do_start_command(args):
-    print('start', args)
-    sync = services[args.service]()
-    sync.authenticate_session()
-    sync.list_changes()
+    client = services[args.service]()
+    client.authenticate_session()
+    client.list_changes()
 
-# FIXME: add logout command
 if __name__ == "__main__":
     parser = ArgumentParser()
     command_parser = parser.add_subparsers(dest = 'command')
@@ -200,7 +204,11 @@ if __name__ == "__main__":
     start_parser.set_defaults(func = do_start_command)
 
     args = parser.parse_args()
-    args.func(args)
+
+    try:
+        args.func(args)
+    except Error as error:
+        sys.exit(str(error))
 
 # from boxsdk import OAuth2, Client
 #
