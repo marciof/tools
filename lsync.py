@@ -3,6 +3,8 @@
 # standard
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
+import logging
+from logging.handlers import SysLogHandler
 import os
 import os.path
 import sys
@@ -14,6 +16,15 @@ import appdirs
 import onedrivesdk
 import onedrivesdk.session
 from overrides import overrides
+
+app_name = 'lsync'
+
+syslog_handler = SysLogHandler(address = '/dev/log')
+syslog_handler.ident = app_name + ': '
+
+logger = logging.getLogger('MyLogger')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(syslog_handler)
 
 class Error (Exception):
     def __str__(self):
@@ -27,7 +38,7 @@ class FileConfig:
 
     def __init__(self, folder):
         self.path = os.path.join(
-            appdirs.user_config_dir(appname = 'lsync'),
+            appdirs.user_config_dir(appname = app_name),
             folder)
 
     def set(self, filename, value):
@@ -58,15 +69,13 @@ class Client (metaclass = ABCMeta):
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
-    # FIXME: reuse name from services command line
+    # FIXME: reuse name from services command line?
     config = FileConfig('onedrive')
 
     @overrides
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    @overrides
     def save_session(self, **save_session_kwargs):
+        logger.debug('Saving session')
+
         # FIXME: refactor config key names as @property?
         self.config.set('token-type', self.token_type)
         self.config.set('expires-at', str(int(self._expires_at)))
@@ -85,10 +94,13 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
     @staticmethod
     @overrides
     def load_session(**load_session_kwargs):
+        logger.debug('Loading session')
+
         config = OneDriveFileConfigSession.config
         expires_at = config.get('expires-at')
 
         if expires_at is None:
+            logger.warning('Assuming no session, no expires-at config found')
             raise NoFileConfigFound()
 
         session = OneDriveFileConfigSession(
@@ -134,11 +146,15 @@ class OneDriveClient (Client):
 
     @overrides
     def authenticate_session(self):
+        logger.debug('Authenticating from saved session')
+
         self.auth_provider.load_session()
         self.auth_provider.refresh_token()
 
     @overrides
     def authenticate_url(self, url):
+        logger.debug('Authenticating from auth URL')
+
         try:
             parsed_url = urlparse(url)
         except ValueError:
@@ -154,10 +170,9 @@ class OneDriveClient (Client):
         self.auth_provider.save_session()
 
     def list_changes(self):
-        # FIXME: use logging (syslog?)
-        print('Checking for changes')
+        logger.debug('Listing changes')
 
-        # FIXME: persist token from last check
+        # FIXME: persist token from last check and at which file for resume
         token = None
 
         collection_page = self.client.item(id = 'root').delta(token).get()
@@ -171,7 +186,7 @@ class OneDriveClient (Client):
 
     @overrides
     def login(self):
-        # FIXME: Opera debug output?
+        logger.debug('Opening browser for user login')
         webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
 services = {'onedrive': OneDriveClient}
@@ -190,6 +205,8 @@ def do_start_command(args):
     client.list_changes()
 
 if __name__ == "__main__":
+    logger.debug('Parsing arguments')
+
     parser = ArgumentParser()
     command_parser = parser.add_subparsers(dest = 'command')
     command_parser.required = True
