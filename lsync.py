@@ -7,6 +7,7 @@ import logging
 from logging.handlers import SysLogHandler
 import os
 import os.path
+import stat
 import sys
 from urllib.parse import parse_qs, urlparse
 import webbrowser
@@ -33,19 +34,22 @@ class Error (Exception):
 class NoFileConfigFound (Error):
     pass
 
-# FIXME: proper permissions for sensitive data such as session
 class FileConfig:
 
-    def __init__(self, folder):
+    def __init__(self, app_name, folder):
         self.path = os.path.join(
             appdirs.user_config_dir(appname = app_name),
             folder)
 
-    def set(self, filename, value):
+    def set(self, filename, value, is_private = False):
         os.makedirs(self.path, exist_ok = True)
+        path = os.path.join(self.path, filename)
 
-        with open(os.path.join(self.path, filename), 'w') as config:
+        with open(path, 'w') as config:
             print(value, file = config, end = '')
+
+        if is_private:
+            os.chmod(path, stat.S_IRWXU)
 
     def get(self, filename):
         try:
@@ -69,24 +73,23 @@ class Client (metaclass = ABCMeta):
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
-    # FIXME: reuse name from services command line?
-    config = FileConfig('onedrive')
+    config = FileConfig(app_name, 'onedrive')
 
     @overrides
     def save_session(self, **save_session_kwargs):
         logger.debug('Saving session')
 
-        # FIXME: refactor config key names as @property?
         self.config.set('token-type', self.token_type)
         self.config.set('expires-at', str(int(self._expires_at)))
         self.config.set('scopes', '\n'.join(self.scope))
-        self.config.set('access-token', self.access_token)
+        self.config.set('access-token', self.access_token, is_private = True)
         self.config.set('client-id', self.client_id)
         self.config.set('auth-server-url', self.auth_server_url)
         self.config.set('redirect-uri', self.redirect_uri)
 
         if self.refresh_token is not None:
-            self.config.set('refresh-token', self.refresh_token)
+            self.config.set('refresh-token', self.refresh_token,
+                is_private = True)
 
         if self.client_secret is not None:
             self.config.set('client-secret', self.client_secret)
@@ -213,7 +216,8 @@ if __name__ == "__main__":
 
     login_parser = command_parser.add_parser('login', help = 'login to service')
     login_parser.add_argument('service', help = 'service', choices = services)
-    login_parser.add_argument('auth_url', help = 'authentication URL', nargs = '?')
+    login_parser.add_argument('auth_url',
+        help = 'authentication URL', nargs = '?')
     login_parser.set_defaults(func = do_login_command)
 
     start_parser = command_parser.add_parser('start', help = 'start sync')
