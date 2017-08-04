@@ -7,6 +7,7 @@ import logging
 from logging.handlers import SysLogHandler
 import os
 import os.path
+import re
 import stat
 import sys
 from urllib.parse import parse_qs, urlparse
@@ -73,6 +74,7 @@ class Client (metaclass = ABCMeta):
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
+    # FIXME: make instance field, and reuse in the client class
     config = FileConfig(app_name, 'onedrive')
 
     @overrides
@@ -172,20 +174,32 @@ class OneDriveClient (Client):
             auth_code, self.redirect_url, self.client_secret)
         self.auth_provider.save_session()
 
-    def list_changes(self):
-        logger.debug('Listing changes')
-
-        # FIXME: persist token from last check and at which file for resume
+    # FIXME: persist token from last check and at which file for resume
+    # FIXME: assumes folders come before files
+    # FIXME: permissions
+    def download(self, folder):
+        logger.debug('Downloading to %s', folder)
         token = None
-
         collection_page = self.client.item(id = 'root').delta(token).get()
 
         for item in collection_page:
-            print('-', item.id, item.name, item.parent_reference.path)
+            if 'root' in item._prop_dict:
+                logger.debug('Skipping root item with ID %s', item.id)
+                continue
 
-        print('#', collection_page.token)
-        print('#', collection_page.next_page_link)
-        print('#', collection_page.delta_link)
+            cloud_path = os.path.join(
+                re.sub('^[^:]+:', os.path.curdir, item.parent_reference.path),
+                item.name)
+
+            local_path = os.path.join(folder, cloud_path)
+            logger.debug('Cloud item with ID %s at %s', item.id, cloud_path)
+
+            if item.folder:
+                logger.debug('Creating folder at %s', local_path)
+                os.makedirs(local_path, exist_ok = True)
+            else:
+                logger.debug('Creating file at %s', local_path)
+                self.client.item(id = item.id).download(local_path)
 
     @overrides
     def login(self):
@@ -205,7 +219,7 @@ def do_login_command(args):
 def do_start_command(args):
     client = services[args.service]()
     client.authenticate_session()
-    client.list_changes()
+    client.download('foobar')
 
 if __name__ == "__main__":
     logger.debug('Parsing arguments')
