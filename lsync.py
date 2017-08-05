@@ -30,7 +30,7 @@ logger.addHandler(syslog_handler)
 
 class Error (Exception):
     def __str__(self):
-        return ' '.join(self.args)
+        return ' '.join(map(str, self.args))
 
 class NoFileConfigFound (Error):
     pass
@@ -170,13 +170,16 @@ class OneDriveClient (Client):
         if auth_code is None:
             raise Error('No authentication code found in URL:', url)
 
-        self.auth_provider.authenticate(
-            auth_code, self.redirect_url, self.client_secret)
+        try:
+            self.auth_provider.authenticate(
+                auth_code, self.redirect_url, self.client_secret)
+        except Exception as e:
+            raise Error('Invalid authentication code:', e)
+
         self.auth_provider.save_session()
 
     # FIXME: persist token from last check and at which file for resume
-    # FIXME: assumes folders come before files
-    # FIXME: permissions
+    # FIXME: permissions, timestamps
     def download(self, folder):
         logger.debug('Downloading to %s', folder)
         token = None
@@ -216,6 +219,7 @@ def do_login_command(args):
     else:
         client.authenticate_url(args.auth_url)
 
+# FIXME: receive where to download to via command line
 def do_start_command(args):
     client = services[args.service]()
     client.authenticate_session()
@@ -224,6 +228,7 @@ def do_start_command(args):
 if __name__ == "__main__":
     logger.debug('Parsing arguments')
 
+    # FIXME: verbose option to log to stdout
     parser = ArgumentParser()
     command_parser = parser.add_subparsers(dest = 'command')
     command_parser.required = True
