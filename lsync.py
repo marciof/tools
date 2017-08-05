@@ -4,6 +4,7 @@
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
 import logging
+from logging import StreamHandler
 from logging.handlers import SysLogHandler
 import os
 import os.path
@@ -232,16 +233,17 @@ def do_login_command(args):
         client.authenticate_url(args.auth_url)
 
 # FIXME: receive where to download to via command line
+# FIXME: prevent overwriting existing files?
 def do_start_command(args):
     client = services[args.service]()
     client.authenticate_session()
     client.download('foobar')
 
 if __name__ == '__main__':
-    logger.debug('Parse arguments')
-
-    # FIXME: verbose option to log to stdout
     parser = ArgumentParser()
+    parser.add_argument('-v', help = 'verbose output', action = 'store_true',
+        dest = 'is_verbose')
+
     command_parser = parser.add_subparsers(dest = 'command')
     command_parser.required = True
 
@@ -256,6 +258,9 @@ if __name__ == '__main__':
     start_parser.set_defaults(func = do_start_command)
 
     args = parser.parse_args()
+
+    if args.is_verbose:
+        logger.addHandler(StreamHandler())
 
     try:
         args.func(args)
