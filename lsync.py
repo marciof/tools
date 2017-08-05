@@ -15,6 +15,7 @@ import webbrowser
 
 # external
 import appdirs
+import dateutil.parser
 import onedrivesdk
 import onedrivesdk.session
 from overrides import overrides
@@ -79,7 +80,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
     @overrides
     def save_session(self, **save_session_kwargs):
-        logger.debug('Saving session')
+        logger.debug('Save session')
 
         self.config.set('token-type', self.token_type)
         self.config.set('expires-at', str(int(self._expires_at)))
@@ -99,7 +100,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
     @staticmethod
     @overrides
     def load_session(**load_session_kwargs):
-        logger.debug('Loading session')
+        logger.debug('Load session')
 
         config = OneDriveFileConfigSession.config
         expires_at = config.get('expires-at')
@@ -121,6 +122,14 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
         session._expires_at = int(expires_at)
         return session
+
+def is_root_item(item):
+    return 'root' in item._prop_dict
+
+def localize_item_last_modified_datetime(item):
+    return dateutil.parser\
+        .parse(item._prop_dict['lastModifiedDateTime'])\
+        .astimezone()
 
 # FIXME: refresh token based on expires-at
 class OneDriveClient (Client):
@@ -151,14 +160,14 @@ class OneDriveClient (Client):
 
     @overrides
     def authenticate_session(self):
-        logger.debug('Authenticating from saved session')
+        logger.debug('Authenticate from saved session')
 
         self.auth_provider.load_session()
         self.auth_provider.refresh_token()
 
     @overrides
     def authenticate_url(self, url):
-        logger.debug('Authenticating from auth URL')
+        logger.debug('Authenticate from auth URL %s', url)
 
         try:
             parsed_url = urlparse(url)
@@ -179,15 +188,14 @@ class OneDriveClient (Client):
         self.auth_provider.save_session()
 
     # FIXME: persist token from last check and at which file for resume
-    # FIXME: permissions, timestamps
     def download(self, folder):
-        logger.debug('Downloading to %s', folder)
+        logger.debug('Download to %s', folder)
         token = None
         collection_page = self.client.item(id = 'root').delta(token).get()
 
         for item in collection_page:
-            if 'root' in item._prop_dict:
-                logger.debug('Skipping root item with ID %s', item.id)
+            if is_root_item(item):
+                logger.debug('Skip root item with ID %s', item.id)
                 continue
 
             cloud_path = os.path.join(
@@ -195,18 +203,22 @@ class OneDriveClient (Client):
                 item.name)
 
             local_path = os.path.join(folder, cloud_path)
-            logger.debug('Cloud item with ID %s at %s', item.id, cloud_path)
+            logger.debug('Cloud item with ID %s', item.id)
 
             if item.folder:
-                logger.debug('Creating folder at %s', local_path)
+                logger.debug('Create folder %s', cloud_path)
                 os.makedirs(local_path, exist_ok = True)
             else:
-                logger.debug('Creating file at %s', local_path)
+                logger.debug('Create file %s', cloud_path)
                 self.client.item(id = item.id).download(local_path)
+
+            mtime = localize_item_last_modified_datetime(item)
+            logger.debug('Set modified time to %s', mtime)
+            os.utime(local_path, (mtime.timestamp(),) * 2)
 
     @overrides
     def login(self):
-        logger.debug('Opening browser for user login')
+        logger.debug('Open browser for user login')
         webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
 services = {'onedrive': OneDriveClient}
@@ -225,8 +237,8 @@ def do_start_command(args):
     client.authenticate_session()
     client.download('foobar')
 
-if __name__ == "__main__":
-    logger.debug('Parsing arguments')
+if __name__ == '__main__':
+    logger.debug('Parse arguments')
 
     # FIXME: verbose option to log to stdout
     parser = ArgumentParser()
