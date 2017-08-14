@@ -124,6 +124,12 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         session._expires_at = int(expires_at)
         return session
 
+def get_package_item_type(item):
+    return item._prop_dict['package']['type']
+
+def is_package_item(item):
+    return 'package' in item._prop_dict
+
 def is_root_item(item):
     return 'root' in item._prop_dict
 
@@ -189,25 +195,35 @@ class OneDriveClient (Client):
         self.auth_provider.save_session()
 
     # FIXME: persist token from last check and at which file for resume
+    # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
+    # FIXME: refactor into iterate+filter
+    # FIXME: download progress for bigger files
     def download(self, folder):
         logger.debug('Download to %s', folder)
         token = None
+
+        logger.debug('List delta changes')
         collection_page = self.client.item(id = 'root').delta(token).get()
 
         for item in collection_page:
-            if is_root_item(item):
-                logger.debug('Skip root item with ID %s', item.id)
-                continue
-
             cloud_path = os.path.join(
                 re.sub('^[^:]+:', os.path.curdir, item.parent_reference.path),
                 item.name)
+
+            if is_root_item(item):
+                logger.debug('Skip root item with ID %s at %s',
+                    item.id, cloud_path)
+                continue
 
             local_path = os.path.join(folder, cloud_path)
             logger.debug('Cloud item with ID %s', item.id)
 
             if item.folder:
                 logger.debug('Create folder %s', cloud_path)
+                os.makedirs(local_path, exist_ok = True)
+            elif is_package_item(item):
+                logger.debug('Create package of type %s as folder %s',
+                    get_package_item_type(item), cloud_path)
                 os.makedirs(local_path, exist_ok = True)
             else:
                 logger.debug('Create file %s', cloud_path)
@@ -266,37 +282,3 @@ if __name__ == '__main__':
         args.func(args)
     except Error as error:
         sys.exit(str(error))
-
-# from boxsdk import OAuth2, Client
-#
-# # FIXME: handle client secret storage
-# import os
-#
-# oauth = OAuth2(
-#     client_id = os.environ['BOX_API_CLIENT_ID'],
-#     client_secret = os.environ['BOX_API_CLIENT_SECRET'],
-#     access_token = None,
-#     refresh_token = None)
-#
-# auth_url, csrf_token = oauth.get_authorization_url('https://api.box.com/oauth2')
-# print(auth_url)
-# print(csrf_token)
-#
-# # FIXME: allow URL
-# # FIXME: verify CSRF
-# auth_code = input('Paste your code here: ')
-#
-# # FIXME: save session
-# # FIXME: handle deny
-# access_token, refresh_token = oauth.authenticate(auth_code)
-#
-# print('access token', access_token)
-# print('refresh token', refresh_token)
-#
-# client = Client(oauth)
-# root_folder = client.folder(folder_id='0').get()
-# print('folder owner: ' + root_folder.owned_by['login'])
-# print('folder name: ' + root_folder['name'])
-#
-# # FIXME: get changes
-# print(root_folder.get_items(limit=100, offset=0))
