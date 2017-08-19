@@ -61,6 +61,9 @@ class FileConfig:
         except FileNotFoundError:
             return None
 
+    def __str__(self):
+        return self.path
+
 class Client (metaclass = ABCMeta):
     @abstractmethod
     def authenticate_session(self):
@@ -76,34 +79,31 @@ class Client (metaclass = ABCMeta):
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
-    # FIXME: make instance field, and reuse in the client class
-    config = FileConfig(app_name, 'onedrive')
-
     @overrides
-    def save_session(self, **save_session_kwargs):
-        logger.debug('Save session')
+    def save_session(self, **kwargs):
+        config = kwargs['config']
+        logger.debug('Save session at %s', config)
 
-        self.config.set('token-type', self.token_type)
-        self.config.set('expires-at', str(int(self._expires_at)))
-        self.config.set('scopes', '\n'.join(self.scope))
-        self.config.set('access-token', self.access_token, is_private = True)
-        self.config.set('client-id', self.client_id)
-        self.config.set('auth-server-url', self.auth_server_url)
-        self.config.set('redirect-uri', self.redirect_uri)
+        config.set('token-type', self.token_type)
+        config.set('expires-at', str(int(self._expires_at)))
+        config.set('scopes', '\n'.join(self.scope))
+        config.set('access-token', self.access_token, is_private = True)
+        config.set('client-id', self.client_id)
+        config.set('auth-server-url', self.auth_server_url)
+        config.set('redirect-uri', self.redirect_uri)
 
         if self.refresh_token is not None:
-            self.config.set('refresh-token', self.refresh_token,
+            config.set('refresh-token', self.refresh_token,
                 is_private = True)
 
         if self.client_secret is not None:
-            self.config.set('client-secret', self.client_secret)
+            config.set('client-secret', self.client_secret)
 
     @staticmethod
     @overrides
-    def load_session(**load_session_kwargs):
-        logger.debug('Load session')
-
-        config = OneDriveFileConfigSession.config
+    def load_session(**kwargs):
+        config = kwargs['config']
+        logger.debug('Load session at %s', config)
         expires_at = config.get('expires-at')
 
         if expires_at is None:
@@ -138,7 +138,6 @@ def localize_item_last_modified_datetime(item):
         .parse(item._prop_dict['lastModifiedDateTime'])\
         .astimezone()
 
-# FIXME: refresh token based on expires-at?
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -148,13 +147,18 @@ class OneDriveClient (Client):
             redirect_url = 'https://login.microsoftonline.com/common/oauth2/nativeclient',
             scopes = ('wl.signin', 'wl.offline_access', 'onedrive.readwrite'),
             http_provider = None,
-            session_type = OneDriveFileConfigSession):
+            session_type = OneDriveFileConfigSession,
+            config = None):
 
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
 
+        if config is None:
+            config = FileConfig(app_name, 'onedrive')
+
         self.client_secret = client_secret
         self.redirect_url = redirect_url
+        self.config = config
 
         self.auth_provider = onedrivesdk.AuthProvider(
             http_provider = http_provider,
@@ -169,7 +173,7 @@ class OneDriveClient (Client):
     def authenticate_session(self):
         logger.debug('Authenticate from saved session')
 
-        self.auth_provider.load_session()
+        self.auth_provider.load_session(config = self.config)
         self.auth_provider.refresh_token()
 
     @overrides
@@ -192,7 +196,7 @@ class OneDriveClient (Client):
         except Exception as e:
             raise Error('Invalid authentication code:', e)
 
-        self.auth_provider.save_session()
+        self.auth_provider.save_session(config = self.config)
 
     # FIXME: persist token from last check and at which file for resume
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
