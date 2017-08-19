@@ -84,6 +84,38 @@ class Client (metaclass = ABCMeta):
     def login(self):
         pass
 
+    def parse_auth_url(self, url, code_param_name, csrf_param_name = None):
+        logger.debug('Parse authentication URL %s', url)
+
+        try:
+            parsed_url = urlparse(url)
+        except ValueError:
+            raise Error('Invalid authentication URL:', url)
+
+        query_string = parse_qs(parsed_url.query)
+        auth_code = query_string.get(code_param_name)
+
+        if auth_code is None:
+            raise Error('No authentication code found in URL:', url)
+        elif len(auth_code) > 1:
+            raise Error('Multiple authentication codes found in URL:', url)
+        else:
+            [auth_code] = auth_code
+
+        if csrf_param_name is None:
+            return auth_code
+
+        csrf_token = query_string.get(csrf_param_name)
+
+        if csrf_token is None:
+            raise Error('No CSRF token found in URL:', url)
+        elif len(csrf_token) > 1:
+            raise Error('Multiple CSRF tokens found in URL:', url)
+        else:
+            [csrf_token] = csrf_token
+
+        return auth_code, csrf_token
+
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
     @overrides
@@ -131,20 +163,6 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         session._expires_at = int(expires_at)
         return session
 
-def get_package_item_type(item):
-    return item._prop_dict['package']['type']
-
-def is_package_item(item):
-    return 'package' in item._prop_dict
-
-def is_root_item(item):
-    return 'root' in item._prop_dict
-
-def localize_item_last_modified_datetime(item):
-    return dateutil.parser\
-        .parse(item._prop_dict['lastModifiedDateTime'])\
-        .astimezone()
-
 # FIXME: handle misconfiguration
 class OneDriveClient (Client):
 
@@ -188,18 +206,7 @@ class OneDriveClient (Client):
     @overrides
     def authenticate_url(self, url):
         logger.debug('Authenticate from auth URL %s', url)
-
-        try:
-            parsed_url = urlparse(url)
-        except ValueError:
-            raise Error('Invalid authentication URL:', url)
-
-        auth_code = parse_qs(parsed_url.query).get('code')
-
-        if auth_code is None:
-            raise Error('No authentication code found in URL:', url)
-        else:
-            [auth_code] = auth_code
+        auth_code = self.parse_auth_url(url, code_param_name = 'code')
 
         try:
             self.auth_provider.authenticate(
@@ -208,6 +215,11 @@ class OneDriveClient (Client):
             raise Error('Invalid authentication code:', e)
 
         self.auth_provider.save_session(config = self.config)
+
+    @overrides
+    def login(self):
+        logger.debug('Open browser for user login')
+        webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
     # FIXME: persist token from last check and at which file for resuming
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
@@ -227,7 +239,7 @@ class OneDriveClient (Client):
                 re.sub('^[^:]+:', os.path.curdir, item.parent_reference.path),
                 item.name)
 
-            if is_root_item(item):
+            if self.is_root_item(item):
                 logger.debug('Skip root item with ID %s at %s',
                     item.id, cloud_path)
                 continue
@@ -236,10 +248,10 @@ class OneDriveClient (Client):
             logger.debug('Cloud item with ID %s', item.id)
             is_folder = item.folder
 
-            if is_package_item(item):
+            if self.is_package_item(item):
                 is_folder = True
                 logger.debug('Handle package of type %s as folder %s',
-                    get_package_item_type(item), cloud_path)
+                    self.get_package_item_type(item), cloud_path)
 
             if is_folder:
                 if item.deleted:
@@ -256,14 +268,23 @@ class OneDriveClient (Client):
                     logger.debug('Create file %s', cloud_path)
                     self.client.item(id = item.id).download(local_path)
 
-            mtime = localize_item_last_modified_datetime(item)
+            mtime = self.localize_item_last_modified_datetime(item)
             logger.debug('Set modified time to %s', mtime)
             os.utime(local_path, (mtime.timestamp(),) * 2)
 
-    @overrides
-    def login(self):
-        logger.debug('Open browser for user login')
-        webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
+    def get_package_item_type(self, item):
+        return item._prop_dict['package']['type']
+
+    def is_package_item(self, item):
+        return 'package' in item._prop_dict
+
+    def is_root_item(self, item):
+        return 'root' in item._prop_dict
+
+    def localize_item_last_modified_datetime(self, item):
+        return dateutil.parser \
+            .parse(item._prop_dict['lastModifiedDateTime']) \
+            .astimezone()
 
 # FIXME: handle misconfiguration
 # FIXME: download
@@ -312,43 +333,25 @@ class BoxClient (Client):
         user = self.client.user(user_id = 'me').get()
         logger.debug('Logged in as %s with ID %s', user['name'], user['id'])
 
-    # FIXME: dup code
     @overrides
     def authenticate_url(self, url):
         logger.debug('Authenticate from auth URL %s', url)
 
-        try:
-            parsed_url = urlparse(url)
-        except ValueError:
-            raise Error('Invalid authentication URL:', url)
-
-        query_string = parse_qs(parsed_url.query)
-        auth_code = query_string.get('code')
-        csrf_token = query_string.get('state')
-
-        if auth_code is None:
-            raise Error('No authentication code found in URL:', url)
-        else:
-            [auth_code] = auth_code
-
-        if csrf_token is None:
-            raise Error('No CSRF token found in URL:', url)
-        else:
-            [csrf_token] = csrf_token
+        auth_code, csrf_token = self.parse_auth_url(url,
+            code_param_name = 'code',
+            csrf_param_name = 'state')
 
         stored_csrf_token = self.config.get('csrf-token')
 
         if csrf_token != stored_csrf_token:
             raise Error('CSRF token mismatch (did you login recently?)')
-        else:
-            self.config.unset('csrf-token')
 
         access_token, refresh_token = self.oauth.authenticate(auth_code)
         self.config.set('access-token', access_token, is_private = True)
         self.config.set('refresh-token', refresh_token, is_private = True)
+        self.config.unset('csrf-token')
         self.cached_oauth = None
 
-    # FIXME: dup code
     @overrides
     def login(self):
         logger.debug('Open browser for user login')
@@ -380,6 +383,7 @@ def do_start_command(args):
     client.authenticate_session()
     client.download('foobar')
 
+# FIXME: make logger configurable for each client
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-v', help = 'verbose output', action = 'store_true',
