@@ -17,6 +17,7 @@ import webbrowser
 
 # external
 import appdirs
+import boxsdk
 import dateutil.parser
 import onedrivesdk
 import onedrivesdk.session
@@ -35,6 +36,7 @@ class Error (Exception):
     def __str__(self):
         return ' '.join(map(str, self.args))
 
+# FIXME: enforce filenames don't contain path meta-characters
 class FileConfig:
 
     def __init__(self, app_name, folder):
@@ -54,12 +56,17 @@ class FileConfig:
 
     def get(self, filename):
         config = pathlib.Path(os.path.join(self.path, filename))
-        logger.debug('Read config at %s', config)
+        logger.debug('Get config at %s', config)
 
         try:
             return config.read_text()
         except FileNotFoundError:
             return None
+
+    def unset(self, filename):
+        config = os.path.join(self.path, filename)
+        logger.debug('Unset config at %s', config)
+        os.remove(config)
 
     def __str__(self):
         return self.path
@@ -138,6 +145,7 @@ def localize_item_last_modified_datetime(item):
         .parse(item._prop_dict['lastModifiedDateTime'])\
         .astimezone()
 
+# FIXME: handle misconfiguration
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -153,6 +161,7 @@ class OneDriveClient (Client):
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
 
+        # FIXME: make app name and folder configurable
         if config is None:
             config = FileConfig(app_name, 'onedrive')
 
@@ -189,6 +198,8 @@ class OneDriveClient (Client):
 
         if auth_code is None:
             raise Error('No authentication code found in URL:', url)
+        else:
+            [auth_code] = auth_code
 
         try:
             self.auth_provider.authenticate(
@@ -198,7 +209,7 @@ class OneDriveClient (Client):
 
         self.auth_provider.save_session(config = self.config)
 
-    # FIXME: persist token from last check and at which file for resume
+    # FIXME: persist token from last check and at which file for resuming
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
     # FIXME: handle network disconnects and timeouts
@@ -254,7 +265,104 @@ class OneDriveClient (Client):
         logger.debug('Open browser for user login')
         webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
-services = {'onedrive': OneDriveClient}
+# FIXME: handle misconfiguration
+# FIXME: download
+class BoxClient (Client):
+
+    # FIXME: handle client secret storage
+    def __init__(self,
+            client_id = None,
+            client_secret = None,
+            redirect_url = 'https://api.box.com/oauth2',
+            config = None):
+
+        if client_id is None:
+            client_id = os.environ['BOX_API_CLIENT_ID']
+
+        if client_secret is None:
+            client_secret = os.environ['BOX_API_CLIENT_SECRET']
+
+        # FIXME: make app name and folder configurable
+        if config is None:
+            config = FileConfig(app_name, 'box')
+
+        self.client = None
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_url = redirect_url
+        self.config = config
+        self.cached_oauth = None
+
+    @property
+    def oauth(self):
+        if self.cached_oauth is None:
+            self.cached_oauth = boxsdk.OAuth2(
+                client_id = self.client_id,
+                client_secret = self.client_secret,
+                access_token = self.config.get('access-token'),
+                refresh_token = self.config.get('refresh-token'))
+
+        return self.cached_oauth
+
+    @overrides
+    def authenticate_session(self):
+        logger.debug('Authenticate from saved session')
+        self.client = boxsdk.Client(self.oauth)
+
+        user = self.client.user(user_id = 'me').get()
+        logger.debug('Logged in as %s with ID %s', user['name'], user['id'])
+
+    # FIXME: dup code
+    @overrides
+    def authenticate_url(self, url):
+        logger.debug('Authenticate from auth URL %s', url)
+
+        try:
+            parsed_url = urlparse(url)
+        except ValueError:
+            raise Error('Invalid authentication URL:', url)
+
+        query_string = parse_qs(parsed_url.query)
+        auth_code = query_string.get('code')
+        csrf_token = query_string.get('state')
+
+        if auth_code is None:
+            raise Error('No authentication code found in URL:', url)
+        else:
+            [auth_code] = auth_code
+
+        if csrf_token is None:
+            raise Error('No CSRF token found in URL:', url)
+        else:
+            [csrf_token] = csrf_token
+
+        stored_csrf_token = self.config.get('csrf-token')
+
+        if csrf_token != stored_csrf_token:
+            raise Error('CSRF token mismatch (did you login recently?)')
+        else:
+            self.config.unset('csrf-token')
+
+        access_token, refresh_token = self.oauth.authenticate(auth_code)
+        self.config.set('access-token', access_token, is_private = True)
+        self.config.set('refresh-token', refresh_token, is_private = True)
+        self.cached_oauth = None
+
+    # FIXME: dup code
+    @overrides
+    def login(self):
+        logger.debug('Open browser for user login')
+
+        auth_url, csrf_token = self.oauth.get_authorization_url(
+            self.redirect_url)
+
+        self.config.set('csrf-token', csrf_token, is_private = True)
+        webbrowser.open(auth_url)
+
+services = {
+    'box': BoxClient,
+    'onedrive': OneDriveClient,
+}
 
 def do_login_command(args):
     client = services[args.service]()
@@ -266,7 +374,7 @@ def do_login_command(args):
 
 # FIXME: receive where to download to via command line
 # FIXME: prevent overwriting existing files?
-# FIXME: add box sync
+# FIXME: sandbox download folder (never modify anything outside of it)
 def do_start_command(args):
     client = services[args.service]()
     client.authenticate_session()
