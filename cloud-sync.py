@@ -36,18 +36,18 @@ class Error (Exception):
     def __str__(self):
         return ' '.join(map(str, self.args))
 
-# FIXME: enforce filenames don't contain path meta-characters
 class FileConfig:
 
     def __init__(self, app_name, folder):
-        self.path = os.path.join(
+        self.path_template = pathlib.Path(
             appdirs.user_config_dir(appname = app_name),
-            folder)
+            folder,
+            'NAME_PLACEHOLDER')
 
     def set(self, filename, value, is_private = False):
-        os.makedirs(self.path, exist_ok = True)
-        config = pathlib.Path(os.path.join(self.path, filename))
-        logger.debug('Set config at %s', config)
+        os.makedirs(self.path_template.parent, exist_ok = True)
+        config = self.path_template.with_name(filename)
+        logger.debug('Set config at %s', str(config))
 
         if is_private:
             config.touch(mode = stat.S_IRWXU ^ stat.S_IXUSR, exist_ok = True)
@@ -55,8 +55,8 @@ class FileConfig:
         config.write_text(value)
 
     def get(self, filename):
-        config = pathlib.Path(os.path.join(self.path, filename))
-        logger.debug('Get config at %s', config)
+        config = self.path_template.with_name(filename)
+        logger.debug('Get config at %s', str(config))
 
         try:
             return config.read_text()
@@ -64,12 +64,12 @@ class FileConfig:
             return None
 
     def unset(self, filename):
-        config = os.path.join(self.path, filename)
-        logger.debug('Unset config at %s', config)
+        config = self.path_template.with_name(filename)
+        logger.debug('Unset config at %s', str(config))
         os.remove(config)
 
     def __str__(self):
-        return self.path
+        return str(self.path_template.parent)
 
 class Client (metaclass = ABCMeta):
     @abstractmethod
@@ -164,6 +164,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         return session
 
 # FIXME: handle misconfiguration
+# FIXME: renew refresh token
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -288,6 +289,7 @@ class OneDriveClient (Client):
 
 # FIXME: handle misconfiguration
 # FIXME: download
+# FIXME: renew refresh token
 class BoxClient (Client):
 
     # FIXME: handle client secret storage
@@ -384,6 +386,7 @@ def do_start_command(args):
     client.download('foobar')
 
 # FIXME: make logger configurable for each client
+# FIXME: unit test
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-v', help = 'verbose output', action = 'store_true',
