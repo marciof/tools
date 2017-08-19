@@ -8,6 +8,7 @@ from logging import StreamHandler
 from logging.handlers import SysLogHandler
 import os
 import os.path
+import pathlib
 import re
 import stat
 import sys
@@ -34,9 +35,6 @@ class Error (Exception):
     def __str__(self):
         return ' '.join(map(str, self.args))
 
-class NoFileConfigFound (Error):
-    pass
-
 class FileConfig:
 
     def __init__(self, app_name, folder):
@@ -44,22 +42,22 @@ class FileConfig:
             appdirs.user_config_dir(appname = app_name),
             folder)
 
-    # FIXME: remove execute permission
-    # FIXME: race condition between writing and setting permissions
     def set(self, filename, value, is_private = False):
         os.makedirs(self.path, exist_ok = True)
-        path = os.path.join(self.path, filename)
-
-        with open(path, 'w') as config:
-            print(value, file = config, end = '')
+        config = pathlib.Path(os.path.join(self.path, filename))
+        logger.debug('Set config at %s', config)
 
         if is_private:
-            os.chmod(path, stat.S_IRWXU)
+            config.touch(mode = stat.S_IRWXU ^ stat.S_IXUSR, exist_ok = True)
+
+        config.write_text(value)
 
     def get(self, filename):
+        config = pathlib.Path(os.path.join(self.path, filename))
+        logger.debug('Read config at %s', config)
+
         try:
-            with open(os.path.join(self.path, filename), 'r') as config:
-                return config.read()
+            return config.read_text()
         except FileNotFoundError:
             return None
 
@@ -110,7 +108,7 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
         if expires_at is None:
             logger.warning('Assuming no session, no expires-at config found')
-            raise NoFileConfigFound()
+            raise Error('No authenticated session (did you login?)')
 
         session = OneDriveFileConfigSession(
             token_type = config.get('token-type'),
@@ -140,7 +138,7 @@ def localize_item_last_modified_datetime(item):
         .parse(item._prop_dict['lastModifiedDateTime'])\
         .astimezone()
 
-# FIXME: refresh token based on expires-at
+# FIXME: refresh token based on expires-at?
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -199,6 +197,8 @@ class OneDriveClient (Client):
     # FIXME: persist token from last check and at which file for resume
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
+    # FIXME: handle network disconnects and timeouts
+    # FIXME: handle Ctrl-C
     # FIXME: too big, refactor
     def download(self, folder):
         logger.debug('Download to %s', folder)
@@ -262,6 +262,7 @@ def do_login_command(args):
 
 # FIXME: receive where to download to via command line
 # FIXME: prevent overwriting existing files?
+# FIXME: add box sync
 def do_start_command(args):
     client = services[args.service]()
     client.authenticate_session()
