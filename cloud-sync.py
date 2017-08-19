@@ -3,6 +3,7 @@
 # standard
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
+import json
 import logging
 from logging import StreamHandler
 from logging.handlers import SysLogHandler
@@ -18,6 +19,7 @@ import webbrowser
 # external
 import appdirs
 import boxsdk
+import boxsdk.exception
 import dateutil.parser
 import onedrivesdk
 import onedrivesdk.session
@@ -32,6 +34,7 @@ logger = logging.getLogger('MyLogger')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(syslog_handler)
 
+# FIXME: store original cause, if any
 class Error (Exception):
     def __str__(self):
         return ' '.join(map(str, self.args))
@@ -45,7 +48,7 @@ class FileConfig:
             'NAME_PLACEHOLDER')
 
     def set(self, filename, value, is_private = False):
-        os.makedirs(self.path_template.parent, exist_ok = True)
+        os.makedirs(str(self.path_template.parent), exist_ok = True)
         config = self.path_template.with_name(filename)
         logger.debug('Set config at %s', str(config))
 
@@ -64,8 +67,8 @@ class FileConfig:
             return None
 
     def unset(self, filename):
-        config = self.path_template.with_name(filename)
-        logger.debug('Unset config at %s', str(config))
+        config = str(self.path_template.with_name(filename))
+        logger.debug('Unset config at %s', config)
         os.remove(config)
 
     def __str__(self):
@@ -327,12 +330,19 @@ class BoxClient (Client):
 
         return self.cached_oauth
 
+    # FIXME: handle any Box exception
     @overrides
     def authenticate_session(self):
         logger.debug('Authenticate from saved session')
         self.client = boxsdk.Client(self.oauth)
 
-        user = self.client.user(user_id = 'me').get()
+        try:
+            user = self.client.user(user_id = 'me').get()
+        except boxsdk.exception.BoxOAuthException as error:
+            logger.debug('OAuth exception: %s', error)
+            message = json.loads(error._message.decode())
+            raise Error('Authentication failed:', message['error_description'])
+
         logger.debug('Logged in as %s with ID %s', user['name'], user['id'])
 
     @overrides
@@ -364,13 +374,13 @@ class BoxClient (Client):
         self.config.set('csrf-token', csrf_token, is_private = True)
         webbrowser.open(auth_url)
 
-services = {
+clients = {
     'box': BoxClient,
     'onedrive': OneDriveClient,
 }
 
 def do_login_command(args):
-    client = services[args.service]()
+    client = clients[args.service]()
 
     if args.auth_url is None:
         client.login()
@@ -381,7 +391,7 @@ def do_login_command(args):
 # FIXME: prevent overwriting existing files?
 # FIXME: sandbox download folder (never modify anything outside of it)
 def do_start_command(args):
-    client = services[args.service]()
+    client = clients[args.service]()
     client.authenticate_session()
     client.download('foobar')
 
@@ -396,13 +406,13 @@ if __name__ == '__main__':
     command_parser.required = True
 
     login_parser = command_parser.add_parser('login', help = 'login to service')
-    login_parser.add_argument('service', help = 'service', choices = services)
+    login_parser.add_argument('service', help = 'service', choices = clients)
     login_parser.add_argument('auth_url',
         help = 'authentication URL', nargs = '?')
     login_parser.set_defaults(func = do_login_command)
 
     start_parser = command_parser.add_parser('start', help = 'start sync')
-    start_parser.add_argument('service', help = 'service', choices = services)
+    start_parser.add_argument('service', help = 'service', choices = clients)
     start_parser.set_defaults(func = do_start_command)
 
     args = parser.parse_args()
