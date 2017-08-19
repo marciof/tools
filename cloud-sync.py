@@ -21,7 +21,7 @@ import onedrivesdk
 import onedrivesdk.session
 from overrides import overrides
 
-app_name = 'lsync'
+app_name = 'cloud-sync'
 
 syslog_handler = SysLogHandler(address = '/dev/log')
 syslog_handler.ident = app_name + ': '
@@ -44,6 +44,8 @@ class FileConfig:
             appdirs.user_config_dir(appname = app_name),
             folder)
 
+    # FIXME: remove execute permission
+    # FIXME: race condition between writing and setting permissions
     def set(self, filename, value, is_private = False):
         os.makedirs(self.path, exist_ok = True)
         path = os.path.join(self.path, filename)
@@ -196,16 +198,16 @@ class OneDriveClient (Client):
 
     # FIXME: persist token from last check and at which file for resume
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
-    # FIXME: refactor into iterate+filter
-    # FIXME: download progress for bigger files
+    # FIXME: download progress for bigger files?
+    # FIXME: too big, refactor
     def download(self, folder):
         logger.debug('Download to %s', folder)
-        token = None
+        delta_token = None
 
-        logger.debug('List delta changes')
-        collection_page = self.client.item(id = 'root').delta(token).get()
+        logger.debug('List changes with delta token %s', delta_token)
+        items = self.client.item(id = 'root').delta(delta_token).get()
 
-        for item in collection_page:
+        for item in items:
             cloud_path = os.path.join(
                 re.sub('^[^:]+:', os.path.curdir, item.parent_reference.path),
                 item.name)
@@ -217,17 +219,27 @@ class OneDriveClient (Client):
 
             local_path = os.path.join(folder, cloud_path)
             logger.debug('Cloud item with ID %s', item.id)
+            is_folder = item.folder
 
-            if item.folder:
-                logger.debug('Create folder %s', cloud_path)
-                os.makedirs(local_path, exist_ok = True)
-            elif is_package_item(item):
-                logger.debug('Create package of type %s as folder %s',
+            if is_package_item(item):
+                is_folder = True
+                logger.debug('Handle package of type %s as folder %s',
                     get_package_item_type(item), cloud_path)
-                os.makedirs(local_path, exist_ok = True)
+
+            if is_folder:
+                if item.deleted:
+                    logger.debug('Delete folder %s', cloud_path)
+                    os.rmdir(local_path)
+                else:
+                    logger.debug('Create folder %s', cloud_path)
+                    os.makedirs(local_path, exist_ok = True)
             else:
-                logger.debug('Create file %s', cloud_path)
-                self.client.item(id = item.id).download(local_path)
+                if item.deleted:
+                    logger.debug('Delete file %s', cloud_path)
+                    os.remove(local_path)
+                else:
+                    logger.debug('Create file %s', cloud_path)
+                    self.client.item(id = item.id).download(local_path)
 
             mtime = localize_item_last_modified_datetime(item)
             logger.debug('Set modified time to %s', mtime)
