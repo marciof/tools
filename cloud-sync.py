@@ -164,7 +164,6 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         session._expires_at = int(expires_at)
         return session
 
-# FIXME: handle misconfiguration
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -202,7 +201,11 @@ class OneDriveClient (Client):
         logger.debug('Authenticate from saved session')
 
         self.auth_provider.load_session(config = self.config)
-        self.auth_provider.refresh_token()
+
+        try:
+            self.auth_provider.refresh_token()
+        except Exception as e:
+            raise Error('Authentication failed') from e
 
     @overrides
     def authenticate_url(self, url):
@@ -287,7 +290,6 @@ class OneDriveClient (Client):
             .parse(item._prop_dict['lastModifiedDateTime']) \
             .astimezone()
 
-# FIXME: handle misconfiguration
 # FIXME: download
 class BoxClient (Client):
 
