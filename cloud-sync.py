@@ -167,21 +167,17 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
 class OneDriveClient (Client):
 
     def __init__(self,
+            config,
             client_id = '8eaa14b1-642c-4085-a308-82cdc21e32eb',
             client_secret = None,
             api_base_url = 'https://api.onedrive.com/v1.0/',
             redirect_url = 'https://login.microsoftonline.com/common/oauth2/nativeclient',
             scopes = ('wl.signin', 'wl.offline_access', 'onedrive.readwrite'),
             http_provider = None,
-            session_type = OneDriveFileConfigSession,
-            config = None):
+            session_type = OneDriveFileConfigSession):
 
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
-
-        # FIXME: make app name and folder configurable
-        if config is None:
-            config = FileConfig(app_name, 'onedrive')
 
         self.client_secret = client_secret
         self.redirect_url = redirect_url
@@ -295,20 +291,16 @@ class BoxClient (Client):
 
     # FIXME: handle client secret storage
     def __init__(self,
+            config,
             client_id = None,
             client_secret = None,
-            redirect_url = 'https://api.box.com/oauth2',
-            config = None):
+            redirect_url = 'https://api.box.com/oauth2'):
 
         if client_id is None:
             client_id = os.environ['BOX_API_CLIENT_ID']
 
         if client_secret is None:
             client_secret = os.environ['BOX_API_CLIENT_SECRET']
-
-        # FIXME: make app name and folder configurable
-        if config is None:
-            config = FileConfig(app_name, 'box')
 
         self.client = None
         self.client_id = client_id
@@ -379,7 +371,8 @@ clients = {
 }
 
 def do_login_command(args):
-    client = clients[args.service]()
+    config = FileConfig(app_name, args.service)
+    client = clients[args.service](config)
 
     if args.auth_url is None:
         client.login()
@@ -390,7 +383,8 @@ def do_login_command(args):
 # FIXME: prevent overwriting existing files?
 # FIXME: sandbox download folder (never modify anything outside of it)
 def do_start_command(args):
-    client = clients[args.service]()
+    config = FileConfig(app_name, args.service)
+    client = clients[args.service](config)
     client.authenticate_session()
     client.download('foobar')
 
