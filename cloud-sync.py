@@ -3,7 +3,6 @@
 # standard
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
-import json
 import logging
 from logging import StreamHandler
 from logging.handlers import SysLogHandler
@@ -166,7 +165,6 @@ class OneDriveFileConfigSession (onedrivesdk.session.Session):
         return session
 
 # FIXME: handle misconfiguration
-# FIXME: renew refresh token
 class OneDriveClient (Client):
 
     def __init__(self,
@@ -291,7 +289,6 @@ class OneDriveClient (Client):
 
 # FIXME: handle misconfiguration
 # FIXME: download
-# FIXME: renew refresh token
 class BoxClient (Client):
 
     # FIXME: handle client secret storage
@@ -325,7 +322,8 @@ class BoxClient (Client):
                 client_id = self.client_id,
                 client_secret = self.client_secret,
                 access_token = self.config.get('access-token'),
-                refresh_token = self.config.get('refresh-token'))
+                refresh_token = self.config.get('refresh-token'),
+                store_tokens = self.store_tokens)
 
         return self.cached_oauth
 
@@ -355,9 +353,7 @@ class BoxClient (Client):
             raise Error('CSRF token mismatch (did you login recently?):',
                 csrf_token, 'vs', stored_csrf_token)
 
-        access_token, refresh_token = self.oauth.authenticate(auth_code)
-        self.config.set('access-token', access_token, is_private = True)
-        self.config.set('refresh-token', refresh_token, is_private = True)
+        self.oauth.authenticate(auth_code)
         self.config.unset('csrf-token')
         self.cached_oauth = None
 
@@ -370,6 +366,10 @@ class BoxClient (Client):
 
         self.config.set('csrf-token', csrf_token, is_private = True)
         webbrowser.open(auth_url)
+
+    def store_tokens(self, access_token, refresh_token):
+        self.config.set('access-token', access_token, is_private = True)
+        self.config.set('refresh-token', refresh_token, is_private = True)
 
 clients = {
     'box': BoxClient,
