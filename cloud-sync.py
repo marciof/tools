@@ -34,7 +34,6 @@ logger = logging.getLogger('MyLogger')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(syslog_handler)
 
-# FIXME: store original cause, if any
 class Error (Exception):
     def __str__(self):
         return ' '.join(map(str, self.args))
@@ -92,8 +91,8 @@ class Client (metaclass = ABCMeta):
 
         try:
             parsed_url = urlparse(url)
-        except ValueError:
-            raise Error('Invalid authentication URL:', url)
+        except ValueError as e:
+            raise Error('Invalid authentication URL:', url) from e
 
         query_string = parse_qs(parsed_url.query)
         auth_code = query_string.get(code_param_name)
@@ -216,7 +215,7 @@ class OneDriveClient (Client):
             self.auth_provider.authenticate(
                 auth_code, self.redirect_url, self.client_secret)
         except Exception as e:
-            raise Error('Invalid authentication code:', e)
+            raise Error('Invalid authentication code in URL:', url) from e
 
         self.auth_provider.save_session(config = self.config)
 
@@ -330,7 +329,6 @@ class BoxClient (Client):
 
         return self.cached_oauth
 
-    # FIXME: handle any Box exception
     @overrides
     def authenticate_session(self):
         logger.debug('Authenticate from saved session')
@@ -338,10 +336,8 @@ class BoxClient (Client):
 
         try:
             user = self.client.user(user_id = 'me').get()
-        except boxsdk.exception.BoxOAuthException as error:
-            logger.debug('OAuth exception: %s', error)
-            message = json.loads(error._message.decode())
-            raise Error('Authentication failed:', message['error_description'])
+        except boxsdk.exception.BoxException as e:
+            raise Error('Authentication failed') from e
 
         logger.debug('Logged in as %s with ID %s', user['name'], user['id'])
 
@@ -356,7 +352,8 @@ class BoxClient (Client):
         stored_csrf_token = self.config.get('csrf-token')
 
         if csrf_token != stored_csrf_token:
-            raise Error('CSRF token mismatch (did you login recently?)')
+            raise Error('CSRF token mismatch (did you login recently?):',
+                csrf_token, 'vs', stored_csrf_token)
 
         access_token, refresh_token = self.oauth.authenticate(auth_code)
         self.config.set('access-token', access_token, is_private = True)
@@ -423,4 +420,5 @@ if __name__ == '__main__':
     try:
         args.func(args)
     except Error as error:
+        logger.exception(error)
         sys.exit(str(error))
