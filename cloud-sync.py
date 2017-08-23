@@ -29,7 +29,7 @@ class Error (Exception):
         return ' '.join(map(str, self.args))
 
 # FIXME: config or state?
-# FIXME: make it recursively composable so that folder isn't a special case
+# FIXME: replace folder param with zero or more path parts ending in filename?
 class FileConfig:
 
     def __init__(self, app_name, folder, root_logger):
@@ -85,8 +85,7 @@ class Client (metaclass = ABCMeta):
     def login(self):
         pass
 
-    # FIXME: simplify and avoid special-casing CSRF?
-    def parse_auth_url(self, url, code_param_name, csrf_param_name = None):
+    def parse_auth_url(self, url, query_params):
         self.logger.debug('Parse authentication URL %s', url)
 
         try:
@@ -94,29 +93,20 @@ class Client (metaclass = ABCMeta):
         except ValueError as e:
             raise Error('Invalid authentication URL:', url) from e
 
+        values = {}
         query_string = parse_qs(parsed_url.query)
-        auth_code = query_string.get(code_param_name)
 
-        if auth_code is None:
-            raise Error('No authentication code found in URL:', url)
-        elif len(auth_code) > 1:
-            raise Error('Multiple authentication codes found in URL:', url)
-        else:
-            [auth_code] = auth_code
+        for name, description in query_params.items():
+            value = query_string.get(name)
 
-        if csrf_param_name is None:
-            return auth_code
+            if value is None:
+                raise Error('No %s found in URL:' % description, url)
+            elif len(value) > 1:
+                raise Error('Multiple %s found in URL:' % description, url)
+            else:
+                values[name] = value[0]
 
-        csrf_token = query_string.get(csrf_param_name)
-
-        if csrf_token is None:
-            raise Error('No CSRF token found in URL:', url)
-        elif len(csrf_token) > 1:
-            raise Error('Multiple CSRF tokens found in URL:', url)
-        else:
-            [csrf_token] = csrf_token
-
-        return auth_code, csrf_token
+        return values if len(values) > 1 else next(iter(values.values()))
 
 class OneDriveFileConfigSession (onedrivesdk.session.Session):
 
@@ -217,7 +207,7 @@ class OneDriveClient (Client):
     @overrides
     def authenticate_url(self, url):
         self.logger.debug('Authenticate from auth URL %s', url)
-        auth_code = self.parse_auth_url(url, code_param_name = 'code')
+        auth_code = self.parse_auth_url(url, {'code': 'authentication code'})
 
         try:
             self.auth_provider.authenticate(
@@ -354,17 +344,19 @@ class BoxClient (Client):
     def authenticate_url(self, url):
         self.logger.debug('Authenticate from auth URL %s', url)
 
-        auth_code, csrf_token = self.parse_auth_url(url,
-            code_param_name = 'code',
-            csrf_param_name = 'state')
+        values = self.parse_auth_url(url, {
+            'code': 'authentication code',
+            'state': 'CSRF token',
+        })
 
+        csrf_token = values['state']
         stored_csrf_token = self.config.get('csrf-token')
 
         if csrf_token != stored_csrf_token:
             raise Error('CSRF token mismatch (did you login recently?):',
                 csrf_token, 'vs', stored_csrf_token)
 
-        self.oauth.authenticate(auth_code)
+        self.oauth.authenticate(values['code'])
         self.config.unset('csrf-token')
         self.cached_oauth = None
 
