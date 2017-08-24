@@ -28,50 +28,103 @@ class Error (Exception):
     def __str__(self):
         return ' '.join(map(str, self.args))
 
-# FIXME: config or state?
-# FIXME: replace folder param with zero or more path parts ending in filename?
-class FileConfig:
+class UnauthenticatedError (Error):
+    def __init__(self):
+        super().__init__('No authenticated session (did you login?)')
 
-    def __init__(self, app_name, folder, root_logger):
-        self.logger = root_logger.getChild(self.__class__.__name__)
+class AuthenticationError (Error):
+    def __init__(self):
+        super().__init__('Authentication failed')
 
-        self.path_template = pathlib.Path(
-            appdirs.user_config_dir(appname = app_name),
-            folder,
-            'NAME_PLACEHOLDER')
+class State (metaclass = ABCMeta):
 
-    def set(self, filename, value, is_private = False):
-        os.makedirs(str(self.path_template.parent), exist_ok = True)
-        config = self.path_template.with_name(filename)
-        self.logger.debug('Set config at %s', str(config))
+    @abstractmethod
+    def get(self, namespace):
+        pass
 
-        if is_private:
-            config.touch(mode = stat.S_IRWXU ^ stat.S_IXUSR, exist_ok = True)
+    @abstractmethod
+    def set(self, namespace, value, is_private = False):
+        pass
 
-        config.write_text(value)
+    @abstractmethod
+    def unset(self, namespace):
+        pass
 
-    def get(self, filename):
-        config = self.path_template.with_name(filename)
-        self.logger.debug('Get config at %s', str(config))
+class PrefixedState (State):
+
+    def __init__(self, prefix, state):
+        self.prefix = prefix
+        self.state = state
+
+    @overrides
+    def get(self, namespace):
+        return self.state.get(self.prefix + namespace)
+
+    @overrides
+    def set(self, namespace, value, is_private = False):
+        return self.state.set(self.prefix + namespace, value, is_private)
+
+    @overrides
+    def unset(self, namespace):
+        return self.state.unset(self.prefix + namespace)
+
+    def __str__(self):
+        return '%s(%s)' % (':'.join(self.prefix), self.state)
+
+class FileState (State):
+
+    def __init__(self, app_name, parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
+
+        self.root_path = pathlib.Path(
+            appdirs.user_cache_dir(appname = app_name))
+
+    @overrides
+    def get(self, namespace):
+        path = self._build_path(namespace)
+        self.logger.debug('Get state at %s', path)
 
         try:
-            return config.read_text()
+            return path.read_text()
         except FileNotFoundError:
             return None
 
-    def unset(self, filename):
-        config = str(self.path_template.with_name(filename))
-        self.logger.debug('Unset config at %s', config)
-        os.remove(config)
+    @overrides
+    def set(self, namespace, value, is_private = False):
+        path = self._build_path(namespace)
+        os.makedirs(str(path.parent), exist_ok = True)
+        self.logger.debug('Set state at %s', path)
+
+        if is_private:
+            path.touch(mode = stat.S_IRWXU ^ stat.S_IXUSR, exist_ok = True)
+
+        path.write_text(value)
+
+    @overrides
+    def unset(self, namespace):
+        path = self._build_path(namespace)
+        self.logger.debug('Unset state at %s', path)
+        os.remove(str(path))
+
+    def _build_path(self, namespace):
+        if len(namespace) == 0:
+            raise Error('Empty file state namespace')
+
+        path = self.root_path
+
+        for name in namespace:
+            path = path.joinpath('TEMPLATE').with_name(name)
+
+        return path
 
     def __str__(self):
-        return str(self.path_template.parent)
+        return str(self.root_path)
 
-# FIXME: try to remove/reduce state?
 class Client (metaclass = ABCMeta):
 
-    def __init__(self, root_logger):
-        self.logger = root_logger.getChild(self.__class__.__name__)
+    def __init__(self, state, parent_logger):
+        self.state = state
+        self.logger = parent_logger.getChild(self.__class__.__name__)
 
     @abstractmethod
     def authenticate_session(self):
@@ -108,53 +161,52 @@ class Client (metaclass = ABCMeta):
 
         return values if len(values) > 1 else next(iter(values.values()))
 
-class OneDriveFileConfigSession (onedrivesdk.session.Session):
+class OneDriveSessionState (onedrivesdk.session.Session):
 
     @overrides
     def save_session(self, **kwargs):
-        config = kwargs['config']
+        state = kwargs['state']
         logger = kwargs['logger']
 
-        logger.debug('Save session at %s', config)
+        logger.debug('Save session at %s', state)
 
-        config.set('token-type', self.token_type)
-        config.set('expires-at', str(int(self._expires_at)))
-        config.set('scopes', '\n'.join(self.scope))
-        config.set('access-token', self.access_token, is_private = True)
-        config.set('client-id', self.client_id)
-        config.set('auth-server-url', self.auth_server_url)
-        config.set('redirect-uri', self.redirect_uri)
+        state.set(['token-type'], self.token_type)
+        state.set(['expires-at'], str(int(self._expires_at)))
+        state.set(['scopes'], '\n'.join(self.scope))
+        state.set(['access-token'], self.access_token, is_private = True)
+        state.set(['client-id'], self.client_id)
+        state.set(['auth-server-url'], self.auth_server_url)
+        state.set(['redirect-uri'], self.redirect_uri)
 
         if self.refresh_token is not None:
-            config.set('refresh-token', self.refresh_token,
-                is_private = True)
+            state.set(['refresh-token'], self.refresh_token, is_private = True)
 
         if self.client_secret is not None:
-            config.set('client-secret', self.client_secret)
+            state.set(['client-secret'], self.client_secret)
 
     @staticmethod
     @overrides
     def load_session(**kwargs):
-        config = kwargs['config']
+        state = kwargs['state']
         logger = kwargs['logger']
 
-        logger.debug('Load session at %s', config)
-        expires_at = config.get('expires-at')
+        logger.debug('Load session at %s', state)
+        expires_at = state.get(['expires-at'])
 
         if expires_at is None:
-            logger.warning('Assuming no session, no expires-at config found')
-            raise Error('No authenticated session (did you login?)')
+            logger.warning('Assuming no session, no expires-at state found')
+            raise UnauthenticatedError()
 
-        session = OneDriveFileConfigSession(
-            token_type = config.get('token-type'),
+        session = OneDriveSessionState(
+            token_type = state.get(['token-type']),
             expires_in = '0',
-            scope_string = ' '.join(config.get('scopes').splitlines()),
-            access_token = config.get('access-token'),
-            client_id = config.get('client-id'),
-            auth_server_url = config.get('auth-server-url'),
-            redirect_uri = config.get('redirect-uri'),
-            refresh_token = config.get('refresh-token'),
-            client_secret = config.get('client-secret'))
+            scope_string = ' '.join(state.get(['scopes']).splitlines()),
+            access_token = state.get(['access-token']),
+            client_id = state.get(['client-id']),
+            auth_server_url = state.get(['auth-server-url']),
+            redirect_uri = state.get(['redirect-uri']),
+            refresh_token = state.get(['refresh-token']),
+            client_secret = state.get(['client-secret']))
 
         session._expires_at = int(expires_at)
         return session
@@ -163,22 +215,21 @@ class OneDriveClient (Client):
 
     @overrides
     def __init__(self,
-            config,
-            root_logger,
+            state,
+            parent_logger,
             client_id = '8eaa14b1-642c-4085-a308-82cdc21e32eb',
             client_secret = None,
             api_base_url = 'https://api.onedrive.com/v1.0/',
             redirect_url = 'https://login.microsoftonline.com/common/oauth2/nativeclient',
             scopes = ('wl.signin', 'wl.offline_access', 'onedrive.readwrite'),
             http_provider = None,
-            session_type = OneDriveFileConfigSession):
+            session_type = OneDriveSessionState):
 
-        super().__init__(root_logger)
+        super().__init__(state, parent_logger)
 
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
 
-        self.config = config
         self.client_secret = client_secret
         self.redirect_url = redirect_url
 
@@ -196,13 +247,13 @@ class OneDriveClient (Client):
         self.logger.debug('Authenticate from saved session')
 
         self.auth_provider.load_session(
-            config = self.config,
+            state = self.state,
             logger = self.logger)
 
         try:
             self.auth_provider.refresh_token()
         except Exception as e:
-            raise Error('Authentication failed') from e
+            raise AuthenticationError() from e
 
     @overrides
     def authenticate_url(self, url):
@@ -216,7 +267,7 @@ class OneDriveClient (Client):
             raise Error('Invalid authentication code in URL:', url) from e
 
         self.auth_provider.save_session(
-            config = self.config,
+            state = self.state,
             logger = self.logger)
 
     @overrides
@@ -224,7 +275,7 @@ class OneDriveClient (Client):
         self.logger.debug('Open browser for user login')
         webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
-    # FIXME: persist token from last check and at which file for resuming
+    # FIXME: persist delta token from last check and at which file for resuming
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
     # FIXME: handle network disconnects and timeouts
@@ -295,13 +346,13 @@ class BoxClient (Client):
     # FIXME: handle client secret storage
     @overrides
     def __init__(self,
-            config,
-            root_logger,
+            state,
+            parent_logger,
             client_id = None,
             client_secret = None,
             redirect_url = 'https://api.box.com/oauth2'):
 
-        super().__init__(root_logger)
+        super().__init__(state, parent_logger)
 
         if client_id is None:
             client_id = os.environ['BOX_API_CLIENT_ID']
@@ -309,7 +360,6 @@ class BoxClient (Client):
         if client_secret is None:
             client_secret = os.environ['BOX_API_CLIENT_SECRET']
 
-        self.config = config
         self.client = None
         self.client_id = client_id
         self.client_secret = client_secret
@@ -322,8 +372,8 @@ class BoxClient (Client):
             self.cached_oauth = boxsdk.OAuth2(
                 client_id = self.client_id,
                 client_secret = self.client_secret,
-                access_token = self.config.get('access-token'),
-                refresh_token = self.config.get('refresh-token'),
+                access_token = self.state.get(['access-token']),
+                refresh_token = self.state.get(['refresh-token']),
                 store_tokens = self.store_tokens)
 
         return self.cached_oauth
@@ -331,14 +381,20 @@ class BoxClient (Client):
     @overrides
     def authenticate_session(self):
         self.logger.debug('Authenticate from saved session')
+
+        if self.state.get(['access-token']) is None:
+            logger.warning('Assuming no session, no access-token state found')
+            raise UnauthenticatedError()
+
         self.client = boxsdk.Client(self.oauth)
 
         try:
             user = self.client.user(user_id = 'me').get()
         except boxsdk.exception.BoxException as e:
-            raise Error('Authentication failed') from e
+            raise AuthenticationError() from e
 
-        self.logger.debug('Logged in as %s with ID %s', user['name'], user['id'])
+        self.logger.debug('Logged in as %s with ID %s',
+            user['name'], user['id'])
 
     @overrides
     def authenticate_url(self, url):
@@ -350,14 +406,14 @@ class BoxClient (Client):
         })
 
         csrf_token = values['state']
-        stored_csrf_token = self.config.get('csrf-token')
+        stored_csrf_token = self.state.get(['csrf-token'])
 
         if csrf_token != stored_csrf_token:
             raise Error('CSRF token mismatch (did you login recently?):',
                 csrf_token, 'vs', stored_csrf_token)
 
         self.oauth.authenticate(values['code'])
-        self.config.unset('csrf-token')
+        self.state.unset(['csrf-token'])
         self.cached_oauth = None
 
     @overrides
@@ -367,12 +423,12 @@ class BoxClient (Client):
         auth_url, csrf_token = self.oauth.get_authorization_url(
             self.redirect_url)
 
-        self.config.set('csrf-token', csrf_token, is_private = True)
+        self.state.set(['csrf-token'], csrf_token, is_private = True)
         webbrowser.open(auth_url)
 
     def store_tokens(self, access_token, refresh_token):
-        self.config.set('access-token', access_token, is_private = True)
-        self.config.set('refresh-token', refresh_token, is_private = True)
+        self.state.set(['access-token'], access_token, is_private = True)
+        self.state.set(['refresh-token'], refresh_token, is_private = True)
 
 app_name = 'cloud-sync'
 
@@ -388,9 +444,12 @@ clients = {
     'onedrive': OneDriveClient,
 }
 
+def make_client(name):
+    state = PrefixedState([name], FileState(app_name, logger))
+    return clients[name](state, logger)
+
 def do_login_command(args):
-    config = FileConfig(app_name, args.service, logger)
-    client = clients[args.service](config, logger)
+    client = make_client(args.service)
 
     if args.auth_url is None:
         client.login()
@@ -401,8 +460,7 @@ def do_login_command(args):
 # FIXME: prevent overwriting existing files?
 # FIXME: sandbox download folder (never modify anything outside of it)
 def do_start_command(args):
-    config = FileConfig(app_name, args.service, logger)
-    client = clients[args.service](config, logger)
+    client = make_client(args.service)
     client.authenticate_session()
     client.download('foobar')
 
