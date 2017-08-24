@@ -319,7 +319,8 @@ class OneDriveClient (Client):
                     self.logger.debug('Delete file %s', cloud_path)
                     os.remove(local_path)
                 else:
-                    self.logger.debug('Create file %s', cloud_path)
+                    self.logger.debug('Create file %s, size %s bytes',
+                        cloud_path, item.size)
                     self.client.item(id = item.id).download(local_path)
 
             mtime = self.localize_item_last_modified_datetime(item)
