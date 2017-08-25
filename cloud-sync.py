@@ -222,7 +222,7 @@ class DeleteFolderChange (ItemChange):
     def __str__(self):
         return 'folder:delete:' + self.path
 
-class OneDriverCreateFileChange (CreateFileChange):
+class OneDriveCreateFileChange (CreateFileChange):
 
     def __init__(self, path, item):
         super().__init__(path)
@@ -341,7 +341,6 @@ class OneDriveClient (Client):
             state = self.state,
             logger = self.logger)
 
-    # FIXME: page changes list to get all results
     # FIXME: persist delta token from last check and at which file for resuming
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
@@ -349,37 +348,44 @@ class OneDriveClient (Client):
     @overrides
     def list_changes(self, delta_token):
         self.logger.debug('List changes with delta token %s', delta_token)
-        items = self.client.item(id = 'root').delta(delta_token).get()
+        delta_req = self.client.item(id = 'root').delta(delta_token)
 
-        for item in items:
-            path = os.path.join(
-                re.sub('^[^:]+:', os.path.curdir, item.parent_reference.path),
-                item.name)
+        while delta_req is not None:
+            self.logger.debug('Get page of delta changes')
+            items = delta_req.get()
 
-            if self.is_root_item(item):
-                self.logger.debug('Skip root item with ID %s at %s',
-                    item.id, path)
-                continue
+            for item in items:
+                path = os.path.join(
+                    re.sub('^[^:]+:', os.curdir, item.parent_reference.path),
+                    item.name)
 
-            self.logger.debug('Cloud item with ID %s', item.id)
-            is_folder = item.folder
+                if self.is_root_item(item):
+                    self.logger.debug('Skip root item with ID %s at %s',
+                        item.id, path)
+                    continue
 
-            if self.is_package_item(item):
-                is_folder = True
-                self.logger.debug('Handle package of type %s as folder %s',
-                    self.get_package_item_type(item), path)
+                self.logger.debug('Cloud item with ID %s', item.id)
+                is_folder = item.folder
 
-            if is_folder:
-                if item.deleted:
-                    yield DeleteFolderChange(path)
+                if self.is_package_item(item):
+                    is_folder = True
+                    self.logger.debug('Handle package of type %s as folder %s',
+                        self.get_package_item_type(item), path)
+
+                if is_folder:
+                    if item.deleted:
+                        yield DeleteFolderChange(path)
+                    else:
+                        yield CreateFolderChange(path)
                 else:
-                    yield CreateFolderChange(path)
-            else:
-                if item.deleted:
-                    yield DeleteFileChange(path)
-                else:
-                    yield OneDriverCreateFileChange(path,
-                        item = self.client.item(id = item.id))
+                    if item.deleted:
+                        yield DeleteFileChange(path)
+                    else:
+                        yield OneDriveCreateFileChange(path,
+                            item = self.client.item(id = item.id))
+
+            delta_req = onedrivesdk.ItemDeltaRequest.get_next_page_request(
+                items, self.client, options = [])
 
     @overrides
     def login(self):
