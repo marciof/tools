@@ -482,9 +482,14 @@ class BoxClient (Client):
         self.state.unset(['csrf-token'])
         self.cached_oauth = None
 
+    # FIXME: filter out non-filesystem events
     @overrides
     def list_changes(self, delta_token):
-        pass
+        if delta_token is None:
+            delta_token = '0'
+
+        events = self.client.events().get_events(stream_position = delta_token)
+        return events['entries']
 
     @overrides
     def login(self):
@@ -526,6 +531,7 @@ def do_login_command(args):
     else:
         client.authenticate_url(args.auth_url)
 
+# FIXME: initial download vs change list
 # FIXME: receive where to download to via command line
 # FIXME: prevent overwriting existing files?
 # FIXME: sandbox download folder (never modify anything outside of it)
