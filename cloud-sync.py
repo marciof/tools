@@ -279,7 +279,6 @@ class OneDriveClient (Client):
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
     # FIXME: handle network disconnects and timeouts
-    # FIXME: handle Ctrl-C
     # FIXME: too big, refactor
     def download(self, folder):
         self.logger.debug('Download to %s', folder)
@@ -490,6 +489,8 @@ if __name__ == '__main__':
 
     try:
         args.func(args)
+    except KeyboardInterrupt as error:
+        logger.exception(error)
     except Error as error:
         logger.exception(error)
         sys.exit(str(error))
