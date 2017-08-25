@@ -135,6 +135,10 @@ class Client (metaclass = ABCMeta):
         pass
 
     @abstractmethod
+    def list_changes(self, delta_token):
+        pass
+
+    @abstractmethod
     def login(self):
         pass
 
@@ -160,6 +164,73 @@ class Client (metaclass = ABCMeta):
                 values[name] = value[0]
 
         return values if len(values) > 1 else next(iter(values.values()))
+
+# FIXME: apply time
+# mtime = self.localize_item_last_modified_datetime(item)
+# self.logger.debug('Set modified time to %s', mtime)
+# os.utime(local_path, (mtime.timestamp(),) * 2)
+class ItemChange (metaclass = ABCMeta):
+
+    @abstractmethod
+    def apply(self):
+        pass
+
+class CreateFileChange (ItemChange):
+
+    def __init__(self, path):
+        self.path = path
+
+    def __str__(self):
+        return 'file:create:' + self.path
+
+class CreateFolderChange (ItemChange):
+
+    def __init__(self, path):
+        self.path = path
+
+    # FIXME: os.makedirs(path, exist_ok = True)
+    @overrides
+    def apply(self):
+        pass
+
+    def __str__(self):
+        return 'folder:create:' + self.path
+
+class DeleteFileChange (ItemChange):
+
+    def __init__(self, path):
+        self.path = path
+
+    # FIXME: os.remove(path)
+    @overrides
+    def apply(self):
+        pass
+
+    def __str__(self):
+        return 'file:delete:' + self.path
+
+class DeleteFolderChange (ItemChange):
+
+    def __init__(self, path):
+        self.path = path
+
+    # FIXME: os.rmdir(path)
+    @overrides
+    def apply(self):
+        pass
+
+    def __str__(self):
+        return 'folder:delete:' + self.path
+
+class OneDriverCreateFileChange (CreateFileChange):
+
+    def __init__(self, path, item):
+        super().__init__(path)
+        self.item = item
+
+    @overrides
+    def apply(self):
+        pass
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
@@ -270,61 +341,50 @@ class OneDriveClient (Client):
             state = self.state,
             logger = self.logger)
 
-    @overrides
-    def login(self):
-        self.logger.debug('Open browser for user login')
-        webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
-
+    # FIXME: page changes list to get all results
     # FIXME: persist delta token from last check and at which file for resuming
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
     # FIXME: handle network disconnects and timeouts
-    # FIXME: too big, refactor
-    def download(self, folder):
-        self.logger.debug('Download to %s', folder)
-        delta_token = None
-
+    @overrides
+    def list_changes(self, delta_token):
         self.logger.debug('List changes with delta token %s', delta_token)
         items = self.client.item(id = 'root').delta(delta_token).get()
 
         for item in items:
-            cloud_path = os.path.join(
+            path = os.path.join(
                 re.sub('^[^:]+:', os.path.curdir, item.parent_reference.path),
                 item.name)
 
             if self.is_root_item(item):
                 self.logger.debug('Skip root item with ID %s at %s',
-                    item.id, cloud_path)
+                    item.id, path)
                 continue
 
-            local_path = os.path.join(folder, cloud_path)
             self.logger.debug('Cloud item with ID %s', item.id)
             is_folder = item.folder
 
             if self.is_package_item(item):
                 is_folder = True
                 self.logger.debug('Handle package of type %s as folder %s',
-                    self.get_package_item_type(item), cloud_path)
+                    self.get_package_item_type(item), path)
 
             if is_folder:
                 if item.deleted:
-                    self.logger.debug('Delete folder %s', cloud_path)
-                    os.rmdir(local_path)
+                    yield DeleteFolderChange(path)
                 else:
-                    self.logger.debug('Create folder %s', cloud_path)
-                    os.makedirs(local_path, exist_ok = True)
+                    yield CreateFolderChange(path)
             else:
                 if item.deleted:
-                    self.logger.debug('Delete file %s', cloud_path)
-                    os.remove(local_path)
+                    yield DeleteFileChange(path)
                 else:
-                    self.logger.debug('Create file %s, size %s bytes',
-                        cloud_path, item.size)
-                    self.client.item(id = item.id).download(local_path)
+                    yield OneDriverCreateFileChange(path,
+                        item = self.client.item(id = item.id))
 
-            mtime = self.localize_item_last_modified_datetime(item)
-            self.logger.debug('Set modified time to %s', mtime)
-            os.utime(local_path, (mtime.timestamp(),) * 2)
+    @overrides
+    def login(self):
+        self.logger.debug('Open browser for user login')
+        webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
     def get_package_item_type(self, item):
         return item._prop_dict['package']['type']
@@ -417,6 +477,10 @@ class BoxClient (Client):
         self.cached_oauth = None
 
     @overrides
+    def list_changes(self, delta_token):
+        pass
+
+    @overrides
     def login(self):
         self.logger.debug('Open browser for user login')
 
@@ -459,10 +523,13 @@ def do_login_command(args):
 # FIXME: receive where to download to via command line
 # FIXME: prevent overwriting existing files?
 # FIXME: sandbox download folder (never modify anything outside of it)
+# FIXME: rename to "download"?
 def do_start_command(args):
     client = make_client(args.service)
     client.authenticate_session()
-    client.download('foobar')
+
+    for change in client.list_changes(None):
+        print(change)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
