@@ -73,8 +73,8 @@ class PrefixedState (State):
 
 class FileState (State):
 
-    def __init__(self, app_name, parent_logger):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
+    def __init__(self, app_name, logger):
+        self.logger = logger.getChild(self.__class__.__name__)
 
         self.root_path = pathlib.Path(
             appdirs.user_cache_dir(appname = app_name))
@@ -122,9 +122,9 @@ class FileState (State):
 
 class Client (metaclass = ABCMeta):
 
-    def __init__(self, state, parent_logger):
+    def __init__(self, state, logger):
         self.state = state
-        self.logger = parent_logger.getChild(self.__class__.__name__)
+        self.logger = logger.getChild(self.__class__.__name__)
 
     @abstractmethod
     def authenticate_session(self):
@@ -142,6 +142,7 @@ class Client (metaclass = ABCMeta):
     def login(self):
         pass
 
+    # FIXME: move outside as regular function
     def parse_auth_url(self, url, query_params):
         self.logger.debug('Parse authentication URL %s', url)
 
@@ -165,72 +166,73 @@ class Client (metaclass = ABCMeta):
 
         return values if len(values) > 1 else next(iter(values.values()))
 
-# FIXME: apply time
-# mtime = self.localize_item_last_modified_datetime(item)
-# self.logger.debug('Set modified time to %s', mtime)
-# os.utime(local_path, (mtime.timestamp(),) * 2)
-class ItemChange (metaclass = ABCMeta):
+class PathEvent (metaclass = ABCMeta):
 
     @abstractmethod
-    def apply(self):
+    def apply(self, prefix):
         pass
 
-class CreateFileChange (ItemChange):
+class CreateFileEvent (PathEvent):
 
-    def __init__(self, path):
+    def __init__(self, path, mtime, write, logger):
         self.path = path
+        self.mtime = mtime
+        self.write = write
+        self.logger = logger.getChild(self.__class__.__name__)
 
-    def __str__(self):
-        return 'file:create:' + self.path
-
-class CreateFolderChange (ItemChange):
-
-    def __init__(self, path):
-        self.path = path
-
-    # FIXME: os.makedirs(path, exist_ok = True)
+    # FIXME: log size
+    # FIXME: refactor duplicate mtime
     @overrides
-    def apply(self):
-        pass
+    def apply(self, prefix):
+        path = os.path.join(prefix, self.path)
 
-    def __str__(self):
-        return 'folder:create:' + self.path
+        self.logger.debug('Create file at %s', path)
+        self.write(path)
 
-class DeleteFileChange (ItemChange):
+        self.logger.debug('Set file modified time to %s', self.mtime)
+        os.utime(path, (self.mtime.timestamp(),) * 2)
 
-    def __init__(self, path):
+class CreateFolderEvent (PathEvent):
+
+    def __init__(self, path, mtime, logger):
         self.path = path
+        self.mtime = mtime
+        self.logger = logger.getChild(self.__class__.__name__)
 
-    # FIXME: os.remove(path)
+    # FIXME: refactor duplicate mtime
     @overrides
-    def apply(self):
-        pass
+    def apply(self, prefix):
+        path = os.path.join(prefix, self.path)
 
-    def __str__(self):
-        return 'file:delete:' + self.path
+        self.logger.debug('Create folder at %s', path)
+        os.makedirs(path, exist_ok = True)
 
-class DeleteFolderChange (ItemChange):
+        self.logger.debug('Set folder modified time to %s', self.mtime)
+        os.utime(path, (self.mtime.timestamp(),) * 2)
 
-    def __init__(self, path):
+class DeleteFileEvent (PathEvent):
+
+    def __init__(self, path, logger):
         self.path = path
-
-    # FIXME: os.rmdir(path)
-    @overrides
-    def apply(self):
-        pass
-
-    def __str__(self):
-        return 'folder:delete:' + self.path
-
-class OneDriveCreateFileChange (CreateFileChange):
-
-    def __init__(self, path, item):
-        super().__init__(path)
-        self.item = item
+        self.logger = logger.getChild(self.__class__.__name__)
 
     @overrides
-    def apply(self):
-        pass
+    def apply(self, prefix):
+        path = os.path.join(prefix, self.path)
+        self.logger.debug('Delete file at %s', path)
+        os.remove(path)
+
+class DeleteFolderEvent (PathEvent):
+
+    def __init__(self, path, logger):
+        self.path = path
+        self.logger = logger.getChild(self.__class__.__name__)
+
+    @overrides
+    def apply(self, prefix):
+        path = os.path.join(prefix, self.path)
+        self.logger.debug('Delete folder at %s', path)
+        os.rmdir(path)
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
@@ -287,7 +289,7 @@ class OneDriveClient (Client):
     @overrides
     def __init__(self,
             state,
-            parent_logger,
+            logger,
             client_id = '8eaa14b1-642c-4085-a308-82cdc21e32eb',
             client_secret = None,
             api_base_url = 'https://api.onedrive.com/v1.0/',
@@ -296,7 +298,7 @@ class OneDriveClient (Client):
             http_provider = None,
             session_type = OneDriveSessionState):
 
-        super().__init__(state, parent_logger)
+        super().__init__(state, logger)
 
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
@@ -344,7 +346,7 @@ class OneDriveClient (Client):
     # FIXME: persist delta token from last check and at which file for resuming
     # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
     # FIXME: download progress for bigger files?
-    # FIXME: handle network disconnects and timeouts
+    # FIXME: handle network disconnects and timeouts gracefully
     @overrides
     def list_changes(self, delta_token):
         self.logger.debug('List changes with delta token %s', delta_token)
@@ -372,17 +374,23 @@ class OneDriveClient (Client):
                     self.logger.debug('Handle package of type %s as folder %s',
                         self.get_package_item_type(item), path)
 
+                if item.deleted:
+                    if is_folder:
+                        yield DeleteFolderEvent(path)
+                    else:
+                        yield DeleteFileEvent(path)
+
+                mtime = self.localize_item_last_modified_datetime(item)
+
                 if is_folder:
-                    if item.deleted:
-                        yield DeleteFolderChange(path)
-                    else:
-                        yield CreateFolderChange(path)
+                    yield CreateFolderEvent(path,
+                        mtime = mtime,
+                        logger = self.logger)
                 else:
-                    if item.deleted:
-                        yield DeleteFileChange(path)
-                    else:
-                        yield OneDriveCreateFileChange(path,
-                            item = self.client.item(id = item.id))
+                    yield CreateFileEvent(path,
+                        mtime = mtime,
+                        write = self.client.item(id = item.id).download,
+                        logger = self.logger)
 
             delta_req = onedrivesdk.ItemDeltaRequest.get_next_page_request(
                 items, self.client, options = [])
@@ -392,6 +400,7 @@ class OneDriveClient (Client):
         self.logger.debug('Open browser for user login')
         webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
 
+    # FIXME: move outside as regular functions
     def get_package_item_type(self, item):
         return item._prop_dict['package']['type']
 
@@ -413,12 +422,12 @@ class BoxClient (Client):
     @overrides
     def __init__(self,
             state,
-            parent_logger,
+            logger,
             client_id = None,
             client_secret = None,
             redirect_url = 'https://api.box.com/oauth2'):
 
-        super().__init__(state, parent_logger)
+        super().__init__(state, logger)
 
         if client_id is None:
             client_id = os.environ['BOX_API_CLIENT_ID']
@@ -449,7 +458,7 @@ class BoxClient (Client):
         self.logger.debug('Authenticate from saved session')
 
         if self.state.get(['access-token']) is None:
-            logger.warning('Assuming no session, no access-token state found')
+            self.logger.warning('Assuming no session, no access-token state found')
             raise UnauthenticatedError()
 
         self.client = boxsdk.Client(self.oauth)
@@ -510,9 +519,9 @@ app_name = 'cloud-sync'
 syslog_handler = SysLogHandler(address = '/dev/log')
 syslog_handler.ident = app_name + ': '
 
-logger = logging.getLogger(app_name)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(syslog_handler)
+root_logger = logging.getLogger(app_name)
+root_logger.setLevel(logging.DEBUG)
+root_logger.addHandler(syslog_handler)
 
 clients = {
     'box': BoxClient,
@@ -520,8 +529,8 @@ clients = {
 }
 
 def make_client(name):
-    state = PrefixedState([name], FileState(app_name, logger))
-    return clients[name](state, logger)
+    state = PrefixedState([name], FileState(app_name, root_logger))
+    return clients[name](state, root_logger)
 
 def do_login_command(args):
     client = make_client(args.service)
@@ -541,7 +550,7 @@ def do_start_command(args):
     client.authenticate_session()
 
     for change in client.list_changes(None):
-        print(change)
+        change.apply('foobar')
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -564,12 +573,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.is_verbose:
-        logger.addHandler(StreamHandler())
+        root_logger.addHandler(StreamHandler())
 
     try:
         args.func(args)
     except KeyboardInterrupt as error:
-        logger.exception(error)
+        root_logger.exception(error)
     except Error as error:
-        logger.exception(error)
+        root_logger.exception(error)
         sys.exit(str(error))
