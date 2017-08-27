@@ -376,9 +376,9 @@ class OneDriveClient (Client):
 
                 if item.deleted:
                     if is_folder:
-                        yield DeleteFolderEvent(path)
+                        yield DeleteFolderEvent(path, self.logger)
                     else:
-                        yield DeleteFileEvent(path)
+                        yield DeleteFileEvent(path, self.logger)
 
                 mtime = self.localize_item_last_modified_datetime(item)
 
@@ -387,6 +387,7 @@ class OneDriveClient (Client):
                         mtime = mtime,
                         logger = self.logger)
                 else:
+                    # FIXME: handle requests.exceptions.ConnectionError
                     yield CreateFileEvent(path,
                         mtime = mtime,
                         write = self.client.item(id = item.id).download,
