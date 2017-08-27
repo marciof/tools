@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # standard
-from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
 import logging
 from logging import StreamHandler
@@ -22,88 +21,9 @@ import onedrivesdk.session
 from overrides import overrides
 
 # internal
-from cloudsync import client
+from cloudsync import client, event
 from cloudsync.error import Error
 from cloudsync.state import FileState, PrefixedState
-
-class UnauthenticatedError (Error):
-    def __init__(self):
-        super().__init__('No authenticated session (did you login?)')
-
-class AuthenticationError (Error):
-    def __init__(self):
-        super().__init__('Authentication failed')
-
-class Event (metaclass = ABCMeta):
-
-    @abstractmethod
-    def apply(self, prefix):
-        pass
-
-class CreatedFileEvent (Event):
-
-    def __init__(self, path, access_time, mod_time, write, logger):
-        self.path = path
-        self.access_time = access_time
-        self.mod_time = mod_time
-        self.write = write
-        self.logger = logger.getChild(self.__class__.__name__)
-
-    @overrides
-    def apply(self, prefix):
-        path = os.path.join(prefix, self.path)
-
-        self.logger.debug('Create file at %s', path)
-        self.write(path)
-
-        self.logger.debug('Set file access and modified times to %s and %s',
-            self.access_time, self.mod_time)
-        os.utime(path,
-            (self.access_time.timestamp(), self.mod_time.timestamp()))
-
-class CreatedFolderEvent (Event):
-
-    def __init__(self, path, access_time, mod_time, logger):
-        self.path = path
-        self.access_time = access_time
-        self.mod_time = mod_time
-        self.logger = logger.getChild(self.__class__.__name__)
-
-    @overrides
-    def apply(self, prefix):
-        path = os.path.join(prefix, self.path)
-
-        self.logger.debug('Create folder at %s', path)
-        os.makedirs(path, exist_ok = True)
-
-        self.logger.debug('Set folder access and modified times to %s and %s',
-            self.access_time, self.mod_time)
-        os.utime(path,
-            (self.access_time.timestamp(), self.mod_time.timestamp()))
-
-class DeletedFileEvent (Event):
-
-    def __init__(self, path, logger):
-        self.path = path
-        self.logger = logger.getChild(self.__class__.__name__)
-
-    @overrides
-    def apply(self, prefix):
-        path = os.path.join(prefix, self.path)
-        self.logger.debug('Delete file at %s', path)
-        os.remove(path)
-
-class DeletedFolderEvent (Event):
-
-    def __init__(self, path, logger):
-        self.path = path
-        self.logger = logger.getChild(self.__class__.__name__)
-
-    @overrides
-    def apply(self, prefix):
-        path = os.path.join(prefix, self.path)
-        self.logger.debug('Delete folder at %s', path)
-        os.rmdir(path)
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
@@ -139,7 +59,7 @@ class OneDriveSessionState (onedrivesdk.session.Session):
 
         if expires_at is None:
             logger.warning('Assuming no session, no expires-at state found')
-            raise UnauthenticatedError()
+            raise client.UnauthenticatedError()
 
         session = OneDriveSessionState(
             token_type = state.get(['token-type']),
@@ -197,7 +117,7 @@ class OneDriveClient (client.Client):
         try:
             self.auth_provider.refresh_token()
         except Exception as e:
-            raise AuthenticationError() from e
+            raise client.AuthenticationError() from e
 
     @overrides
     def authenticate_url(self, url):
@@ -258,21 +178,21 @@ class OneDriveClient (client.Client):
 
                 if item.deleted:
                     if is_folder:
-                        yield DeletedFolderEvent(path, self.logger)
+                        yield event.DeletedFolderEvent(path, self.logger)
                     else:
-                        yield DeletedFileEvent(path, self.logger)
+                        yield event.DeletedFileEvent(path, self.logger)
 
                 # FIXME: use created datetime as access time?
                 mod_time = self.localize_item_last_modified_datetime(item)
 
                 if is_folder:
-                    yield CreatedFolderEvent(path,
+                    yield event.CreatedFolderEvent(path,
                         access_time = mod_time,
                         mod_time = mod_time,
                         logger = self.logger)
                 else:
                     # FIXME: handle requests.exceptions.ConnectionError
-                    yield CreatedFileEvent(path,
+                    yield event.CreatedFileEvent(path,
                         access_time = mod_time,
                         mod_time = mod_time,
                         write = self.client.item(id = item.id).download,
@@ -345,14 +265,14 @@ class BoxClient (client.Client):
 
         if self.state.get(['access-token']) is None:
             self.logger.warning('Assuming no session, no access-token state found')
-            raise UnauthenticatedError()
+            raise client.UnauthenticatedError()
 
         self.client = boxsdk.Client(self.oauth)
 
         try:
             user = self.client.user(user_id = 'me').get()
         except boxsdk.exception.BoxException as e:
-            raise AuthenticationError() from e
+            raise client.AuthenticationError() from e
 
         self.logger.debug('Logged in as %s with ID %s',
             user['name'], user['id'])

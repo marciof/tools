@@ -16,6 +16,14 @@ class MultipleAuthCodesUrlError (Error):
     def __init__(self, url):
         super().__init__('Multiple authentication codes found in URL:', url)
 
+class UnauthenticatedError (Error):
+    def __init__(self):
+        super().__init__('No authenticated session (did you login?)')
+
+class AuthenticationError (Error):
+    def __init__(self):
+        super().__init__('Authentication failed')
+
 class Client (metaclass = ABCMeta):
 
     @abstractmethod
