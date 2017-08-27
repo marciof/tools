@@ -166,22 +166,21 @@ class Client (metaclass = ABCMeta):
 
         return values if len(values) > 1 else next(iter(values.values()))
 
-class PathEvent (metaclass = ABCMeta):
+class Event (metaclass = ABCMeta):
 
     @abstractmethod
     def apply(self, prefix):
         pass
 
-class CreateFileEvent (PathEvent):
+class CreatedFileEvent (Event):
 
-    def __init__(self, path, mtime, write, logger):
+    def __init__(self, path, access_time, mod_time, write, logger):
         self.path = path
-        self.mtime = mtime
+        self.access_time = access_time
+        self.mod_time = mod_time
         self.write = write
         self.logger = logger.getChild(self.__class__.__name__)
 
-    # FIXME: log size
-    # FIXME: refactor duplicate mtime
     @overrides
     def apply(self, prefix):
         path = os.path.join(prefix, self.path)
@@ -189,17 +188,19 @@ class CreateFileEvent (PathEvent):
         self.logger.debug('Create file at %s', path)
         self.write(path)
 
-        self.logger.debug('Set file modified time to %s', self.mtime)
-        os.utime(path, (self.mtime.timestamp(),) * 2)
+        self.logger.debug('Set file access and modified times to %s and %s',
+            self.access_time, self.mod_time)
+        os.utime(path,
+            (self.access_time.timestamp(), self.mod_time.timestamp()))
 
-class CreateFolderEvent (PathEvent):
+class CreatedFolderEvent (Event):
 
-    def __init__(self, path, mtime, logger):
+    def __init__(self, path, access_time, mod_time, logger):
         self.path = path
-        self.mtime = mtime
+        self.access_time = access_time
+        self.mod_time = mod_time
         self.logger = logger.getChild(self.__class__.__name__)
 
-    # FIXME: refactor duplicate mtime
     @overrides
     def apply(self, prefix):
         path = os.path.join(prefix, self.path)
@@ -207,10 +208,12 @@ class CreateFolderEvent (PathEvent):
         self.logger.debug('Create folder at %s', path)
         os.makedirs(path, exist_ok = True)
 
-        self.logger.debug('Set folder modified time to %s', self.mtime)
-        os.utime(path, (self.mtime.timestamp(),) * 2)
+        self.logger.debug('Set folder access and modified times to %s and %s',
+            self.access_time, self.mod_time)
+        os.utime(path,
+            (self.access_time.timestamp(), self.mod_time.timestamp()))
 
-class DeleteFileEvent (PathEvent):
+class DeletedFileEvent (Event):
 
     def __init__(self, path, logger):
         self.path = path
@@ -222,7 +225,7 @@ class DeleteFileEvent (PathEvent):
         self.logger.debug('Delete file at %s', path)
         os.remove(path)
 
-class DeleteFolderEvent (PathEvent):
+class DeletedFolderEvent (Event):
 
     def __init__(self, path, logger):
         self.path = path
@@ -376,20 +379,23 @@ class OneDriveClient (Client):
 
                 if item.deleted:
                     if is_folder:
-                        yield DeleteFolderEvent(path, self.logger)
+                        yield DeletedFolderEvent(path, self.logger)
                     else:
-                        yield DeleteFileEvent(path, self.logger)
+                        yield DeletedFileEvent(path, self.logger)
 
-                mtime = self.localize_item_last_modified_datetime(item)
+                # FIXME: use created datetime as access time?
+                mod_time = self.localize_item_last_modified_datetime(item)
 
                 if is_folder:
-                    yield CreateFolderEvent(path,
-                        mtime = mtime,
+                    yield CreatedFolderEvent(path,
+                        access_time = mod_time,
+                        mod_time = mod_time,
                         logger = self.logger)
                 else:
                     # FIXME: handle requests.exceptions.ConnectionError
-                    yield CreateFileEvent(path,
-                        mtime = mtime,
+                    yield CreatedFileEvent(path,
+                        access_time = mod_time,
+                        mod_time = mod_time,
                         write = self.client.item(id = item.id).download,
                         logger = self.logger)
 
