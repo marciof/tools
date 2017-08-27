@@ -18,6 +18,7 @@ from .. import client, error, event
 # FIXME: download progress for bigger files?
 # FIXME: handle requests.exceptions.ConnectionError, never give up just sleep?
 # FIXME: handle onedrivesdk.error.OneDriveError unauthenticated (?)
+# FIXME: more correct to use a write/change file event, rather than create?
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
@@ -188,7 +189,6 @@ class OneDriveClient (client.Client):
                         logger = self.logger)
 
             self.state.set(['delta-token'], items.token)
-
             delta_req = onedrivesdk.ItemDeltaRequest.get_next_page_request(
                 items, self.client, options = [])
 

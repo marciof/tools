@@ -17,16 +17,16 @@ from cloudsync.state import FileState, PrefixedState
 # FIXME: prevent overwriting existing files?
 # FIXME: sandbox download folder (never modify anything outside of it)
 # FIXME: rename start command to "download"?
-# FIXME: move this to a "main" script inside the package
+# FIXME: state lock-file?
 
 app_name = 'cloud-sync'
 
 syslog_handler = SysLogHandler(address = '/dev/log')
 syslog_handler.ident = app_name + ': '
 
-root_logger = logging.getLogger(app_name)
-root_logger.setLevel(logging.DEBUG)
-root_logger.addHandler(syslog_handler)
+logger = logging.getLogger(app_name)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(syslog_handler)
 
 clients = {
     'box': box.BoxClient,
@@ -34,8 +34,8 @@ clients = {
 }
 
 def make_client(name):
-    state = PrefixedState([name], FileState(app_name, root_logger))
-    return clients[name](state, root_logger)
+    state = PrefixedState([name], FileState(app_name, logger))
+    return clients[name](state, logger)
 
 def do_login_command(args):
     client = make_client(args.service)
@@ -52,33 +52,35 @@ def do_start_command(args):
     for change in client.list_changes():
         change.apply('foobar')
 
-if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('-v', help = 'verbose output', action = 'store_true',
-        dest = 'is_verbose')
+parser = ArgumentParser()
+parser.add_argument('-v', help = 'verbose output', action = 'store_true',
+    dest = 'is_verbose')
 
-    command_parser = parser.add_subparsers(dest = 'command')
-    command_parser.required = True
+command_parser = parser.add_subparsers(dest = 'command')
+command_parser.required = True
 
-    login_parser = command_parser.add_parser('login', help = 'login to service')
-    login_parser.add_argument('service', help = 'service', choices = clients)
-    login_parser.add_argument('auth_url',
-        help = 'authentication URL', nargs = '?')
-    login_parser.set_defaults(func = do_login_command)
+login_parser = command_parser.add_parser('login', help = 'login to service')
+login_parser.add_argument('service', help = 'service', choices = clients)
+login_parser.add_argument('auth_url', help = 'authentication URL', nargs = '?')
+login_parser.set_defaults(func = do_login_command)
 
-    start_parser = command_parser.add_parser('start', help = 'start sync')
-    start_parser.add_argument('service', help = 'service', choices = clients)
-    start_parser.set_defaults(func = do_start_command)
+start_parser = command_parser.add_parser('start', help = 'start sync')
+start_parser.add_argument('service', help = 'service', choices = clients)
+start_parser.set_defaults(func = do_start_command)
 
-    args = parser.parse_args()
+def main(args = None):
+    parsed_args = parser.parse_args(args)
 
-    if args.is_verbose:
-        root_logger.addHandler(StreamHandler())
+    if parsed_args.is_verbose:
+        logger.addHandler(StreamHandler())
 
     try:
-        args.func(args)
+        parsed_args.func(parsed_args)
     except KeyboardInterrupt as error:
-        root_logger.exception(error)
+        logger.exception(error)
     except Error as error:
-        root_logger.exception(error)
+        logger.exception(error)
         sys.exit(str(error))
+
+if __name__ == '__main__':
+    main()
