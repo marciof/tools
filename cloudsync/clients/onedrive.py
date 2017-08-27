@@ -13,11 +13,11 @@ from overrides import overrides
 # internal
 from .. import client, error, event
 
-# FIXME: persist delta token from last check and at which file for resuming
+# FIXME: persist at which file listing changes was (check hash?) for resuming
 # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
 # FIXME: download progress for bigger files?
-# FIXME: handle requests.exceptions.ConnectionError
-# FIXME: refactor list_changes, too long
+# FIXME: handle requests.exceptions.ConnectionError, never give up just sleep?
+# FIXME: handle onedrivesdk.error.OneDriveError unauthenticated (?)
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
@@ -140,7 +140,8 @@ class OneDriveClient (client.Client):
             logger = self.logger)
 
     @overrides
-    def list_changes(self, delta_token):
+    def list_changes(self):
+        delta_token = self.state.get(['delta-token'])
         self.logger.debug('List changes with delta token %s', delta_token)
         delta_req = self.client.item(id = 'root').delta(delta_token)
 
@@ -149,9 +150,7 @@ class OneDriveClient (client.Client):
             items = delta_req.get()
 
             for item in items:
-                path = os.path.join(
-                    re.sub('^[^:]+:', os.curdir, item.parent_reference.path),
-                    item.name)
+                path = self.get_cloud_item_path(item)
 
                 if self.is_root_item(item):
                     self.logger.debug('Skip root item with ID %s at %s',
@@ -187,6 +186,8 @@ class OneDriveClient (client.Client):
                         write = self.client.item(id = item.id).download,
                         logger = self.logger)
 
+            self.state.set(['delta-token'], items.token)
+
             delta_req = onedrivesdk.ItemDeltaRequest.get_next_page_request(
                 items, self.client, options = [])
 
@@ -194,6 +195,14 @@ class OneDriveClient (client.Client):
     def login(self):
         self.logger.debug('Open browser for user login')
         webbrowser.open(self.auth_provider.get_auth_url(self.redirect_url))
+
+    def get_cloud_item_path(self, item):
+        # The human-readable path comes after the first colon character.
+        # https://dev.onedrive.com/resources/itemReference.htm#remarks
+
+        return os.path.join(
+            re.sub('^[^:]+:', os.curdir, item.parent_reference.path),
+            item.name)
 
     def get_package_item_type(self, item):
         return item._prop_dict['package']['type']
@@ -205,11 +214,9 @@ class OneDriveClient (client.Client):
         return 'root' in item._prop_dict
 
     def localize_item_created_datetime(self, item):
-        return dateutil.parser \
-            .parse(item._prop_dict['createdDateTime']) \
+        return dateutil.parser.parse(item._prop_dict['createdDateTime']) \
             .astimezone()
 
     def localize_item_last_modified_datetime(self, item):
-        return dateutil.parser \
-            .parse(item._prop_dict['lastModifiedDateTime']) \
+        return dateutil.parser.parse(item._prop_dict['lastModifiedDateTime']) \
             .astimezone()

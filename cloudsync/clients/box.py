@@ -104,11 +104,8 @@ class BoxClient (client.Client):
         self.cached_oauth = None
 
     @overrides
-    def list_changes(self, delta_token):
-        if delta_token is None:
-            delta_token = '0'
-
-        events = self.client.events().get_events(stream_position = delta_token)
+    def list_changes(self):
+        events = self.client.events().get_events(stream_position = '0')
         return events['entries']
 
     @overrides

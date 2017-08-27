@@ -49,7 +49,7 @@ def do_start_command(args):
     client = make_client(args.service)
     client.authenticate_session()
 
-    for change in client.list_changes(None):
+    for change in client.list_changes():
         change.apply('foobar')
 
 if __name__ == '__main__':

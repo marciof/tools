@@ -35,7 +35,7 @@ class Client (metaclass = ABCMeta):
         pass
 
     @abstractmethod
-    def list_changes(self, delta_token):
+    def list_changes(self):
         pass
 
     @abstractmethod
