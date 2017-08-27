@@ -8,15 +8,12 @@ from logging import StreamHandler
 from logging.handlers import SysLogHandler
 import os
 import os.path
-import pathlib
 import re
-import stat
 import sys
 from urllib.parse import parse_qs, urlparse
 import webbrowser
 
 # external
-import appdirs
 import boxsdk
 import boxsdk.exception
 import dateutil.parser
@@ -24,9 +21,10 @@ import onedrivesdk
 import onedrivesdk.session
 from overrides import overrides
 
-class Error (Exception):
-    def __str__(self):
-        return ' '.join(map(str, self.args))
+# internal
+from cloudsync import client
+from cloudsync.error import Error
+from cloudsync.state import FileState, PrefixedState
 
 class UnauthenticatedError (Error):
     def __init__(self):
@@ -35,136 +33,6 @@ class UnauthenticatedError (Error):
 class AuthenticationError (Error):
     def __init__(self):
         super().__init__('Authentication failed')
-
-class State (metaclass = ABCMeta):
-
-    @abstractmethod
-    def get(self, namespace):
-        pass
-
-    @abstractmethod
-    def set(self, namespace, value, is_private = False):
-        pass
-
-    @abstractmethod
-    def unset(self, namespace):
-        pass
-
-class PrefixedState (State):
-
-    def __init__(self, prefix, state):
-        self.prefix = prefix
-        self.state = state
-
-    @overrides
-    def get(self, namespace):
-        return self.state.get(self.prefix + namespace)
-
-    @overrides
-    def set(self, namespace, value, is_private = False):
-        return self.state.set(self.prefix + namespace, value, is_private)
-
-    @overrides
-    def unset(self, namespace):
-        return self.state.unset(self.prefix + namespace)
-
-    def __str__(self):
-        return '%s(%s)' % (':'.join(self.prefix), self.state)
-
-class FileState (State):
-
-    def __init__(self, app_name, logger):
-        self.logger = logger.getChild(self.__class__.__name__)
-
-        self.root_path = pathlib.Path(
-            appdirs.user_cache_dir(appname = app_name))
-
-    @overrides
-    def get(self, namespace):
-        path = self._build_path(namespace)
-        self.logger.debug('Get state at %s', path)
-
-        try:
-            return path.read_text()
-        except FileNotFoundError:
-            return None
-
-    @overrides
-    def set(self, namespace, value, is_private = False):
-        path = self._build_path(namespace)
-        os.makedirs(str(path.parent), exist_ok = True)
-        self.logger.debug('Set state at %s', path)
-
-        if is_private:
-            path.touch(mode = stat.S_IRWXU ^ stat.S_IXUSR, exist_ok = True)
-
-        path.write_text(value)
-
-    @overrides
-    def unset(self, namespace):
-        path = self._build_path(namespace)
-        self.logger.debug('Unset state at %s', path)
-        os.remove(str(path))
-
-    def _build_path(self, namespace):
-        if len(namespace) == 0:
-            raise Error('Empty file state namespace')
-
-        path = self.root_path
-
-        for name in namespace:
-            path = path.joinpath('TEMPLATE').with_name(name)
-
-        return path
-
-    def __str__(self):
-        return str(self.root_path)
-
-class Client (metaclass = ABCMeta):
-
-    def __init__(self, state, logger):
-        self.state = state
-        self.logger = logger.getChild(self.__class__.__name__)
-
-    @abstractmethod
-    def authenticate_session(self):
-        pass
-
-    @abstractmethod
-    def authenticate_url(self, url):
-        pass
-
-    @abstractmethod
-    def list_changes(self, delta_token):
-        pass
-
-    @abstractmethod
-    def login(self):
-        pass
-
-    # FIXME: move outside as regular function
-    def parse_auth_url(self, url, query_params):
-        self.logger.debug('Parse authentication URL %s', url)
-
-        try:
-            parsed_url = urlparse(url)
-        except ValueError as e:
-            raise Error('Invalid authentication URL:', url) from e
-
-        values = {}
-        query_string = parse_qs(parsed_url.query)
-
-        for name, description in query_params.items():
-            value = query_string.get(name)
-
-            if value is None:
-                raise Error('No %s found in URL:' % description, url)
-            elif len(value) > 1:
-                raise Error('Multiple %s found in URL:' % description, url)
-            else:
-                values[name] = value[0]
-
-        return values if len(values) > 1 else next(iter(values.values()))
 
 class Event (metaclass = ABCMeta):
 
@@ -287,7 +155,7 @@ class OneDriveSessionState (onedrivesdk.session.Session):
         session._expires_at = int(expires_at)
         return session
 
-class OneDriveClient (Client):
+class OneDriveClient (client.Client):
 
     @overrides
     def __init__(self,
@@ -301,11 +169,11 @@ class OneDriveClient (Client):
             http_provider = None,
             session_type = OneDriveSessionState):
 
-        super().__init__(state, logger)
-
         if http_provider is None:
             http_provider = onedrivesdk.HttpProvider()
 
+        self.state = state
+        self.logger = logger.getChild(self.__class__.__name__)
         self.client_secret = client_secret
         self.redirect_url = redirect_url
 
@@ -334,7 +202,18 @@ class OneDriveClient (Client):
     @overrides
     def authenticate_url(self, url):
         self.logger.debug('Authenticate from auth URL %s', url)
-        auth_code = self.parse_auth_url(url, {'code': 'authentication code'})
+
+        try:
+            parsed_url = urlparse(url)
+        except ValueError as e:
+            raise client.InvalidAuthUrlError(url) from e
+
+        [auth_code] = parse_qs(parsed_url.query).get('code', [None])
+
+        if auth_code is None:
+            raise client.MissingAuthCodeUrlError(url)
+        elif len(auth_code) > 1:
+            raise client.MultipleAuthCodesUrlError(url)
 
         try:
             self.auth_provider.authenticate(
@@ -423,7 +302,7 @@ class OneDriveClient (Client):
             .astimezone()
 
 # FIXME: download
-class BoxClient (Client):
+class BoxClient (client.Client):
 
     # FIXME: handle client secret storage
     @overrides
@@ -434,14 +313,14 @@ class BoxClient (Client):
             client_secret = None,
             redirect_url = 'https://api.box.com/oauth2'):
 
-        super().__init__(state, logger)
-
         if client_id is None:
             client_id = os.environ['BOX_API_CLIENT_ID']
 
         if client_secret is None:
             client_secret = os.environ['BOX_API_CLIENT_SECRET']
 
+        self.state = state
+        self.logger = logger.getChild(self.__class__.__name__)
         self.client = None
         self.client_id = client_id
         self.client_secret = client_secret
@@ -482,19 +361,32 @@ class BoxClient (Client):
     def authenticate_url(self, url):
         self.logger.debug('Authenticate from auth URL %s', url)
 
-        values = self.parse_auth_url(url, {
-            'code': 'authentication code',
-            'state': 'CSRF token',
-        })
+        try:
+            parsed_url = urlparse(url)
+        except ValueError as e:
+            raise client.InvalidAuthUrlError(url) from e
 
-        csrf_token = values['state']
+        [auth_code, *rest] = parse_qs(parsed_url.query).get('code', [None])
+
+        if auth_code is None:
+            raise client.MissingAuthCodeUrlError(url)
+        elif len(rest) > 1:
+            raise client.MultipleAuthCodesUrlError(url)
+
+        [csrf_token, *rest] = parse_qs(parsed_url.query).get('state', [None])
+
+        if csrf_token is None:
+            raise Error('No CSRF token found in URL:', url)
+        elif len(rest) > 1:
+            raise Error('Multiple CSRF tokens found in URL:', url)
+
         stored_csrf_token = self.state.get(['csrf-token'])
 
         if csrf_token != stored_csrf_token:
             raise Error('CSRF token mismatch (did you login recently?):',
                 csrf_token, 'vs', stored_csrf_token)
 
-        self.oauth.authenticate(values['code'])
+        self.oauth.authenticate(auth_code)
         self.state.unset(['csrf-token'])
         self.cached_oauth = None
 
