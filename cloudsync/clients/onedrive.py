@@ -17,8 +17,7 @@ from .. import client, error, event
 # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
 # FIXME: download progress for bigger files?
 # FIXME: handle requests.exceptions.ConnectionError
-# FIXME: refactor, too long
-# FIXME: use created datetime as access time?
+# FIXME: refactor list_changes, too long
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
@@ -173,16 +172,17 @@ class OneDriveClient (client.Client):
                     else:
                         yield event.DeletedFileEvent(path, self.logger)
 
+                created_time = self.localize_item_created_datetime(item)
                 mod_time = self.localize_item_last_modified_datetime(item)
 
                 if is_folder:
                     yield event.CreatedFolderEvent(path,
-                        access_time = mod_time,
+                        access_time = created_time,
                         mod_time = mod_time,
                         logger = self.logger)
                 else:
                     yield event.CreatedFileEvent(path,
-                        access_time = mod_time,
+                        access_time = created_time,
                         mod_time = mod_time,
                         write = self.client.item(id = item.id).download,
                         logger = self.logger)
@@ -203,6 +203,11 @@ class OneDriveClient (client.Client):
 
     def is_root_item(self, item):
         return 'root' in item._prop_dict
+
+    def localize_item_created_datetime(self, item):
+        return dateutil.parser \
+            .parse(item._prop_dict['createdDateTime']) \
+            .astimezone()
 
     def localize_item_last_modified_datetime(self, item):
         return dateutil.parser \
