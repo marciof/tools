@@ -13,6 +13,13 @@ from overrides import overrides
 # internal
 from .. import client, error, event
 
+# FIXME: persist delta token from last check and at which file for resuming
+# FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
+# FIXME: download progress for bigger files?
+# FIXME: handle requests.exceptions.ConnectionError
+# FIXME: refactor, too long
+# FIXME: use created datetime as access time?
+
 class OneDriveSessionState (onedrivesdk.session.Session):
 
     @overrides
@@ -133,11 +140,6 @@ class OneDriveClient (client.Client):
             state = self.state,
             logger = self.logger)
 
-    # FIXME: persist delta token from last check and at which file for resuming
-    # FIXME: retry/backoff mechanisms, https://paperairoplane.net/?p=640
-    # FIXME: download progress for bigger files?
-    # FIXME: handle network disconnects and timeouts gracefully
-    # FIXME: refactor, too long
     @overrides
     def list_changes(self, delta_token):
         self.logger.debug('List changes with delta token %s', delta_token)
@@ -171,7 +173,6 @@ class OneDriveClient (client.Client):
                     else:
                         yield event.DeletedFileEvent(path, self.logger)
 
-                # FIXME: use created datetime as access time?
                 mod_time = self.localize_item_last_modified_datetime(item)
 
                 if is_folder:
@@ -180,7 +181,6 @@ class OneDriveClient (client.Client):
                         mod_time = mod_time,
                         logger = self.logger)
                 else:
-                    # FIXME: handle requests.exceptions.ConnectionError
                     yield event.CreatedFileEvent(path,
                         access_time = mod_time,
                         mod_time = mod_time,
