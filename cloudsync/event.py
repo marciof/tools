@@ -13,8 +13,9 @@ class Event (metaclass = ABCMeta):
 
 class CreatedFileEvent (Event):
 
-    def __init__(self, path, access_time, mod_time, write, logger):
+    def __init__(self, path, size, access_time, mod_time, write, logger):
         self.path = path
+        self.size = size
         self.access_time = access_time
         self.mod_time = mod_time
         self.write = write
@@ -24,7 +25,8 @@ class CreatedFileEvent (Event):
     def apply(self, prefix):
         path = os.path.join(prefix, self.path)
 
-        self.logger.debug('Create file at %s', path)
+        self.logger.debug('Create file at %s with size %s bytes',
+            path, self.size)
         self.write(path)
 
         self.logger.debug('Set file access and modified times to %s and %s',

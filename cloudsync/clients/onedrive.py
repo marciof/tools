@@ -181,6 +181,7 @@ class OneDriveClient (client.Client):
                         logger = self.logger)
                 else:
                     yield event.CreatedFileEvent(path,
+                        size = item.size,
                         access_time = created_time,
                         mod_time = mod_time,
                         write = self.client.item(id = item.id).download,
