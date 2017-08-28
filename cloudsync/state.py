@@ -68,10 +68,12 @@ class FileState (State):
     def set(self, namespace, value, is_private = False):
         path = self._build_path(namespace)
         os.makedirs(str(path.parent), exist_ok = True)
-        self.logger.debug('Set state at %s', path)
 
         if is_private:
+            self.logger.debug('Set private state at %s', path)
             path.touch(mode = stat.S_IRWXU ^ stat.S_IXUSR, exist_ok = True)
+        else:
+            self.logger.debug('Set state at %s with value %s', path, value)
 
         path.write_text(value)
 
