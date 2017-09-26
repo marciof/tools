@@ -19,6 +19,18 @@ from cloudsync.state import FileState, PrefixedState
 # FIXME: rename start command to "download"?
 # FIXME: state lock-file?
 
+# FIXME: chmod -x __main__
+# FIXME: error msg when no args
+# FIXME: executable name when usage info
+
+# https://github.com/OneDrive/onedrive-sdk-python
+# https://docs.microsoft.com/en-us/onedrive/developer/rest-api/api/driveitem_delta
+
+# https://ianhowson.com/blog/file-synchronisation-algorithms/
+
+# https://github.com/box/box-python-sdk
+# https://developer.box.com/v2.0/reference
+
 app_name = 'cloud-sync'
 
 syslog_handler = SysLogHandler(address = '/dev/log')

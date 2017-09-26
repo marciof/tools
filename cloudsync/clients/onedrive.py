@@ -19,6 +19,7 @@ from .. import client, error, event
 # FIXME: handle requests.exceptions.ConnectionError, never give up just sleep?
 # FIXME: handle onedrivesdk.error.OneDriveError unauthenticated (?)
 # FIXME: more correct to use a write/change file event, rather than create?
+# FIXME: receive delta token as a param for list changes?
 
 class OneDriveSessionState (onedrivesdk.session.Session):
 
