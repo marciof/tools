@@ -66,7 +66,8 @@ else
     _host_prompt=
 fi
 
-if _have micro nano; then
+if _have nano; then
+    alias nano='nano -Sw'
     export EDITOR="$NAME" GIT_EDITOR="$NAME"
 fi
 
