@@ -1,6 +1,5 @@
 #!/bin/sh
 # shellcheck disable=SC2039
-
 set -e -u
 
 disable_mode_opt=d

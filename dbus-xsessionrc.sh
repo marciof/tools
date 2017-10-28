@@ -1,7 +1,8 @@
 #!/bin/sh
+# TODO: remove the need to have this script
 set -e -u
 
-app="$(basename "$0" .sh)"
+app="$(basename "$0")"
 path='path=/org/freedesktop/login1'
 interface='interface=org.freedesktop.login1.Manager'
 
