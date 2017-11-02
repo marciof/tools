@@ -263,4 +263,5 @@ shift $((OPTIND - 1))
 # FIXME: take line length into consideration for paging
 # TODO: show intraline (word) colored diff
 # TODO: pydoc
+# TODO: http://www.andre-simon.de/doku/highlight/en/highlight.html
 run_input_modes "$@" | { mode_run_pager || cat; }
