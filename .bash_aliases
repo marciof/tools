@@ -94,12 +94,12 @@ if _have git; then
         __git_complete sb _git_branch
         __git_complete sc _git_commit
         __git_complete sd _git_diff
-        __git_complete sh __gitcomp
         __git_complete sl _git_log
         __git_complete sp _git_push
         __git_complete sr _git_checkout
-        __git_complete ss _git_pull
         __git_complete st _git_status
+        __git_complete sv _git_pull
+        __git_complete sw __gitcomp
 
         unset -f _load_git_completions
     }
@@ -130,7 +130,7 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
 
-    for ALIAS in sa sb sc sd sh sl sp sr ss st; do
+    for ALIAS in sa sb sc sd sl sp sr st sv sw; do
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _$ALIAS $ALIAS"
     done
