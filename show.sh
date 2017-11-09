@@ -11,7 +11,7 @@ mode_help_dir='list directories via "ls", cwd by default'
 # shellcheck disable=SC2034
 mode_help_file='read files via "cat"'
 # shellcheck disable=SC2034
-mode_help_pager='page output via "less", when needed'
+mode_help_pager='page output via "less", as needed'
 # shellcheck disable=SC2034
 mode_help_stdin='read standard input via "cat"'
 # shellcheck disable=SC2034
@@ -64,11 +64,7 @@ mode_run_pager() {
     fi
 
     _pager_buffer_file="$(mktemp)"
-    trap 'rm '"$_pager_buffer_file" EXIT
-
     _pager_line_buffer_file="$(mktemp)"
-    trap 'rm '"$_pager_line_buffer_file" EXIT
-
     _pager_will_activate=
     _pager_cols="$(tput cols)"
     _pager_buffer_max_lines="$(($(tput lines) / 2))"
@@ -103,8 +99,11 @@ mode_run_pager() {
         fi
     done
 
+    rm "$_pager_line_buffer_file"
+
     if [ "$_pager_will_activate" = N ]; then
         cat "$_pager_buffer_file"
+        rm "$_pager_buffer_file"
         exit "$?"
     fi
 
@@ -112,11 +111,11 @@ mode_run_pager() {
         _pager_buffer_max_lines _pager_buffer_lines
 
     _pager_fifo="$(mktemp -u)"
-    trap 'rm '"$_pager_fifo" EXIT
     mkfifo "$_pager_fifo"
 
     { cat "$_pager_buffer_file" - >"$_pager_fifo" <&3 3<&- & } 3<&0
     run_with_mode_options "$mode_options_pager" - Y less <"$_pager_fifo"
+    rm "$_pager_buffer_file" "$_pager_fifo"
     unset _pager_buffer_file _pager_fifo
 }
 
@@ -191,11 +190,12 @@ run_with_mode_options() {
             | xargs -d "$arg_var_separator" -- "$@"
     else
         _run_args_file="$(mktemp)"
-        trap 'rm '"$_run_args_file" EXIT
 
         printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
             >"$_run_args_file"
         xargs -a "$_run_args_file" -d "$arg_var_separator" -- "$@"
+
+        rm "$_run_args_file"
         unset _run_args_file
     fi
 
@@ -283,7 +283,6 @@ process_options "$@"
 shift $((OPTIND - 1))
 
 # FIXME: pass-through mode's exit status code on error
+# TODO: GNU Source-highlight, Andre Simon Highlight, coderay, rougify
 # TODO: show intraline (word) colored diff
-# TODO: pydoc
-# TODO: http://www.andre-simon.de/doku/highlight/en/highlight.html
 run_input_modes "$@" | { mode_run_pager || cat; }
