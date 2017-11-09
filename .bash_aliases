@@ -90,21 +90,21 @@ if _have git; then
             _completion_loader git
         fi
 
-        __git_complete sa _git_add
-        __git_complete sb _git_branch
-        __git_complete sc _git_commit
-        __git_complete sd _git_diff
-        __git_complete sl _git_log
-        __git_complete sp _git_push
-        __git_complete sr _git_checkout
-        __git_complete st _git_status
-        __git_complete sv _git_pull
-        __git_complete sw __gitcomp
+        __git_complete a _git_add
+        __git_complete b _git_branch
+        __git_complete c _git_commit
+        __git_complete d _git_diff
+        __git_complete h __gitcomp
+        __git_complete l _git_log
+        __git_complete p _git_push
+        __git_complete r _git_checkout
+        __git_complete t _git_status
+        __git_complete v _git_pull
 
         unset -f _load_git_completions
     }
 
-    sc() {
+    c() {
         local cached=$(git diff --cached --name-only | wc -l)
 
         if  [ $# -eq 0 -a $cached -eq 0 ]; then
@@ -114,15 +114,15 @@ if _have git; then
         fi
     }
 
-    alias sa='git add "$@"'
-    alias sb='git branch -vv "$@"'
-    alias sd='git diff "$@"'
-    alias sl='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
-    alias sp='git push "$@"'
-    alias sr='git checkout "$@"'
-    alias st='git status "$@"'
-    alias sv='git pull "$@"'
-    alias sw='git blame --date=short "$@"'
+    alias a='git add "$@"'
+    alias b='git branch -vv "$@"'
+    alias d='git diff "$@"'
+    alias h='git blame --date=short "$@"'
+    alias l='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
+    alias p='git push "$@"'
+    alias r='git checkout "$@"'
+    alias t='git status "$@"'
+    alias v='git pull "$@"'
 
     git config --global push.default simple
     git config --global branch.autosetuprebase always
@@ -130,7 +130,7 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
 
-    for ALIAS in sa sb sc sd sl sp sr st sv sw; do
+    for ALIAS in a b c d h l p r t v w; do
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _$ALIAS $ALIAS"
     done
