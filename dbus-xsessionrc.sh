@@ -1,5 +1,4 @@
 #!/bin/sh
-# TODO: remove the need to have this script
 set -e -u
 
 app="$(basename "$0")"

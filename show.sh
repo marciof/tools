@@ -66,27 +66,51 @@ mode_run_pager() {
     _pager_buffer_file="$(mktemp)"
     trap 'rm '"$_pager_buffer_file" EXIT
 
-    _pager_buffer_len=0
-    _pager_buffer_max_len="$(($(tput lines) / 2))"
+    _pager_line_buffer_file="$(mktemp)"
+    trap 'rm '"$_pager_line_buffer_file" EXIT
 
-    # Can't use `head` here since it causes `git` to stop output abruptly.
-    while IFS= read -r buffered_line; do
-        _pager_buffer_len=$((_pager_buffer_len + 1))
-        printf '%s\n' "$buffered_line" >>"$_pager_buffer_file"
+    _pager_will_activate=
+    _pager_cols="$(tput cols)"
+    _pager_buffer_max_lines="$(($(tput lines) / 2))"
+    _pager_buffer_lines=0
 
-        if [ "$_pager_buffer_len" -ge "$_pager_buffer_max_len" ]; then
+    while true; do
+        _num_lines="$(dd bs=1 "count=$_pager_cols" 2>/dev/null \
+            | tee "$_pager_line_buffer_file" \
+            | tee -a "$_pager_buffer_file" \
+            | wc -l)"
+
+        if find "$_pager_line_buffer_file" \
+                -size "${_pager_cols}c" \
+                -exec false "{}" +; then
+
+            # Read less than input had available.
+            _pager_will_activate=N
+            break
+        fi
+
+        if [ "$_num_lines" -eq 0 ]; then
+            # If no newlines were found then it's because there may be more
+            # input and so it should count as one virtual line regardless.
+            _num_lines=1
+        fi
+
+        _pager_buffer_lines="$((_pager_buffer_lines + _num_lines))"
+
+        if [ "$_pager_buffer_lines" -ge "$_pager_buffer_max_lines" ]; then
+            _pager_will_activate=Y
             break
         fi
     done
 
-    unset _pager_num_buffer_lines _pager_max_buffer_lines
-
-    if ! IFS= read -r buffered_line; then
+    if [ "$_pager_will_activate" = N ]; then
         cat "$_pager_buffer_file"
         exit "$?"
     fi
 
-    printf '%s\n' "$buffered_line" >>"$_pager_buffer_file"
+    unset _pager_line_buffer_file _pager_will_activate _pager_cols \
+        _pager_buffer_max_lines _pager_buffer_lines
+
     _pager_fifo="$(mktemp -u)"
     trap 'rm '"$_pager_fifo" EXIT
     mkfifo "$_pager_fifo"
@@ -259,8 +283,6 @@ process_options "$@"
 shift $((OPTIND - 1))
 
 # FIXME: pass-through mode's exit status code on error
-# FIXME: print files that don't end in a newline
-# FIXME: take line length into consideration for paging
 # TODO: show intraline (word) colored diff
 # TODO: pydoc
 # TODO: http://www.andre-simon.de/doku/highlight/en/highlight.html
