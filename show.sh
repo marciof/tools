@@ -29,7 +29,7 @@ arg_var_separator="$(printf '\036')" # ASCII RS
 if [ -t 1 ]; then
     is_tty_out=Y
 else
-    is_tty_out=
+    is_tty_out=N
 fi
 
 mode_run_dir() {
@@ -39,7 +39,7 @@ mode_run_dir() {
 
     set -- "$@" '' ls
 
-    if [ -n "$is_tty_out" ]; then
+    if [ "$is_tty_out" = Y ]; then
         set -- "$@" -C --color=always
     fi
 
@@ -59,7 +59,7 @@ mode_can_pager() {
 }
 
 mode_run_pager() {
-    if [ -z "$is_tty_out" ]; then
+    if [ "$is_tty_out" = N ]; then
         return "$status_cant_execute"
     fi
 
@@ -136,7 +136,7 @@ mode_run_vcs() {
 
     set -- "$@" '' git --no-pager show
 
-    if [ -n "$is_tty_out" ]; then
+    if [ "$is_tty_out" = Y ]; then
         set -- "$@" --color=always
     fi
 
