@@ -70,7 +70,7 @@ mode_run_pager() {
     _pager_buffer_max_lines="$(($(tput lines) / 2))"
     _pager_buffer_lines=0
 
-    while true; do
+    while [ -z "$_pager_will_activate" ]; do
         _num_lines="$(dd bs=1 "count=$_pager_cols" 2>/dev/null \
             | tee "$_pager_line_buffer_file" \
             | tee -a "$_pager_buffer_file" \
@@ -82,7 +82,6 @@ mode_run_pager() {
 
             # Read less than input had available.
             _pager_will_activate=N
-            break
         fi
 
         if [ "$_num_lines" -eq 0 ]; then
@@ -95,7 +94,6 @@ mode_run_pager() {
 
         if [ "$_pager_buffer_lines" -ge "$_pager_buffer_max_lines" ]; then
             _pager_will_activate=Y
-            break
         fi
     done
 
