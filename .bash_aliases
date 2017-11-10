@@ -6,7 +6,7 @@ fi
 
 _have() {
     for NAME; do
-        if command -v "$NAME" > /dev/null; then
+        if command -v "$NAME" >/dev/null; then
             return 0
         fi
     done
@@ -17,7 +17,7 @@ _have() {
 
 child_dir="$(readlink -e "$(dirname "$BASH_SOURCE")")"
 
-for child in $(ls -1 "$BASH_SOURCE".* 2> /dev/null); do
+for child in $(ls -1 "$BASH_SOURCE".* 2>/dev/null); do
     . "$child_dir/$(basename "$child")"
     echo "* Loaded: $child" >&2
 done
@@ -86,7 +86,7 @@ fi
 
 if _have git; then
     _load_git_completions() {
-        if command -v _completion_loader > /dev/null; then
+        if command -v _completion_loader >/dev/null; then
             _completion_loader git
         fi
 
@@ -124,8 +124,7 @@ if _have git; then
     alias t='git status "$@"'
     alias v='git pull "$@"'
 
-    git config --global push.default simple
-    git config --global branch.autosetuprebase always
+    git config --global branch.autoSetupRebase always
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
@@ -135,7 +134,7 @@ if _have git; then
         eval "complete -F _$ALIAS $ALIAS"
     done
 
-    if ! command -v __git_ps1 > /dev/null; then
+    if ! command -v __git_ps1 >/dev/null; then
         echo "* Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh" >&2
     else
         _git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$_color_off\]"
