@@ -64,49 +64,29 @@ mode_run_pager() {
     fi
 
     _pager_buffer_file="$(mktemp)"
-    _pager_line_buffer_file="$(mktemp)"
-    _pager_will_activate=
-    _pager_cols="$(tput cols)"
-    _pager_buffer_max_lines="$(($(tput lines) / 2))"
-    _pager_buffer_lines=0
+    _pager_max_cols="$(tput cols)"
+    _pager_min_lines=$(($(tput lines) / 2))
+    _pager_min_bytes=$((_pager_max_cols * _pager_min_lines + 1))
 
-    while [ -z "$_pager_will_activate" ]; do
-        _num_lines="$(dd bs=1 "count=$_pager_cols" 2>/dev/null \
-            | tee "$_pager_line_buffer_file" \
-            | tee -a "$_pager_buffer_file" \
-            | wc -l)"
+    _pager_newlines_bytes="$(dd bs=1 "count=$_pager_min_bytes" 2>/dev/null \
+        | tee "$_pager_buffer_file" \
+        | wc -l -c)"
 
-        if find "$_pager_line_buffer_file" \
-                -size "${_pager_cols}c" \
-                -exec false "{}" +; then
+    _pager_bytes="${_pager_newlines_bytes##* }"
 
-            # Read less than input had available.
-            _pager_will_activate=N
+    if [ "$_pager_bytes" -ne "$_pager_min_bytes" ]; then
+        # Extract and trim whitespace.
+        _pager_newlines="${_pager_newlines_bytes% *}"
+        _pager_newlines="$((_pager_newlines))"
+
+        if [ $((_pager_newlines + _pager_bytes / _pager_max_cols)) \
+                -le "$_pager_min_lines" ]; then
+
+            cat "$_pager_buffer_file"
+            rm "$_pager_buffer_file"
+            return
         fi
-
-        if [ "$_num_lines" -eq 0 ]; then
-            # If no newlines were found then it's because there may be more
-            # input and so it should count as one virtual line regardless.
-            _num_lines=1
-        fi
-
-        _pager_buffer_lines="$((_pager_buffer_lines + _num_lines))"
-
-        if [ "$_pager_buffer_lines" -ge "$_pager_buffer_max_lines" ]; then
-            _pager_will_activate=Y
-        fi
-    done
-
-    rm "$_pager_line_buffer_file"
-
-    if [ "$_pager_will_activate" = N ]; then
-        cat "$_pager_buffer_file"
-        rm "$_pager_buffer_file"
-        exit "$?"
     fi
-
-    unset _pager_line_buffer_file _pager_will_activate _pager_cols \
-        _pager_buffer_max_lines _pager_buffer_lines
 
     _pager_fifo="$(mktemp -u)"
     mkfifo "$_pager_fifo"
@@ -114,7 +94,6 @@ mode_run_pager() {
     { cat "$_pager_buffer_file" - >"$_pager_fifo" <&3 3<&- & } 3<&0
     run_with_mode_options "$mode_options_pager" - Y less <"$_pager_fifo"
     rm "$_pager_buffer_file" "$_pager_fifo"
-    unset _pager_buffer_file _pager_fifo
 }
 
 mode_run_stdin() {
@@ -162,7 +141,6 @@ add_mode_option() {
 
     if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
         echo "$1: missing mode name/option" >&2
-        unset _add_opt_name
         return 1
     fi
 
@@ -171,7 +149,6 @@ add_mode_option() {
     _add_opt_current="$(var "mode_options_$_add_opt_name")"
 
     export "mode_options_$_add_opt_name=$_add_opt_current${_add_opt_current:+$arg_var_separator}$_add_opt_option"
-    unset _add_opt_name _add_opt_option _add_opt_current
     return 0
 }
 
@@ -194,10 +171,7 @@ run_with_mode_options() {
         xargs -a "$_run_args_file" -d "$arg_var_separator" -- "$@"
 
         rm "$_run_args_file"
-        unset _run_args_file
     fi
-
-    unset _run_options _run_input _run_uses_stdin
 }
 
 print_usage() {
@@ -224,8 +198,6 @@ USAGE
         printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
             "$(var "mode_help_$_help_mode")"
     done
-
-    unset _help_mode _help_has
 }
 
 process_options() {
@@ -243,13 +215,10 @@ process_options() {
                 ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
-                unset _getopt_opt
                 return 1
                 ;;
         esac
     done
-
-    unset _getopt_opt
 }
 
 run_input_modes() {
@@ -265,11 +234,9 @@ run_input_modes() {
         done
 
         echo "$_run_all_input: unsupported input" >&2
-        unset _run_all_input _run_all_mode
         return 1
     done
 
-    unset _run_all_input _run_all_mode
     return 0
 }
 
