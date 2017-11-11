@@ -1,5 +1,10 @@
 #!/bin/sh
 # shellcheck disable=SC2039
+
+# TODO: GNU Source-highlight, Andre Simon Highlight, Pygments, coderay, rougify
+# TODO: pass-through mode's exit status code on error
+# TODO: word colored diff
+
 set -e -u
 
 disable_mode_opt=d
@@ -226,7 +231,7 @@ run_input_modes() {
         set -- .
     fi
 
-    for _run_all_input; do
+    for _run_all_input in "$@"; do
         for _run_all_mode in file dir vcs; do
             if "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
@@ -246,8 +251,4 @@ var() {
 
 process_options "$@"
 shift $((OPTIND - 1))
-
-# FIXME: pass-through mode's exit status code on error
-# TODO: GNU Source-highlight, Andre Simon Highlight, coderay, rougify
-# TODO: show intraline (word) colored diff
 run_input_modes "$@" | { mode_run_pager || cat; }
