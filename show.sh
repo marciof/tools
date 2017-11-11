@@ -24,7 +24,7 @@ mode_options_stdin=
 mode_options_vcs=
 
 status_cant_execute=126
-arg_var_separator="$(printf '\036')" # ASCII RS
+arg_var_separator="$(printf '\036')" # ASCII RS char
 
 if [ -t 1 ]; then
     is_tty_out=Y
@@ -37,7 +37,7 @@ mode_run_dir() {
         return "$status_cant_execute"
     fi
 
-    set -- "$@" '' ls
+    set -- "$@" N ls
 
     if [ "$is_tty_out" = Y ]; then
         set -- "$@" -C --color=always
@@ -48,7 +48,7 @@ mode_run_dir() {
 
 mode_run_file() {
     if [ -e "$1" ] && [ ! -d "$1" ]; then
-        run_with_mode_options "$mode_options_file" "$1" '' cat
+        run_with_mode_options "$mode_options_file" "$1" N cat
     else
         return "$status_cant_execute"
     fi
@@ -113,7 +113,7 @@ mode_run_vcs() {
         return "$status_cant_execute"
     fi
 
-    set -- "$@" '' git --no-pager show
+    set -- "$@" N git --no-pager show
 
     if [ "$is_tty_out" = Y ]; then
         set -- "$@" --color=always
@@ -160,7 +160,7 @@ run_with_mode_options() {
 
     if [ -z "$_run_opts" ]; then
         "$@" "$_run_input"
-    elif [ -z "$_run_uses_stdin" ]; then
+    elif [ "$_run_uses_stdin" = N ]; then
         printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
             | xargs -d "$arg_var_separator" -- "$@"
     else
