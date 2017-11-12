@@ -51,3 +51,10 @@ Run `./dbus-xsessionrc.sh` at login.
 # Digital clock format
 
     %-l:%M%P %a %-m/%-e
+
+# Login screen background
+
+`/etc/lightdm/lightdm-gtk-greeter.conf`:
+
+    [greeter]
+    background=COLOR-OR-PATH-TO-IMAGE-FILE
