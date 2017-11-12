@@ -8,3 +8,5 @@ doesn't know anyone in the party. We can only ask questions like "does
 A know B? “. Find the stranger (celebrity) in minimum number of
 questions.
 """
+
+# TODO
