@@ -70,27 +70,18 @@ mode_run_pager() {
 
     _pager_buffer_file="$(mktemp)"
     _pager_max_cols="$(tput cols)"
-    _pager_min_lines=$(($(tput lines) / 2))
-    _pager_min_bytes=$((_pager_max_cols * _pager_min_lines + 1))
+    _pager_max_lines=$(($(tput lines) / 2))
+    _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
 
-    _pager_newlines_bytes="$(dd bs=1 "count=$_pager_min_bytes" 2>/dev/null \
+    _pager_lines="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null \
         | tee "$_pager_buffer_file" \
-        | wc -l -c)"
+        | fold -b -w "$_pager_max_cols" \
+        | wc -l)"
 
-    _pager_bytes="${_pager_newlines_bytes##* }"
-
-    if [ "$_pager_bytes" -ne "$_pager_min_bytes" ]; then
-        # Extract and trim whitespace.
-        _pager_newlines="${_pager_newlines_bytes% *}"
-        _pager_newlines="$((_pager_newlines))"
-
-        if [ $((_pager_newlines + _pager_bytes / _pager_max_cols)) \
-                -le "$_pager_min_lines" ]; then
-
-            cat "$_pager_buffer_file"
-            rm "$_pager_buffer_file"
-            return
-        fi
+    if [ "$_pager_lines" -le "$_pager_max_lines" ]; then
+        cat "$_pager_buffer_file"
+        rm "$_pager_buffer_file"
+        return
     fi
 
     _pager_fifo="$(mktemp -u)"
