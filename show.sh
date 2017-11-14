@@ -68,28 +68,26 @@ mode_run_pager() {
         return "$status_cant_execute"
     fi
 
-    _pager_buffer_file="$(mktemp)"
+    _pager_buffer="$(mktemp)"
     _pager_max_cols="$(tput cols)"
     _pager_max_lines=$(($(tput lines) / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
 
-    _pager_lines="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null \
-        | tee "$_pager_buffer_file" \
-        | fold -b -w "$_pager_max_cols" \
-        | wc -l)"
+    dd bs=1 "count=$_pager_max_bytes" "of=$_pager_buffer" 2>/dev/null
+    _pager_lines="$(fold -b -w "$_pager_max_cols" "$_pager_buffer" | wc -l)"
 
     if [ "$_pager_lines" -le "$_pager_max_lines" ]; then
-        cat "$_pager_buffer_file"
-        rm "$_pager_buffer_file"
+        cat "$_pager_buffer"
+        rm "$_pager_buffer"
         return
     fi
 
     _pager_fifo="$(mktemp -u)"
     mkfifo "$_pager_fifo"
 
-    { cat "$_pager_buffer_file" - >"$_pager_fifo" <&3 3<&- & } 3<&0
+    { cat "$_pager_buffer" - >"$_pager_fifo" <&3 3<&- & } 3<&0
     run_with_mode_options "$mode_options_pager" - Y less <"$_pager_fifo"
-    rm "$_pager_buffer_file" "$_pager_fifo"
+    rm "$_pager_buffer" "$_pager_fifo"
 }
 
 mode_run_stdin() {
