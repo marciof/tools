@@ -37,6 +37,10 @@ else
     is_tty_out=N
 fi
 
+mode_can_dir() {
+    return 0
+}
+
 mode_run_dir() {
     if [ ! -d "$1" ]; then
         return "$status_cant_execute"
@@ -49,6 +53,10 @@ mode_run_dir() {
     fi
 
     run_with_mode_options "$mode_options_dir" "$@"
+}
+
+mode_can_file() {
+    return 0
 }
 
 mode_run_file() {
@@ -90,6 +98,10 @@ mode_run_pager() {
     rm "$_pager_buffer" "$_pager_fifo"
 }
 
+mode_can_stdin() {
+    return 0
+}
+
 mode_run_stdin() {
     if [ ! -t 0 ]; then
         run_with_mode_options "$mode_options_stdin" - Y cat
@@ -127,6 +139,7 @@ assert_mode_exists() {
 
 disable_mode() {
     assert_mode_exists "$1"
+    eval "mode_can_$1() { return 1; }"
     eval "mode_run_$1() { return $status_cant_execute; }"
 }
 
@@ -216,7 +229,7 @@ process_options() {
 }
 
 run_input_modes() {
-    if ! mode_run_stdin && [ $# -eq 0 ]; then
+    if ! mode_run_stdin && mode_can_dir && [ $# -eq 0 ]; then
         set -- .
     fi
 
