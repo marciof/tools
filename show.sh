@@ -71,7 +71,7 @@ mode_has_file() {
 }
 
 mode_run_file() {
-    if mode_can_color; then
+    if mode_has_color && mode_can_color; then
         run_with_mode_options "$mode_options_file" N cat "$1" \
             | mode_run_color "$1"
     else
@@ -119,7 +119,7 @@ mode_has_stdin() {
 }
 
 mode_run_stdin() {
-    if mode_can_color; then
+    if mode_has_color && mode_can_color; then
         run_with_mode_options "$mode_options_stdin" Y cat | mode_run_color
     else
         run_with_mode_options "$mode_options_stdin" Y cat
