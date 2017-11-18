@@ -1,16 +1,15 @@
 #!/bin/sh
 # shellcheck disable=SC2039
-
-# TODO: GNU Source-highlight, Andre Simon Highlight, Pygments, coderay, rougify
-# TODO: pass-through mode's exit status code on error
-# TODO: word colored diff
-
 set -e -u
+
+arg_var_separator="$(printf '\036')" # ASCII RS char
 
 disable_mode_opt=d
 help_opt=h
 mode_opt=p
 
+# shellcheck disable=SC2034
+mode_help_color='syntax highlight via "highlight", when possible'
 # shellcheck disable=SC2034
 mode_help_dir='list directories via "ls", cwd by default'
 # shellcheck disable=SC2034
@@ -22,19 +21,30 @@ mode_help_stdin='read standard input via "cat"'
 # shellcheck disable=SC2034
 mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
+mode_options_color=
 mode_options_dir=
 mode_options_file=
 mode_options_pager=
 mode_options_stdin=
 mode_options_vcs=
 
-arg_var_separator="$(printf '\036')" # ASCII RS char
-
 if [ -t 1 ]; then
     is_tty_out=Y
 else
     is_tty_out=N
 fi
+
+mode_can_color() {
+    test "$is_tty_out" = Y
+}
+
+mode_has_color() {
+    command -v highlight >/dev/null
+}
+
+mode_run_color() {
+    run_with_mode_options "$mode_options_color" N highlight --force -O ansi "$@"
+}
 
 mode_can_dir() {
     test -d "$1"
@@ -45,13 +55,11 @@ mode_has_dir() {
 }
 
 mode_run_dir() {
-    set -- "$@" N ls
-
     if [ "$is_tty_out" = Y ]; then
-        set -- "$@" -C --color=always
+        set -- -C --color=always "$@"
     fi
 
-    run_with_mode_options "$mode_options_dir" "$@"
+    run_with_mode_options "$mode_options_dir" N ls "$@"
 }
 
 mode_can_file() {
@@ -63,7 +71,12 @@ mode_has_file() {
 }
 
 mode_run_file() {
-    run_with_mode_options "$mode_options_file" "$1" N cat
+    if mode_can_color; then
+        run_with_mode_options "$mode_options_file" N cat "$1" \
+            | mode_run_color "$1"
+    else
+        run_with_mode_options "$mode_options_file" N cat "$1"
+    fi
 }
 
 mode_can_pager() {
@@ -93,7 +106,7 @@ mode_run_pager() {
     mkfifo "$_pager_fifo"
 
     { cat "$_pager_buffer" - >"$_pager_fifo" <&3 3<&- & } 3<&0
-    run_with_mode_options "$mode_options_pager" - Y less <"$_pager_fifo"
+    run_with_mode_options "$mode_options_pager" Y less <"$_pager_fifo"
     rm "$_pager_buffer" "$_pager_fifo"
 }
 
@@ -106,7 +119,11 @@ mode_has_stdin() {
 }
 
 mode_run_stdin() {
-    run_with_mode_options "$mode_options_stdin" - Y cat
+    if mode_can_color; then
+        run_with_mode_options "$mode_options_stdin" Y cat | mode_run_color
+    else
+        run_with_mode_options "$mode_options_stdin" Y cat
+    fi
 }
 
 mode_can_vcs() {
@@ -118,13 +135,11 @@ mode_has_vcs() {
 }
 
 mode_run_vcs() {
-    set -- "$@" N git --no-pager show
-
     if [ "$is_tty_out" = Y ]; then
-        set -- "$@" --color=always
+        set -- --color=always "$@"
     fi
 
-    run_with_mode_options "$mode_options_vcs" "$@"
+    run_with_mode_options "$mode_options_vcs" N git --no-pager show "$@"
 }
 
 assert_mode_exists() {
@@ -161,22 +176,17 @@ add_mode_option() {
 
 run_with_mode_options() {
     _run_opts="$1"
-    _run_input="$2"
-    _run_uses_stdin="$3"
-    shift 3
+    _run_uses_stdin="$2"
+    shift 2
 
     if [ -z "$_run_opts" ]; then
-        "$@" "$_run_input"
+        "$@"
     elif [ "$_run_uses_stdin" = N ]; then
-        printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
-            | xargs -d "$arg_var_separator" -- "$@"
+        printf %s "$_run_opts" | xargs -d "$arg_var_separator" -- "$@"
     else
         _run_args_file="$(mktemp)"
-
-        printf %s "$_run_opts${_run_opts:+$arg_var_separator}$_run_input" \
-            >"$_run_args_file"
+        printf %s "$_run_opts" >"$_run_args_file"
         xargs -a "$_run_args_file" -d "$arg_var_separator" -- "$@"
-
         rm "$_run_args_file"
     fi
 }
@@ -193,7 +203,7 @@ Options:
 Mode:
 USAGE
 
-    for _help_mode in stdin file dir vcs pager; do
+    for _help_mode in color dir file pager stdin vcs; do
         if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
             || "mode_has_$_help_mode"
         then
