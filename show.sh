@@ -28,7 +28,6 @@ mode_options_pager=
 mode_options_stdin=
 mode_options_vcs=
 
-status_cant_execute=126
 arg_var_separator="$(printf '\036')" # ASCII RS char
 
 if [ -t 1 ]; then
@@ -38,14 +37,14 @@ else
 fi
 
 mode_can_dir() {
+    test -d "$1"
+}
+
+mode_has_dir() {
     return 0
 }
 
 mode_run_dir() {
-    if [ ! -d "$1" ]; then
-        return "$status_cant_execute"
-    fi
-
     set -- "$@" N ls
 
     if [ "$is_tty_out" = Y ]; then
@@ -56,26 +55,26 @@ mode_run_dir() {
 }
 
 mode_can_file() {
+    test -e "$1" && test ! -d "$1"
+}
+
+mode_has_file() {
     return 0
 }
 
 mode_run_file() {
-    if [ -e "$1" ] && [ ! -d "$1" ]; then
-        run_with_mode_options "$mode_options_file" "$1" N cat
-    else
-        return "$status_cant_execute"
-    fi
+    run_with_mode_options "$mode_options_file" "$1" N cat
 }
 
 mode_can_pager() {
+    test "$is_tty_out" = Y
+}
+
+mode_has_pager() {
     command -v less >/dev/null
 }
 
 mode_run_pager() {
-    if [ "$is_tty_out" = N ]; then
-        return "$status_cant_execute"
-    fi
-
     _pager_buffer="$(mktemp)"
     _pager_max_cols="$(tput cols)"
     _pager_max_lines=$(($(tput lines) / 2))
@@ -99,26 +98,26 @@ mode_run_pager() {
 }
 
 mode_can_stdin() {
+    test ! -t 0
+}
+
+mode_has_stdin() {
     return 0
 }
 
 mode_run_stdin() {
-    if [ ! -t 0 ]; then
-        run_with_mode_options "$mode_options_stdin" - Y cat
-    else
-        return "$status_cant_execute"
-    fi
+    run_with_mode_options "$mode_options_stdin" - Y cat
 }
 
 mode_can_vcs() {
+    git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null
+}
+
+mode_has_vcs() {
     command -v git >/dev/null
 }
 
 mode_run_vcs() {
-    if ! git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null; then
-        return "$status_cant_execute"
-    fi
-
     set -- "$@" N git --no-pager show
 
     if [ "$is_tty_out" = Y ]; then
@@ -129,7 +128,7 @@ mode_run_vcs() {
 }
 
 assert_mode_exists() {
-    if ! type "mode_run_$1" >/dev/null 2>&1; then
+    if ! type "mode_has_$1" >/dev/null 2>&1; then
         echo "$1: no such mode" >&2
         return 1
     else
@@ -140,7 +139,8 @@ assert_mode_exists() {
 disable_mode() {
     assert_mode_exists "$1"
     eval "mode_can_$1() { return 1; }"
-    eval "mode_run_$1() { return $status_cant_execute; }"
+    eval "mode_has_$1() { return 1; }"
+    eval "mode_run_$1() { return 1; }"
 }
 
 add_mode_option() {
@@ -194,8 +194,8 @@ Mode:
 USAGE
 
     for _help_mode in stdin file dir vcs pager; do
-        if ! type "mode_can_$_help_mode" >/dev/null 2>&1 \
-            || "mode_can_$_help_mode"
+        if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
+            || "mode_has_$_help_mode"
         then
             _help_has=' '
         else
@@ -229,13 +229,16 @@ process_options() {
 }
 
 run_input_modes() {
-    if ! mode_run_stdin && mode_can_dir && [ $# -eq 0 ]; then
+    if mode_can_stdin; then
+        mode_run_stdin
+    elif mode_has_dir && [ $# -eq 0 ]; then
         set -- .
     fi
 
     for _run_all_input in "$@"; do
         for _run_all_mode in file dir vcs; do
-            if "mode_run_$_run_all_mode" "$_run_all_input"; then
+            if "mode_can_$_run_all_mode" "$_run_all_input" \
+                    && "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
             fi
         done
@@ -253,4 +256,9 @@ var() {
 
 process_options "$@"
 shift $((OPTIND - 1))
-run_input_modes "$@" | { mode_run_pager || cat; }
+
+if mode_can_pager; then
+    run_input_modes "$@" | mode_run_pager
+else
+    run_input_modes "$@"
+fi
