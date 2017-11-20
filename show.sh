@@ -43,7 +43,8 @@ mode_has_color() {
 }
 
 mode_run_color() {
-    run_with_mode_options "$mode_options_color" N highlight --force -O ansi "$@"
+    run_with_mode_options "$mode_options_color" N \
+        highlight --force -O ansi "$@" 2>/dev/null
 }
 
 mode_can_dir() {
