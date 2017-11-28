@@ -103,12 +103,8 @@ mode_run_pager() {
         return
     fi
 
-    _pager_fifo="$(mktemp -u)"
-    mkfifo "$_pager_fifo"
-
-    { cat "$_pager_buffer" - >"$_pager_fifo" <&3 3<&- & } 3<&0
-    run_with_mode_options "$mode_options_pager" Y less <"$_pager_fifo"
-    rm "$_pager_buffer" "$_pager_fifo"
+    cat "$_pager_buffer" - | run_with_mode_options "$mode_options_pager" Y less
+    rm "$_pager_buffer"
 }
 
 mode_can_stdin() {
