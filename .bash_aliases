@@ -129,7 +129,7 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
 
-    for ALIAS in a b c d h l p r t v w; do
+    for ALIAS in a b c d h l p r t v; do
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _$ALIAS $ALIAS"
     done
