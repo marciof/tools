@@ -9,7 +9,7 @@ help_opt=h
 mode_opt=p
 
 # shellcheck disable=SC2034
-mode_help_color='syntax highlight via "highlight", when possible'
+mode_help_color="syntax highlight via Andre Simon's \"highlight\", when possible"
 # shellcheck disable=SC2034
 mode_help_dir='list directories via "ls", cwd by default'
 # shellcheck disable=SC2034
