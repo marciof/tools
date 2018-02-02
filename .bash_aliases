@@ -90,6 +90,11 @@ if _have git; then
             _completion_loader git
         fi
 
+        if ! command -v __git_complete >/dev/null; then
+            printf "\n* Missing: bash-completion for Git\n" >&2
+            return
+        fi
+
         __git_complete a _git_add
         __git_complete b _git_branch
         __git_complete c _git_commit
