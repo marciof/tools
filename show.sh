@@ -4,9 +4,10 @@ set -e -u
 
 arg_var_separator="$(printf '\036')" # ASCII RS char
 
+# TODO: Add mode option shorthand flag for when there's only one active mode.
 disable_mode_opt=d
 help_opt=h
-mode_opt=p
+mode_option_opt=p
 
 # shellcheck disable=SC2034
 mode_help_color="syntax highlight via Andre Simon's \"highlight\", when possible"
@@ -195,7 +196,7 @@ Usage: $(basename "$0") [OPTION]... [INPUT]...
 Options:
   -$help_opt           display this help and exit
   -$disable_mode_opt NAME      disable a mode
-  -$mode_opt NAME=OPT  pass an option to a mode
+  -$mode_option_opt NAME=OPT  pass an option to a mode
 
 Mode:
 USAGE
@@ -215,7 +216,7 @@ USAGE
 }
 
 process_options() {
-    while getopts "$disable_mode_opt:$help_opt$mode_opt:" _getopt_opt "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:" _getopt_opt "$@"; do
         case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
@@ -224,7 +225,7 @@ process_options() {
                 print_usage
                 exit 0
                 ;;
-            "$mode_opt")
+            "$mode_option_opt")
                 add_mode_option "$OPTARG"
                 ;;
             ?)
