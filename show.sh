@@ -4,7 +4,6 @@ set -e -u
 
 arg_var_separator="$(printf '\036')" # ASCII RS char
 
-# TODO: Add mode option shorthand flag for when there's only one active mode.
 disable_mode_opt=d
 help_opt=h
 mode_option_opt=p
@@ -158,17 +157,30 @@ disable_mode() {
 
 add_mode_option() {
     _add_opt_name="${1%%=?*}"
-
-    if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
-        echo "$1: missing mode name/option" >&2
-        return 1
-    fi
-
-    assert_mode_exists "$_add_opt_name"
     _add_opt_option="${1#?*=}"
-    _add_opt_current="$(var "mode_options_$_add_opt_name")"
 
-    export "mode_options_$_add_opt_name=$_add_opt_current${_add_opt_current:+$arg_var_separator}$_add_opt_option"
+    if [ "$_add_opt_name" = "$_add_opt_option" ]; then
+        for _add_opt_input_mode in file dir vcs; do
+            add_parsed_mode_option "$_add_opt_input_mode" "$_add_opt_option"
+        done
+    else
+        if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
+            echo "$1: missing mode name/option" >&2
+            return 1
+        fi
+
+        add_parsed_mode_option "$_add_opt_name" "$_add_opt_option"
+    fi
+}
+
+add_parsed_mode_option() {
+    _add_1_opt_name="$1"
+    _add_1_opt_option="$2"
+
+    assert_mode_exists "$_add_1_opt_name"
+    _add_1_opt_current="$(var "mode_options_$_add_1_opt_name")"
+
+    export "mode_options_$_add_1_opt_name=$_add_1_opt_current${_add_1_opt_current:+$arg_var_separator}$_add_1_opt_option"
     return 0
 }
 
@@ -195,8 +207,9 @@ Usage: $(basename "$0") [OPTION]... [INPUT]...
 
 Options:
   -$help_opt           display this help and exit
-  -$disable_mode_opt NAME      disable a mode
-  -$mode_option_opt NAME=OPT  pass an option to a mode
+  -$disable_mode_opt NAME      disable mode "NAME"
+  -$mode_option_opt NAME=OPT  pass option "OPT" to mode "NAME"
+  -$mode_option_opt OPT       pass option "OPT" to all named input modes
 
 Mode:
 USAGE
