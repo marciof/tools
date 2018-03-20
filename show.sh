@@ -249,7 +249,7 @@ process_options() {
     done
 }
 
-run_input_modes() {
+run_named_input_modes() {
     if mode_can_stdin; then
         mode_run_stdin
     elif mode_has_dir && [ $# -eq 0 ]; then
@@ -279,7 +279,7 @@ process_options "$@"
 shift $((OPTIND - 1))
 
 if mode_can_pager; then
-    run_input_modes "$@" | mode_run_pager
+    run_named_input_modes "$@" | mode_run_pager
 else
-    run_input_modes "$@"
+    run_named_input_modes "$@"
 fi
