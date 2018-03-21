@@ -7,6 +7,7 @@ arg_var_separator="$(printf '\036')" # ASCII RS char
 disable_mode_opt=d
 help_opt=h
 mode_option_opt=p
+input_modes_option_opt=i
 
 # shellcheck disable=SC2034
 mode_help_color="syntax highlight via Andre Simon's \"highlight\", when possible"
@@ -157,30 +158,30 @@ disable_mode() {
 
 add_mode_option() {
     _add_opt_name="${1%%=?*}"
-    _add_opt_option="${1#?*=}"
 
-    if [ "$_add_opt_name" = "$_add_opt_option" ]; then
-        for _add_opt_input_mode in file dir vcs; do
-            add_parsed_mode_option "$_add_opt_input_mode" "$_add_opt_option"
-        done
-    else
-        if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
-            echo "$1: missing mode name/option" >&2
-            return 1
-        fi
-
-        add_parsed_mode_option "$_add_opt_name" "$_add_opt_option"
+    if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
+        echo "$1: missing mode name/option" >&2
+        return 1
     fi
+
+    _add_opt_option="${1#?*=}"
+    add_parsed_mode_option "$_add_opt_name" "$_add_opt_option"
+}
+
+add_input_mode_option() {
+    for _add_in_opt_mode in file dir vcs; do
+        add_parsed_mode_option "$_add_in_opt_mode" "$1"
+    done
 }
 
 add_parsed_mode_option() {
-    _add_1_opt_name="$1"
-    _add_1_opt_option="$2"
+    _add_p_opt_name="$1"
+    _add_p_opt_option="$2"
 
-    assert_mode_exists "$_add_1_opt_name"
-    _add_1_opt_current="$(var "mode_options_$_add_1_opt_name")"
+    assert_mode_exists "$_add_p_opt_name"
+    _add_p_opt_current="$(var "mode_options_$_add_p_opt_name")"
 
-    export "mode_options_$_add_1_opt_name=$_add_1_opt_current${_add_1_opt_current:+$arg_var_separator}$_add_1_opt_option"
+    export "mode_options_$_add_p_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_var_separator}$_add_p_opt_option"
     return 0
 }
 
@@ -209,7 +210,7 @@ Options:
   -$help_opt           display this help and exit
   -$disable_mode_opt NAME      disable mode "NAME"
   -$mode_option_opt NAME=OPT  pass option "OPT" to mode "NAME"
-  -$mode_option_opt OPT       pass option "OPT" to all named input modes
+  -$input_modes_option_opt OPT       pass option "OPT" to all named input modes
 
 Mode:
 USAGE
@@ -229,7 +230,7 @@ USAGE
 }
 
 process_options() {
-    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:" _getopt_opt "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:$input_modes_option_opt:" _getopt_opt "$@"; do
         case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
@@ -240,6 +241,9 @@ process_options() {
                 ;;
             "$mode_option_opt")
                 add_mode_option "$OPTARG"
+                ;;
+            "$input_modes_option_opt")
+                add_input_mode_option "$OPTARG"
                 ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
