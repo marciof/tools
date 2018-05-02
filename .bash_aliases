@@ -26,6 +26,7 @@ shopt -s autocd dirspell histappend
 alias -- -='cd -'
 alias ..='cd ..'
 
+_have fd
 _have dircolors && eval "$($NAME -b)"
 _have lesspipe && eval "$($NAME)"
 
