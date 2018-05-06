@@ -40,7 +40,7 @@ Change font size:
 
 Logout and login to apply:
 
-    xfconf-query -c xsettings -p /Gtk/IconSizes -s gtk-button=32,32
+    xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
 
 ## Xfce ##
 
