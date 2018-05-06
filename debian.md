@@ -69,6 +69,7 @@ GUI for Gnome Keyring:
 *Session and Startup*:
 - Enable *Automatically save session on logout*.
 - Add *SSH Key Agent* to *Application Autostart*.
+- Enable *Launch GNOME services on startup*.
 
 # PC speaker off
 
