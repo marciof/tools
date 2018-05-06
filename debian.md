@@ -43,7 +43,7 @@ Logout and login to apply:
 
 ## Xfce ##
 
-    xfconf-query -c xsettings -p /Xft/DPI -s 145
+    xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
 
 # Mouse speed
 
