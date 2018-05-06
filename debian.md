@@ -12,9 +12,13 @@
 
 # High DPI
 
-Appearance: Xfce, Numix color style, Numix window style, Breeze icons
+Appearance: Xfce + Numix (color style, icons, window style)
+
+    apt install numix-gtk-theme numix-icon-theme
 
 Menu editor: `menulibre`
+
+    apt install menulibre
 
 ## WM/DE ##
 
