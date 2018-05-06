@@ -48,6 +48,8 @@ Logout and login to apply:
 
 # Mouse speed
 
+    apt install xinput
+
 `~/.xsessionrc`
 
     xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
