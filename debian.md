@@ -5,6 +5,11 @@
 )
 - [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
 
+# Sudo
+
+    su -
+    usermod -aG sudo,adm marcio
+
 # High DPI scaling
 
 Appearance: Xfce, Numix color style, Numix window style, Breeze icons
