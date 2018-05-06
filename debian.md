@@ -60,11 +60,11 @@ Logout and login to apply:
 
 Run `./dbus-xsessionrc.sh` at login.
 
-# PC speaker
+# PC speaker off
 
-`~/.gtkrc-2.0`
+`~/.xsessionrc`
 
-    gtk-error-bell = 0
+    xset -b
 
 # Digital clock format
 
