@@ -1,9 +1,9 @@
 # Install
 
+- [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
 - [Firmware](https://wiki.debian.org/Firmware)
 - [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download
 )
-- [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
 
 # Sudo
 
@@ -18,13 +18,13 @@ Menu editor: `menulibre`
 
 ## WM/DE ##
 
-`/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`:
+`/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
 
     [Seat:*]
     xserver-command=X -core -dpi 145
     greeter-hide-users=false
 
-`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_hidpi.conf`:
+`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_hidpi.conf`
 
     [greeter]
     xft-dpi=145
@@ -33,6 +33,7 @@ Menu editor: `menulibre`
 
 Change font size:
 
+    apt install qt4-qtconfig
     qtconfig
 
 ## Gtk ##
@@ -47,7 +48,7 @@ Logout and login to apply:
 
 # Mouse speed
 
-`~/.xsessionrc`:
+`~/.xsessionrc`
 
     xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
 
@@ -64,7 +65,7 @@ Run `./dbus-xsessionrc.sh` at login.
 
 # Login screen background
 
-`/etc/lightdm/lightdm-gtk-greeter.conf`:
+`/etc/lightdm/lightdm-gtk-greeter.conf`
 
     [greeter]
     background=COLOR-OR-PATH-TO-IMAGE-FILE
