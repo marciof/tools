@@ -13,13 +13,13 @@ Menu editor: `menulibre`
 
 ## WM/DE ##
 
-`/usr/share/lightdm/lightdm.conf.d/02_custom.conf`:
+`/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`:
 
     [Seat:*]
     xserver-command=X -core -dpi 145
     greeter-hide-users=false
 
-`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_custom.conf`:
+`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_hidpi.conf`:
 
     [greeter]
     xft-dpi=145
