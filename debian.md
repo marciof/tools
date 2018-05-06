@@ -10,7 +10,7 @@
     su -
     usermod -aG sudo,adm marcio
 
-# High DPI scaling
+# High DPI
 
 Appearance: Xfce, Numix color style, Numix window style, Breeze icons
 
@@ -53,11 +53,6 @@ Logout and login to apply:
     xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
 
 Run `./dbus-xsessionrc.sh` at login.
-
-# Opera with Flash
-
-1. Download: https://get.adobe.com/flashplayer/
-2. Extract all files to: `/usr/lib/pepperflashplugin-nonfree/`
 
 # Digital clock format
 
