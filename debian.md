@@ -20,7 +20,7 @@ Menu editor: `menulibre`
 
     apt install menulibre
 
-## WM/DE ##
+## WM/DE
 
 `/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
 
@@ -33,22 +33,26 @@ Menu editor: `menulibre`
     [greeter]
     xft-dpi=145
 
-## Qt4 ##
+## Qt4
 
 Change font size:
 
     apt install qt4-qtconfig
     qtconfig
 
-## Gtk ##
+## Gtk
 
 Logout and login to apply:
 
     xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
 
-## Xfce ##
+## Xfce
 
     xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
+
+## Spotify
+
+    spotify --force-device-scale-factor=1.5
 
 # Mouse speed
 
