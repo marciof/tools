@@ -60,6 +60,16 @@ Logout and login to apply:
 
 Run `./dbus-xsessionrc.sh` at login.
 
+# Passwords and keys
+
+GUI for Gnome Keyring:
+
+    apt install seahorse
+
+*Session and Startup*:
+- Enable *Automatically save session on logout*.
+- Add *SSH Key Agent* to *Application Autostart*.
+
 # PC speaker off
 
 `~/.xsessionrc`
