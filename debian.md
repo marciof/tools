@@ -1,6 +1,9 @@
-# Wifi firmware
+# Install
 
-https://packages.debian.org/stretch/all/firmware-iwlwifi/download
+- [Firmware](https://wiki.debian.org/Firmware)
+- [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download
+)
+- [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
 
 # High DPI scaling
 
