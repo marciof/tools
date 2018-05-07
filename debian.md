@@ -91,3 +91,8 @@ GUI for Gnome Keyring:
 
     [greeter]
     background=COLOR-OR-PATH-TO-IMAGE-FILE
+
+# Profile image
+
+    apt install accountsservice
+    apt install mugshot
