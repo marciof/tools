@@ -8,7 +8,8 @@
 # Sudo
 
     su -
-    usermod -aG sudo,adm marcio
+    adduser marcio sudo
+    adduser marcio adm
 
 # High DPI
 
