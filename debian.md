@@ -101,3 +101,9 @@ GUI for Gnome Keyring:
 # Profile image
 
     apt install accountsservice mugshot
+
+# Printer
+
+[Add printer from network](http://localhost:631).
+
+    apt install task-print-server
