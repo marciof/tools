@@ -100,5 +100,4 @@ GUI for Gnome Keyring:
 
 # Profile image
 
-    apt install accountsservice
-    apt install mugshot
+    apt install accountsservice mugshot
