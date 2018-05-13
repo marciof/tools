@@ -55,9 +55,15 @@ Logout and login to apply:
 
     spotify --force-device-scale-factor=1.5
 
-# Mouse
+## Mouse
 
-## Speed
+Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
+
+# Logitech Unifying Receiver
+
+    apt install solaar
+
+# Mouse speed
 
     apt install xinput
 
@@ -66,10 +72,6 @@ Logout and login to apply:
     xinput set-prop 'pointer:Logitech MX Master' 'libinput Accel Speed' 1
 
 Run `./dbus-xsessionrc.sh` at login.
-
-## Unifying receiver
-
-    apt install solaar
 
 # Passwords and keys
 
