@@ -5,7 +5,7 @@
 - [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download
 )
 
-# Sudo
+# Sudo rights
 
     su -
     adduser marcio sudo
