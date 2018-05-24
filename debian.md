@@ -110,3 +110,7 @@ GUI for Gnome Keyring:
 [Add printer from network](http://localhost:631).
 
     apt install task-print-server
+
+# Unattended upgrades
+
+https://wiki.debian.org/UnattendedUpgrades
