@@ -141,7 +141,7 @@ if _have git; then
     alias t='git status "$@"'
     alias v='git pull "$@"'
 
-    git config --global branch.autoSetupRebase always
+    git config --global pull.rebase preserve
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
