@@ -2,8 +2,7 @@
 
 - [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
 - [Firmware](https://wiki.debian.org/Firmware)
-- [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download
-)
+- [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download)
 
 # Sudo rights
 
