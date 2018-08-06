@@ -134,6 +134,7 @@ if _have git; then
     alias a='git add "$@"'
     alias b='git branch -vv "$@"'
     alias d='git diff "$@"'
+    alias g=git
     alias h='git blame --date=short "$@"'
     alias l='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
     alias p='git push "$@"'
