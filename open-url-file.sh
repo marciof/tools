@@ -1,3 +1,3 @@
 #!/bin/sh
 set -e -u
-grep URL= < "$1" | cut -d= -f2 | xargs -n1 xdg-open
+grep URL= < "$1" | sed -e 's/^URL\s*=\s*//' | xargs -n1 xdg-open
