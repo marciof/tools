@@ -97,31 +97,6 @@ if _have ag; then
 fi
 
 if _have git; then
-    _load_git_completions() {
-        if command -v _completion_loader >/dev/null; then
-            _completion_loader git
-        fi
-
-        if ! command -v __git_complete >/dev/null; then
-            printf "\n* Missing: bash-completion for Git\n" >&2
-            return
-        fi
-
-        __git_complete a _git_add
-        __git_complete b _git_branch
-        __git_complete c _git_commit
-        __git_complete d _git_diff
-        __git_complete g _git_stash
-        __git_complete h __gitcomp
-        __git_complete l _git_log
-        __git_complete p _git_push
-        __git_complete r _git_checkout
-        __git_complete t _git_status
-        __git_complete v _git_pull
-
-        unset -f _load_git_completions
-    }
-
     c() {
         local cached=$(git diff --cached --name-only | wc -l)
 
@@ -143,15 +118,30 @@ if _have git; then
     alias t='git status "$@"'
     alias v='git pull "$@"'
 
+    if command -v _completion_loader >/dev/null; then
+        _completion_loader git
+    fi
+
+    if ! command -v __git_complete >/dev/null; then
+        echo "* Missing: bash-completion for Git" >&2
+    else
+        __git_complete a _git_add
+        __git_complete b _git_branch
+        __git_complete c _git_commit
+        __git_complete d _git_diff
+        __git_complete g _git_stash
+        __git_complete h __gitcomp
+        __git_complete l _git_log
+        __git_complete p _git_push
+        __git_complete r _git_checkout
+        __git_complete t _git_status
+        __git_complete v _git_pull
+    fi
+
     git config --global pull.rebase preserve
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
-
-    for ALIAS in a b c d g h l p r t v; do
-        eval "_${ALIAS}() { _load_git_completions; }"
-        eval "complete -F _$ALIAS $ALIAS"
-    done
 
     if ! command -v __git_ps1 >/dev/null; then
         echo "* Missing: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh" >&2
