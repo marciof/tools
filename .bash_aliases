@@ -111,6 +111,7 @@ if _have git; then
         __git_complete b _git_branch
         __git_complete c _git_commit
         __git_complete d _git_diff
+        __git_complete g _git_stash
         __git_complete h __gitcomp
         __git_complete l _git_log
         __git_complete p _git_push
@@ -134,7 +135,7 @@ if _have git; then
     alias a='git add "$@"'
     alias b='git branch -vv "$@"'
     alias d='git diff "$@"'
-    alias g=git
+    alias g='git stash "$@"'
     alias h='git blame --date=short "$@"'
     alias l='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
     alias p='git push "$@"'
@@ -147,7 +148,7 @@ if _have git; then
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
 
-    for ALIAS in a b c d h l p r t v; do
+    for ALIAS in a b c d g h l p r t v; do
         eval "_${ALIAS}() { _load_git_completions; }"
         eval "complete -F _$ALIAS $ALIAS"
     done
