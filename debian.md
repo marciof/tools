@@ -104,6 +104,10 @@ GUI for Gnome Keyring:
 
     apt install accountsservice mugshot
 
+# Clipboard
+
+   apt install xfce4-clipman xfce4-clipman-plugin
+
 # Printer
 
 [Add printer from network](http://localhost:631).
