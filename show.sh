@@ -20,6 +20,8 @@ mode_help_pager='page output via "less", as needed'
 # shellcheck disable=SC2034
 mode_help_stdin='read standard input via "cat"'
 # shellcheck disable=SC2034
+mode_help_tree='list directories via "tree", cwd by default'
+# shellcheck disable=SC2034
 mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
 mode_options_color=
@@ -27,6 +29,7 @@ mode_options_dir=
 mode_options_file=
 mode_options_pager=
 mode_options_stdin=
+mode_options_tree=
 mode_options_vcs=
 
 if [ -t 1 ]; then
@@ -124,6 +127,22 @@ mode_run_stdin() {
     fi
 }
 
+mode_can_tree() {
+    test -d "$1"
+}
+
+mode_has_tree() {
+    command -v tree >/dev/null
+}
+
+mode_run_tree() {
+    if [ "$is_tty_out" = Y ]; then
+        set -- -C "$@"
+    fi
+
+    run_with_mode_options "$mode_options_tree" N tree "$@"
+}
+
 mode_can_vcs() {
     git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null
 }
@@ -215,7 +234,7 @@ Options:
 Mode:
 USAGE
 
-    for _help_mode in color dir file pager stdin vcs; do
+    for _help_mode in color dir file pager stdin tree vcs; do
         if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
             || "mode_has_$_help_mode"
         then
@@ -256,12 +275,12 @@ process_options() {
 run_named_input_modes() {
     if mode_can_stdin; then
         mode_run_stdin
-    elif mode_has_dir && [ $# -eq 0 ]; then
+    elif [ $# -eq 0 ] && (mode_has_dir || mode_has_tree); then
         set -- .
     fi
 
     for _run_all_input in "$@"; do
-        for _run_all_mode in file dir vcs; do
+        for _run_all_mode in file dir tree vcs; do
             if "mode_can_$_run_all_mode" "$_run_all_input" \
                     && "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
