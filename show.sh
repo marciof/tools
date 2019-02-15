@@ -10,11 +10,11 @@ mode_option_opt=p
 input_modes_option_opt=i
 
 # shellcheck disable=SC2034
-mode_help_color="syntax highlight via Andre Simon's \"highlight\", when possible"
+mode_help_color="syntax highlight via Andre Simon's \"highlight\""
 # shellcheck disable=SC2034
 mode_help_dir='list directories via "ls", cwd by default'
 # shellcheck disable=SC2034
-mode_help_file='read files via "cat"'
+mode_help_file='read files via "cat", or "lesspipe" for binary files'
 # shellcheck disable=SC2034
 mode_help_pager='page output via "less", as needed'
 # shellcheck disable=SC2034
@@ -76,15 +76,19 @@ mode_has_file() {
 }
 
 mode_run_file() {
-    if is_file_binary "$1"; then
-        return 1
+    _file_exec=cat
+    _file_disable_color=N
+
+    if command -v lesspipe >/dev/null && is_file_binary "$1"; then
+        _file_exec=lesspipe
+        _file_disable_color=Y
     fi
 
-    if mode_has_color && mode_can_color; then
-        run_with_mode_options "$mode_options_file" N cat "$1" \
+    if [ "$_file_disable_color" = N ] && mode_has_color && mode_can_color; then
+        run_with_mode_options "$mode_options_file" N "$_file_exec" "$1" \
             | mode_run_color "$1"
     else
-        run_with_mode_options "$mode_options_file" N cat "$1"
+        PAGER=cat run_with_mode_options "$mode_options_file" N "$_file_exec" "$1"
     fi
 }
 
