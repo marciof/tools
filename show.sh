@@ -76,6 +76,10 @@ mode_has_file() {
 }
 
 mode_run_file() {
+    if is_file_binary "$1"; then
+        return 1
+    fi
+
     if mode_has_color && mode_can_color; then
         run_with_mode_options "$mode_options_file" N cat "$1" \
             | mode_run_color "$1"
@@ -157,6 +161,17 @@ mode_run_vcs() {
     fi
 
     run_with_mode_options "$mode_options_vcs" N git --no-pager show "$@"
+}
+
+is_file_binary() {
+    _is_binary_type="$(LC_MESSAGES=C file -i "$1")"
+    _is_binary_type="${_is_binary_type#"$1: "}"
+
+    if [ "$_is_binary_type" = "${_is_binary_type#text/}" ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 assert_mode_exists() {
