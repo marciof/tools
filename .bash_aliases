@@ -107,11 +107,12 @@ if _have git; then
         fi
     }
 
+    alias g=git
     alias a='git add "$@"'
     alias b='git branch -vv "$@"'
     alias d='git diff "$@"'
-    alias g='git stash "$@"'
     alias h='git blame --date=short "$@"'
+    alias k='git stash "$@"'
     alias l='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
     alias p='git push "$@"'
     alias r='git checkout "$@"'
@@ -125,12 +126,13 @@ if _have git; then
     if ! command -v __git_complete >/dev/null; then
         echo '* Missing: git Bash completion: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash (or apt "bash-completion", or load order in .bashrc)' >&2
     else
+        __git_complete g _git
         __git_complete a _git_add
         __git_complete b _git_branch
         __git_complete c _git_commit
         __git_complete d _git_diff
-        __git_complete g _git_stash
         __git_complete h __gitcomp
+        __git_complete k _git_stash
         __git_complete l _git_log
         __git_complete p _git_push
         __git_complete r _git_checkout
