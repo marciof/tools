@@ -123,7 +123,7 @@ if _have git; then
     fi
 
     if ! command -v __git_complete >/dev/null; then
-        echo '* Missing: git Bash completion: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash (or apt "bash-completion")' >&2
+        echo '* Missing: git Bash completion: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash (or apt "bash-completion", or load order in .bashrc)' >&2
     else
         __git_complete a _git_add
         __git_complete b _git_branch
