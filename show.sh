@@ -75,6 +75,8 @@ mode_has_file() {
     return 0
 }
 
+# TODO: add option to disable lesspipe (separate plugin? for binary files only?)
+# TODO: detect "lesspipe.sh" as well
 mode_run_file() {
     _file_exec=cat
     _file_disable_color=N
