@@ -10,25 +10,28 @@ mode_option_opt=p
 input_modes_option_opt=i
 
 # shellcheck disable=SC2034
+mode_help_bin='read binary files via "lesspipe" or "lesspipe.sh"'
+# shellcheck disable=SC2034
 mode_help_color="syntax highlight via Andre Simon's \"highlight\""
 # shellcheck disable=SC2034
 mode_help_dir='list directories via "ls", cwd by default'
-# shellcheck disable=SC2034
-mode_help_file='read files via "cat", or "lesspipe" for binary files'
 # shellcheck disable=SC2034
 mode_help_pager='page output via "less", as needed'
 # shellcheck disable=SC2034
 mode_help_stdin='read standard input via "cat"'
 # shellcheck disable=SC2034
+mode_help_text='read plain text files via "cat"'
+# shellcheck disable=SC2034
 mode_help_tree='list directories via "tree", cwd by default'
 # shellcheck disable=SC2034
 mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
+mode_options_bin=
 mode_options_color=
 mode_options_dir=
-mode_options_file=
 mode_options_pager=
 mode_options_stdin=
+mode_options_text=
 mode_options_tree=
 mode_options_vcs=
 
@@ -37,6 +40,28 @@ if [ -t 1 ]; then
 else
     is_tty_out=N
 fi
+
+mode_can_bin() {
+    test -e "$1" && test ! -d "$1" && is_file_binary "$1"
+}
+
+mode_has_bin() {
+    command -v lesspipe >/dev/null || command -v lesspipe.sh >/dev/null
+}
+
+# TODO: detect `cat` before assuming it can be used?
+# TODO: support colorizing output?
+mode_run_bin() {
+    if command -v lesspipe >/dev/null; then
+        _bin_exec=lesspipe
+    elif command -v lesspipe.sh >/dev/null; then
+        _bin_exec=lesspipe.sh
+    else
+        return 1
+    fi
+
+    PAGER=cat run_with_mode_options "$mode_options_bin" N "$_bin_exec" "$1"
+}
 
 mode_can_color() {
     test "$is_tty_out" = Y
@@ -67,30 +92,20 @@ mode_run_dir() {
     run_with_mode_options "$mode_options_dir" N ls "$@"
 }
 
-mode_can_file() {
-    test -e "$1" && test ! -d "$1"
+mode_can_text() {
+    test -e "$1" && test ! -d "$1" && ! is_file_binary "$1"
 }
 
-mode_has_file() {
+mode_has_text() {
     return 0
 }
 
-# TODO: add option to disable lesspipe (separate plugin? for binary files only?)
-# TODO: detect "lesspipe.sh" as well
-mode_run_file() {
-    _file_exec=cat
-    _file_disable_color=N
-
-    if command -v lesspipe >/dev/null && is_file_binary "$1"; then
-        _file_exec=lesspipe
-        _file_disable_color=Y
-    fi
-
-    if [ "$_file_disable_color" = N ] && mode_has_color && mode_can_color; then
-        run_with_mode_options "$mode_options_file" N "$_file_exec" "$1" \
+mode_run_text() {
+    if mode_has_color && mode_can_color; then
+        run_with_mode_options "$mode_options_text" N cat "$1" \
             | mode_run_color "$1"
     else
-        PAGER=cat run_with_mode_options "$mode_options_file" N "$_file_exec" "$1"
+        run_with_mode_options "$mode_options_text" N cat "$1"
     fi
 }
 
@@ -209,7 +224,7 @@ add_mode_option() {
 }
 
 add_input_mode_option() {
-    for _add_in_opt_mode in file dir vcs; do
+    for _add_in_opt_mode in text dir vcs; do
         add_parsed_mode_option "$_add_in_opt_mode" "$1"
     done
 }
@@ -255,7 +270,7 @@ Options:
 Mode:
 USAGE
 
-    for _help_mode in color dir file pager stdin tree vcs; do
+    for _help_mode in bin color dir text pager stdin tree vcs; do
         if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
             || "mode_has_$_help_mode"
         then
@@ -301,7 +316,7 @@ run_named_input_modes() {
     fi
 
     for _run_all_input in "$@"; do
-        for _run_all_mode in file dir tree vcs; do
+        for _run_all_mode in bin text dir tree vcs; do
             if "mode_can_$_run_all_mode" "$_run_all_input" \
                     && "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
