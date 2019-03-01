@@ -49,7 +49,6 @@ mode_has_bin() {
     command -v lesspipe >/dev/null || command -v lesspipe.sh >/dev/null
 }
 
-# TODO: detect `cat` before assuming it can be used?
 # TODO: support colorizing output?
 # TODO: detect when lesspipe doesn't support a format (empty output)
 mode_run_bin() {
@@ -186,13 +185,26 @@ mode_run_vcs() {
 }
 
 is_file_binary() {
-    _is_binary_type="$(LC_MESSAGES=C file -i "$1")"
-    _is_binary_type="${_is_binary_type#"$1: "}"
+    _is_bin_path="$1"
 
-    if [ "$_is_binary_type" = "${_is_binary_type#text/}" ]; then
-        return 0
+    if [ -L "$1" ]; then
+        _is_bin_path="$(resolve_symlink "$_is_bin_path")"
+    fi
+
+    _is_bin_type="$(LC_MESSAGES=C file -i "$_is_bin_path")"
+    _is_bin_type="${_is_bin_type#"$_is_bin_path: "}"
+
+    test "$_is_bin_type" = "${_is_bin_type#text/}"
+}
+
+resolve_symlink() {
+    _symlink_path="$(LC_MESSAGES=C file "$1")"
+    _symlink_path="${_symlink_path#"$1: symbolic link to "}"
+
+    if [ -L "$_symlink_path" ]; then
+        resolve_symlink "$_symlink_path"
     else
-        return 1
+        echo "$_symlink_path"
     fi
 }
 
