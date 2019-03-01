@@ -51,6 +51,7 @@ mode_has_bin() {
 
 # TODO: detect `cat` before assuming it can be used?
 # TODO: support colorizing output?
+# TODO: detect when lesspipe doesn't support a format (empty output)
 mode_run_bin() {
     if command -v lesspipe >/dev/null; then
         _bin_exec=lesspipe

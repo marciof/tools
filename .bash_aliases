@@ -39,7 +39,7 @@ alias ..='cd ..'
 
 _have fd
 _have dircolors && eval "$($NAME -b)"
-_have lesspipe && eval "$($NAME)"
+_have lesspipe lesspipe.sh && eval "$($NAME)"
 
 export HISTCONTROL=ignoredups
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
