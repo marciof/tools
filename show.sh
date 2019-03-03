@@ -49,8 +49,6 @@ mode_has_bin() {
     command -v lesspipe >/dev/null || command -v lesspipe.sh >/dev/null
 }
 
-# FIXME: colorize output?
-# FIXME: detect when lesspipe doesn't support a format (empty output)
 mode_run_bin() {
     if command -v lesspipe >/dev/null; then
         _bin_exec=lesspipe
@@ -184,8 +182,6 @@ mode_run_vcs() {
     run_with_mode_options "$mode_options_vcs" N git --no-pager show "$@"
 }
 
-# FIXME: avoid calling twice for the same path? (bin and text modes)
-# FIXME: detect binary stdin?
 is_file_binary() {
     _is_bin_path="$1"
 
