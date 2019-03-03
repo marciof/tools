@@ -58,6 +58,7 @@ mode_run_bin() {
         return 1
     fi
 
+    # shellcheck disable=SC2037
     PAGER=cat run_with_mode_options "$mode_options_bin" N "$_bin_exec" "$1"
 }
 
