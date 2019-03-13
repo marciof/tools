@@ -141,6 +141,7 @@ if _have git; then
     fi
 
     git config --global pull.rebase preserve
+    git config --global pager.status true
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
