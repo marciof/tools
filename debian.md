@@ -120,6 +120,8 @@ https://wiki.debian.org/UnattendedUpgrades
 
 # Evince (Document Viewer) zoom level
 
+https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.xml
+
     gsettings list-recursively org.gnome.Evince
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
