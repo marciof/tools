@@ -118,6 +118,10 @@ GUI for Gnome Keyring:
 
 https://wiki.debian.org/UnattendedUpgrades
 
+[Tray notifications](https://code.guido-berhoerster.org/projects/pk-update-icon/):
+
+    apt install pk-update-icon
+
 # Evince (Document Viewer) zoom level
 
 https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.xml
