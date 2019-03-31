@@ -106,7 +106,7 @@ GUI for Gnome Keyring:
 
 # Clipboard
 
-   apt install xfce4-clipman xfce4-clipman-plugin
+    apt install xfce4-clipman xfce4-clipman-plugin
 
 # Printer
 
@@ -117,3 +117,9 @@ GUI for Gnome Keyring:
 # Unattended upgrades
 
 https://wiki.debian.org/UnattendedUpgrades
+
+# Evince (Document Viewer) zoom level
+
+    gsettings list-recursively org.gnome.Evince
+    gsettings set org.gnome.Evince.Default zoom 1.5
+    gsettings set org.gnome.Evince.Default sizing-mode free
