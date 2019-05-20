@@ -112,7 +112,7 @@ if _have git; then
     alias b='git branch -vv "$@"'
     alias d='git diff "$@"'
     alias h='git blame --date=short "$@"'
-    alias k='git stash "$@"'
+    alias j='git stash "$@"'
     alias l='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
     alias p='git push "$@"'
     alias r='git checkout "$@"'
@@ -132,7 +132,7 @@ if _have git; then
         __git_complete c _git_commit
         __git_complete d _git_diff
         __git_complete h __gitcomp
-        __git_complete k _git_stash
+        __git_complete j _git_stash
         __git_complete l _git_log
         __git_complete p _git_push
         __git_complete r _git_checkout
