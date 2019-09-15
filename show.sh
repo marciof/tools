@@ -27,6 +27,9 @@ mode_help_tree='list directories via "tree", cwd by default'
 mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
 # TODO: support http/https?
+# TODO: support intra-line diff? https://github.com/ymattw/ydiff
+# TODO: markdown rendering? https://github.com/kneufeld/consolemd
+# TODO: images? https://github.com/stefanhaustein/TerminalImageViewer
 
 mode_options_bin=
 mode_options_color=
