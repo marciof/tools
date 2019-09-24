@@ -140,7 +140,14 @@ if _have git; then
         __git_complete v _git_pull
     fi
 
-    git config --global pull.rebase preserve
+    if git rebase -h | grep -q -- --rebase-merges; then
+        git config --global pull.rebase merges
+    elif git rebase -h | grep -q -- --preserve-merges; then
+        git config --global pull.rebase preserve
+    else
+        git config --global --bool pull.rebase true
+    fi
+
     git config --global pager.status true
 
     export GIT_PS1_SHOWSTASHSTATE=x
