@@ -11,26 +11,28 @@ _have() {
         fi
     done
 
-    echo "* Missing: $@" >&2
+    echo "* Missing: $*" >&2
     return 1
 }
 
 child_dir="$(readlink -e "$(dirname "${BASH_SOURCE[0]}")")"
-abs_home="$(readlink -e ~)"
-is_child_home=N
+abs_home_dir="$(readlink -e "$HOME")"
+is_child_home_dir=N
 
-if [ "$child_dir" = "$abs_home" ]; then
-    is_child_home=Y
+if [ "$child_dir" = "$abs_home_dir" ]; then
+    is_child_home_dir=Y
 fi
 
-for child in $(ls -1 "${BASH_SOURCE[0]}".* 2>/dev/null); do
-    . "$child_dir/$(basename "$child")"
+for child in "${BASH_SOURCE[0]}".*; do
+    if [ -e "$child" ]; then
+        . "$child_dir/$(basename "$child")"
 
-    if [ "$is_child_home" = Y ]; then
-        child="~/${child##$abs_home/}"
+        if [ "$is_child_home_dir" = Y ]; then
+            child="~/${child##$abs_home_dir/}"
+        fi
+
+        echo "* Loaded: $child" >&2
     fi
-
-    echo "* Loaded: $child" >&2
 done
 
 shopt -s autocd dirspell histappend
