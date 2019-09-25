@@ -25,9 +25,11 @@ fi
 
 for child in "${BASH_SOURCE[0]}".*; do
     if [ -e "$child" ]; then
+        # shellcheck source=/dev/null
         . "$child_dir/$(basename "$child")"
 
         if [ "$is_child_home_dir" = Y ]; then
+            # shellcheck disable=SC2088
             child="~/${child##$abs_home_dir/}"
         fi
 
@@ -40,8 +42,8 @@ alias -- -='cd -'
 alias ..='cd ..'
 
 have fd
-have dircolors && eval "$($NAME -b)"
-have lesspipe lesspipe.sh && eval "$($NAME)"
+have dircolors && eval "$("$NAME" -b)"
+have lesspipe lesspipe.sh && eval "$("$NAME")"
 
 export HISTCONTROL=ignoredups
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
@@ -72,9 +74,9 @@ bind '"\e[3;5~": kill-word' # ctrl-delete
 color_off='\e[0m'
 yellow='\e[0;33m'
 
-if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
+if [ -n "${BASHRC_CUSTOM_LOCATION:-}" ]; then
     host_prompt=" \[$yellow\]$BASHRC_CUSTOM_LOCATION\[$color_off\]"
-elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
+elif [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
     host_prompt=" \[$yellow\]\\u@\\h\[$color_off\]"
 else
     host_prompt=
@@ -86,23 +88,27 @@ if have nano; then
 fi
 
 if have show.sh; then
+    # shellcheck disable=SC2139
     alias s="$NAME -p dir=-Fh -p dir=--group-directories-first -p dir=--dereference-command-line-symlink-to-dir"
     export PAGER="$NAME" GIT_PAGER="$NAME"
 fi
 
 if have ag; then
     if [ -n "$PAGER" ]; then
+        # shellcheck disable=SC2139
         alias f="$NAME --follow --hidden --pager \"$PAGER\""
     else
+        # shellcheck disable=SC2139
         alias f="$NAME --follow --hidden"
     fi
 fi
 
 if have git; then
     c() {
-        local cached=$(git diff --cached --name-only | wc -l)
+        local cached
+        cached=$(git diff --cached --name-only | wc -l)
 
-        if  [ $# -eq 0 -a "$cached" -eq 0 ]; then
+        if  [ $# -eq 0 ] && [ "$cached" -eq 0 ]; then
             git commit -a
         else
             git commit "$@"
@@ -169,10 +175,11 @@ if have git; then
 fi
 
 _job_count_ps1() {
-    local jobs=$(jobs -p -r -s | wc -l)
+    local jobs
+    jobs=$(jobs -p -r -s | wc -l)
     [ "$jobs" -gt 0 ] && echo " $jobs"
 }
 
-if [ -z "$BASHRC_KEEP_PROMPT" ]; then
+if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
     export PS1="\[\e[1;34m\]\w\[$color_off\]$host_prompt$git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$color_off\]\\$ "
 fi
