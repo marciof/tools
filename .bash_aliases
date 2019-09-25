@@ -100,7 +100,7 @@ if _have git; then
     c() {
         local cached=$(git diff --cached --name-only | wc -l)
 
-        if  [ $# -eq 0 -a $cached -eq 0 ]; then
+        if  [ $# -eq 0 -a "$cached" -eq 0 ]; then
             git commit -a
         else
             git commit "$@"
@@ -108,16 +108,16 @@ if _have git; then
     }
 
     alias g=git
-    alias a='git add "$@"'
-    alias b='git branch -vv "$@"'
-    alias d='git diff "$@"'
-    alias h='git blame --date=short "$@"'
-    alias j='git stash "$@"'
-    alias l='git log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d" "$@"'
-    alias p='git push "$@"'
-    alias r='git checkout "$@"'
-    alias t='git status "$@"'
-    alias v='git pull "$@"'
+    alias a='g add'
+    alias b='g branch -vv'
+    alias d='g diff'
+    alias h='g blame --date=short'
+    alias j='g stash'
+    alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
+    alias p='g push'
+    alias r='g checkout'
+    alias t='g status'
+    alias v='g pull'
 
     if command -v _completion_loader >/dev/null; then
         _completion_loader git
@@ -162,7 +162,7 @@ fi
 
 _job_count_ps1() {
     local jobs=$(jobs -p -r -s | wc -l)
-    [ $jobs -gt 0 ] && echo " $jobs"
+    [ "$jobs" -gt 0 ] && echo " $jobs"
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
