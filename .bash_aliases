@@ -15,7 +15,7 @@ _have() {
     return 1
 }
 
-child_dir="$(readlink -e "$(dirname "$BASH_SOURCE")")"
+child_dir="$(readlink -e "$(dirname "${BASH_SOURCE[0]}")")"
 abs_home="$(readlink -e ~)"
 is_child_home=N
 
@@ -23,7 +23,7 @@ if [ "$child_dir" = "$abs_home" ]; then
     is_child_home=Y
 fi
 
-for child in $(ls -1 "$BASH_SOURCE".* 2>/dev/null); do
+for child in $(ls -1 "${BASH_SOURCE[0]}".* 2>/dev/null); do
     . "$child_dir/$(basename "$child")"
 
     if [ "$is_child_home" = Y ]; then
