@@ -4,7 +4,7 @@ if ! echo "$-" | grep -q i; then
     return 0
 fi
 
-_have() {
+have() {
     for NAME; do
         if command -v "$NAME" >/dev/null; then
             return 0
@@ -39,9 +39,9 @@ shopt -s autocd dirspell histappend
 alias -- -='cd -'
 alias ..='cd ..'
 
-_have fd
-_have dircolors && eval "$($NAME -b)"
-_have lesspipe lesspipe.sh && eval "$($NAME)"
+have fd
+have dircolors && eval "$($NAME -b)"
+have lesspipe lesspipe.sh && eval "$($NAME)"
 
 export HISTCONTROL=ignoredups
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
@@ -69,28 +69,28 @@ bind '"\e[1;5C": forward-word' # ctrl-right
 bind '"\e[1;5D": backward-word' # ctrl-left
 bind '"\e[3;5~": kill-word' # ctrl-delete
 
-_color_off='\e[0m'
-_yellow='\e[0;33m'
+color_off='\e[0m'
+yellow='\e[0;33m'
 
 if [ -n "$BASHRC_CUSTOM_LOCATION" ]; then
-    _host_prompt=" \[$_yellow\]$BASHRC_CUSTOM_LOCATION\[$_color_off\]"
+    host_prompt=" \[$yellow\]$BASHRC_CUSTOM_LOCATION\[$color_off\]"
 elif [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ]; then
-    _host_prompt=" \[$_yellow\]\\u@\\h\[$_color_off\]"
+    host_prompt=" \[$yellow\]\\u@\\h\[$color_off\]"
 else
-    _host_prompt=
+    host_prompt=
 fi
 
-if _have nano; then
+if have nano; then
     alias nano='nano -Sw'
     export EDITOR="$NAME" GIT_EDITOR="$NAME"
 fi
 
-if _have show.sh; then
+if have show.sh; then
     alias s="$NAME -p dir=-Fh -p dir=--group-directories-first -p dir=--dereference-command-line-symlink-to-dir"
     export PAGER="$NAME" GIT_PAGER="$NAME"
 fi
 
-if _have ag; then
+if have ag; then
     if [ -n "$PAGER" ]; then
         alias f="$NAME --follow --hidden --pager \"$PAGER\""
     else
@@ -98,7 +98,7 @@ if _have ag; then
     fi
 fi
 
-if _have git; then
+if have git; then
     c() {
         local cached=$(git diff --cached --name-only | wc -l)
 
@@ -142,16 +142,21 @@ if _have git; then
         __git_complete v _git_pull
     fi
 
-    case "$(git rebase -h 2>&1)" in
-        *--rebase-merges*)
-            git config --global pull.rebase merges;;
-        *--preserve-merges*)
-            git config --global pull.rebase preserve;;
-        *)
-            git config --global --bool pull.rebase true;;
-    esac
+    git_cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cached"
 
-    git config --global pager.status true
+    if [ ! -e "$git_cache_file" ]; then
+        case "$(git rebase -h 2>&1)" in
+            *--rebase-merges*)
+                git config --global pull.rebase merges;;
+            *--preserve-merges*)
+                git config --global pull.rebase preserve;;
+            *)
+                git config --global --bool pull.rebase true;;
+        esac
+
+        git config --global pager.status true
+        > "$git_cache_file"
+    fi
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
@@ -159,7 +164,7 @@ if _have git; then
     if ! command -v __git_ps1 >/dev/null; then
         echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
     else
-        _git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$_color_off\]"
+        git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$color_off\]"
     fi
 fi
 
@@ -169,7 +174,5 @@ _job_count_ps1() {
 }
 
 if [ -z "$BASHRC_KEEP_PROMPT" ]; then
-    export PS1="\[\e[1;34m\]\w\[$_color_off\]$_host_prompt$_git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$_color_off\]\\$ "
+    export PS1="\[\e[1;34m\]\w\[$color_off\]$host_prompt$git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$color_off\]\\$ "
 fi
-
-unset -f _have
