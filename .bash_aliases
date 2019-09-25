@@ -140,9 +140,9 @@ if _have git; then
         __git_complete v _git_pull
     fi
 
-    if git rebase -h | grep -q -- --rebase-merges; then
+    if git rebase -h 2>&1 | grep -q -- --rebase-merges; then
         git config --global pull.rebase merges
-    elif git rebase -h | grep -q -- --preserve-merges; then
+    elif git rebase -h 2>&1 | grep -q -- --preserve-merges; then
         git config --global pull.rebase preserve
     else
         git config --global --bool pull.rebase true
