@@ -151,7 +151,7 @@ if have git; then
     git_cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cached"
 
     if [ ! -e "$git_cache_file" ]; then
-        case "$(git rebase -h 2>&1)" in
+        case "$(git help config 2>&1)" in
             *--rebase-merges*)
                 git config --global pull.rebase merges;;
             *--preserve-merges*)
