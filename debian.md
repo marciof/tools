@@ -50,6 +50,15 @@ Logout and login to apply:
 
     xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
 
+## Firefox
+
+Faster scrolling:
+
+1. Disable *smooth scrooling* in *Preferences*.
+2. Enable *WebRender* (ie. *Quantum Render*).
+  - Search for `WEBRENDER_QUALIFIED` in the [troubleshooting page](about:support) to check if qualified hardware was found.
+  - To force enable regardless, set `gfx.webrender.all` to `true` in the [config page](about:config).
+
 ## Spotify
 
     spotify --force-device-scale-factor=1.5
