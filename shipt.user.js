@@ -1,53 +1,86 @@
 // ==UserScript==
 // @name Shipt
-// @match https://shop.shipt.com/cart
+// @match https://shop.shipt.com/*
 // @run-at document-idle
 // ==/UserScript==
 
-const saveNoteCallbacks = [];
-
-document.querySelectorAll('*[data-test=CartProduct-product-card]').forEach(product => {
-    const editNoteButton = product.querySelector(
-        'button[data-test=CartProduct-edit-note-button]');
-    const notesInput = product.querySelector('textarea');
-
-    if (editNoteButton) {
-        editNoteButton.click();
-    }
-    else {
-        product.querySelector('button[data-test=CartProduct-add-note-button]').click();
-        notesInput.value = 'Replacement allowed: ';
-    }
-
-    const saveNote = () => {
-        const saveNoteButton = product.querySelector(
-            'button[data-test=CartProduct-update-note-button]');
-
-        if (saveNoteButton) {
-            saveNoteButton.click();
+/**
+ * @see https://github.com/facebook/react/blob/master/packages/react-devtools-shared/src/backend/views/Highlighter/Overlay.js
+ */
+function getReactComponent(element) {
+    for (const prop in element) {
+        if (!element.hasOwnProperty(prop)) {
+            continue;
         }
-    };
+        if (prop.startsWith('__reactInternalInstance')) {
+            const fiberNode = element[prop];
+            return fiberNode && fiberNode.return && fiberNode.return.stateNode;
+        }
+    }
+    throw new Error('No React Component found: ' + element);
+}
 
-    notesInput.addEventListener('keyup', event => {
-        const isSaveShortcut
-            = event.ctrlKey
-            && ((event.keyCode === '\n'.charCodeAt(0))
-                || (event.keyCode === '\r'.charCodeAt(0)));
+function addSaveNoteKeyboardShortcut(element, saveCallback) {
+    element.addEventListener('keyup', event => {
+        if (!event.ctrlKey) {
+            return;
+        }
 
-        if (isSaveShortcut) {
-            saveNote();
+        const key = String.fromCharCode(event.keyCode);
+
+        if (/[\n\r]/.test(key)) {
+            saveCallback();
         }
     });
+}
 
-    saveNoteCallbacks.push(saveNote);
+/**
+ * @see https://reactjs.org/docs/react-component.html#setstate
+ */
+function enhanceProductCard(component, element) {
+    component.setState(
+        function updateState(state) {
+            if (state.note.trim() !== '') {
+                return {};
+            }
+            console.log('Setting default product note', component);
+            return {
+                isEditingNote: true,
+                note: 'Replacement allowed: ',
+            };
+        },
+        function onReRender() {
+            addSaveNoteKeyboardShortcut(element, function save() {
+                console.log('Saving product note', component);
+                element.querySelector('*[data-test=CartProduct-update-note-button]')
+                    .click();
+            });
+        },
+    );
+}
+
+const observer = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+        mutation.addedNodes.forEach(node => {
+            if (node.nodeType !== Node.ELEMENT_NODE) {
+                return;
+            }
+
+            const productEl = node.querySelector('*[data-test=CartProduct-product-card]');
+            if (!productEl) {
+                return;
+            }
+
+            console.log('Found product card element', productEl);
+            const productComp = getReactComponent(productEl);
+
+            console.log('Found product React component', productComp);
+            enhanceProductCard(productComp,  productEl);
+        });
+    }
 });
 
-const saveAllNotesButton = document.createElement('button');
-saveAllNotesButton.textContent = 'Save all instructions';
-
-saveAllNotesButton.addEventListener('click', event => {
-    event.preventDefault();
-    saveNoteCallbacks.forEach(callback => callback());
+observer.observe(document, {
+    childList: true,
+    subtree: true,
 });
-
-document.querySelector('h1').appendChild(saveAllNotesButton);
