@@ -59,25 +59,34 @@ function enhanceProductCard(component, element) {
     );
 }
 
+function toArray(arrayLike) {
+    return Array.from(arrayLike);
+}
+
+function mergeArrays(left, right) {
+    return Array.concat(left, right);
+}
+
 const observer = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-        mutation.addedNodes.forEach(node => {
-            if (node.nodeType !== Node.ELEMENT_NODE) {
-                return;
-            }
+    if (location.pathname !== '/cart') {
+        console.log('Skipping, not in the cart page');
+        return;
+    }
 
-            const productEl = node.querySelector('*[data-test=CartProduct-product-card]');
-            if (!productEl) {
-                return;
-            }
-
+    return mutations.map(mutation => mutation.addedNodes)
+        .map(toArray)
+        .reduce(mergeArrays, [])
+        .filter(node => node.nodeType === Node.ELEMENT_NODE)
+        .map(node => node.querySelectorAll('*[data-test=CartProduct-product-card]'))
+        .map(toArray)
+        .reduce(mergeArrays, [])
+        .forEach(productEl => {
             console.log('Found product card element', productEl);
             const productComp = getReactComponent(productEl);
 
             console.log('Found product React component', productComp);
-            enhanceProductCard(productComp,  productEl);
+            enhanceProductCard(productComp, productEl);
         });
-    }
 });
 
 observer.observe(document, {
