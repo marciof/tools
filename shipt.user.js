@@ -20,8 +20,8 @@ function getReactComponent(element) {
     throw new Error('No React Component found: ' + element);
 }
 
-function addSaveNoteKeyboardShortcut(element, saveCallback) {
-    element.addEventListener('keyup', event => {
+function addSaveNoteKeyboardShortcut(productEl, saveCallback) {
+    productEl.addEventListener('keyup', event => {
         if (!event.ctrlKey) {
             return;
         }
@@ -34,26 +34,55 @@ function addSaveNoteKeyboardShortcut(element, saveCallback) {
     });
 }
 
+function getSaveButton(productEl) {
+    return productEl.querySelector('*[data-test=CartProduct-update-note-button]');
+}
+
+function makeProductKey(id) {
+    return 'pid:' + id;
+}
+
+function prepareProductNote(id, note) {
+    if (note !== '') {
+        console.log('Product note already present:', note);
+        return note;
+    }
+
+    note = localStorage.getItem(makeProductKey(id));
+
+    if (note !== null) {
+        console.log('Got saved product note:', note);
+        return note;
+    }
+
+    note = 'Replacement allowed: ';
+    console.log('Setting default product note:', note);
+    return note;
+}
+
 /**
  * @see https://reactjs.org/docs/react-component.html#setstate
  */
 function enhanceProductCard(component, element) {
+    const { id, name } = component.props.product;
+    console.log('Enhancing product ID', id, 'named:', name);
+
     component.setState(
         function updateState(state) {
-            if (state.note.trim() !== '') {
-                return {};
-            }
-            console.log('Setting default product note', component);
             return {
                 isEditingNote: true,
-                note: 'Replacement allowed: ',
+                note: prepareProductNote(id, state.note),
             };
         },
         function onReRender() {
-            addSaveNoteKeyboardShortcut(element, function save() {
-                console.log('Saving product note', component);
-                element.querySelector('*[data-test=CartProduct-update-note-button]')
-                    .click();
+            getSaveButton(element).addEventListener('click', () => {
+                console.log('Saving product note:', component.state.note);
+                localStorage.setItem(makeProductKey(id), component.state.note);
+            });
+
+            addSaveNoteKeyboardShortcut(element, () => {
+                console.log('Save product note keyboard shortcut');
+                getSaveButton(element).click();
             });
         },
     );
@@ -63,8 +92,8 @@ function toArray(arrayLike) {
     return Array.from(arrayLike);
 }
 
-function mergeArrays(left, right) {
-    return Array.concat(left, right);
+function arrayReducer(left, right) {
+    return left.concat(right);
 }
 
 const observer = new MutationObserver(mutations => {
@@ -75,11 +104,11 @@ const observer = new MutationObserver(mutations => {
 
     return mutations.map(mutation => mutation.addedNodes)
         .map(toArray)
-        .reduce(mergeArrays, [])
+        .reduce(arrayReducer, [])
         .filter(node => node.nodeType === Node.ELEMENT_NODE)
         .map(node => node.querySelectorAll('*[data-test=CartProduct-product-card]'))
         .map(toArray)
-        .reduce(mergeArrays, [])
+        .reduce(arrayReducer, [])
         .forEach(productEl => {
             console.log('Found product card element', productEl);
             const productComp = getReactComponent(productEl);
