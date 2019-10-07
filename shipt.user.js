@@ -106,7 +106,7 @@ const observer = new MutationObserver(mutations => {
         .map(toArray)
         .reduce(arrayReducer, [])
         .filter(node => node.nodeType === Node.ELEMENT_NODE)
-        .map(node => node.querySelectorAll('*[data-test=CartProduct-product-card]'))
+        .map(el => el.querySelectorAll('*[data-test=CartProduct-product-card]'))
         .map(toArray)
         .reduce(arrayReducer, [])
         .forEach(productEl => {
