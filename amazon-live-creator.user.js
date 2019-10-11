@@ -45,9 +45,10 @@ function cleanPage(title, document) {
 /**
  * @returns {boolean}
  */
-function isReactElement(object) {
-    return ('$$typeof' in object)
-        && _.isSymbol(object.$$typeof);
+function isReactElement(value) {
+    return _.isPlainObject(value)
+        && ('$$typeof' in value)
+        && _.isSymbol(value.$$typeof);
 }
 
 /**
@@ -58,7 +59,7 @@ function isReactElement(object) {
  * @returns {React.Element}
  */
 function jsx(tag, props, ...children) {
-    if (!_.isPlainObject(props) || isReactElement(props)) {
+    if (isReactElement(props)) {
         children.unshift(props);
         props = null;
     }
@@ -68,6 +69,7 @@ function jsx(tag, props, ...children) {
 
 // FIXME: handle logged out
 // FIXME: handle network/HTTP errors
+// FIXME: allow cancellation of in-flight requests?
 class Api {
     constructor() {
         this.apiPrefix = '/api/v1/';
@@ -85,10 +87,15 @@ class Api {
 const fieldset = jsx.bind(null, 'fieldset');
 const legend = jsx.bind(null, 'legend');
 const p = jsx.bind(null, 'p');
+const a = jsx.bind(null, 'a');
 const form = jsx.bind(null, 'form');
 const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
+
+const LoginLink = React.memo(() =>
+    p(a({href: 'https://www.amazon.com/gp/sign-in.html'},
+        'Please login to your Amazon account first.')));
 
 const Shows = React.memo(props => {
     return form(fieldset(
@@ -98,6 +105,20 @@ const Shows = React.memo(props => {
         p(input({type: 'submit'}))));
 });
 
+const App = React.memo(props => {
+    const {api} = props;
+    const [shows, setShows] = React.useState(undefined);
+
+    React.useEffect(() => {
+        api.listShows().then(shows => setShows(shows));
+    }, [api]);
+
+    if ((shows === undefined) || shows.errors) {
+        return jsx(LoginLink);
+    }
+    return jsx(Shows);
+});
+
 const rootEl = cleanPage(GM_info.script.name, document);
 const api = new Api();
 
@@ -105,8 +126,4 @@ const acePromise = new Promise((resolve, reject) => {
     require(['ace/ace'], () => resolve(window.ace), reject);
 });
 
-api.listShows().then(shows => {
-    console.error(shows);
-});
-
-ReactDOM.render(jsx(Shows), rootEl);
+ReactDOM.render(jsx(App, {api: api}), rootEl);
