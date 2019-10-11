@@ -82,24 +82,20 @@ class Api {
     }
 }
 
-const section = jsx.bind(null, 'section');
-const h1 = jsx.bind(null, 'h1');
+const fieldset = jsx.bind(null, 'fieldset');
+const legend = jsx.bind(null, 'legend');
 const p = jsx.bind(null, 'p');
 const form = jsx.bind(null, 'form');
-const button = jsx.bind(null, 'button');
 const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
 
 const Shows = React.memo(props => {
-    return section(
-        h1('Shows'),
-        form(
-            p(button('Refresh')),
-            p(
-                select(
-                    option('blah')),
-                input({type: 'submit'}))));
+    return form(fieldset(
+        legend('Shows'),
+        p(select(
+            option('blah'))),
+        p(input({type: 'submit'}))));
 });
 
 const rootEl = cleanPage(GM_info.script.name, document);
