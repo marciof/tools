@@ -17,14 +17,13 @@ require.config({
     },
 });
 
-const e = React.createElement;
-
 /**
  * @param title {string}
  * @param document {Document}
  * @returns {Node}
  */
 function cleanPage(title, document) {
+    console.log('Cleaning up page, title:', title, '; document:', document);
     document.title = title;
 
     const faviconLink = document.querySelector('link[rel*=icon]')
@@ -43,6 +42,30 @@ function cleanPage(title, document) {
     return rootEl;
 }
 
+/**
+ * @returns {boolean}
+ */
+function isReactElement(object) {
+    return ('$$typeof' in object)
+        && _.isSymbol(object.$$typeof);
+}
+
+/**
+ *
+ * @param tag {string}
+ * @param [props] {Object}
+ * @param children {Array<string|React.Element>}
+ * @returns {React.Element}
+ */
+function jsx(tag, props, ...children) {
+    if (!_.isPlainObject(props) || isReactElement(props)) {
+        children.unshift(props);
+        props = null;
+    }
+    console.info('JSX tag:', tag, '; props:', props, '; children:', children);
+    return React.createElement(tag, props, ...children);
+}
+
 // FIXME: handle logged out
 // FIXME: handle network/HTTP errors
 class Api {
@@ -59,14 +82,24 @@ class Api {
     }
 }
 
+const section = jsx.bind(null, 'section');
+const h1 = jsx.bind(null, 'h1');
+const p = jsx.bind(null, 'p');
+const form = jsx.bind(null, 'form');
+const button = jsx.bind(null, 'button');
+const select = jsx.bind(null, 'select');
+const option = jsx.bind(null, 'option');
+const input = jsx.bind(null, 'input');
+
 const Shows = React.memo(props => {
-    return e('section', null,
-        e('h1', null, 'Shows'),
-        e('form', null,
-            e('label', null,
-                e('select', null,
-                    e('option', null, 'blah'))),
-            e('input', {type: 'submit'})));
+    return section(
+        h1('Shows'),
+        form(
+            p(button('Refresh')),
+            p(
+                select(
+                    option('blah')),
+                input({type: 'submit'}))));
 });
 
 const rootEl = cleanPage(GM_info.script.name, document);
@@ -80,4 +113,4 @@ api.listShows().then(shows => {
     console.error(shows);
 });
 
-ReactDOM.render(e(Shows), rootEl);
+ReactDOM.render(jsx(Shows), rootEl);
