@@ -3,10 +3,10 @@
 // @icon https://www.amazon.com/favicon.ico
 // @run-at document-idle
 // @match https://amazonlivetools.amazon.com/
-// @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.production.min.js
-// @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.production.min.js
-// @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js
-// @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.development.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js
 // ==/UserScript==
 
 'use strict';
@@ -17,19 +17,7 @@ require.config({
     },
 });
 
-/**
- * @param type {string|React.Component}
- * @param [props] {Object}
- * @param children {Array<React.Element>}
- * @returns {React.Element}
- */
-function e(type, props, ...children) {
-    if (!_.isPlainObject(props)) {
-        children.unshift(props);
-        props = null;
-    }
-    return React.createElement(type, props, ...children);
-}
+const e = React.createElement;
 
 /**
  * @param title {string}
@@ -71,6 +59,16 @@ class Api {
     }
 }
 
+const Shows = React.memo(props => {
+    return e('section', null,
+        e('h1', null, 'Shows'),
+        e('form', null,
+            e('label', null,
+                e('select', null,
+                    e('option', null, 'blah'))),
+            e('input', {type: 'submit'})));
+});
+
 const rootEl = cleanPage(GM_info.script.name, document);
 const api = new Api();
 
@@ -78,16 +76,8 @@ const acePromise = new Promise((resolve, reject) => {
     require(['ace/ace'], () => resolve(window.ace), reject);
 });
 
-// FIXME: use stylesheet?
-rootEl.style.height = '500px';
-rootEl.style.width = '1000px';
-rootEl.style.border = '1px solid gray';
-
-// FIXME: show syntax errors in Ace
-Promise.all([acePromise, api.listShows()]).then(([ace, shows]) => {
-    rootEl.textContent = JSON.stringify(shows, undefined, 2);
-
-    const editor = ace.edit(rootEl);
-    editor.setTheme('ace/theme/github');
-    editor.session.setMode('ace/mode/json');
+api.listShows().then(shows => {
+    console.error(shows);
 });
+
+ReactDOM.render(e(Shows), rootEl);
