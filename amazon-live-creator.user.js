@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name Amazon Live Creator
 // @icon https://www.amazon.com/favicon.ico
-// @run-at document-idle
+// @run-at document-start
 // @match https://amazonlivetools.amazon.com/
 // @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
@@ -11,19 +11,12 @@
 
 'use strict';
 
-require.config({
-    paths: {
-        ace: ['https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/'],
-    },
-});
-
 /**
  * @param title {string}
- * @param document {Document}
  * @returns {Node}
  */
-function cleanPage(title, document) {
-    console.log('Cleaning up page, title:', title, '; document:', document);
+function cleanPage(title) {
+    console.info('Cleaning up page, title:', title, '; document:', document);
     document.title = title;
 
     const faviconLink = document.querySelector('link[rel*=icon]')
@@ -42,13 +35,24 @@ function cleanPage(title, document) {
     return rootEl;
 }
 
+const rootEl = cleanPage(GM_info.script.name);
+
+require.config({
+    paths: {
+        ace: ['https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/'],
+    },
+});
+
 /**
  * @returns {boolean}
  */
 function isReactElement(value) {
-    return _.isPlainObject(value)
-        && ('$$typeof' in value)
-        && _.isSymbol(value.$$typeof);
+    const isPlainObject = _.isPlainObject(value);
+
+    return !isPlainObject
+        || (isPlainObject
+            && ('$$typeof' in value)
+            && _.isSymbol(value.$$typeof));
 }
 
 /**
@@ -63,24 +67,40 @@ function jsx(tag, props, ...children) {
         children.unshift(props);
         props = null;
     }
-    console.info('JSX tag:', tag, '; props:', props, '; children:', children);
+    console.debug('JSX tag:', tag, '; props:', props, '; children:', children);
     return React.createElement(tag, props, ...children);
 }
 
-// FIXME: handle logged out
-// FIXME: handle network/HTTP errors
+// FIXME: handle network/HTTP/API errors
 // FIXME: allow cancellation of in-flight requests?
 class Api {
     constructor() {
-        this.apiPrefix = '/api/v1/';
+        this.urlPathPrefix = '/api/v1/';
     }
 
     /**
      * @returns {Promise<Object>}
      */
     async listShows() {
-        const response = await fetch(new Request(this.apiPrefix + 'user/shows'));
-        return response.json();
+        const response = await this.request('user/shows');
+        const json = await response.json();
+
+        console.info('API shows:', json);
+        return json;
+    }
+
+    /**
+     * @param path {string}
+     * @returns {Promise<Response>}
+     */
+    async request(path) {
+        const fullPath = this.urlPathPrefix + path;
+        console.info('API request:', fullPath);
+
+        const response = await fetch(new Request(fullPath));
+        console.info('API response:', response);
+
+        return response;
     }
 }
 
@@ -113,13 +133,17 @@ const App = React.memo(props => {
         api.listShows().then(shows => setShows(shows));
     }, [api]);
 
-    if ((shows === undefined) || shows.errors) {
+    if (shows === undefined) {
+        return p('Loading...');
+    }
+    else if (shows.errors) {
         return jsx(LoginLink);
     }
-    return jsx(Shows);
+    else {
+        return jsx(Shows);
+    }
 });
 
-const rootEl = cleanPage(GM_info.script.name, document);
 const api = new Api();
 
 const acePromise = new Promise((resolve, reject) => {
