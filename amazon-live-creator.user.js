@@ -526,5 +526,9 @@ const App = React.memo(({api}) => {
 });
 
 const api = new Api();
+const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
+    || confirm('Unsupported UserScript manager. Continue?');
 
-ReactDOM.render(jsx(App, {api: api}), rootEl);
+if (shouldRun) {
+    ReactDOM.render(jsx(App, {api: api}), rootEl);
+}
