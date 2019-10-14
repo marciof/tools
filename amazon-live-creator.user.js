@@ -86,14 +86,18 @@ class Api {
     }
 
     /**
+     * @param id {string}
      * @returns {Promise<Object>}
      */
-    async listShows() {
-        const response = await this.request('user/shows');
-        const json = await response.json();
+    readShow(id) {
+        return this.request('show/' + id);
+    }
 
-        console.info('API shows:', json);
-        return json;
+    /**
+     * @returns {Promise<Object>}
+     */
+    listShows() {
+        return this.request('user/shows');
     }
 
     /**
@@ -107,27 +111,37 @@ class Api {
         const response = await fetch(new Request(fullPath));
         console.info('API response:', response);
 
-        return response;
+        const json = await response.json();
+        console.info('API JSON response:', json);
+        return json;
     }
 }
 
 const fieldset = jsx.bind(null, 'fieldset');
 const legend = jsx.bind(null, 'legend');
+const label = jsx.bind(null, 'label');
 const p = jsx.bind(null, 'p');
-const div = jsx.bind(null, 'div');
 const a = jsx.bind(null, 'a');
+const b = jsx.bind(null, 'b');
+const div = jsx.bind(null, 'div');
 const form = jsx.bind(null, 'form');
 const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
 
-const AceEditor = React.memo(({children, style}) => {
-    const [ace, setAce] = React.useState(null);
-    const editorRef = React.useRef(null);
+const memo = React.memo.bind(React);
+const useState = React.useState.bind(React);
+const useRef = React.useRef.bind(React);
+const useEffect = React.useEffect.bind(React);
+const Fragment = jsx.bind(null, React.Fragment);
 
-    React.useEffect(() => void acePromise.then(setAce), []);
+const AceEditor = memo(({children, style}) => {
+    const [ace, setAce] = useState(null);
+    const editorRef = useRef(null);
 
-    React.useEffect(() => {
+    useEffect(() => void acePromise.then(setAce), []);
+
+    useEffect(() => {
         if (ace) {
             const editor = ace.edit(editorRef.current);
             editor.setTheme("ace/theme/github");
@@ -138,7 +152,7 @@ const AceEditor = React.memo(({children, style}) => {
     return div({ref: editorRef, style: style}, children);
 });
 
-const JsonAceEditor = React.memo(({json}) => {
+const JsonAceEditor = memo(({json}) => {
     return jsx(AceEditor,
         {
             style: {
@@ -150,32 +164,72 @@ const JsonAceEditor = React.memo(({json}) => {
         JSON.stringify(json, undefined, 4));
 });
 
+const Loading = memo(() => p('Loading...'));
+
+const Shows = memo(({api, selectShowById}) => {
+    const [shows, setShows] = useState(null);
+    useEffect(() => void api.listShows().then(setShows), [api]);
+
+    useEffect(() => {
+        if (shows && shows.shows && (shows.shows.length === 1)) {
+            selectShowById(shows.shows[0].id);
+        }
+    }, [shows]);
+
+    let children;
+
+    if (!shows) {
+        children = jsx(Loading);
+    }
+    else if (shows.errors) {
+        children = jsx(LoginLink);
+    }
+    else {
+        children = form(
+            {
+                onSubmit(event) {
+                    event.preventDefault();
+                    selectShowById(event.target.elements.show.value);
+                },
+            },
+            p(select(
+                {name: 'show'},
+                ...shows.shows.map(show =>
+                    option({value: show.id}, show.title)))),
+            p(input({type: 'submit'})),
+            jsx(JsonAceEditor, {json: shows}));
+    }
+
+    return fieldset(legend('Shows'), children);
+});
+
+const Show = memo(({api, id}) => {
+    const [show, setShow] = useState(null);
+    useEffect(() => void api.readShow(id).then(setShow), [api, id]);
+
+    return fieldset(
+        legend('Show'),
+        p(label('ID: ', input({
+            type: 'text',
+            value: id,
+            readOnly: true,
+            size: id.length,
+        }))),
+        show && p(b(show.title)),
+        !show ? jsx(Loading) : jsx(JsonAceEditor, {json: show}));
+});
+
 const LoginLink = React.memo(() =>
     p(a({href: 'https://www.amazon.com/gp/sign-in.html'},
         'Please login to your Amazon account first.')));
 
-const Shows = React.memo(({shows}) => {
-    return form(fieldset(
-        legend('Shows'),
-        p(select(...shows.shows.map(show =>
-            option({value: show.id}, show.title)))),
-        p(input({type: 'submit'})),
-        jsx(JsonAceEditor, {json: shows})));
-});
-
 const App = React.memo(({api}) => {
-    const [shows, setShows] = React.useState(null);
-    React.useEffect(() => void api.listShows().then(setShows), [api]);
+    const [showId, setShowId] = useState(null);
 
-    if (shows === null) {
-        return p('Loading...');
-    }
-    else if (shows.errors) {
-        return jsx(LoginLink);
-    }
-    else {
-        return jsx(Shows, {shows: shows});
-    }
+    return Fragment(
+        jsx(Shows, {api: api, selectShowById: setShowId}),
+        showId && jsx(Show, {api: api, id: showId}),
+    );
 });
 
 const api = new Api();
