@@ -45,7 +45,7 @@ require.config({
 
 const acePromise = new Promise((resolve, reject) => {
     require(['ace/ace'], () => {
-        console.debug('ACE editor', window.ace);
+        console.info('ACE editor', window.ace);
         return resolve(window.ace);
     }, reject);
 });
@@ -74,7 +74,6 @@ function jsx(tag, props, ...children) {
         children.unshift(props);
         props = null;
     }
-    console.debug('JSX tag:', tag, '; props:', props, '; children:', children);
     return React.createElement(tag, props, ...children);
 }
 
@@ -266,15 +265,22 @@ const Shows = memo(({api, onSelectedShowId}) => {
                             show.title)),
                         td(show.distribution),
                         td(show.featureGroup))))),
-            p(button(
-                {
-                    disabled: !selectedShow,
-                    type: 'button',
-                    onClick() {
-                        onSelectedShowId(selectedShow.id);
-                    }
-                },
-                'Load selected show')));
+            p(
+                button(
+                    {
+                        disabled: !selectedShow,
+                        type: 'button',
+                        onClick() {
+                            onSelectedShowId(selectedShow.id);
+                        }
+                    },
+                    'Load selected show'),
+                button(
+                    {
+                        type: 'button',
+                        disabled: true,
+                    },
+                    'Show selected JSON')));
     }
 
     return fieldset(legend('Shows'), children);
@@ -365,7 +371,13 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
                                 });
                         }
                     },
-                    'Load more broadcasts')));
+                    'Load more broadcasts'),
+                button(
+                    {
+                        type: 'button',
+                        disabled: true,
+                    },
+                    'Show selected JSON')));
     }
 
     return fieldset(legend('Broadcasts'), children);
@@ -442,10 +454,15 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                 button(
                     {
                         type: 'button',
-                        onClick() {
-                        }
+                        disabled: true,
                     },
-                    'Refresh live data')));
+                    'Refresh live data'),
+                button(
+                    {
+                        type: 'button',
+                        disabled: true,
+                    },
+                    'Show JSON')));
     }
 
     return fieldset(legend('Live Data'), children);
@@ -466,6 +483,12 @@ const Broadcast = memo(({api, id}) => {
                 src: api.getBroadcastSlateImageUrl(id),
                 height: '100px',
             })),
+            p(button(
+                {
+                    type: 'button',
+                    disabled: true,
+                },
+                'Show JSON')),
             jsx(JsonAceEditor, {json: broadcast}));
     }
 
