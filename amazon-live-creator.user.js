@@ -145,8 +145,8 @@ const a = jsx.bind(null, 'a');
 const b = jsx.bind(null, 'b');
 const div = jsx.bind(null, 'div');
 const form = jsx.bind(null, 'form');
-const select = jsx.bind(null, 'select');
-const option = jsx.bind(null, 'option');
+const code = jsx.bind(null, 'code');
+const output = jsx.bind(null, 'output');
 const input = jsx.bind(null, 'input');
 const button = jsx.bind(null, 'button');
 const table = jsx.bind(null, 'table');
@@ -162,47 +162,61 @@ const useRef = React.useRef.bind(React);
 const useEffect = React.useEffect.bind(React);
 const Fragment = jsx.bind(null, React.Fragment);
 
-const AceEditor = memo(({children, style}) => {
+const AceEditor = memo(({text, style}) => {
     const [ace, setAce] = useState(null);
-    const editorRef = useRef(null);
+    const [editor, setEditor] = useState(null);
+    const editorElRef = useRef(null);
 
     useEffect(() => void acePromise.then(setAce), []);
 
     useEffect(() => {
         if (ace) {
-            const editor = ace.edit(editorRef.current);
+            const editor = ace.edit(editorElRef.current);
             editor.setTheme("ace/theme/github");
             editor.session.setMode("ace/mode/json");
+            setEditor(editor);
         }
     }, [ace]);
 
-    return div({ref: editorRef, style: style}, children);
+    useEffect(() => {
+        if (editor) {
+            editor.setValue(text, 1);
+        }
+    }, [editor, text]);
+
+    return div({ref: editorElRef, style: style});
 });
 
 const JsonAceEditor = memo(({json}) => {
-    return jsx(AceEditor,
-        {
-            style: {
-                width: '100%',
-                height: '200px',
-                border: '1px solid gray',
-            },
+    return jsx(AceEditor, {
+        style: {
+            width: '100%',
+            height: '250px',
+            border: '1px solid gray',
         },
-        JSON.stringify(json, undefined, 4));
+        text: JSON.stringify(json, undefined, 4)
+    });
 });
 
 const Loading = memo(() => p('Loading...'));
 
 const Shows = memo(({api, onSelectedShowId}) => {
     const [shows, setShows] = useState(null);
+    const [selectedShow, setSelectedShow] = useState(null);
 
     useEffect(() => void api.listShows().then(setShows), [api]);
 
     useEffect(() => {
         if (shows && shows.shows && (shows.shows.length === 1)) {
-            onSelectedShowId(shows.shows[0].id);
+            setSelectedShow(shows.shows[0]);
         }
     }, [shows]);
+
+    useEffect(() => {
+        if (selectedShow) {
+            onSelectedShowId(selectedShow.id);
+        }
+    }, [selectedShow]);
 
     let children;
 
@@ -214,32 +228,45 @@ const Shows = memo(({api, onSelectedShowId}) => {
     }
     else {
         children = form(
-            {
-                onSubmit(event) {
-                    event.preventDefault();
-                    onSelectedShowId(event.target.elements.showId.value);
-                },
-            },
             table(
                 {border: 1},
                 thead(
                     tr(
-                        th(),
-                        th('Title'),
                         th('ID'),
+                        th('Title'),
                         th('Distribution'),
                         th('Feature Group'))),
                 tbody(...shows.shows.map(show =>
                     tr(
-                        td(button(
-                            {name: 'showId', value: show.id},
-                            'Select')),
+                        {
+                            style: {
+                                backgroundColor: selectedShow === show
+                                    ? 'lightyellow'
+                                    : 'inherit'
+                            },
+                        },
+                        td(label(
+                            input({
+                                type: 'radio',
+                                name: 'showId',
+                                value: show.id,
+                                checked: selectedShow === show,
+                                onChange(event) {
+                                    setSelectedShow(show);
+                                }
+                            }),
+                            code(show.id))),
                         td(a(
-                            {href: 'https://www.amazon.com/live/channel/' + show.id},
+                            {
+                                href: 'https://www.amazon.com/live/channel/' + show.id,
+                                target: '_blank',
+                            },
                             show.title)),
-                        td(show.id),
                         td(show.distribution),
-                        td(show.featureGroup))))));
+                        td(show.featureGroup))))),
+            selectedShow && Fragment(
+                p('JSON data:'),
+                jsx(JsonAceEditor, {json: selectedShow})));
     }
 
     return fieldset(legend('Shows'), children);
@@ -266,6 +293,7 @@ const ShowLiveData = memo(({api, showId}) => {
 
 const Broadcasts = memo(({api, showId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
+    const [selectedBroadcast, setSelectedBroadcast] = useState(null);
 
     useEffect(
         () => void api.listShowBroadcasts(showId).then(setBroadcasts),
@@ -281,6 +309,7 @@ const Broadcasts = memo(({api, showId}) => {
             {
                 onSubmit(event) {
                     event.preventDefault();
+
                     api.listShowBroadcasts(showId, broadcasts.nextLink)
                         .then(moreBroadcasts => {
                             setBroadcasts({
@@ -291,25 +320,48 @@ const Broadcasts = memo(({api, showId}) => {
                 },
             },
             broadcasts.nextLink
-                && input({type: 'submit', value: 'Load more'}),
+                && p(button({name: 'load'}, 'Load more')),
             table(
                 {border: 1},
                 thead(
                     tr(
-                        th('Title'),
                         th('ID'),
+                        th('Title'),
                         th('ASIN'),
                         th('Started'),
                         th('Ended'))),
-                tbody(...broadcasts.broadcasts.concat().reverse().map(broadcast =>
+                tbody(...broadcasts.broadcasts.map(broadcast =>
                     tr(
+                        {
+                            style: {
+                                backgroundColor: selectedBroadcast === broadcast
+                                    ? 'lightyellow'
+                                    : 'inherit'
+                            },
+                        },
+                        td(label(
+                            input({
+                                type: 'radio',
+                                name: 'broadcastId',
+                                value: broadcast.id,
+                                checked: selectedBroadcast === broadcast,
+                                onChange(event) {
+                                    setSelectedBroadcast(broadcast);
+                                }
+                            }),
+                            code(broadcast.id))),
                         td(a(
-                            {href: 'https://www.amazon.com/live/broadcast/' + broadcast.id},
+                            {
+                                href: 'https://www.amazon.com/live/broadcast/' + broadcast.id,
+                                target: '_blank',
+                            },
                             broadcast.title)),
-                        td(broadcast.id),
                         td(broadcast.asin),
                         td(broadcast.broadcastStartDateTime),
-                        td(broadcast.broadcastEndDateTime))))));
+                        td(broadcast.broadcastEndDateTime))))),
+            selectedBroadcast && Fragment(
+                    p('JSON data:'),
+                    jsx(JsonAceEditor, {json: selectedBroadcast})));
     }
 
     return fieldset(legend('Broadcasts'), children);
@@ -324,7 +376,6 @@ const App = React.memo(({api}) => {
 
     return Fragment(
         jsx(Shows, {api: api, onSelectedShowId: setShowId}),
-        showId && jsx(ShowLiveData, {api: api, showId: showId}),
         showId && jsx(Broadcasts, {api: api, showId: showId}));
 });
 
