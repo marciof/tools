@@ -121,8 +121,7 @@ const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
 
-// FIXME: text as children?
-const AceEditor = React.memo(({text, style}) => {
+const AceEditor = React.memo(({children, style}) => {
     const [ace, setAce] = React.useState(null);
     const editorRef = React.useRef(null);
 
@@ -136,18 +135,19 @@ const AceEditor = React.memo(({text, style}) => {
         }
     }, [ace]);
 
-    return div({ref: editorRef, style: style}, text);
+    return div({ref: editorRef, style: style}, children);
 });
 
 const JsonAceEditor = React.memo(({json}) => {
-    return jsx(AceEditor, {
-        text: JSON.stringify(json, undefined, 4),
-        style: {
-            width: '100%',
-            height: '250px',
-            border: '1px solid gray',
+    return jsx(AceEditor,
+        {
+            style: {
+                width: '100%',
+                height: '250px',
+                border: '1px solid gray',
+            },
         },
-    })
+        JSON.stringify(json, undefined, 4));
 });
 
 const LoginLink = React.memo(() =>
