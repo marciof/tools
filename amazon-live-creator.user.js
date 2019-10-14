@@ -45,8 +45,9 @@ require.config({
 
 const acePromise = new Promise((resolve, reject) => {
     require(['ace/ace'], () => {
-        console.info('ACE editor', window.ace);
-        return resolve(window.ace);
+        const ace = unsafeWindow.ace;
+        console.info('ACE editor', ace);
+        return resolve(ace);
     }, reject);
 });
 
