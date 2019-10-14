@@ -114,7 +114,9 @@ const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
 
-const AceEditor = React.memo(({ace, text}) => {
+// FIXME: text as children?
+// FIXME: avoid passing ace all the time?
+const AceEditor = React.memo(({ace, text, style}) => {
     const [aceNs, setAceNs] = React.useState(null);
     const editorRef = React.useRef(null);
 
@@ -128,9 +130,19 @@ const AceEditor = React.memo(({ace, text}) => {
         }
     }, [aceNs]);
 
-    return div(
-        {ref: editorRef, style: {width: '100%', height: '250px'}},
-        text);
+    return div({ref: editorRef, style: style}, text);
+});
+
+const JsonAceEditor = React.memo(({ace, json}) => {
+    return jsx(AceEditor, {
+        ace: ace,
+        style: {
+            width: '100%',
+            height: '250px',
+            border: '1px solid gray',
+        },
+        text: JSON.stringify(json, undefined, 4),
+    })
 });
 
 const LoginLink = React.memo(() =>
@@ -143,12 +155,11 @@ const Shows = React.memo(({shows, ace}) => {
         p(select(...shows.shows.map(show =>
             option({value: show.id}, show.title)))),
         p(input({type: 'submit'})),
-        jsx(AceEditor, {ace: ace, text: JSON.stringify(shows, undefined, 4)})));
+        jsx(JsonAceEditor, {ace: ace, json: shows})));
 });
 
 const App = React.memo(({api, ace}) => {
     const [shows, setShows] = React.useState(null);
-
     React.useEffect(() => void api.listShows().then(setShows), [api]);
 
     if (shows === null) {
