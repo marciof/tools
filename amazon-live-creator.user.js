@@ -104,13 +104,15 @@ class Api {
 
     /**
      * @param id {string}
+     * @param [nextToken] {string}
      * @returns {Promise<Object>}
      */
-    listShowBroadcasts(id) {
+    listShowBroadcasts(id, nextToken) {
         return this.request(
             'shows/'
             + encodeURIComponent(id)
-            + '/broadcasts/?maxResults=10');
+            + '/broadcasts/?direction=all&ascending=true&maxResults=10'
+            + (!nextToken ? '' : '&nextToken=' + encodeURIComponent(nextToken)));
     }
 
     /**
@@ -131,9 +133,7 @@ class Api {
         const response = await fetch(new Request(fullPath));
         console.info('API response:', response);
 
-        const json = await response.json();
-        console.info('API JSON response:', json);
-        return json;
+        return response.json();
     }
 }
 
@@ -193,14 +193,14 @@ const JsonAceEditor = memo(({json}) => {
 
 const Loading = memo(() => p('Loading...'));
 
-// FIXME: indicate selected
-const Shows = memo(({api, selectShowById}) => {
+const Shows = memo(({api, onSelectedShowId}) => {
     const [shows, setShows] = useState(null);
+
     useEffect(() => void api.listShows().then(setShows), [api]);
 
     useEffect(() => {
         if (shows && shows.shows && (shows.shows.length === 1)) {
-            selectShowById(shows.shows[0].id);
+            onSelectedShowId(shows.shows[0].id);
         }
     }, [shows]);
 
@@ -217,7 +217,7 @@ const Shows = memo(({api, selectShowById}) => {
             {
                 onSubmit(event) {
                     event.preventDefault();
-                    selectShowById(event.target.elements.showId.value);
+                    onSelectedShowId(event.target.elements.showId.value);
                 },
             },
             table(
@@ -264,7 +264,6 @@ const ShowLiveData = memo(({api, showId}) => {
     return fieldset(legend('Live Data'), children);
 });
 
-// FIXME: load more
 const Broadcasts = memo(({api, showId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
 
@@ -278,20 +277,39 @@ const Broadcasts = memo(({api, showId}) => {
         children = jsx(Loading);
     }
     else {
-        children = table(
-            {border: 1},
-            thead(
-                tr(
-                    th('Title'),
-                    th('ID'),
-                    th('ASIN'))),
-            tbody(...broadcasts.broadcasts.map(broadcast =>
-                tr(
-                    td(a(
-                        {href: 'https://www.amazon.com/live/broadcast/' + broadcast.id},
-                        broadcast.title)),
-                    td(broadcast.id),
-                    td(broadcast.asin)))));
+        children = form(
+            {
+                onSubmit(event) {
+                    event.preventDefault();
+                    api.listShowBroadcasts(showId, broadcasts.nextLink)
+                        .then(moreBroadcasts => {
+                            setBroadcasts({
+                                nextLink: moreBroadcasts.nextLink,
+                                broadcasts: broadcasts.broadcasts.concat(moreBroadcasts.broadcasts),
+                            });
+                        });
+                },
+            },
+            broadcasts.nextLink
+                && input({type: 'submit', value: 'Load more'}),
+            table(
+                {border: 1},
+                thead(
+                    tr(
+                        th('Title'),
+                        th('ID'),
+                        th('ASIN'),
+                        th('Started'),
+                        th('Ended'))),
+                tbody(...broadcasts.broadcasts.concat().reverse().map(broadcast =>
+                    tr(
+                        td(a(
+                            {href: 'https://www.amazon.com/live/broadcast/' + broadcast.id},
+                            broadcast.title)),
+                        td(broadcast.id),
+                        td(broadcast.asin),
+                        td(broadcast.broadcastStartDateTime),
+                        td(broadcast.broadcastEndDateTime))))));
     }
 
     return fieldset(legend('Broadcasts'), children);
@@ -305,7 +323,7 @@ const App = React.memo(({api}) => {
     const [showId, setShowId] = useState(null);
 
     return Fragment(
-        jsx(Shows, {api: api, selectShowById: setShowId}),
+        jsx(Shows, {api: api, onSelectedShowId: setShowId}),
         showId && jsx(ShowLiveData, {api: api, showId: showId}),
         showId && jsx(Broadcasts, {api: api, showId: showId}));
 });
