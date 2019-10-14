@@ -242,8 +242,9 @@ const Shows = memo(({api, onSelectedShowId}) => {
                         th('Title'),
                         th('Distribution'),
                         th('Feature Group'))),
-                tbody(...shows.shows.map(show =>
+                tbody(shows.shows.map(show =>
                     tr(
+                        {key: show.id},
                         td(input({
                             type: 'radio',
                             id: 'show-' + show.id,
@@ -316,8 +317,9 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
                         th('ASIN'),
                         th('Started'),
                         th('Ended'))),
-                tbody(...broadcasts.broadcasts.map(broadcast =>
+                tbody(broadcasts.broadcasts.map(broadcast =>
                     tr(
+                        {key: broadcast.id},
                         td(input({
                             type: 'radio',
                             id: 'broadcast-' + broadcast.id,
@@ -417,7 +419,8 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                 thead(
                     tr(
                         th('ID'),
-                        th('State'))),
+                        th('State'),
+                        th('Status'))),
                 tbody(
                     tr(
                         td(broadcastId ? code(broadcastId) : 'N/A'),
@@ -425,17 +428,24 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                             ? jsx(BroadcastLivestreamLink, {
                                 id: broadcastId,
                                 title: state})
-                            : state)))),
-            broadcastId && p(button(
-                {
-                    type: 'button',
-                    onClick() {
-                        onSelectedBroadcastId(broadcastId);
+                            : state),
+                        td(liveData.showLiveData.status)))),
+            p(
+                broadcastId && button(
+                    {
+                        type: 'button',
+                        onClick() {
+                            onSelectedBroadcastId(broadcastId);
+                        },
                     },
-                },
-            'Load broadcast')),
-            p(),
-            jsx(JsonAceEditor, {json: liveData}));
+                    'Load broadcast'),
+                button(
+                    {
+                        type: 'button',
+                        onClick() {
+                        }
+                    },
+                    'Refresh live data')));
     }
 
     return fieldset(legend('Live Data'), children);
