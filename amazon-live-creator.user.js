@@ -114,39 +114,42 @@ const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
 
+const AceEditor = React.memo(({ace, text}) => {
+    const [aceNs, setAceNs] = React.useState(null);
+    const editorRef = React.useRef(null);
+
+    React.useEffect(() => void ace.then(setAceNs), [ace]);
+
+    React.useEffect(() => {
+        if (aceNs) {
+            const editor = aceNs.edit(editorRef.current);
+            editor.setTheme("ace/theme/github");
+            editor.session.setMode("ace/mode/json");
+        }
+    }, [aceNs]);
+
+    return div(
+        {ref: editorRef, style: {width: '100%', height: '250px'}},
+        text);
+});
+
 const LoginLink = React.memo(() =>
     p(a({href: 'https://www.amazon.com/gp/sign-in.html'},
         'Please login to your Amazon account first.')));
 
-const Shows = React.memo(props => {
-    const {shows, ace} = props;
-    const editorRef = React.useRef(null);
-
-    React.useEffect(() => {
-        if (ace) {
-            const editor = ace.edit(editorRef.current);
-            editor.setTheme("ace/theme/github");
-            editor.session.setMode("ace/mode/json");
-        }
-    }, [ace]);
-
+const Shows = React.memo(({shows, ace}) => {
     return form(fieldset(
         legend('Shows'),
         p(select(...shows.shows.map(show =>
             option({value: show.id}, show.title)))),
         p(input({type: 'submit'})),
-        div(
-            {ref: editorRef, style: {width: '100%', height: '250px'}},
-            JSON.stringify(shows, undefined, 4))));
+        jsx(AceEditor, {ace: ace, text: JSON.stringify(shows, undefined, 4)})));
 });
 
-const App = React.memo(props => {
-    const {api, acePromise} = props;
+const App = React.memo(({api, ace}) => {
     const [shows, setShows] = React.useState(null);
-    const [ace, setAce] = React.useState(null);
 
     React.useEffect(() => void api.listShows().then(setShows), [api]);
-    React.useEffect(() => void acePromise.then(setAce), [acePromise]);
 
     if (shows === null) {
         return p('Loading...');
@@ -161,11 +164,11 @@ const App = React.memo(props => {
 
 const api = new Api();
 
-const acePromise = new Promise((resolve, reject) => {
+const ace = new Promise((resolve, reject) => {
     require(['ace/ace'], () => {
         console.debug('ACE editor', window.ace);
         return resolve(window.ace);
     }, reject);
 });
 
-ReactDOM.render(jsx(App, {api: api, acePromise: acePromise}), rootEl);
+ReactDOM.render(jsx(App, {api: api, ace: ace}), rootEl);
