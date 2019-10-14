@@ -94,6 +94,14 @@ class Api {
     }
 
     /**
+     * @param id {string}
+     * @returns {Promise<Object>}
+     */
+    listBroadcastsByShowId(id) {
+        return this.request('shows/' + id + '/broadcasts/');
+    }
+
+    /**
      * @returns {Promise<Object>}
      */
     listShows() {
@@ -185,38 +193,53 @@ const Shows = memo(({api, selectShowById}) => {
         children = jsx(LoginLink);
     }
     else {
-        children = form(
-            {
-                onSubmit(event) {
-                    event.preventDefault();
-                    selectShowById(event.target.elements.show.value);
+        children = Fragment(
+            form(
+                {
+                    onSubmit(event) {
+                        event.preventDefault();
+                        selectShowById(event.target.elements.show.value);
+                    },
                 },
-            },
-            p(select(
-                {name: 'show'},
-                ...shows.shows.map(show =>
-                    option({value: show.id}, show.title)))),
-            p(input({type: 'submit'})),
+                p(select(
+                    {name: 'show'},
+                    ...shows.shows.map(show =>
+                        option({value: show.id}, show.title)))),
+                p(input({type: 'submit'}))),
             jsx(JsonAceEditor, {json: shows}));
     }
 
     return fieldset(legend('Shows'), children);
 });
 
-const Show = memo(({api, id}) => {
-    const [show, setShow] = useState(null);
-    useEffect(() => void api.readShow(id).then(setShow), [api, id]);
+const Broadcasts = memo(({api, showId}) => {
+    const [broadcasts, setBroadcasts] = useState(null);
 
-    return fieldset(
-        legend('Show'),
-        p(label('ID: ', input({
-            type: 'text',
-            value: id,
-            readOnly: true,
-            size: id.length,
-        }))),
-        show && p(b(show.title)),
-        !show ? jsx(Loading) : jsx(JsonAceEditor, {json: show}));
+    useEffect(
+        () => void api.listBroadcastsByShowId(showId).then(setBroadcasts),
+        [api, showId]);
+
+    let children;
+
+    if (!broadcasts) {
+        children = jsx(Loading);
+    }
+    else {
+        children = Fragment(
+            form(
+                {
+                    onSubmit(event) {
+                        event.preventDefault();
+                    }
+                },
+                p(select(
+                    {name: 'broadcast'},
+                    ...broadcasts.broadcasts.map(broadcast =>
+                        option({value: broadcast.id}, broadcast.title))))),
+            jsx(JsonAceEditor, {json: broadcasts}));
+    }
+
+    return fieldset(legend('Broadcasts'), children);
 });
 
 const LoginLink = React.memo(() =>
@@ -228,7 +251,7 @@ const App = React.memo(({api}) => {
 
     return Fragment(
         jsx(Shows, {api: api, selectShowById: setShowId}),
-        showId && jsx(Show, {api: api, id: showId}),
+        showId && jsx(Broadcasts, {api: api, showId: showId}),
     );
 });
 
