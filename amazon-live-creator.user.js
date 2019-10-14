@@ -90,7 +90,7 @@ class Api {
      * @returns {Promise<Object>}
      */
     readShow(id) {
-        return this.request('show/' + id);
+        return this.request('show/' + encodeURIComponent(id));
     }
 
     /**
@@ -98,7 +98,7 @@ class Api {
      * @returns {Promise<Object>}
      */
     listBroadcastsByShowId(id) {
-        return this.request('shows/' + id + '/broadcasts/');
+        return this.request('shows/' + encodeURIComponent(id) + '/broadcasts/?maxResults=10');
     }
 
     /**
@@ -136,6 +136,13 @@ const form = jsx.bind(null, 'form');
 const select = jsx.bind(null, 'select');
 const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
+const button = jsx.bind(null, 'button');
+const table = jsx.bind(null, 'table');
+const thead = jsx.bind(null, 'thead');
+const tbody = jsx.bind(null, 'tbody');
+const tr = jsx.bind(null, 'tr');
+const th = jsx.bind(null, 'th');
+const td = jsx.bind(null, 'td');
 
 const memo = React.memo.bind(React);
 const useState = React.useState.bind(React);
@@ -193,25 +200,39 @@ const Shows = memo(({api, selectShowById}) => {
         children = jsx(LoginLink);
     }
     else {
-        children = Fragment(
-            form(
-                {
-                    onSubmit(event) {
-                        event.preventDefault();
-                        selectShowById(event.target.elements.show.value);
-                    },
+        children = form(
+            {
+                onSubmit(event) {
+                    event.preventDefault();
+                    selectShowById(event.target.elements.showId.value);
                 },
-                p(select(
-                    {name: 'show'},
-                    ...shows.shows.map(show =>
-                        option({value: show.id}, show.title)))),
-                p(input({type: 'submit'}))),
-            jsx(JsonAceEditor, {json: shows}));
+            },
+            table(
+                {border: 1},
+                thead(
+                    tr(
+                        th(),
+                        th('Title'),
+                        th('ID'),
+                        th('Distribution'),
+                        th('Feature Group'))),
+                tbody(...shows.shows.map(show =>
+                    tr(
+                        td(button(
+                            {name: 'showId', value: show.id},
+                            'Select')),
+                        td(a(
+                            {href: 'https://www.amazon.com/live/channel/' + show.id},
+                            show.title)),
+                        td(show.id),
+                        td(show.distribution),
+                        td(show.featureGroup))))));
     }
 
     return fieldset(legend('Shows'), children);
 });
 
+// FIXME: load more
 const Broadcasts = memo(({api, showId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
 
@@ -225,18 +246,20 @@ const Broadcasts = memo(({api, showId}) => {
         children = jsx(Loading);
     }
     else {
-        children = Fragment(
-            form(
-                {
-                    onSubmit(event) {
-                        event.preventDefault();
-                    }
-                },
-                p(select(
-                    {name: 'broadcast'},
-                    ...broadcasts.broadcasts.map(broadcast =>
-                        option({value: broadcast.id}, broadcast.title))))),
-            jsx(JsonAceEditor, {json: broadcasts}));
+        children = table(
+            {border: 1},
+            thead(
+                tr(
+                    th('Title'),
+                    th('ID'),
+                    th('ASIN'))),
+            tbody(...broadcasts.broadcasts.map(broadcast =>
+                tr(
+                    td(a(
+                        {href: 'https://www.amazon.com/live/broadcast/' + broadcast.id},
+                        broadcast.title)),
+                    td(broadcast.id),
+                    td(broadcast.asin)))));
     }
 
     return fieldset(legend('Broadcasts'), children);
