@@ -208,6 +208,22 @@ const JsonAceEditor = memo(({json}) => {
 
 const Loading = memo(() => p('Loading...'));
 
+const BroadcastLivestreamLink = memo(({id, title}) => {
+    return a(
+        {
+            href: 'https://www.amazon.com/live/broadcast/' + id,
+            target: '_blank',
+        },
+        title);
+});
+
+const LoginLink = React.memo(() =>
+    p(a({
+            href: 'https://www.amazon.com/gp/sign-in.html',
+            target: '_blank',
+        },
+        'Please login to your Amazon account first.')));
+
 const Shows = memo(({api, onSelectedShowId}) => {
     const [shows, setShows] = useState(null);
     const [selectedShow, setSelectedShow] = useState(null);
@@ -284,15 +300,6 @@ const Shows = memo(({api, onSelectedShowId}) => {
     }
 
     return fieldset(legend('Shows'), children);
-});
-
-const BroadcastLivestreamLink = memo(({id, title}) => {
-    return a(
-        {
-            href: 'https://www.amazon.com/live/broadcast/' + id,
-            target: '_blank',
-        },
-        title);
 });
 
 const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
@@ -382,10 +389,6 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
 
     return fieldset(legend('Broadcasts'), children);
 });
-
-const LoginLink = React.memo(() =>
-    p(a({href: 'https://www.amazon.com/gp/sign-in.html'},
-        'Please login to your Amazon account first.')));
 
 const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
     const [liveData, setLiveData] = useState(null);
