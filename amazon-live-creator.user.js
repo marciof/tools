@@ -43,6 +43,13 @@ require.config({
     },
 });
 
+const acePromise = new Promise((resolve, reject) => {
+    require(['ace/ace'], () => {
+        console.debug('ACE editor', window.ace);
+        return resolve(window.ace);
+    }, reject);
+});
+
 /**
  * @returns {boolean}
  */
@@ -115,33 +122,31 @@ const option = jsx.bind(null, 'option');
 const input = jsx.bind(null, 'input');
 
 // FIXME: text as children?
-// FIXME: avoid passing ace all the time?
-const AceEditor = React.memo(({ace, text, style}) => {
-    const [aceNs, setAceNs] = React.useState(null);
+const AceEditor = React.memo(({text, style}) => {
+    const [ace, setAce] = React.useState(null);
     const editorRef = React.useRef(null);
 
-    React.useEffect(() => void ace.then(setAceNs), [ace]);
+    React.useEffect(() => void acePromise.then(setAce), []);
 
     React.useEffect(() => {
-        if (aceNs) {
-            const editor = aceNs.edit(editorRef.current);
+        if (ace) {
+            const editor = ace.edit(editorRef.current);
             editor.setTheme("ace/theme/github");
             editor.session.setMode("ace/mode/json");
         }
-    }, [aceNs]);
+    }, [ace]);
 
     return div({ref: editorRef, style: style}, text);
 });
 
-const JsonAceEditor = React.memo(({ace, json}) => {
+const JsonAceEditor = React.memo(({json}) => {
     return jsx(AceEditor, {
-        ace: ace,
+        text: JSON.stringify(json, undefined, 4),
         style: {
             width: '100%',
             height: '250px',
             border: '1px solid gray',
         },
-        text: JSON.stringify(json, undefined, 4),
     })
 });
 
@@ -149,16 +154,16 @@ const LoginLink = React.memo(() =>
     p(a({href: 'https://www.amazon.com/gp/sign-in.html'},
         'Please login to your Amazon account first.')));
 
-const Shows = React.memo(({shows, ace}) => {
+const Shows = React.memo(({shows}) => {
     return form(fieldset(
         legend('Shows'),
         p(select(...shows.shows.map(show =>
             option({value: show.id}, show.title)))),
         p(input({type: 'submit'})),
-        jsx(JsonAceEditor, {ace: ace, json: shows})));
+        jsx(JsonAceEditor, {json: shows})));
 });
 
-const App = React.memo(({api, ace}) => {
+const App = React.memo(({api}) => {
     const [shows, setShows] = React.useState(null);
     React.useEffect(() => void api.listShows().then(setShows), [api]);
 
@@ -169,17 +174,10 @@ const App = React.memo(({api, ace}) => {
         return jsx(LoginLink);
     }
     else {
-        return jsx(Shows, {shows: shows, ace: ace});
+        return jsx(Shows, {shows: shows});
     }
 });
 
 const api = new Api();
 
-const ace = new Promise((resolve, reject) => {
-    require(['ace/ace'], () => {
-        console.debug('ACE editor', window.ace);
-        return resolve(window.ace);
-    }, reject);
-});
-
-ReactDOM.render(jsx(App, {api: api, ace: ace}), rootEl);
+ReactDOM.render(jsx(App, {api: api}), rootEl);
