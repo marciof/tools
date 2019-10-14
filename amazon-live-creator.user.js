@@ -107,6 +107,7 @@ class Api {
 const fieldset = jsx.bind(null, 'fieldset');
 const legend = jsx.bind(null, 'legend');
 const p = jsx.bind(null, 'p');
+const div = jsx.bind(null, 'div');
 const a = jsx.bind(null, 'a');
 const form = jsx.bind(null, 'form');
 const select = jsx.bind(null, 'select');
@@ -118,36 +119,53 @@ const LoginLink = React.memo(() =>
         'Please login to your Amazon account first.')));
 
 const Shows = React.memo(props => {
+    const {shows, ace} = props;
+    const editorRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (ace) {
+            const editor = ace.edit(editorRef.current);
+            editor.setTheme("ace/theme/github");
+            editor.session.setMode("ace/mode/json");
+        }
+    }, [ace]);
+
     return form(fieldset(
         legend('Shows'),
-        p(select(
-            option('blah'))),
-        p(input({type: 'submit'}))));
+        p(select(...shows.shows.map(show =>
+            option({value: show.id}, show.title)))),
+        p(input({type: 'submit'})),
+        div(
+            {ref: editorRef, style: {width: '100%', height: '250px'}},
+            JSON.stringify(shows, undefined, 4))));
 });
 
 const App = React.memo(props => {
-    const {api} = props;
-    const [shows, setShows] = React.useState(undefined);
+    const {api, acePromise} = props;
+    const [shows, setShows] = React.useState(null);
+    const [ace, setAce] = React.useState(null);
 
-    React.useEffect(() => {
-        api.listShows().then(shows => setShows(shows));
-    }, [api]);
+    React.useEffect(() => void api.listShows().then(setShows), [api]);
+    React.useEffect(() => void acePromise.then(setAce), [acePromise]);
 
-    if (shows === undefined) {
+    if (shows === null) {
         return p('Loading...');
     }
     else if (shows.errors) {
         return jsx(LoginLink);
     }
     else {
-        return jsx(Shows);
+        return jsx(Shows, {shows: shows, ace: ace});
     }
 });
 
 const api = new Api();
 
 const acePromise = new Promise((resolve, reject) => {
-    require(['ace/ace'], () => resolve(window.ace), reject);
+    require(['ace/ace'], () => {
+        console.debug('ACE editor', window.ace);
+        return resolve(window.ace);
+    }, reject);
 });
 
-ReactDOM.render(jsx(App, {api: api}), rootEl);
+ReactDOM.render(jsx(App, {api: api, acePromise: acePromise}), rootEl);
