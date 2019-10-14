@@ -78,8 +78,6 @@ function jsx(tag, props, ...children) {
     return React.createElement(tag, props, ...children);
 }
 
-// FIXME: handle network/HTTP/API errors
-// FIXME: allow cancellation of in-flight requests?
 class Api {
     constructor() {
         this.urlPathPrefix = '/api/v1/';
@@ -89,8 +87,8 @@ class Api {
      * @param id {string}
      * @returns {Promise<Object>}
      */
-    readShow(id) {
-        return this.request('show/' + encodeURIComponent(id));
+    readBroadcast(id) {
+        return this.request('broadcasts/' + encodeURIComponent(id));
     }
 
     /**
@@ -146,7 +144,6 @@ const b = jsx.bind(null, 'b');
 const div = jsx.bind(null, 'div');
 const form = jsx.bind(null, 'form');
 const code = jsx.bind(null, 'code');
-const output = jsx.bind(null, 'output');
 const input = jsx.bind(null, 'input');
 const button = jsx.bind(null, 'button');
 const table = jsx.bind(null, 'table');
@@ -191,7 +188,7 @@ const JsonAceEditor = memo(({json}) => {
     return jsx(AceEditor, {
         style: {
             width: '100%',
-            height: '250px',
+            height: '200px',
             border: '1px solid gray',
         },
         text: JSON.stringify(json, undefined, 4)
@@ -200,6 +197,7 @@ const JsonAceEditor = memo(({json}) => {
 
 const Loading = memo(() => p('Loading...'));
 
+// FIXME: add specific load button, separate from radio
 const Shows = memo(({api, onSelectedShowId}) => {
     const [shows, setShows] = useState(null);
     const [selectedShow, setSelectedShow] = useState(null);
@@ -272,32 +270,27 @@ const Shows = memo(({api, onSelectedShowId}) => {
     return fieldset(legend('Shows'), children);
 });
 
-const ShowLiveData = memo(({api, showId}) => {
-    const [liveData, setLiveData] = useState(null);
-
-    useEffect(
-        () => void api.readShowLiveData(showId).then(setLiveData),
-        [api, showId]);
-
-    let children;
-
-    if (!liveData) {
-        children = jsx(Loading);
-    }
-    else {
-        children = jsx(JsonAceEditor, {json: liveData});
-    }
-
-    return fieldset(legend('Live Data'), children);
+const BroadcastLivestreamLink = memo(({id, title}) => {
+    return a(
+        {
+            href: 'https://www.amazon.com/live/broadcast/' + id,
+            target: '_blank',
+        },
+        title);
 });
 
 const Broadcasts = memo(({api, showId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(
         () => void api.listShowBroadcasts(showId).then(setBroadcasts),
         [api, showId]);
+
+    useEffect(() => {
+        setIsLoading(false);
+    }, [broadcasts]);
 
     let children;
 
@@ -309,6 +302,7 @@ const Broadcasts = memo(({api, showId}) => {
             {
                 onSubmit(event) {
                     event.preventDefault();
+                    setIsLoading(true);
 
                     api.listShowBroadcasts(showId, broadcasts.nextLink)
                         .then(moreBroadcasts => {
@@ -320,7 +314,7 @@ const Broadcasts = memo(({api, showId}) => {
                 },
             },
             broadcasts.nextLink
-                && p(button({name: 'load'}, 'Load more')),
+                && p(button({disabled: isLoading}, 'Load more')),
             table(
                 {border: 1},
                 thead(
@@ -350,18 +344,16 @@ const Broadcasts = memo(({api, showId}) => {
                                 }
                             }),
                             code(broadcast.id))),
-                        td(a(
-                            {
-                                href: 'https://www.amazon.com/live/broadcast/' + broadcast.id,
-                                target: '_blank',
-                            },
-                            broadcast.title)),
+                        td(jsx(BroadcastLivestreamLink, {
+                            id: broadcast.id,
+                            title: broadcast.title,
+                        })),
                         td(broadcast.asin),
                         td(broadcast.broadcastStartDateTime),
                         td(broadcast.broadcastEndDateTime))))),
             selectedBroadcast && Fragment(
-                    p('JSON data:'),
-                    jsx(JsonAceEditor, {json: selectedBroadcast})));
+                p('JSON data:'),
+                jsx(JsonAceEditor, {json: selectedBroadcast})));
     }
 
     return fieldset(legend('Broadcasts'), children);
@@ -371,12 +363,99 @@ const LoginLink = React.memo(() =>
     p(a({href: 'https://www.amazon.com/gp/sign-in.html'},
         'Please login to your Amazon account first.')));
 
+const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
+    const [liveData, setLiveData] = useState(null);
+
+    useEffect(
+        () => void api.readShowLiveData(id).then(setLiveData),
+        [api, id]);
+
+    let children;
+
+    if (!liveData) {
+        children = jsx(Loading);
+    }
+    else {
+        const {
+            broadcastStartedId,
+            lockedBroadcastState,
+            lockedBroadcastId,
+            lvsLastMessageSubject,
+        } = liveData.showLiveData.value;
+
+        const state = lockedBroadcastState || lvsLastMessageSubject || 'N/A';
+        const id = broadcastStartedId || lockedBroadcastId;
+
+        children = form(
+            {
+                onSubmit(event) {
+                    event.preventDefault();
+                    onSelectedBroadcastId(id);
+                },
+            },
+            table(
+                {border: 1},
+                thead(
+                    tr(
+                        th('ID'),
+                        th('State'))),
+                tbody(
+                    tr(
+                        td(id ? code(id) : '-'),
+                        td(id
+                            ? jsx(BroadcastLivestreamLink, {
+                                id: id,
+                                title: state})
+                            : state)))),
+            id && p(button('Load broadcast')),
+            p('JSON data:'),
+            jsx(JsonAceEditor, {json: liveData}));
+    }
+
+    return fieldset(legend('Live Data'), children);
+});
+
+// FIXME: show details including slate image
+const Broadcast = memo(({api, id}) => {
+    const [broadcast, setBroadcast] = useState(null);
+    useEffect(() => void api.readBroadcast(id).then(setBroadcast), [api, id]);
+
+    let children;
+
+    if (!broadcast) {
+        children = jsx(Loading);
+    }
+    else {
+        children = Fragment(
+            p('JSON data:'),
+            jsx(JsonAceEditor, {json: broadcast}));
+    }
+
+    return fieldset(legend('Broadcast'), children);
+});
+
 const App = React.memo(({api}) => {
     const [showId, setShowId] = useState(null);
+    const [broadcastId, setBroadcastId] = useState(null);
 
     return Fragment(
-        jsx(Shows, {api: api, onSelectedShowId: setShowId}),
-        showId && jsx(Broadcasts, {api: api, showId: showId}));
+        jsx(Shows, {
+            api: api,
+            onSelectedShowId: setShowId,
+        }),
+        showId && jsx(ShowLiveData, {
+            api: api,
+            id: showId,
+            onSelectedBroadcastId: setBroadcastId,
+        }),
+        broadcastId && jsx(Broadcast, {
+            api: api,
+            id: broadcastId,
+        }),
+        showId && jsx(Broadcasts, {
+            api: api,
+            showId: showId,
+        }));
 });
 
 const api = new Api();
