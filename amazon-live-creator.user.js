@@ -97,8 +97,20 @@ class Api {
      * @param id {string}
      * @returns {Promise<Object>}
      */
-    listBroadcastsByShowId(id) {
-        return this.request('shows/' + encodeURIComponent(id) + '/broadcasts/?maxResults=10');
+    readShowLiveData(id) {
+        return this.request(
+            'poller?fields=showLiveData&showId=' + encodeURIComponent(id));
+    }
+
+    /**
+     * @param id {string}
+     * @returns {Promise<Object>}
+     */
+    listShowBroadcasts(id) {
+        return this.request(
+            'shows/'
+            + encodeURIComponent(id)
+            + '/broadcasts/?maxResults=10');
     }
 
     /**
@@ -172,7 +184,7 @@ const JsonAceEditor = memo(({json}) => {
         {
             style: {
                 width: '100%',
-                height: '250px',
+                height: '200px',
                 border: '1px solid gray',
             },
         },
@@ -181,6 +193,7 @@ const JsonAceEditor = memo(({json}) => {
 
 const Loading = memo(() => p('Loading...'));
 
+// FIXME: indicate selected
 const Shows = memo(({api, selectShowById}) => {
     const [shows, setShows] = useState(null);
     useEffect(() => void api.listShows().then(setShows), [api]);
@@ -232,12 +245,31 @@ const Shows = memo(({api, selectShowById}) => {
     return fieldset(legend('Shows'), children);
 });
 
+const ShowLiveData = memo(({api, showId}) => {
+    const [liveData, setLiveData] = useState(null);
+
+    useEffect(
+        () => void api.readShowLiveData(showId).then(setLiveData),
+        [api, showId]);
+
+    let children;
+
+    if (!liveData) {
+        children = jsx(Loading);
+    }
+    else {
+        children = jsx(JsonAceEditor, {json: liveData});
+    }
+
+    return fieldset(legend('Live Data'), children);
+});
+
 // FIXME: load more
 const Broadcasts = memo(({api, showId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
 
     useEffect(
-        () => void api.listBroadcastsByShowId(showId).then(setBroadcasts),
+        () => void api.listShowBroadcasts(showId).then(setBroadcasts),
         [api, showId]);
 
     let children;
@@ -274,8 +306,8 @@ const App = React.memo(({api}) => {
 
     return Fragment(
         jsx(Shows, {api: api, selectShowById: setShowId}),
-        showId && jsx(Broadcasts, {api: api, showId: showId}),
-    );
+        showId && jsx(ShowLiveData, {api: api, showId: showId}),
+        showId && jsx(Broadcasts, {api: api, showId: showId}));
 });
 
 const api = new Api();
