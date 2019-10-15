@@ -171,6 +171,11 @@ const useRef = React.useRef.bind(React);
 const useEffect = React.useEffect.bind(React);
 const Fragment = jsx.bind(null, React.Fragment);
 
+const VIDEO_SOURCES = {
+    PHONE_CAMERA: 'Phone camera',
+    THIRD_PARTY_ENCODER: 'Encoder',
+};
+
 const AceEditor = memo(({text, style}) => {
     const [ace, setAce] = useState(null);
     const [editor, setEditor] = useState(null);
@@ -196,12 +201,13 @@ const AceEditor = memo(({text, style}) => {
     return div({ref: editorElRef, style: style});
 });
 
-const JsonAceEditor = memo(({json}) => {
+const JsonAceEditor = memo(({json, style}) => {
     return jsx(AceEditor, {
         style: {
             width: '100%',
             height: '200px',
             border: '1px solid lightgray',
+            ...style,
         },
         text: JSON.stringify(json, undefined, 4)
     });
@@ -209,30 +215,29 @@ const JsonAceEditor = memo(({json}) => {
 
 const Loading = memo(() => p('Loading...'));
 
-const BroadcastLivestreamLink = memo(({id, title}) => {
-    return a(
-        {
-            href: 'https://www.amazon.com/live/broadcast/' + id,
-            target: '_blank',
-        },
-        title);
-});
+const BroadcastLivestreamLink = memo(({id, title}) => a(
+    {
+        href: 'https://www.amazon.com/live/broadcast/' + id,
+        target: '_blank',
+    },
+    title));
 
-const LoginLink = React.memo(() =>
-    p(a({
-            href: 'https://www.amazon.com/gp/sign-in.html',
-            target: '_blank',
-        },
-        'Please login to your Amazon account first.')));
+const LoginLink = React.memo(() => p(a(
+    {
+        href: 'https://www.amazon.com/gp/sign-in.html',
+        target: '_blank',
+    },
+    'Please login to your Amazon account first.')));
 
 const Shows = memo(({api, onSelectedShowId}) => {
     const [shows, setShows] = useState(null);
     const [selectedShow, setSelectedShow] = useState(null);
+    const [isJsonShown, setIsJsonShown] = useState(false);
 
     useEffect(() => void api.listShows().then(setShows), [api]);
 
     useEffect(() => {
-        if (shows && shows.shows && (shows.shows.length === 1)) {
+        if (shows && shows.shows && (shows.shows.length > 0)) {
             let show = shows.shows[0];
             setSelectedShow(show);
             onSelectedShowId(show.id);
@@ -291,13 +296,22 @@ const Shows = memo(({api, onSelectedShowId}) => {
                             onSelectedShowId(selectedShow.id);
                         }
                     },
-                    'Load selected show'),
+                    'Load show'),
                 button(
                     {
                         type: 'button',
-                        disabled: true,
+                        disabled: !selectedShow,
+                        onClick() {
+                            setIsJsonShown(!isJsonShown);
+                        }
                     },
-                    'Show selected JSON')));
+                    'Show/Hide JSON')),
+            selectedShow && jsx(JsonAceEditor, {
+                json: selectedShow,
+                style: {
+                    display: isJsonShown ? 'inherit' : 'none',
+                },
+            }));
     }
 
     return fieldset(legend('Shows'), children);
@@ -307,6 +321,7 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isJsonShown, setIsJsonShown] = useState(false);
 
     useEffect(
         () => void api.listShowBroadcasts(showId).then(setBroadcasts),
@@ -363,10 +378,10 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
                             onSelectedBroadcastId(selectedBroadcast.id);
                         }
                     },
-                    'Load selected broadcast'),
-                broadcasts.nextLink && button(
+                    'Load broadcast'),
+                button(
                     {
-                        disabled: isLoading,
+                        disabled: !broadcasts.nextLink || isLoading,
                         type: 'button',
                         onClick() {
                             setIsLoading(true);
@@ -383,9 +398,18 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
                 button(
                     {
                         type: 'button',
-                        disabled: true,
+                        disabled: !selectedBroadcast,
+                        onClick() {
+                            setIsJsonShown(!isJsonShown);
+                        }
                     },
-                    'Show selected JSON')));
+                    'Show/Hide JSON')),
+            selectedBroadcast && jsx(JsonAceEditor, {
+                json: selectedBroadcast,
+                style: {
+                    display: isJsonShown ? 'inherit' : 'none',
+                },
+            }));
     }
 
     return fieldset(legend('Broadcasts'), children);
@@ -394,6 +418,8 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
 const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
     const [liveData, setLiveData] = useState(null);
     const [broadcastId, setBroadcastId] = useState(null);
+    const [isJsonShown, setIsJsonShown] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(
         () => void api.readShowLiveData(id).then(setLiveData),
@@ -406,6 +432,7 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                 lockedBroadcastId,
             } = liveData.showLiveData.value;
 
+            setIsRefreshing(false);
             setBroadcastId(broadcastStartedId || lockedBroadcastId);
         }
     }, [liveData]);
@@ -447,9 +474,10 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                             : state),
                         td(liveData.showLiveData.status)))),
             p(
-                broadcastId && button(
+                button(
                     {
                         type: 'button',
+                        disabled: !broadcastId,
                         onClick() {
                             onSelectedBroadcastId(broadcastId);
                         },
@@ -458,15 +486,27 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                 button(
                     {
                         type: 'button',
-                        disabled: true,
+                        disabled: isRefreshing,
+                        onClick() {
+                            setIsRefreshing(true);
+                            api.readShowLiveData(id).then(setLiveData);
+                        }
                     },
                     'Refresh live data'),
                 button(
                     {
                         type: 'button',
-                        disabled: true,
+                        onClick() {
+                            setIsJsonShown(!isJsonShown);
+                        }
                     },
-                    'Show JSON')));
+                    'Show/Hide JSON')),
+            jsx(JsonAceEditor, {
+                json: liveData,
+                style: {
+                    display: isJsonShown ? 'inherit' : 'none',
+                },
+            }));
     }
 
     return fieldset(legend('Live Data'), children);
@@ -474,7 +514,15 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
 
 const Broadcast = memo(({api, id}) => {
     const [broadcast, setBroadcast] = useState(null);
-    useEffect(() => void api.readBroadcast(id).then(setBroadcast), [api, id]);
+    const [isJsonShown, setIsJsonShown] = useState(false);
+    const [originalBroadcast, setOriginalBroadcast] = useState(broadcast);
+
+    useEffect(() => {
+        api.readBroadcast(id).then(newBroadcast => {
+            setOriginalBroadcast(newBroadcast);
+            setBroadcast(newBroadcast);
+        });
+    }, [api, id]);
 
     let children;
 
@@ -487,13 +535,53 @@ const Broadcast = memo(({api, id}) => {
                 src: api.getBroadcastSlateImageUrl(id),
                 height: '100px',
             })),
-            p(button(
-                {
-                    type: 'button',
-                    disabled: true,
-                },
-                'Show JSON')),
-            jsx(JsonAceEditor, {json: broadcast}));
+            form(
+                p(label('Title: ', input({
+                    type: 'text',
+                    value: broadcast.title,
+                    onChange(event) {
+                        setBroadcast({
+                            ...broadcast,
+                            title: event.target.value,
+                        });
+                    }
+                }))),
+                p('Video source: ',
+                    Object.entries(VIDEO_SOURCES).map(([value, text]) =>
+                        label({key: value}, input({
+                            type: 'radio',
+                            name: 'videoSource',
+                            checked: broadcast.videoSource === value,
+                            onChange(event) {
+                                setBroadcast({
+                                    ...broadcast,
+                                    videoSource: value
+                                });
+                            },
+                        }), text))),
+                p(
+                    button(
+                        {
+                            type: 'reset',
+                            onClick() {
+                                setBroadcast(originalBroadcast);
+                            }
+                        },
+                        'Reset form'),
+                    button(
+                        {
+                            type: 'button',
+                            onClick() {
+                                setIsJsonShown(!isJsonShown);
+                            }
+                        },
+                        'Show/Hide JSON'))),
+            jsx(JsonAceEditor, {
+                json: broadcast,
+                style: {
+                    display: isJsonShown ? 'inherit' : 'none',
+                }
+            }));
     }
 
     return fieldset(legend('Broadcast'), children);
