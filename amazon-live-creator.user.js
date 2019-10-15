@@ -303,7 +303,7 @@ const Shows = memo(({promise, onShowLiveData, onListShowBroadcasts}) => {
                             onShowLiveData(selectedShow.id);
                         }
                     },
-                    'Show live data'),
+                    'Load live data'),
                 button(
                     {
                         type: 'button',
