@@ -229,7 +229,7 @@ const LoginLink = React.memo(() => p(a(
     },
     'Please login to your Amazon account first.')));
 
-const Shows = memo(({api, onSelectedShowId}) => {
+const Shows = memo(({api, onShowLiveData, onListShowBroadcasts}) => {
     const [shows, setShows] = useState(null);
     const [selectedShow, setSelectedShow] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
@@ -240,7 +240,8 @@ const Shows = memo(({api, onSelectedShowId}) => {
         if (shows && shows.shows && (shows.shows.length > 0)) {
             let show = shows.shows[0];
             setSelectedShow(show);
-            onSelectedShowId(show.id);
+            onShowLiveData(show.id);
+            onListShowBroadcasts(show.id);
         }
     }, [shows]);
 
@@ -293,10 +294,19 @@ const Shows = memo(({api, onSelectedShowId}) => {
                         disabled: !selectedShow,
                         type: 'button',
                         onClick() {
-                            onSelectedShowId(selectedShow.id);
+                            onListShowBroadcasts(selectedShow.id);
                         }
                     },
-                    'Load show'),
+                    'List broadcasts'),
+                button(
+                    {
+                        disabled: !selectedShow,
+                        type: 'button',
+                        onClick() {
+                            onShowLiveData(selectedShow.id);
+                        }
+                    },
+                    'Show live data'),
                 button(
                     {
                         type: 'button',
@@ -317,7 +327,7 @@ const Shows = memo(({api, onSelectedShowId}) => {
     return fieldset(legend('Shows'), children);
 });
 
-const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
+const Broadcasts = memo(({api, showId, onLoadBroadcastId}) => {
     const [broadcasts, setBroadcasts] = useState(null);
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -375,7 +385,7 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
                         type: 'button',
                         disabled: !selectedBroadcast,
                         onClick() {
-                            onSelectedBroadcastId(selectedBroadcast.id);
+                            onLoadBroadcastId(selectedBroadcast.id);
                         }
                     },
                     'Load broadcast'),
@@ -415,10 +425,12 @@ const Broadcasts = memo(({api, showId, onSelectedBroadcastId}) => {
     return fieldset(legend('Broadcasts'), children);
 });
 
-const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
+const ShowLiveData = memo(({api, id, onLoadBroadcastId}) => {
     const [liveData, setLiveData] = useState(null);
     const [broadcastId, setBroadcastId] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
+
+    // FIXME: remove need for specific refresh buttons
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(
@@ -439,7 +451,7 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
 
     useEffect(() => {
         if (broadcastId) {
-            onSelectedBroadcastId(broadcastId);
+            onLoadBroadcastId(broadcastId);
         }
     }, [broadcastId]);
 
@@ -479,7 +491,7 @@ const ShowLiveData = memo(({api, id, onSelectedBroadcastId}) => {
                         type: 'button',
                         disabled: !broadcastId,
                         onClick() {
-                            onSelectedBroadcastId(broadcastId);
+                            onLoadBroadcastId(broadcastId);
                         },
                     },
                     'Load broadcast'),
@@ -587,30 +599,32 @@ const Broadcast = memo(({api, id}) => {
     return fieldset(legend('Broadcast'), children);
 });
 
+// FIXME: add component for displaying a show's data
 const App = React.memo(({api}) => {
-    const [showId, setShowId] = useState(null);
+    const [broadcastsShowId, setBroadcastsShowId] = useState(null);
     const [broadcastId, setBroadcastId] = useState(null);
+    const [liveDataShowId, setLiveDataShowId] = useState(null);
 
     return Fragment(
         jsx(Shows, {
             api: api,
-            onSelectedShowId: setShowId,
+            onShowLiveData: setLiveDataShowId,
+            onListShowBroadcasts: setBroadcastsShowId,
         }),
-        showId && Fragment(
-            jsx(Broadcasts, {
-                api: api,
-                showId: showId,
-                onSelectedBroadcastId: setBroadcastId,
-            }),
-            jsx(ShowLiveData, {
-                api: api,
-                id: showId,
-                onSelectedBroadcastId: setBroadcastId,
-            }),
-            broadcastId && jsx(Broadcast, {
-                api: api,
-                id: broadcastId,
-            })));
+        liveDataShowId && jsx(ShowLiveData, {
+            api: api,
+            id: liveDataShowId,
+            onLoadBroadcastId: setBroadcastId,
+        }),
+        broadcastsShowId && jsx(Broadcasts, {
+            api: api,
+            showId: broadcastsShowId,
+            onLoadBroadcastId: setBroadcastId,
+        }),
+        broadcastId && jsx(Broadcast, {
+            api: api,
+            id: broadcastId,
+        }));
 });
 
 const api = new Api();
