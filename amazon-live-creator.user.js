@@ -225,6 +225,23 @@ const BroadcastSlateImage = memo(({id}) => img({
     height: '100px',
 }));
 
+// FIXME: convert UTC to local?
+const DateTime = memo(({dateTime}) => {
+    const [date, zonedTime] = dateTime.split('T');
+    const time = zonedTime.replace(/\.\d+Z$/, '');
+
+    return Fragment(
+        input({
+            type: 'time',
+            defaultValue: time,
+        }),
+        ' ',
+        input({
+            type: 'date',
+            defaultValue: date,
+        }));
+});
+
 const Shows = memo(({promise, onShowLiveData, onListShowBroadcasts}) => {
     const [shows, setShows] = useState(null);
     const [selectedShow, setSelectedShow] = useState(null);
@@ -391,8 +408,12 @@ const Broadcasts = memo(props => {
                             title: broadcast.title,
                         })),
                         td(broadcast.asin),
-                        td(broadcast.broadcastStartDateTime),
-                        td(broadcast.broadcastEndDateTime))))),
+                        td(jsx(DateTime, {
+                            dateTime: broadcast.broadcastStartDateTime,
+                        })),
+                        td(jsx(DateTime, {
+                            dateTime: broadcast.broadcastEndDateTime,
+                        })))))),
             p(
                 button(
                     {
