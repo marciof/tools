@@ -19,7 +19,8 @@ function cleanPage(title) {
     console.info('Cleaning up page, title:', title, '; document:', document);
     document.title = title;
 
-    const faviconLink = document.querySelector('link[rel*=icon]')
+    const faviconLink
+        = document.querySelector('link[rel*=icon]')
         || document.createElement('link');
 
     faviconLink.rel = 'icon';
@@ -85,17 +86,6 @@ class Api {
 
     /**
      * @param id {string}
-     * @returns {string}
-     */
-    getBroadcastSlateImageUrl(id) {
-        return this.urlPathPrefix
-            + 'broadcasts/'
-            + encodeURIComponent(id)
-            + '/image/slate';
-    }
-
-    /**
-     * @param id {string}
      * @returns {Promise<Object>}
      */
     readBroadcast(id) {
@@ -121,7 +111,9 @@ class Api {
             'shows/'
             + encodeURIComponent(id)
             + '/broadcasts/?direction=all&ascending=true&maxResults=10'
-            + (!nextToken ? '' : '&nextToken=' + encodeURIComponent(nextToken)));
+            + (!nextToken
+                ? ''
+                : '&nextToken=' + encodeURIComponent(nextToken)));
     }
 
     /**
@@ -201,17 +193,15 @@ const AceEditor = memo(({text, style}) => {
     return div({ref: editorElRef, style: style});
 });
 
-const JsonAceEditor = memo(({json, style}) => {
-    return jsx(AceEditor, {
-        style: {
-            width: '100%',
-            height: '200px',
-            border: '1px solid lightgray',
-            ...style,
-        },
-        text: JSON.stringify(json, undefined, 4)
-    });
-});
+const JsonAceEditor = memo(({json, style}) => jsx(AceEditor, {
+    style: {
+        width: '100%',
+        height: '200px',
+        border: '1px solid lightgray',
+        ...style,
+    },
+    text: JSON.stringify(json, undefined, 4)
+}));
 
 const Loading = memo(() => p('Loading...'));
 
@@ -222,19 +212,25 @@ const BroadcastLivestreamLink = memo(({id, title}) => a(
     },
     title));
 
-const LoginLink = React.memo(() => p(a(
+const LoginLink = memo(() => p(a(
     {
         href: 'https://www.amazon.com/gp/sign-in.html',
         target: '_blank',
     },
     'Please login to your Amazon account first.')));
 
-const Shows = memo(({api, onShowLiveData, onListShowBroadcasts}) => {
+// FIXME: remove hardcoded API URL path
+const BroadcastSlateImage = memo(({id}) => img({
+    src: '/api/v1/broadcasts/' + encodeURIComponent(id) + '/image/slate',
+    height: '100px',
+}));
+
+const Shows = memo(({promise, onShowLiveData, onListShowBroadcasts}) => {
     const [shows, setShows] = useState(null);
     const [selectedShow, setSelectedShow] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
 
-    useEffect(() => void api.listShows().then(setShows), [api]);
+    useEffect(() => void promise.then(setShows), [promise]);
 
     useEffect(() => {
         if (shows && shows.shows && (shows.shows.length > 0)) {
@@ -282,7 +278,8 @@ const Shows = memo(({api, onShowLiveData, onListShowBroadcasts}) => {
                             code(show.id))),
                         td(a(
                             {
-                                href: 'https://www.amazon.com/live/channel/' + show.id,
+                                href: 'https://www.amazon.com/live/channel/'
+                                    + show.id,
                                 target: '_blank',
                             },
                             show.title)),
@@ -312,7 +309,7 @@ const Shows = memo(({api, onShowLiveData, onListShowBroadcasts}) => {
                         type: 'button',
                         disabled: !selectedShow,
                         onClick() {
-                            setIsJsonShown(!isJsonShown);
+                            setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                         }
                     },
                     'Show/Hide JSON')),
@@ -327,17 +324,34 @@ const Shows = memo(({api, onShowLiveData, onListShowBroadcasts}) => {
     return fieldset(legend('Shows'), children);
 });
 
-const Broadcasts = memo(({api, showId, onLoadBroadcastId}) => {
+const Broadcasts = memo(props => {
+    const {promise, morePromise, onLoadMore, onLoadBroadcast} = props;
+
     const [broadcasts, setBroadcasts] = useState(null);
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isJsonShown, setIsJsonShown] = useState(false);
 
-    useEffect(
-        () => void api.listShowBroadcasts(showId).then(setBroadcasts),
-        [api, showId]);
+    useEffect(() => {
+        setBroadcasts(null);
+        promise.then(setBroadcasts);
+    }, [promise]);
 
-    useEffect(() => void setIsLoading(false), [broadcasts]);
+    useEffect(() => {
+        if (morePromise) {
+            setIsLoadingMore(true);
+
+            morePromise.then(moreBroadcasts => {
+                setIsLoadingMore(false);
+
+                setBroadcasts(prevBroadcasts => ({
+                    broadcasts: prevBroadcasts.broadcasts.concat(
+                        moreBroadcasts.broadcasts),
+                    nextLink: moreBroadcasts.nextLink,
+                }));
+            });
+        }
+    }, [morePromise]);
 
     let children;
 
@@ -385,23 +399,16 @@ const Broadcasts = memo(({api, showId, onLoadBroadcastId}) => {
                         type: 'button',
                         disabled: !selectedBroadcast,
                         onClick() {
-                            onLoadBroadcastId(selectedBroadcast.id);
+                            onLoadBroadcast(selectedBroadcast.id);
                         }
                     },
                     'Load broadcast'),
                 button(
                     {
-                        disabled: !broadcasts.nextLink || isLoading,
+                        disabled: !broadcasts.nextLink || isLoadingMore,
                         type: 'button',
                         onClick() {
-                            setIsLoading(true);
-                            api.listShowBroadcasts(showId, broadcasts.nextLink)
-                                .then(moreBroadcasts => {
-                                    setBroadcasts({
-                                        nextLink: moreBroadcasts.nextLink,
-                                        broadcasts: broadcasts.broadcasts.concat(moreBroadcasts.broadcasts),
-                                    });
-                                });
+                            onLoadMore(broadcasts.nextLink);
                         }
                     },
                     'Load more broadcasts'),
@@ -410,7 +417,7 @@ const Broadcasts = memo(({api, showId, onLoadBroadcastId}) => {
                         type: 'button',
                         disabled: !selectedBroadcast,
                         onClick() {
-                            setIsJsonShown(!isJsonShown);
+                            setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                         }
                     },
                     'Show/Hide JSON')),
@@ -425,17 +432,15 @@ const Broadcasts = memo(({api, showId, onLoadBroadcastId}) => {
     return fieldset(legend('Broadcasts'), children);
 });
 
-const ShowLiveData = memo(({api, id, onLoadBroadcastId}) => {
+const ShowLiveData = memo(({promise, onLoadBroadcast}) => {
     const [liveData, setLiveData] = useState(null);
     const [broadcastId, setBroadcastId] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
 
-    // FIXME: remove need for specific refresh buttons
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    useEffect(
-        () => void api.readShowLiveData(id).then(setLiveData),
-        [api, id]);
+    useEffect(() => {
+        setLiveData(null);
+        promise.then(setLiveData);
+    }, [promise]);
 
     useEffect(() => {
         if (liveData) {
@@ -444,16 +449,9 @@ const ShowLiveData = memo(({api, id, onLoadBroadcastId}) => {
                 lockedBroadcastId,
             } = liveData.showLiveData.value;
 
-            setIsRefreshing(false);
             setBroadcastId(broadcastStartedId || lockedBroadcastId);
         }
     }, [liveData]);
-
-    useEffect(() => {
-        if (broadcastId) {
-            onLoadBroadcastId(broadcastId);
-        }
-    }, [broadcastId]);
 
     let children;
 
@@ -491,25 +489,15 @@ const ShowLiveData = memo(({api, id, onLoadBroadcastId}) => {
                         type: 'button',
                         disabled: !broadcastId,
                         onClick() {
-                            onLoadBroadcastId(broadcastId);
+                            onLoadBroadcast(broadcastId);
                         },
                     },
                     'Load broadcast'),
                 button(
                     {
                         type: 'button',
-                        disabled: isRefreshing,
                         onClick() {
-                            setIsRefreshing(true);
-                            api.readShowLiveData(id).then(setLiveData);
-                        }
-                    },
-                    'Refresh live data'),
-                button(
-                    {
-                        type: 'button',
-                        onClick() {
-                            setIsJsonShown(!isJsonShown);
+                            setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                         }
                     },
                     'Show/Hide JSON')),
@@ -524,17 +512,14 @@ const ShowLiveData = memo(({api, id, onLoadBroadcastId}) => {
     return fieldset(legend('Live Data'), children);
 });
 
-const Broadcast = memo(({api, id}) => {
+const Broadcast = memo(({promise}) => {
     const [broadcast, setBroadcast] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
-    const [originalBroadcast, setOriginalBroadcast] = useState(broadcast);
 
     useEffect(() => {
-        api.readBroadcast(id).then(newBroadcast => {
-            setOriginalBroadcast(newBroadcast);
-            setBroadcast(newBroadcast);
-        });
-    }, [api, id]);
+        setBroadcast(null);
+        promise.then(setBroadcast);
+    }, [promise]);
 
     let children;
 
@@ -542,52 +527,42 @@ const Broadcast = memo(({api, id}) => {
         children = jsx(Loading);
     }
     else {
-        children = Fragment(
-            p(img({
-                src: api.getBroadcastSlateImageUrl(id),
-                height: '100px',
-            })),
-            form(
-                p(label('Title: ', input({
-                    type: 'text',
-                    value: broadcast.title,
-                    onChange(event) {
-                        setBroadcast({
-                            ...broadcast,
-                            title: event.target.value,
-                        });
+        children = form(
+            p(jsx(BroadcastSlateImage, {id: broadcast.id})),
+            p(label('Title: ', input({
+                type: 'text',
+                value: broadcast.title,
+                onChange(event) {
+                    const title = event.target.value;
+
+                    setBroadcast(prevBroadcast => ({
+                        ...prevBroadcast,
+                        title: title,
+                    }));
+                }
+            }))),
+            p('Video source: ',
+                Object.entries(VIDEO_SOURCES).map(([value, text]) =>
+                    label({key: value}, input({
+                        type: 'radio',
+                        name: 'videoSource',
+                        value: value,
+                        checked: broadcast.videoSource === value,
+                        onChange() {
+                            setBroadcast(prevBroadcast => ({
+                                ...prevBroadcast,
+                                videoSource: value,
+                            }));
+                        },
+                    }), text))),
+            p(button(
+                {
+                    type: 'button',
+                    onClick() {
+                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                     }
-                }))),
-                p('Video source: ',
-                    Object.entries(VIDEO_SOURCES).map(([value, text]) =>
-                        label({key: value}, input({
-                            type: 'radio',
-                            name: 'videoSource',
-                            checked: broadcast.videoSource === value,
-                            onChange(event) {
-                                setBroadcast({
-                                    ...broadcast,
-                                    videoSource: value
-                                });
-                            },
-                        }), text))),
-                p(
-                    button(
-                        {
-                            type: 'reset',
-                            onClick() {
-                                setBroadcast(originalBroadcast);
-                            }
-                        },
-                        'Reset form'),
-                    button(
-                        {
-                            type: 'button',
-                            onClick() {
-                                setIsJsonShown(!isJsonShown);
-                            }
-                        },
-                        'Show/Hide JSON'))),
+                },
+                'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {
@@ -599,38 +574,52 @@ const Broadcast = memo(({api, id}) => {
     return fieldset(legend('Broadcast'), children);
 });
 
-// FIXME: add component for displaying a show's data
-const App = React.memo(({api}) => {
+const App = memo(({api}) => {
+    const [showsPromise,] = useState(() => api.listShows());
+    const [liveDataPromise, setLiveDataPromise] = useState(null);
+
     const [broadcastsShowId, setBroadcastsShowId] = useState(null);
-    const [broadcastId, setBroadcastId] = useState(null);
-    const [liveDataShowId, setLiveDataShowId] = useState(null);
+    const [broadcastsPromise, setBroadcastsPromise] = useState(null);
+    const [moreBroadcastsPromise, setMoreBroadcastsPromise] = useState(null);
+
+    const [broadcastPromise, setBroadcastPromise] = useState(null);
 
     return Fragment(
         jsx(Shows, {
-            api: api,
-            onShowLiveData: setLiveDataShowId,
-            onListShowBroadcasts: setBroadcastsShowId,
+            promise: showsPromise,
+            onShowLiveData(showId) {
+                setLiveDataPromise(api.readShowLiveData(showId));
+            },
+            onListShowBroadcasts(showId) {
+                setBroadcastsShowId(showId);
+                setBroadcastsPromise(api.listShowBroadcasts(showId));
+            },
         }),
-        liveDataShowId && jsx(ShowLiveData, {
-            api: api,
-            id: liveDataShowId,
-            onLoadBroadcastId: setBroadcastId,
+        liveDataPromise && jsx(ShowLiveData, {
+            promise: liveDataPromise,
+            onLoadBroadcast(broadcastId) {
+                setBroadcastPromise(api.readBroadcast(broadcastId));
+            },
         }),
-        broadcastsShowId && jsx(Broadcasts, {
-            api: api,
-            showId: broadcastsShowId,
-            onLoadBroadcastId: setBroadcastId,
+        broadcastsShowId && broadcastsPromise && jsx(Broadcasts, {
+            promise: broadcastsPromise,
+            morePromise: moreBroadcastsPromise,
+            onLoadMore(nextToken) {
+                setMoreBroadcastsPromise(
+                    api.listShowBroadcasts(broadcastsShowId, nextToken));
+            },
+            onLoadBroadcast(broadcastId) {
+                setBroadcastPromise(api.readBroadcast(broadcastId));
+            },
         }),
-        broadcastId && jsx(Broadcast, {
-            api: api,
-            id: broadcastId,
+        broadcastPromise && jsx(Broadcast, {
+            promise: broadcastPromise,
         }));
 });
 
-const api = new Api();
 const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
 if (shouldRun) {
-    ReactDOM.render(jsx(App, {api: api}), rootEl);
+    ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
