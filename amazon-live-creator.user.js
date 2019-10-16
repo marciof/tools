@@ -48,7 +48,7 @@ const acePromise = new Promise((resolve, reject) => {
     require(['ace/ace'], () => {
         const ace = unsafeWindow.ace;
         console.info('ACE editor', ace);
-        return resolve(ace);
+        resolve(ace);
     }, reject);
 });
 
@@ -85,31 +85,42 @@ class Api {
     }
 
     /**
-     * @param id {string}
-     * @returns {Promise<Object>}
+     * @param broadcastId {string}
+     * @returns {string}
      */
-    readBroadcast(id) {
-        return this.request('broadcasts/' + encodeURIComponent(id));
+    getBroadcastSlateImageUrl(broadcastId) {
+        return this.urlPathPrefix
+            + 'broadcasts/'
+            + encodeURIComponent(broadcastId)
+            + '/image/slate';
     }
 
     /**
-     * @param id {string}
+     * @param broadcastId {string}
      * @returns {Promise<Object>}
      */
-    readShowLiveData(id) {
+    readBroadcast(broadcastId) {
+        return this.request('broadcasts/' + encodeURIComponent(broadcastId));
+    }
+
+    /**
+     * @param showId {string}
+     * @returns {Promise<Object>}
+     */
+    readShowLiveData(showId) {
         return this.request(
-            'poller?fields=showLiveData&showId=' + encodeURIComponent(id));
+            'poller?fields=showLiveData&showId=' + encodeURIComponent(showId));
     }
 
     /**
-     * @param id {string}
+     * @param showId {string}
      * @param [nextToken] {string}
      * @returns {Promise<Object>}
      */
-    listShowBroadcasts(id, nextToken) {
+    listShowBroadcasts(showId, nextToken) {
         return this.request(
             'shows/'
-            + encodeURIComponent(id)
+            + encodeURIComponent(showId)
             + '/broadcasts/?direction=all&ascending=true&maxResults=10'
             + (!nextToken
                 ? ''
@@ -169,20 +180,15 @@ const VIDEO_SOURCES = {
 };
 
 const AceEditor = memo(({text, mode, style}) => {
-    const [ace, setAce] = useState(null);
     const [editor, setEditor] = useState(null);
     const editorElRef = useRef(null);
 
-    useEffect(() => void acePromise.then(setAce), []);
-
-    useEffect(() => {
-        if (ace) {
-            const editor = ace.edit(editorElRef.current);
-            editor.setTheme('ace/theme/github');
-            editor.session.setMode(mode);
-            setEditor(editor);
-        }
-    }, [ace]);
+    useEffect(() => void acePromise.then(ace => {
+        const editor = ace.edit(editorElRef.current);
+        editor.setTheme('ace/theme/github');
+        editor.session.setMode(mode);
+        setEditor(editor);
+    }));
 
     useEffect(() => {
         if (editor) {
@@ -219,12 +225,6 @@ const LoginLink = memo(() => p(a(
         target: '_blank',
     },
     'Please login to your Amazon account first.')));
-
-// FIXME: remove hardcoded API URL path
-const BroadcastSlateImage = memo(({id}) => img({
-    src: '/api/v1/broadcasts/' + encodeURIComponent(id) + '/image/slate',
-    height: '100px',
-}));
 
 // FIXME: convert UTC to local?
 // FIXME: make read-only?
@@ -533,7 +533,7 @@ const ShowLiveData = memo(({promise, onLoadBroadcast}) => {
     return fieldset(legend('Live Data'), children);
 });
 
-const Broadcast = memo(({promise}) => {
+const Broadcast = memo(({promise, getSlateImageUrl}) => {
     const [broadcast, setBroadcast] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
 
@@ -549,7 +549,10 @@ const Broadcast = memo(({promise}) => {
     }
     else {
         children = form(
-            p(jsx(BroadcastSlateImage, {id: broadcast.id})),
+            p(img({
+                src: getSlateImageUrl(broadcast.id),
+                height: '100px',
+            })),
             p(label('Title: ', input({
                 type: 'text',
                 value: broadcast.title,
@@ -635,6 +638,9 @@ const App = memo(({api}) => {
         }),
         broadcastPromise && jsx(Broadcast, {
             promise: broadcastPromise,
+            getSlateImageUrl(broadcastId) {
+                return api.getBroadcastSlateImageUrl(broadcastId);
+            }
         }));
 });
 
