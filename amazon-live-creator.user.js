@@ -274,8 +274,7 @@ const Shows = memo(({promise, onShowLiveData, onListShowBroadcasts}) => {
                 {border: 1},
                 thead(
                     tr(
-                        th(),
-                        th('ID'),
+                        th({colSpan: 2}, 'ID'),
                         th('Title'),
                         th('Distribution'),
                         th('Feature Group'))),
@@ -383,8 +382,7 @@ const Broadcasts = memo(props => {
                 {border: 1},
                 thead(
                     tr(
-                        th(),
-                        th('ID'),
+                        th({colSpan: 2}, 'ID'),
                         th('Title'),
                         th('ASIN'),
                         th('Started'),
@@ -646,6 +644,5 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 if (shouldRun) {
     // FIXME: use error boundary with error message?
     // FIXME: use functions for initial state in useState?
-    // FIXME: make radio buttons part of the ID cells
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
