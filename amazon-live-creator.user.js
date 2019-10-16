@@ -168,8 +168,7 @@ const VIDEO_SOURCES = {
     THIRD_PARTY_ENCODER: 'Encoder',
 };
 
-// FIXME: move editor mode to prop
-const AceEditor = memo(({text, style}) => {
+const AceEditor = memo(({text, mode, style}) => {
     const [ace, setAce] = useState(null);
     const [editor, setEditor] = useState(null);
     const editorElRef = useRef(null);
@@ -179,8 +178,8 @@ const AceEditor = memo(({text, style}) => {
     useEffect(() => {
         if (ace) {
             const editor = ace.edit(editorElRef.current);
-            editor.setTheme("ace/theme/github");
-            editor.session.setMode("ace/mode/json");
+            editor.setTheme('ace/theme/github');
+            editor.session.setMode(mode);
             setEditor(editor);
         }
     }, [ace]);
@@ -195,13 +194,14 @@ const AceEditor = memo(({text, style}) => {
 });
 
 const JsonAceEditor = memo(({json, style}) => jsx(AceEditor, {
+    text: JSON.stringify(json, undefined, 4),
+    mode: 'ace/mode/json',
     style: {
         width: '100%',
         height: '200px',
         border: '1px solid lightgray',
         ...style,
     },
-    text: JSON.stringify(json, undefined, 4)
 }));
 
 const Loading = memo(() => p('Loading...'));
@@ -234,13 +234,13 @@ const DateTime = memo(({dateTime}) => {
 
     return Fragment(
         input({
-            type: 'time',
-            defaultValue: time,
+            type: 'date',
+            defaultValue: date,
         }),
         ' ',
         input({
-            type: 'date',
-            defaultValue: date,
+            type: 'time',
+            defaultValue: time,
         }));
 });
 
