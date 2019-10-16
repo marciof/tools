@@ -411,7 +411,7 @@ const Broadcasts = memo(props => {
                         td(jsx(DateTime, {
                             dateTime: broadcast.broadcastStartDateTime,
                         })),
-                        td(jsx(DateTime, {
+                        td(broadcast.broadcastEndDateTime && jsx(DateTime, {
                             dateTime: broadcast.broadcastEndDateTime,
                         })))))),
             p(
