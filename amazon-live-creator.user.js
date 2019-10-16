@@ -168,6 +168,7 @@ const VIDEO_SOURCES = {
     THIRD_PARTY_ENCODER: 'Encoder',
 };
 
+// FIXME: move editor mode to prop
 const AceEditor = memo(({text, style}) => {
     const [ace, setAce] = useState(null);
     const [editor, setEditor] = useState(null);
@@ -226,6 +227,7 @@ const BroadcastSlateImage = memo(({id}) => img({
 }));
 
 // FIXME: convert UTC to local?
+// FIXME: make read-only?
 const DateTime = memo(({dateTime}) => {
     const [date, zonedTime] = dateTime.split('T');
     const time = zonedTime.replace(/\.\d+Z$/, '');
@@ -485,7 +487,7 @@ const ShowLiveData = memo(({promise, onLoadBroadcast}) => {
             lvsLastMessageSubject,
         } = liveData.showLiveData.value;
 
-        const state = lockedBroadcastState || lvsLastMessageSubject || 'N/A';
+        const state = lockedBroadcastState || lvsLastMessageSubject;
 
         children = form(
             table(
@@ -497,7 +499,7 @@ const ShowLiveData = memo(({promise, onLoadBroadcast}) => {
                         th('Status'))),
                 tbody(
                     tr(
-                        td(broadcastId ? code(broadcastId) : 'N/A'),
+                        td(broadcastId && code(broadcastId)),
                         td(broadcastId
                             ? jsx(BroadcastLivestreamLink, {
                                 id: broadcastId,
@@ -642,5 +644,8 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
 if (shouldRun) {
+    // FIXME: use error boundary with error message?
+    // FIXME: use functions for initial state in useState?
+    // FIXME: make radio buttons part of the ID cells
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
