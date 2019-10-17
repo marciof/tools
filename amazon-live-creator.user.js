@@ -408,7 +408,7 @@ const Broadcasts = memo(props => {
                             title: broadcast.title,
                         })),
                         td(broadcast.asin),
-                        td(jsx(DateTime, {
+                        td(broadcast.broadcastStartDateTime && jsx(DateTime, {
                             dateTime: broadcast.broadcastStartDateTime,
                         })),
                         td(broadcast.broadcastEndDateTime && jsx(DateTime, {
