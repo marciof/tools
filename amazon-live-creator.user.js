@@ -54,8 +54,9 @@ const acePromise = new Promise((resolve, reject) => {
 
 /**
  * @returns {boolean}
+ * @see https://github.com/facebook/react/blob/master/packages/react/src/ReactElement.js `isValidElement`
  */
-function isReactElement(value) {
+function isJsxElement(value) {
     const isPlainObject = _.isPlainObject(value);
 
     return !isPlainObject
@@ -72,7 +73,7 @@ function isReactElement(value) {
  * @returns {React.Element}
  */
 function jsx(tag, props, ...children) {
-    if (isReactElement(props)) {
+    if (isJsxElement(props)) {
         children.unshift(props);
         props = null;
     }
@@ -199,32 +200,31 @@ const AceEditor = memo(({text, mode, style}) => {
     return div({ref: editorElRef, style: style});
 });
 
-const JsonAceEditor = memo(({json, style}) => jsx(AceEditor, {
-    text: JSON.stringify(json, undefined, 4),
-    mode: 'ace/mode/json',
-    style: {
-        width: '100%',
-        height: '200px',
-        border: '1px solid lightgray',
-        ...style,
-    },
-}));
+const JsonAceEditor = memo(({json, style}) =>
+    jsx(AceEditor, {
+        text: JSON.stringify(json, undefined, 4),
+        mode: 'ace/mode/json',
+        style: {
+            width: '100%',
+            height: '200px',
+            border: '1px solid lightgray',
+            ...style,
+        },
+    }));
 
 const Loading = memo(() => p('Loading...'));
 
-const BroadcastLivestreamLink = memo(({id, title}) => a(
-    {
+const BroadcastLivestreamLink = memo(({id, title}) =>
+    a({
         href: 'https://www.amazon.com/live/broadcast/' + id,
         target: '_blank',
-    },
-    title));
+    }, title));
 
-const LoginLink = memo(() => p(a(
-    {
+const LoginLink = memo(() =>
+    p(a({
         href: 'https://www.amazon.com/gp/sign-in.html',
         target: '_blank',
-    },
-    'Please login to your Amazon account first.')));
+    }, 'Please login to your Amazon account first.')));
 
 // FIXME: convert UTC to local?
 // FIXME: make read-only?
@@ -294,43 +294,35 @@ const Shows = memo(({promise, onShowLiveData, onListShowBroadcasts}) => {
                         td(label(
                             {htmlFor: 'show-' + show.id},
                             code(show.id))),
-                        td(a(
-                            {
-                                href: 'https://www.amazon.com/live/channel/'
-                                    + show.id,
-                                target: '_blank',
-                            },
-                            show.title)),
+                        td(a({
+                            href: 'https://www.amazon.com/live/channel/'
+                                + show.id,
+                            target: '_blank',
+                        }, show.title)),
                         td(show.distribution),
                         td(show.featureGroup))))),
             p(
-                button(
-                    {
-                        disabled: !selectedShow,
-                        type: 'button',
-                        onClick() {
-                            onListShowBroadcasts(selectedShow.id);
-                        }
-                    },
-                    'List broadcasts'),
-                button(
-                    {
-                        disabled: !selectedShow,
-                        type: 'button',
-                        onClick() {
-                            onShowLiveData(selectedShow.id);
-                        }
-                    },
-                    'Load live data'),
-                button(
-                    {
-                        type: 'button',
-                        disabled: !selectedShow,
-                        onClick() {
-                            setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                        }
-                    },
-                    'Show/Hide JSON')),
+                button({
+                    disabled: !selectedShow,
+                    type: 'button',
+                    onClick() {
+                        onListShowBroadcasts(selectedShow.id);
+                    }
+                }, 'List broadcasts'),
+                button({
+                    disabled: !selectedShow,
+                    type: 'button',
+                    onClick() {
+                        onShowLiveData(selectedShow.id);
+                    }
+                }, 'Load live data'),
+                button({
+                    type: 'button',
+                    disabled: !selectedShow,
+                    onClick() {
+                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+                    }
+                }, 'Show/Hide JSON')),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
                 style: {
@@ -415,33 +407,27 @@ const Broadcasts = memo(props => {
                             dateTime: broadcast.broadcastEndDateTime,
                         })))))),
             p(
-                button(
-                    {
-                        type: 'button',
-                        disabled: !selectedBroadcast,
-                        onClick() {
-                            onLoadBroadcast(selectedBroadcast.id);
-                        }
-                    },
-                    'Load broadcast'),
-                button(
-                    {
-                        disabled: !broadcasts.nextLink || isLoadingMore,
-                        type: 'button',
-                        onClick() {
-                            onLoadMore(broadcasts.nextLink);
-                        }
-                    },
-                    'Load more broadcasts'),
-                button(
-                    {
-                        type: 'button',
-                        disabled: !selectedBroadcast,
-                        onClick() {
-                            setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                        }
-                    },
-                    'Show/Hide JSON')),
+                button({
+                    type: 'button',
+                    disabled: !selectedBroadcast,
+                    onClick() {
+                        onLoadBroadcast(selectedBroadcast.id);
+                    }
+                }, 'Load broadcast'),
+                button({
+                    disabled: !broadcasts.nextLink || isLoadingMore,
+                    type: 'button',
+                    onClick() {
+                        onLoadMore(broadcasts.nextLink);
+                    }
+                }, 'Load more broadcasts'),
+                button({
+                    type: 'button',
+                    disabled: !selectedBroadcast,
+                    onClick() {
+                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+                    }
+                }, 'Show/Hide JSON')),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
                 style: {
@@ -505,23 +491,19 @@ const ShowLiveData = memo(({promise, onLoadBroadcast}) => {
                             : state),
                         td(liveData.showLiveData.status)))),
             p(
-                button(
-                    {
-                        type: 'button',
-                        disabled: !broadcastId,
-                        onClick() {
-                            onLoadBroadcast(broadcastId);
-                        },
+                button({
+                    type: 'button',
+                    disabled: !broadcastId,
+                    onClick() {
+                        onLoadBroadcast(broadcastId);
                     },
-                    'Load broadcast'),
-                button(
-                    {
-                        type: 'button',
-                        onClick() {
-                            setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                        }
-                    },
-                    'Show/Hide JSON')),
+                }, 'Load broadcast'),
+                button({
+                    type: 'button',
+                    onClick() {
+                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+                    }
+                }, 'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: liveData,
                 style: {
@@ -579,14 +561,12 @@ const Broadcast = memo(({promise, getSlateImageUrl}) => {
                             }));
                         },
                     }), text))),
-            p(button(
-                {
-                    type: 'button',
-                    onClick() {
-                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                    }
-                },
-                'Show/Hide JSON')),
+            p(button({
+                type: 'button',
+                onClick() {
+                    setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+                }
+            }, 'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {
