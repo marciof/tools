@@ -67,7 +67,7 @@ function isJsxElement(value) {
 
 /**
  *
- * @param tag {string}
+ * @param tag {string|React.Component}
  * @param [props] {Object}
  * @param children {Array<string|React.Element>}
  * @returns {React.Element}
@@ -180,16 +180,21 @@ const VIDEO_SOURCES = {
     THIRD_PARTY_ENCODER: 'Encoder',
 };
 
-const AceEditor = memo(({text, mode, style}) => {
+const AceEditor = memo(function AceEditor({text, mode, style}) {
+    const [ace, setAce] = useState(null);
     const [editor, setEditor] = useState(null);
     const editorElRef = useRef(null);
 
-    useEffect(() => void acePromise.then(ace => {
-        const editor = ace.edit(editorElRef.current);
-        editor.setTheme('ace/theme/github');
-        editor.session.setMode(mode);
-        setEditor(editor);
-    }));
+    useEffect(() => void acePromise.then(setAce));
+
+    useEffect(() => {
+        if (ace) {
+            const editor = ace.edit(editorElRef.current);
+            editor.setTheme('ace/theme/github');
+            editor.session.setMode(mode);
+            setEditor(editor);
+        }
+    }, [ace]);
 
     useEffect(() => {
         if (editor) {
@@ -200,8 +205,8 @@ const AceEditor = memo(({text, mode, style}) => {
     return div({ref: editorElRef, style: style});
 });
 
-const JsonAceEditor = memo(({json, style}) =>
-    jsx(AceEditor, {
+const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
+    return jsx(AceEditor, {
         text: JSON.stringify(json, undefined, 4),
         mode: 'ace/mode/json',
         style: {
@@ -210,25 +215,30 @@ const JsonAceEditor = memo(({json, style}) =>
             border: '1px solid lightgray',
             ...style,
         },
-    }));
+    });
+});
 
-const Loading = memo(() => p('Loading...'));
+const Loading = memo(function Loading() {
+    return p('Loading...');
+});
 
-const BroadcastLivestreamLink = memo(({id, title}) =>
-    a({
+const BroadcastPageLink = memo(function BroadcastPageLink({id, title}) {
+    return a({
         href: 'https://www.amazon.com/live/broadcast/' + id,
         target: '_blank',
-    }, title));
+    }, title);
+});
 
-const LoginLink = memo(() =>
-    p(a({
+const LoginLink = memo(function LoginLink() {
+    return p(a({
         href: 'https://www.amazon.com/gp/sign-in.html',
         target: '_blank',
-    }, 'Please login to your Amazon account first.')));
+    }, 'Please login to your Amazon account first.'));
+});
 
 // FIXME: convert UTC to local?
 // FIXME: make read-only?
-const DateTime = memo(({dateTime}) => {
+const DateTime = memo(function DateTime({dateTime}) {
     const [date, zonedTime] = dateTime.split('T');
     const time = zonedTime.replace(/\.\d+Z$/, '');
 
@@ -244,379 +254,332 @@ const DateTime = memo(({dateTime}) => {
         }));
 });
 
-const Shows = memo(({promise, onShowLiveData, onListShowBroadcasts}) => {
-    const [shows, setShows] = useState(null);
+const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
     const [selectedShow, setSelectedShow] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
 
-    useEffect(() => void promise.then(setShows), [promise]);
-
     useEffect(() => {
-        if (shows && shows.shows && (shows.shows.length > 0)) {
-            let show = shows.shows[0];
+        if (data && data.shows && (data.shows.length > 0)) {
+            let show = data.shows[0];
             setSelectedShow(show);
-            onShowLiveData(show.id);
-            onListShowBroadcasts(show.id);
+            onLoadLiveData(show.id);
+            onListBroadcasts(show.id);
         }
-    }, [shows]);
+    }, [data]);
 
-    let children;
-
-    if (!shows) {
-        children = jsx(Loading);
-    }
-    else if (shows.errors) {
-        children = jsx(LoginLink);
-    }
-    else {
-        children = form(
-            table(
-                {border: 1},
-                thead(
-                    tr(
-                        th({colSpan: 2}, 'ID'),
-                        th('Title'),
-                        th('Distribution'),
-                        th('Feature Group'))),
-                tbody(shows.shows.map(show =>
-                    tr(
-                        {key: show.id},
-                        td(input({
-                            type: 'radio',
-                            id: 'show-' + show.id,
-                            name: 'showId',
-                            value: show.id,
-                            checked: selectedShow === show,
-                            onChange() {
-                                setSelectedShow(show);
-                            },
-                        })),
-                        td(label(
-                            {htmlFor: 'show-' + show.id},
-                            code(show.id))),
-                        td(a({
-                            href: 'https://www.amazon.com/live/channel/'
-                                + show.id,
-                            target: '_blank',
-                        }, show.title)),
-                        td(show.distribution),
-                        td(show.featureGroup))))),
-            p(
-                button({
-                    disabled: !selectedShow,
-                    type: 'button',
-                    onClick() {
-                        onListShowBroadcasts(selectedShow.id);
-                    }
-                }, 'List broadcasts'),
-                button({
-                    disabled: !selectedShow,
-                    type: 'button',
-                    onClick() {
-                        onShowLiveData(selectedShow.id);
-                    }
-                }, 'Load live data'),
-                button({
-                    type: 'button',
-                    disabled: !selectedShow,
-                    onClick() {
-                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                    }
-                }, 'Show/Hide JSON')),
-            selectedShow && jsx(JsonAceEditor, {
-                json: selectedShow,
-                style: {
-                    display: isJsonShown ? 'inherit' : 'none',
-                },
-            }));
+    if (data.errors) {
+        return jsx(LoginLink);
     }
 
-    return fieldset(legend('Shows'), children);
+    return form(
+        table(
+            {border: 1},
+            thead(
+                tr(
+                    th({colSpan: 2}, 'ID'),
+                    th('Title'),
+                    th('Distribution'),
+                    th('Feature Group'))),
+            tbody(data.shows.map(show =>
+                tr(
+                    {key: show.id},
+                    td(input({
+                        type: 'radio',
+                        id: 'show-' + show.id,
+                        name: 'showId',
+                        value: show.id,
+                        checked: selectedShow === show,
+                        onChange() {
+                            setSelectedShow(show);
+                        },
+                    })),
+                    td(label(
+                        {htmlFor: 'show-' + show.id},
+                        code(show.id))),
+                    td(a({
+                        href: 'https://www.amazon.com/live/channel/'
+                            + show.id,
+                        target: '_blank',
+                    }, show.title)),
+                    td(show.distribution),
+                    td(show.featureGroup))))),
+        p(
+            button({
+                disabled: !selectedShow,
+                type: 'button',
+                onClick() {
+                    onListBroadcasts(selectedShow.id);
+                }
+            }, 'List broadcasts'),
+            button({
+                disabled: !selectedShow,
+                type: 'button',
+                onClick() {
+                    onLoadLiveData(selectedShow.id);
+                }
+            }, 'Load live data'),
+            button({
+                type: 'button',
+                disabled: !selectedShow,
+                onClick() {
+                    setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+                }
+            }, 'Show/Hide JSON')),
+        selectedShow && jsx(JsonAceEditor, {
+            json: selectedShow,
+            style: {display: isJsonShown ? 'inherit' : 'none'},
+        }));
 });
 
-const Broadcasts = memo(props => {
-    const {promise, morePromise, onLoadMore, onLoadBroadcast} = props;
+const Broadcasts = memo(function Broadcasts(props) {
+    const {data, onLoadMore, onLoadBroadcast} = props;
 
-    const [broadcasts, setBroadcasts] = useState(null);
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isJsonShown, setIsJsonShown] = useState(false);
 
-    useEffect(() => {
-        setBroadcasts(null);
-        promise.then(setBroadcasts);
-    }, [promise]);
-
-    useEffect(() => {
-        if (morePromise) {
-            setIsLoadingMore(true);
-
-            morePromise.then(moreBroadcasts => {
-                setIsLoadingMore(false);
-
-                setBroadcasts(prevBroadcasts => ({
-                    broadcasts: prevBroadcasts.broadcasts.concat(
-                        moreBroadcasts.broadcasts),
-                    nextLink: moreBroadcasts.nextLink,
-                }));
-            });
-        }
-    }, [morePromise]);
-
-    let children;
-
-    if (!broadcasts) {
-        children = jsx(Loading);
-    }
-    else {
-        children = form(
-            table(
-                {border: 1},
-                thead(
-                    tr(
-                        th({colSpan: 2}, 'ID'),
-                        th('Title'),
-                        th('ASIN'),
-                        th('Started'),
-                        th('Ended'))),
-                tbody(broadcasts.broadcasts.map(broadcast =>
-                    tr(
-                        {key: broadcast.id},
-                        td(input({
-                            type: 'radio',
-                            id: 'broadcast-' + broadcast.id,
-                            name: 'broadcastId',
-                            value: broadcast.id,
-                            checked: selectedBroadcast === broadcast,
-                            onChange(event) {
-                                setSelectedBroadcast(broadcast);
-                            }
-                        })),
-                        td(label(
-                            {htmlFor: 'broadcast-' + broadcast.id},
-                            code(broadcast.id))),
-                        td(jsx(BroadcastLivestreamLink, {
-                            id: broadcast.id,
-                            title: broadcast.title,
-                        })),
-                        td(broadcast.asin),
-                        td(broadcast.broadcastStartDateTime && jsx(DateTime, {
-                            dateTime: broadcast.broadcastStartDateTime,
-                        })),
-                        td(broadcast.broadcastEndDateTime && jsx(DateTime, {
-                            dateTime: broadcast.broadcastEndDateTime,
-                        })))))),
-            p(
-                button({
-                    type: 'button',
-                    disabled: !selectedBroadcast,
-                    onClick() {
-                        onLoadBroadcast(selectedBroadcast.id);
-                    }
-                }, 'Load broadcast'),
-                button({
-                    disabled: !broadcasts.nextLink || isLoadingMore,
-                    type: 'button',
-                    onClick() {
-                        onLoadMore(broadcasts.nextLink);
-                    }
-                }, 'Load more broadcasts'),
-                button({
-                    type: 'button',
-                    disabled: !selectedBroadcast,
-                    onClick() {
-                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                    }
-                }, 'Show/Hide JSON')),
-            selectedBroadcast && jsx(JsonAceEditor, {
-                json: selectedBroadcast,
-                style: {
-                    display: isJsonShown ? 'inherit' : 'none',
-                },
-            }));
-    }
-
-    return fieldset(legend('Broadcasts'), children);
-});
-
-const ShowLiveData = memo(({promise, onLoadBroadcast}) => {
-    const [liveData, setLiveData] = useState(null);
-    const [broadcastId, setBroadcastId] = useState(null);
-    const [isJsonShown, setIsJsonShown] = useState(false);
-
-    useEffect(() => {
-        setLiveData(null);
-        promise.then(setLiveData);
-    }, [promise]);
-
-    useEffect(() => {
-        if (liveData) {
-            const {
-                broadcastStartedId,
-                lockedBroadcastId,
-            } = liveData.showLiveData.value;
-
-            setBroadcastId(broadcastStartedId || lockedBroadcastId);
-        }
-    }, [liveData]);
-
-    let children;
-
-    if (!liveData) {
-        children = jsx(Loading);
-    }
-    else {
-        const {
-            lockedBroadcastState,
-            lvsLastMessageSubject,
-        } = liveData.showLiveData.value;
-
-        const state = lockedBroadcastState || lvsLastMessageSubject;
-
-        children = form(
-            table(
-                {border: 1},
-                thead(
-                    tr(
-                        th('ID'),
-                        th('State'),
-                        th('Status'))),
-                tbody(
-                    tr(
-                        td(broadcastId && code(broadcastId)),
-                        td(broadcastId
-                            ? jsx(BroadcastLivestreamLink, {
-                                id: broadcastId,
-                                title: state})
-                            : state),
-                        td(liveData.showLiveData.status)))),
-            p(
-                button({
-                    type: 'button',
-                    disabled: !broadcastId,
-                    onClick() {
-                        onLoadBroadcast(broadcastId);
-                    },
-                }, 'Load broadcast'),
-                button({
-                    type: 'button',
-                    onClick() {
-                        setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                    }
-                }, 'Show/Hide JSON')),
-            jsx(JsonAceEditor, {
-                json: liveData,
-                style: {
-                    display: isJsonShown ? 'inherit' : 'none',
-                },
-            }));
-    }
-
-    return fieldset(legend('Live Data'), children);
-});
-
-const Broadcast = memo(({promise, getSlateImageUrl}) => {
-    const [broadcast, setBroadcast] = useState(null);
-    const [isJsonShown, setIsJsonShown] = useState(false);
-
-    useEffect(() => {
-        setBroadcast(null);
-        promise.then(setBroadcast);
-    }, [promise]);
-
-    let children;
-
-    if (!broadcast) {
-        children = jsx(Loading);
-    }
-    else {
-        children = form(
-            p(img({
-                src: getSlateImageUrl(broadcast.id),
-                height: '100px',
-            })),
-            p(label('Title: ', input({
-                type: 'text',
-                value: broadcast.title,
-                onChange(event) {
-                    const title = event.target.value;
-
-                    setBroadcast(prevBroadcast => ({
-                        ...prevBroadcast,
-                        title: title,
-                    }));
-                }
-            }))),
-            p('Video source: ',
-                Object.entries(VIDEO_SOURCES).map(([value, text]) =>
-                    label({key: value}, input({
+    return form(
+        table(
+            {border: 1},
+            thead(
+                tr(
+                    th({colSpan: 2}, 'ID'),
+                    th('Title'),
+                    th('ASIN'),
+                    th('Started'),
+                    th('Ended'))),
+            tbody(data.broadcasts.map(broadcast =>
+                tr(
+                    {key: broadcast.id},
+                    td(input({
                         type: 'radio',
-                        name: 'videoSource',
-                        value: value,
-                        checked: broadcast.videoSource === value,
-                        onChange() {
-                            setBroadcast(prevBroadcast => ({
-                                ...prevBroadcast,
-                                videoSource: value,
-                            }));
-                        },
-                    }), text))),
-            p(button({
+                        id: 'broadcast-' + broadcast.id,
+                        name: 'broadcastId',
+                        value: broadcast.id,
+                        checked: selectedBroadcast === broadcast,
+                        onChange(event) {
+                            setSelectedBroadcast(broadcast);
+                        }
+                    })),
+                    td(label(
+                        {htmlFor: 'broadcast-' + broadcast.id},
+                        code(broadcast.id))),
+                    td(jsx(BroadcastPageLink, {
+                        id: broadcast.id,
+                        title: broadcast.title,
+                    })),
+                    td(broadcast.asin),
+                    td(broadcast.broadcastStartDateTime && jsx(DateTime, {
+                        dateTime: broadcast.broadcastStartDateTime,
+                    })),
+                    td(broadcast.broadcastEndDateTime && jsx(DateTime, {
+                        dateTime: broadcast.broadcastEndDateTime,
+                    })))))),
+        p(
+            button({
+                type: 'button',
+                disabled: !selectedBroadcast,
+                onClick() {
+                    onLoadBroadcast(selectedBroadcast.id);
+                }
+            }, 'Load broadcast'),
+            button({
+                disabled: !data.nextLink || isLoadingMore,
+                type: 'button',
+                onClick() {
+                    onLoadMore(data.nextLink);
+                }
+            }, 'Load more broadcasts'),
+            button({
+                type: 'button',
+                disabled: !selectedBroadcast,
+                onClick() {
+                    setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+                }
+            }, 'Show/Hide JSON')),
+        selectedBroadcast && jsx(JsonAceEditor, {
+            json: selectedBroadcast,
+            style: {display: isJsonShown ? 'inherit' : 'none'},
+        }));
+});
+
+const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
+    const [isJsonShown, setIsJsonShown] = useState(false);
+
+    const {
+        broadcastStartedId,
+        lockedBroadcastId,
+        lockedBroadcastState,
+        lvsLastMessageSubject,
+    } = data.showLiveData.value;
+
+    const broadcastId = broadcastStartedId || lockedBroadcastId;
+    const state = lockedBroadcastState || lvsLastMessageSubject;
+
+    return form(
+        table(
+            {border: 1},
+            thead(
+                tr(
+                    th('ID'),
+                    th('State'),
+                    th('Status'))),
+            tbody(
+                tr(
+                    td(broadcastId && code(broadcastId)),
+                    td(!broadcastId ? state : jsx(BroadcastPageLink, {
+                        id: broadcastId,
+                        title: state})),
+                    td(data.showLiveData.status)))),
+        p(
+            button({
+                type: 'button',
+                disabled: !broadcastId,
+                onClick() {
+                    onLoadBroadcast(broadcastId);
+                },
+            }, 'Load broadcast'),
+            button({
                 type: 'button',
                 onClick() {
                     setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                 }
             }, 'Show/Hide JSON')),
-            jsx(JsonAceEditor, {
-                json: broadcast,
-                style: {
-                    display: isJsonShown ? 'inherit' : 'none',
-                }
-            }));
-    }
-
-    return fieldset(legend('Broadcast'), children);
+        jsx(JsonAceEditor, {
+            json: data,
+            style: {display: isJsonShown ? 'inherit' : 'none'},
+        }));
 });
 
-const App = memo(({api}) => {
+const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
+    const [broadcast, setBroadcast] = useState(data);
+    const [isJsonShown, setIsJsonShown] = useState(false);
+
+    useEffect(() => void setBroadcast(data), [data]);
+
+    return form(
+        p(img({
+            src: getSlateImageUrl(broadcast.id),
+            height: '100px',
+        })),
+        p(label('Title: ', input({
+            type: 'text',
+            value: broadcast.title,
+            onChange(event) {
+                const title = event.target.value;
+
+                setBroadcast(prevBroadcast => ({
+                    ...prevBroadcast,
+                    title: title,
+                }));
+            }
+        }))),
+        p('Video source: ',
+            Object.entries(VIDEO_SOURCES).map(([value, text]) =>
+                label({key: value}, input({
+                    type: 'radio',
+                    name: 'videoSource',
+                    value: value,
+                    checked: broadcast.videoSource === value,
+                    onChange() {
+                        setBroadcast(prevBroadcast => ({
+                            ...prevBroadcast,
+                            videoSource: value,
+                        }));
+                    },
+                }), text))),
+        p(button({
+            type: 'button',
+            onClick() {
+                setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
+            }
+        }, 'Show/Hide JSON')),
+        jsx(JsonAceEditor, {
+            json: broadcast,
+            style: {display: isJsonShown ? 'inherit' : 'none'}
+        }));
+});
+
+/**
+ * @param Component {React.Component}
+ * @returns {React.Component}
+ */
+function lazy(Component) {
+    return memo(function LazyComponent(props) {
+        const {title, promise, reducer, ...componentProps} = props;
+        const [data, setData] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+            setIsLoading(true);
+            promise.then(newData => {
+                setData(data && reducer ? reducer(data, newData) : newData);
+                setIsLoading(false);
+            });
+        }, [promise]);
+
+        return fieldset(
+            legend(
+                title,
+                isLoading && data && ' (loading...)'),
+            !data
+                ? p('Loading...')
+                : jsx(Component, {data, ...componentProps}));
+    });
+}
+
+const LazyShows = lazy(Shows);
+const LazyLiveData = lazy(LiveData);
+const LazyBroadcasts = lazy(Broadcasts);
+const LazyBroadcast = lazy(Broadcast);
+
+const App = memo(function App({api}) {
     const [showsPromise,] = useState(() => api.listShows());
     const [liveDataPromise, setLiveDataPromise] = useState(null);
 
     const [broadcastsShowId, setBroadcastsShowId] = useState(null);
     const [broadcastsPromise, setBroadcastsPromise] = useState(null);
-    const [moreBroadcastsPromise, setMoreBroadcastsPromise] = useState(null);
 
     const [broadcastPromise, setBroadcastPromise] = useState(null);
 
     return Fragment(
-        jsx(Shows, {
+        jsx(LazyShows, {
+            title: 'Shows',
             promise: showsPromise,
-            onShowLiveData(showId) {
+            onLoadLiveData(showId) {
                 setLiveDataPromise(api.readShowLiveData(showId));
             },
-            onListShowBroadcasts(showId) {
+            onListBroadcasts(showId) {
                 setBroadcastsShowId(showId);
                 setBroadcastsPromise(api.listShowBroadcasts(showId));
             },
         }),
-        liveDataPromise && jsx(ShowLiveData, {
+        liveDataPromise && jsx(LazyLiveData, {
+            title: 'Live Data',
             promise: liveDataPromise,
             onLoadBroadcast(broadcastId) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
         }),
-        broadcastsShowId && broadcastsPromise && jsx(Broadcasts, {
+        broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
+            title: 'Broadcasts',
             promise: broadcastsPromise,
-            morePromise: moreBroadcastsPromise,
+            reducer(oldData, newData) {
+                return {
+                    broadcasts: oldData.broadcasts.concat(newData.broadcasts),
+                    nextLink: newData.nextLink,
+                };
+            },
             onLoadMore(nextToken) {
-                setMoreBroadcastsPromise(
+                setBroadcastsPromise(
                     api.listShowBroadcasts(broadcastsShowId, nextToken));
             },
             onLoadBroadcast(broadcastId) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
         }),
-        broadcastPromise && jsx(Broadcast, {
+        broadcastPromise && jsx(LazyBroadcast, {
+            title: 'Broadcast',
             promise: broadcastPromise,
             getSlateImageUrl(broadcastId) {
                 return api.getBroadcastSlateImageUrl(broadcastId);
