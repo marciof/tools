@@ -42,6 +42,7 @@ function cleanPage(title) {
 
 const rootEl = cleanPage(GM_info.script.name);
 rootEl.className = 'p-3';
+GM_addStyle(GM_getResourceText('bootstrap-css'));
 
 require.config({
     paths: {
@@ -622,7 +623,7 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 // FIXME: spinner in buttons as well as disabled while loading?
 // FIXME: update label in show/hide JSON (icons? refactor dup?)
 // FIXME: table spacing when there's <code/>? or <input/>?
+// FIXME: make label change mouse cursor?
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
-    GM_addStyle(GM_getResourceText('bootstrap-css'));
 }
