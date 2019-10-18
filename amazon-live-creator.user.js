@@ -3,6 +3,10 @@
 // @icon https://www.amazon.com/favicon.ico
 // @run-at document-start
 // @match https://amazonlivetools.amazon.com/
+// @grant GM_info
+// @grant GM_getResourceText
+// @grant GM_addStyle
+// @resource bootstrap-css https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css
 // @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js
@@ -37,6 +41,7 @@ function cleanPage(title) {
 }
 
 const rootEl = cleanPage(GM_info.script.name);
+rootEl.className = 'p-3';
 
 require.config({
     paths: {
@@ -157,6 +162,7 @@ const p = jsx.bind(null, 'p');
 const a = jsx.bind(null, 'a');
 const b = jsx.bind(null, 'b');
 const div = jsx.bind(null, 'div');
+const span = jsx.bind(null, 'span');
 const img = jsx.bind(null, 'img');
 const form = jsx.bind(null, 'form');
 const code = jsx.bind(null, 'code');
@@ -264,39 +270,41 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
     }
 
     return form(
-        table(
-            {border: 1},
-            thead(
-                tr(
-                    th({colSpan: 2}, 'ID'),
-                    th('Title'),
-                    th('Distribution'),
-                    th('Feature Group'))),
-            tbody(data.shows.map(show =>
-                tr(
-                    {key: show.id},
-                    td(input({
-                        type: 'radio',
-                        id: 'show-' + show.id,
-                        name: 'showId',
-                        value: show.id,
-                        checked: selectedShow === show,
-                        onChange() {
-                            setSelectedShow(show);
-                        },
-                    })),
-                    td(label(
-                        {htmlFor: 'show-' + show.id},
-                        code(show.id))),
-                    td(a({
-                        href: 'https://www.amazon.com/live/channel/' + show.id,
-                    }, show.title)),
-                    td(show.distribution),
-                    td(show.featureGroup))))),
+        div({className: 'card mb-3'}, div({className: 'table-responsive'},
+            table(
+                {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
+                thead(
+                    tr(
+                        th({colSpan: 2}, 'ID'),
+                        th('Title'),
+                        th('Distribution'),
+                        th('Feature Group'))),
+                tbody(data.shows.map(show =>
+                    tr(
+                        {key: show.id},
+                        td(input({
+                            type: 'radio',
+                            id: 'show-' + show.id,
+                            name: 'showId',
+                            value: show.id,
+                            checked: selectedShow === show,
+                            onChange() {
+                                setSelectedShow(show);
+                            },
+                        })),
+                        td(label(
+                            {htmlFor: 'show-' + show.id},
+                            code({className: 'text-nowrap'}, show.id))),
+                        td(a({
+                            href: 'https://www.amazon.com/live/channel/' + show.id,
+                        }, show.title)),
+                        td(show.distribution),
+                        td(show.featureGroup))))))),
         p(
             button({
                 disabled: !selectedShow,
                 type: 'button',
+                className: 'btn btn-primary mr-3',
                 onClick() {
                     onListBroadcasts(selectedShow.id);
                 }
@@ -304,6 +312,7 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
             button({
                 disabled: !selectedShow,
                 type: 'button',
+                className: 'btn btn-primary mr-3',
                 onClick() {
                     onLoadLiveData(selectedShow.id);
                 }
@@ -311,6 +320,7 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
             button({
                 type: 'button',
                 disabled: !selectedShow,
+                className: 'btn btn-info',
                 onClick() {
                     setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                 }
@@ -330,61 +340,71 @@ const Broadcasts = memo(function Broadcasts(props) {
     useEffect(() => void setIsLoadingMore(false), [data]);
 
     return form(
-        table(
-            {border: 1},
-            thead(
-                tr(
-                    th({colSpan: 2}, 'ID'),
-                    th('Title'),
-                    th('ASIN'),
-                    th('Started'),
-                    th('Ended'))),
-            tbody(data.broadcasts.map(broadcast =>
-                tr(
-                    {key: broadcast.id},
-                    td(input({
-                        type: 'radio',
-                        id: 'broadcast-' + broadcast.id,
-                        name: 'broadcastId',
-                        value: broadcast.id,
-                        checked: selectedBroadcast === broadcast,
-                        onChange(event) {
-                            setSelectedBroadcast(broadcast);
-                        }
-                    })),
-                    td(label(
-                        {htmlFor: 'broadcast-' + broadcast.id},
-                        code(broadcast.id))),
-                    td(jsx(BroadcastPageLink, {
-                        id: broadcast.id,
-                        title: broadcast.title,
-                    })),
-                    td(broadcast.asin),
-                    td(broadcast.broadcastStartDateTime && jsx(DateTime, {
-                        dateTime: broadcast.broadcastStartDateTime,
-                    })),
-                    td(broadcast.broadcastEndDateTime && jsx(DateTime, {
-                        dateTime: broadcast.broadcastEndDateTime,
-                    })))))),
+        div({className: 'card mb-3'}, div({className: 'table-responsive'},
+            table(
+                {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
+                thead(
+                    tr(
+                        th({colSpan: 2}, 'ID'),
+                        th('Title'),
+                        th('ASIN'),
+                        th('Distribution'),
+                        th('Started'),
+                        th('Ended'))),
+                tbody(data.broadcasts.map(broadcast =>
+                    tr(
+                        {key: broadcast.id},
+                        td(input({
+                            type: 'radio',
+                            id: 'broadcast-' + broadcast.id,
+                            name: 'broadcastId',
+                            value: broadcast.id,
+                            checked: selectedBroadcast === broadcast,
+                            onChange(event) {
+                                setSelectedBroadcast(broadcast);
+                            }
+                        })),
+                        td(label(
+                            {htmlFor: 'broadcast-' + broadcast.id},
+                            code({className: 'text-nowrap'}, broadcast.id))),
+                        td(jsx(BroadcastPageLink, {
+                            id: broadcast.id,
+                            title: broadcast.title,
+                        })),
+                        td(broadcast.asin),
+                        td(broadcast.distribution),
+                        td(broadcast.broadcastStartDateTime && jsx(DateTime, {
+                            dateTime: broadcast.broadcastStartDateTime,
+                        })),
+                        td(broadcast.broadcastEndDateTime && jsx(DateTime, {
+                            dateTime: broadcast.broadcastEndDateTime,
+                        })))))))),
         p(
             button({
                 type: 'button',
                 disabled: !selectedBroadcast,
+                className: 'btn btn-primary mr-3',
                 onClick() {
                     onLoadBroadcast(selectedBroadcast.id);
                 }
             }, 'Load broadcast'),
-            button({
-                disabled: !data.nextLink || isLoadingMore,
-                type: 'button',
-                onClick() {
-                    setIsLoadingMore(true);
-                    onLoadMore(data.nextLink);
-                }
-            }, 'Load more broadcasts'),
+            button(
+                {
+                    disabled: !data.nextLink || isLoadingMore,
+                    type: 'button',
+                    className: 'btn btn-secondary mr-3',
+                    onClick() {
+                        setIsLoadingMore(true);
+                        onLoadMore(data.nextLink);
+                    }
+                },
+                isLoadingMore && Fragment(
+                    span({className: 'spinner-border spinner-border-sm'}), ' '),
+                'Load more broadcasts'),
             button({
                 type: 'button',
                 disabled: !selectedBroadcast,
+                className: 'btn btn-info',
                 onClick() {
                     setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                 }
@@ -409,30 +429,35 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
     const state = lockedBroadcastState || lvsLastMessageSubject;
 
     return form(
-        table(
-            {border: 1},
-            thead(
-                tr(
-                    th('ID'),
-                    th('State'),
-                    th('Status'))),
-            tbody(
-                tr(
-                    td(broadcastId && code(broadcastId)),
-                    td(!broadcastId ? state : jsx(BroadcastPageLink, {
-                        id: broadcastId,
-                        title: state})),
-                    td(data.showLiveData.status)))),
+        div({className: 'card mb-3'}, div({className: 'table-responsive'},
+            table(
+                {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
+                thead(
+                    tr(
+                        th('ID'),
+                        th('State'),
+                        th('Status'))),
+                tbody(
+                    tr(
+                        td(broadcastId && code(
+                            {className: 'text-nowrap'},
+                            broadcastId)),
+                        td(!broadcastId ? state : jsx(BroadcastPageLink, {
+                            id: broadcastId,
+                            title: state})),
+                        td(data.showLiveData.status)))))),
         p(
             button({
                 type: 'button',
                 disabled: !broadcastId,
+                className: 'btn btn-primary mr-3',
                 onClick() {
                     onLoadBroadcast(broadcastId);
                 },
             }, 'Load broadcast'),
             button({
                 type: 'button',
+                className: 'btn btn-info',
                 onClick() {
                     setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
                 }
@@ -482,6 +507,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
                 }), text))),
         p(button({
             type: 'button',
+            className: 'btn btn-info',
             onClick() {
                 setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
             }
@@ -511,11 +537,17 @@ function lazy(Component) {
         }, [promise]);
 
         return fieldset(
+            {className: 'mb-3'},
             legend(
+                {className: 'font-weight-bold'},
                 title,
-                isLoading && data && ' (loading...)'),
+                isLoading && data && Fragment(' ', span(
+                    {className: 'badge badge-secondary'},
+                    'refreshing...'))),
             !data
-                ? p('Loading...')
+                ? div(
+                    {className: 'spinner-border spinner-border-sm'},
+                    span({className: 'sr-only'}, 'Loading...'))
                 : jsx(Component, {data, ...componentProps}));
     });
 }
@@ -588,5 +620,9 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 if (shouldRun) {
     // FIXME: use error boundary with error message?
     // FIXME: use functions for initial state in useState?
+    // FIXME: spinner in buttons as well as disabled while loading?
+    // FIXME: update label in show/hide JSON (icons? refactor dup?)
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
+
+    GM_addStyle(GM_getResourceText('bootstrap-css'));
 }
