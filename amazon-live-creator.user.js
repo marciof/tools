@@ -218,22 +218,14 @@ const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
     });
 });
 
-const Loading = memo(function Loading() {
-    return p('Loading...');
-});
-
 const BroadcastPageLink = memo(function BroadcastPageLink({id, title}) {
-    return a({
-        href: 'https://www.amazon.com/live/broadcast/' + id,
-        target: '_blank',
-    }, title);
+    return a({href: 'https://www.amazon.com/live/broadcast/' + id}, title);
 });
 
 const LoginLink = memo(function LoginLink() {
-    return p(a({
-        href: 'https://www.amazon.com/gp/sign-in.html',
-        target: '_blank',
-    }, 'Please login to your Amazon account first.'));
+    return p(a(
+        {href: 'https://www.amazon.com/gp/sign-in.html'},
+        'Please login to your Amazon account first.'));
 });
 
 // FIXME: convert UTC to local?
@@ -297,9 +289,7 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
                         {htmlFor: 'show-' + show.id},
                         code(show.id))),
                     td(a({
-                        href: 'https://www.amazon.com/live/channel/'
-                            + show.id,
-                        target: '_blank',
+                        href: 'https://www.amazon.com/live/channel/' + show.id,
                     }, show.title)),
                     td(show.distribution),
                     td(show.featureGroup))))),
@@ -333,10 +323,11 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
 
 const Broadcasts = memo(function Broadcasts(props) {
     const {data, onLoadMore, onLoadBroadcast} = props;
-
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isJsonShown, setIsJsonShown] = useState(false);
+
+    useEffect(() => void setIsLoadingMore(false), [data]);
 
     return form(
         table(
@@ -387,6 +378,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                 disabled: !data.nextLink || isLoadingMore,
                 type: 'button',
                 onClick() {
+                    setIsLoadingMore(true);
                     onLoadMore(data.nextLink);
                 }
             }, 'Load more broadcasts'),
@@ -528,6 +520,13 @@ function lazy(Component) {
     });
 }
 
+function concatBroadcasts(oldData, newData) {
+    return {
+        broadcasts: oldData.broadcasts.concat(newData.broadcasts),
+        nextLink: newData.nextLink,
+    };
+}
+
 const LazyShows = lazy(Shows);
 const LazyLiveData = lazy(LiveData);
 const LazyBroadcasts = lazy(Broadcasts);
@@ -536,10 +535,9 @@ const LazyBroadcast = lazy(Broadcast);
 const App = memo(function App({api}) {
     const [showsPromise,] = useState(() => api.listShows());
     const [liveDataPromise, setLiveDataPromise] = useState(null);
-
+    const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(false);
     const [broadcastsShowId, setBroadcastsShowId] = useState(null);
     const [broadcastsPromise, setBroadcastsPromise] = useState(null);
-
     const [broadcastPromise, setBroadcastPromise] = useState(null);
 
     return Fragment(
@@ -550,6 +548,7 @@ const App = memo(function App({api}) {
                 setLiveDataPromise(api.readShowLiveData(showId));
             },
             onListBroadcasts(showId) {
+                setIsLoadingMoreBroadcasts(false);
                 setBroadcastsShowId(showId);
                 setBroadcastsPromise(api.listShowBroadcasts(showId));
             },
@@ -564,13 +563,9 @@ const App = memo(function App({api}) {
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
             promise: broadcastsPromise,
-            reducer(oldData, newData) {
-                return {
-                    broadcasts: oldData.broadcasts.concat(newData.broadcasts),
-                    nextLink: newData.nextLink,
-                };
-            },
+            reducer: isLoadingMoreBroadcasts ? concatBroadcasts : null,
             onLoadMore(nextToken) {
+                setIsLoadingMoreBroadcasts(true);
                 setBroadcastsPromise(
                     api.listShowBroadcasts(broadcastsShowId, nextToken));
             },
