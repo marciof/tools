@@ -294,7 +294,7 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
                         })),
                         td(label(
                             {htmlFor: 'show-' + show.id},
-                            code({className: 'text-nowrap'}, show.id))),
+                            span({className: 'text-nowrap'}, show.id))),
                         td(a({
                             href: 'https://www.amazon.com/live/channel/' + show.id,
                         }, show.title)),
@@ -366,7 +366,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                         })),
                         td(label(
                             {htmlFor: 'broadcast-' + broadcast.id},
-                            code({className: 'text-nowrap'}, broadcast.id))),
+                            span({className: 'text-nowrap'}, broadcast.id))),
                         td(jsx(BroadcastPageLink, {
                             id: broadcast.id,
                             title: broadcast.title,
@@ -439,7 +439,7 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
                         th('Status'))),
                 tbody(
                     tr(
-                        td(broadcastId && code(
+                        td(broadcastId && span(
                             {className: 'text-nowrap'},
                             broadcastId)),
                         td(!broadcastId ? state : jsx(BroadcastPageLink, {
