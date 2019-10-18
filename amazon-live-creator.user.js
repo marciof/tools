@@ -617,12 +617,12 @@ const App = memo(function App({api}) {
 const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
+// FIXME: use error boundary with error message?
+// FIXME: use functions for initial state in useState?
+// FIXME: spinner in buttons as well as disabled while loading?
+// FIXME: update label in show/hide JSON (icons? refactor dup?)
+// FIXME: table spacing when there's <code/>? or <input/>?
 if (shouldRun) {
-    // FIXME: use error boundary with error message?
-    // FIXME: use functions for initial state in useState?
-    // FIXME: spinner in buttons as well as disabled while loading?
-    // FIXME: update label in show/hide JSON (icons? refactor dup?)
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
-
     GM_addStyle(GM_getResourceText('bootstrap-css'));
 }
