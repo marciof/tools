@@ -358,10 +358,17 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
 const Broadcasts = memo(function Broadcasts(props) {
     const {data, onLoadMore, onLoadBroadcast} = props;
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
+    const [selectedBroadcastIndex, setSelectedBroadcastIndex] = useState(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
-    useEffect(() => void setIsLoadingMore(false), [data]);
+    useEffect(() => {
+        setIsLoadingMore(false);
+        if (selectedBroadcastIndex >= data.broadcasts.length) {
+            setSelectedBroadcast(null);
+            setSelectedBroadcastIndex(null);
+        }
+    }, [data]);
 
     return form(
         div({className: 'card mb-3'}, div({className: 'table-responsive'},
@@ -376,7 +383,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                         th('Stage'),
                         th('Started'),
                         th('Ended'))),
-                tbody(data.broadcasts.map(broadcast =>
+                tbody(data.broadcasts.map((broadcast, index) =>
                     tr(
                         {key: broadcast.id},
                         td(input({
@@ -387,6 +394,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                             checked: selectedBroadcast === broadcast,
                             onChange(event) {
                                 setSelectedBroadcast(broadcast);
+                                setSelectedBroadcastIndex(index);
                             }
                         })),
                         td(label(
@@ -573,6 +581,23 @@ function concatBroadcasts(oldData, newData) {
     };
 }
 
+function refreshBroadcasts(oldData, newData) {
+    const numBroadcasts = Math.min(
+        oldData.broadcasts.length, newData.broadcasts.length);
+
+    const oldBroadcasts = oldData.broadcasts.slice(0, numBroadcasts);
+    const newBroadcasts = newData.broadcasts.slice(0, numBroadcasts);
+
+    if (_.isEqual(oldBroadcasts, newBroadcasts)) {
+        return {
+            broadcasts: oldBroadcasts.concat(newData.broadcasts.slice(numBroadcasts)),
+            nextLink: newData.nextLink,
+        };
+    }
+
+    return newData;
+}
+
 const LazyShows = lazy(Shows);
 const LazyLiveData = lazy(LiveData);
 const LazyBroadcasts = lazy(Broadcasts);
@@ -609,7 +634,7 @@ const App = memo(function App({api}) {
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
             promise: broadcastsPromise,
-            reducer: isLoadingMoreBroadcasts ? concatBroadcasts : null,
+            reducer: isLoadingMoreBroadcasts ? concatBroadcasts : refreshBroadcasts,
             onLoadMore(nextToken) {
                 setIsLoadingMoreBroadcasts(true);
                 setBroadcastsPromise(
