@@ -10,7 +10,7 @@
 // @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js
-// @require https://cdnjs.cloudflare.com/ajax/libs/classnames/2.2.6/index.min.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/classnames/2.2.6/index.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js
 // ==/UserScript==
 
