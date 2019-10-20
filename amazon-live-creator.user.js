@@ -156,8 +156,8 @@ class Api {
     }
 }
 
-const fieldset = jsx.bind(null, 'fieldset');
-const legend = jsx.bind(null, 'legend');
+const details = jsx.bind(null, 'details');
+const summary = jsx.bind(null, 'summary');
 const label = jsx.bind(null, 'label');
 const p = jsx.bind(null, 'p');
 const a = jsx.bind(null, 'a');
@@ -166,7 +166,6 @@ const div = jsx.bind(null, 'div');
 const span = jsx.bind(null, 'span');
 const img = jsx.bind(null, 'img');
 const form = jsx.bind(null, 'form');
-const code = jsx.bind(null, 'code');
 const input = jsx.bind(null, 'input');
 const button = jsx.bind(null, 'button');
 const table = jsx.bind(null, 'table');
@@ -539,10 +538,10 @@ function lazy(Component) {
             });
         }, [promise]);
 
-        return fieldset(
-            {className: 'mb-3'},
-            legend(
-                {className: 'font-weight-bold'},
+        return details(
+            {className: 'mb-3', open: true},
+            summary(
+                {className: 'font-weight-bold h4'},
                 title,
                 isLoading && data && Fragment(' ', span(
                     {className: 'badge badge-secondary'},
