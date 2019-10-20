@@ -178,6 +178,7 @@ const td = jsx.bind(null, 'td');
 
 const memo = React.memo.bind(React);
 const useState = React.useState.bind(React);
+const useCallback = React.useCallback.bind(React);
 const useRef = React.useRef.bind(React);
 const useEffect = React.useEffect.bind(React);
 const Fragment = jsx.bind(null, React.Fragment);
@@ -186,6 +187,14 @@ const VIDEO_SOURCES = {
     PHONE_CAMERA: 'Phone camera',
     THIRD_PARTY_ENCODER: 'Encoder',
 };
+
+function useToggleState(isEnabledAtStart) {
+    const [isEnabled, setIsEnabled] = useState(isEnabledAtStart);
+    const toggleIsEnabled = useCallback(
+        () => void setIsEnabled(prevIsEnabled => !prevIsEnabled));
+
+    return [isEnabled, toggleIsEnabled];
+}
 
 const AceEditor = memo(function AceEditor({text, mode, style}) {
     const [ace, setAce] = useState(null);
@@ -259,7 +268,7 @@ const Id = memo(function Id({id}) {
 
 const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
     const [selectedShow, setSelectedShow] = useState(null);
-    const [isJsonShown, setIsJsonShown] = useState(false);
+    const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
     useEffect(() => {
         if (data && data.shows && (data.shows.length > 0)) {
@@ -326,9 +335,7 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
                 type: 'button',
                 disabled: !selectedShow,
                 className: 'btn btn-info',
-                onClick() {
-                    setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                }
+                onClick: toggleIsJsonShown,
             }, 'Show/Hide JSON')),
         selectedShow && jsx(JsonAceEditor, {
             json: selectedShow,
@@ -340,7 +347,7 @@ const Broadcasts = memo(function Broadcasts(props) {
     const {data, onLoadMore, onLoadBroadcast} = props;
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [isJsonShown, setIsJsonShown] = useState(false);
+    const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
     useEffect(() => void setIsLoadingMore(false), [data]);
 
@@ -412,9 +419,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                 type: 'button',
                 disabled: !selectedBroadcast,
                 className: 'btn btn-info',
-                onClick() {
-                    setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                }
+                onClick: toggleIsJsonShown,
             }, 'Show/Hide JSON')),
         selectedBroadcast && jsx(JsonAceEditor, {
             json: selectedBroadcast,
@@ -423,7 +428,7 @@ const Broadcasts = memo(function Broadcasts(props) {
 });
 
 const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
-    const [isJsonShown, setIsJsonShown] = useState(false);
+    const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
     const {
         broadcastStartedId,
@@ -463,9 +468,7 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
             button({
                 type: 'button',
                 className: 'btn btn-info',
-                onClick() {
-                    setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-                }
+                onClick: toggleIsJsonShown,
             }, 'Show/Hide JSON')),
         jsx(JsonAceEditor, {
             json: data,
@@ -475,7 +478,7 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
 
 const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
     const [broadcast, setBroadcast] = useState(data);
-    const [isJsonShown, setIsJsonShown] = useState(false);
+    const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
     useEffect(() => void setBroadcast(data), [data]);
 
@@ -513,9 +516,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
         p(button({
             type: 'button',
             className: 'btn btn-info',
-            onClick() {
-                setIsJsonShown(prevIsJsonShown => !prevIsJsonShown);
-            }
+            onClick: toggleIsJsonShown,
         }, 'Show/Hide JSON')),
         jsx(JsonAceEditor, {
             json: broadcast,
@@ -545,7 +546,7 @@ function lazy(Component) {
             {className: 'mb-4', open: true},
             summary(
                 {className: 'font-weight-bold h4'},
-                title + ' ',
+                title, ' ',
                 span(
                     {className: classNames(
                         'badge', 'badge-secondary', 'badge-pill',
@@ -627,8 +628,8 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 // FIXME: use error boundary with error message?
 // FIXME: use functions for initial state in useState?
 // FIXME: spinner in buttons as well as disabled while loading?
-// FIXME: update label in show/hide JSON (icons? refactor dup?)
 // FIXME: table spacing when there's <code/>? or <input/>?
+// FIXME: use callback for perf?
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
