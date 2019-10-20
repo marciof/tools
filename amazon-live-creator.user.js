@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name Amazon Live Creator
 // @icon https://www.amazon.com/favicon.ico
-// @run-at document-start
 // @match https://amazonlivetools.amazon.com/
+// @run-at document-start
 // @grant GM_info
 // @grant GM_getResourceText
 // @grant GM_addStyle
@@ -253,6 +253,10 @@ const DateTime = memo(function DateTime({dateTime}) {
         }));
 });
 
+const Id = memo(function Id({id}) {
+    return span({className: 'text-nowrap text-monospace'}, id);
+});
+
 const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
     const [selectedShow, setSelectedShow] = useState(null);
     const [isJsonShown, setIsJsonShown] = useState(false);
@@ -295,7 +299,7 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
                         })),
                         td(label(
                             {htmlFor: 'show-' + show.id},
-                            span({className: 'text-nowrap'}, show.id))),
+                            jsx(Id, {id: show.id}))),
                         td(a({
                             href: 'https://www.amazon.com/live/channel/' + show.id,
                         }, show.title)),
@@ -367,7 +371,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                         })),
                         td(label(
                             {htmlFor: 'broadcast-' + broadcast.id},
-                            span({className: 'text-nowrap'}, broadcast.id))),
+                            jsx(Id, {id: broadcast.id}))),
                         td(jsx(BroadcastPageLink, {
                             id: broadcast.id,
                             title: broadcast.title,
@@ -399,9 +403,9 @@ const Broadcasts = memo(function Broadcasts(props) {
                         onLoadMore(data.nextLink);
                     }
                 },
+                'Load more broadcasts',
                 isLoadingMore && Fragment(
-                    span({className: 'spinner-border spinner-border-sm'}), ' '),
-                'Load more broadcasts'),
+                    ' ', span({className: 'spinner-border spinner-border-sm'}))),
             button({
                 type: 'button',
                 disabled: !selectedBroadcast,
@@ -440,9 +444,7 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
                         th('Status'))),
                 tbody(
                     tr(
-                        td(broadcastId && span(
-                            {className: 'text-nowrap'},
-                            broadcastId)),
+                        td(broadcastId && jsx(Id, {id: broadcastId})),
                         td(!broadcastId ? state : jsx(BroadcastPageLink, {
                             id: broadcastId,
                             title: state})),
@@ -623,7 +625,6 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 // FIXME: spinner in buttons as well as disabled while loading?
 // FIXME: update label in show/hide JSON (icons? refactor dup?)
 // FIXME: table spacing when there's <code/>? or <input/>?
-// FIXME: make label change mouse cursor?
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
