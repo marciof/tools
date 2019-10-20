@@ -11,6 +11,8 @@
 // @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/classnames/2.2.6/index.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.26/moment-timezone-with-data.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js
 // ==/UserScript==
 
@@ -164,6 +166,7 @@ const p = jsx.bind(null, 'p');
 const a = jsx.bind(null, 'a');
 const b = jsx.bind(null, 'b');
 const div = jsx.bind(null, 'div');
+const abbr = jsx.bind(null, 'abbr');
 const span = jsx.bind(null, 'span');
 const img = jsx.bind(null, 'img');
 const form = jsx.bind(null, 'form');
@@ -245,21 +248,22 @@ const LoginLink = memo(function LoginLink() {
 });
 
 const DateTime = memo(function DateTime({dateTime}) {
-    const [date, zonedTime] = dateTime.split('T');
-    const time = zonedTime.replace(/\.\d+Z$/, '');
+    const parsedMoment = moment(dateTime);
     const readOnlyOnChange = useCallback(() => {}, []);
 
     return Fragment(
         input({
             type: 'date',
-            value: date,
+            value: parsedMoment.format('Y-MM-DD'),
             onChange: readOnlyOnChange,
+            title: dateTime,
         }),
         ' ',
         input({
             type: 'time',
-            value: time,
+            value: parsedMoment.format('HH:mm:ss'),
             onChange: readOnlyOnChange,
+            title: dateTime,
         }));
 });
 
@@ -381,8 +385,12 @@ const Broadcasts = memo(function Broadcasts(props) {
                         th('ASIN'),
                         th('Distribution'),
                         th('Stage'),
-                        th('Started'),
-                        th('Ended'))),
+                        th(abbr(
+                            {title: 'local time of "broadcastStartDateTime"'},
+                            'Started')),
+                        th(abbr(
+                            {title: 'local time of "broadcastEndDateTime"'},
+                            'Ended')))),
                 tbody(data.broadcasts.map((broadcast, index) =>
                     tr(
                         {key: broadcast.id},
@@ -453,6 +461,7 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
         lockedBroadcastId,
         lockedBroadcastState,
         lvsLastMessageSubject,
+        lvsLastMessageEpochTime,
     } = data.showLiveData.value;
 
     const broadcastId = broadcastStartedId || lockedBroadcastId;
@@ -466,14 +475,20 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
                     tr(
                         th('ID'),
                         th('State'),
-                        th('Status'))),
+                        th('Status'),
+                        th(abbr(
+                            {title: 'local time of "lvsLastMessageEpochTime"'},
+                            'Last change')))),
                 tbody(
                     tr(
                         td(broadcastId && jsx(Id, {id: broadcastId})),
                         td(!broadcastId ? state : jsx(BroadcastPageLink, {
                             id: broadcastId,
                             title: state})),
-                        td(data.showLiveData.status)))))),
+                        td(data.showLiveData.status),
+                        td(lvsLastMessageEpochTime && jsx(DateTime, {
+                            dateTime: lvsLastMessageEpochTime * 1000,
+                        }))))))),
         p(
             button({
                 type: 'button',
@@ -656,7 +671,6 @@ const App = memo(function App({api}) {
 const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
-// FIXME: convert UTC to local?
 // FIXME: use error boundary with error message?
 // FIXME: use functions for initial state in useState?
 // FIXME: disable buttons while loading?
