@@ -10,6 +10,7 @@
 // @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/classnames/2.2.6/index.min.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js
 // ==/UserScript==
 
@@ -353,6 +354,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                         th('Title'),
                         th('ASIN'),
                         th('Distribution'),
+                        th('Stage'),
                         th('Started'),
                         th('Ended'))),
                 tbody(data.broadcasts.map(broadcast =>
@@ -375,8 +377,9 @@ const Broadcasts = memo(function Broadcasts(props) {
                             id: broadcast.id,
                             title: broadcast.title,
                         })),
-                        td(broadcast.asin),
+                        td(jsx(Id, {id: broadcast.asin})),
                         td(broadcast.distribution),
+                        td(broadcast.stage),
                         td(broadcast.broadcastStartDateTime && jsx(DateTime, {
                             dateTime: broadcast.broadcastStartDateTime,
                         })),
@@ -539,17 +542,19 @@ function lazy(Component) {
         }, [promise]);
 
         return details(
-            {className: 'mb-3', open: true},
+            {className: 'mb-4', open: true},
             summary(
                 {className: 'font-weight-bold h4'},
-                title,
-                isLoading && data && Fragment(' ', span(
-                    {className: 'badge badge-secondary'},
-                    'refreshing...'))),
+                title + ' ',
+                span(
+                    {className: classNames(
+                        'badge', 'badge-secondary', 'badge-pill',
+                        {invisible: !isLoading || !data})},
+                    'refreshing...')),
             !data
-                ? div(
-                    {className: 'spinner-border spinner-border-sm'},
-                    span({className: 'sr-only'}, 'Loading...'))
+                ? p(
+                    span({className: 'spinner-border spinner-border-sm'}),
+                    ' Loading...')
                 : jsx(Component, {data, ...componentProps}));
     });
 }
