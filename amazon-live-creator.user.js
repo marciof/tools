@@ -244,21 +244,22 @@ const LoginLink = memo(function LoginLink() {
         'Please login to your Amazon account first.'));
 });
 
-// FIXME: convert UTC to local?
-// FIXME: make read-only?
 const DateTime = memo(function DateTime({dateTime}) {
     const [date, zonedTime] = dateTime.split('T');
     const time = zonedTime.replace(/\.\d+Z$/, '');
+    const readOnlyOnChange = useCallback(() => {}, []);
 
     return Fragment(
         input({
             type: 'date',
-            defaultValue: date,
+            value: date,
+            onChange: readOnlyOnChange,
         }),
         ' ',
         input({
             type: 'time',
-            defaultValue: time,
+            value: time,
+            onChange: readOnlyOnChange,
         }));
 });
 
@@ -266,12 +267,23 @@ const Id = memo(function Id({id}) {
     return span({className: 'text-nowrap text-monospace'}, id);
 });
 
+const ToggleButton = memo(function ToggleButton(props) {
+    const {isToggled, label, onClick, disabled = false} = props;
+
+    return button({
+        type: 'button',
+        disabled: disabled,
+        className: classNames('btn', 'btn-info', {active: isToggled}),
+        onClick: onClick,
+    }, label);
+});
+
 const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
     const [selectedShow, setSelectedShow] = useState(null);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
     useEffect(() => {
-        if (data && data.shows && (data.shows.length > 0)) {
+        if (data.shows && (data.shows.length > 0)) {
             let show = data.shows[0];
             setSelectedShow(show);
             onLoadLiveData(show.id);
@@ -331,12 +343,12 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
                     onLoadLiveData(selectedShow.id);
                 }
             }, 'Load live data'),
-            button({
-                type: 'button',
+            jsx(ToggleButton, {
+                label: 'Show/Hide JSON',
                 disabled: !selectedShow,
-                className: 'btn btn-info',
+                isToggled: isJsonShown,
                 onClick: toggleIsJsonShown,
-            }, 'Show/Hide JSON')),
+            })),
         selectedShow && jsx(JsonAceEditor, {
             json: selectedShow,
             style: {display: isJsonShown ? 'inherit' : 'none'},
@@ -412,15 +424,13 @@ const Broadcasts = memo(function Broadcasts(props) {
                         onLoadMore(data.nextLink);
                     }
                 },
-                'Load more broadcasts',
-                isLoadingMore && Fragment(
-                    ' ', span({className: 'spinner-border spinner-border-sm'}))),
-            button({
-                type: 'button',
+                'Load more broadcasts'),
+            jsx(ToggleButton, {
+                label: 'Show/Hide JSON',
                 disabled: !selectedBroadcast,
-                className: 'btn btn-info',
+                isToggled: isJsonShown,
                 onClick: toggleIsJsonShown,
-            }, 'Show/Hide JSON')),
+            })),
         selectedBroadcast && jsx(JsonAceEditor, {
             json: selectedBroadcast,
             style: {display: isJsonShown ? 'inherit' : 'none'},
@@ -465,11 +475,11 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
                     onLoadBroadcast(broadcastId);
                 },
             }, 'Load broadcast'),
-            button({
-                type: 'button',
-                className: 'btn btn-info',
+            jsx(ToggleButton, {
+                label: 'Show/Hide JSON',
+                isToggled: isJsonShown,
                 onClick: toggleIsJsonShown,
-            }, 'Show/Hide JSON')),
+            })),
         jsx(JsonAceEditor, {
             json: data,
             style: {display: isJsonShown ? 'inherit' : 'none'},
@@ -483,10 +493,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
     useEffect(() => void setBroadcast(data), [data]);
 
     return form(
-        p(img({
-            src: getSlateImageUrl(broadcast.id),
-            height: '100px',
-        })),
+        p(img({src: getSlateImageUrl(broadcast.id), height: '100px'})),
         p(label('Title: ', input({
             type: 'text',
             value: broadcast.title,
@@ -513,11 +520,11 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
                         }));
                     },
                 }), text))),
-        p(button({
-            type: 'button',
-            className: 'btn btn-info',
+        p(jsx(ToggleButton, {
+            label: 'Show/Hide JSON',
+            isToggled: isJsonShown,
             onClick: toggleIsJsonShown,
-        }, 'Show/Hide JSON')),
+        })),
         jsx(JsonAceEditor, {
             json: broadcast,
             style: {display: isJsonShown ? 'inherit' : 'none'}
@@ -553,8 +560,7 @@ function lazy(Component) {
                         {invisible: !isLoading || !data})},
                     'refreshing...')),
             !data
-                ? p(
-                    span({className: 'spinner-border spinner-border-sm'}),
+                ? p(span({className: 'spinner-border spinner-border-sm'}),
                     ' Loading...')
                 : jsx(Component, {data, ...componentProps}));
     });
@@ -625,9 +631,10 @@ const App = memo(function App({api}) {
 const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
+// FIXME: convert UTC to local?
 // FIXME: use error boundary with error message?
 // FIXME: use functions for initial state in useState?
-// FIXME: spinner in buttons as well as disabled while loading?
+// FIXME: disable buttons while loading?
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: use callback for perf?
 if (shouldRun) {
