@@ -13,6 +13,7 @@
 // @require https://cdnjs.cloudflare.com/ajax/libs/classnames/2.2.6/index.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.26/moment-timezone-with-data.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/moment-duration-format/2.3.2/moment-duration-format.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js
 // ==/UserScript==
 
@@ -267,6 +268,10 @@ const DateTime = memo(function DateTime({dateTime}) {
         }));
 });
 
+const Duration = memo(function Duration({from, to}) {
+    return moment.duration(moment(to).diff(from)).format();
+});
+
 const Id = memo(function Id({id}) {
     return span({className: 'text-nowrap text-monospace'}, id);
 });
@@ -385,6 +390,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                         th('ASIN'),
                         th('Distribution'),
                         th('Stage'),
+                        th('Duration'),
                         th(abbr(
                             {title: 'local time of "broadcastStartDateTime"'},
                             'Started')),
@@ -415,6 +421,12 @@ const Broadcasts = memo(function Broadcasts(props) {
                         td(jsx(Id, {id: broadcast.asin})),
                         td(broadcast.distribution),
                         td(broadcast.stage),
+                        td(broadcast.broadcastStartDateTime
+                            && broadcast.broadcastEndDateTime
+                            && jsx(Duration, {
+                                from: broadcast.broadcastStartDateTime,
+                                to: broadcast.broadcastEndDateTime,
+                            })),
                         td(broadcast.broadcastStartDateTime && jsx(DateTime, {
                             dateTime: broadcast.broadcastStartDateTime,
                         })),
