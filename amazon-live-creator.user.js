@@ -6,7 +6,8 @@
 // @grant GM_info
 // @grant GM_getResourceText
 // @grant GM_addStyle
-// @resource bootstrap-css https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css
+// @resource bootstrap-css https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css
+// @resource videojs-css https://cdnjs.cloudflare.com/ajax/libs/video.js/7.6.5/video-js.css
 // @require https://cdnjs.cloudflare.com/ajax/libs/react/16.10.2/umd/react.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.10.2/umd/react-dom.development.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.js
@@ -14,6 +15,7 @@
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.26/moment-timezone-with-data.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment-duration-format/2.3.2/moment-duration-format.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/video.js/7.6.5/video.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js
 // ==/UserScript==
 
@@ -46,7 +48,8 @@ function cleanPage(title) {
 
 const rootEl = cleanPage(GM_info.script.name);
 rootEl.className = 'p-3';
-GM_addStyle(GM_getResourceText('bootstrap-css'));
+
+['bootstrap-css', 'videojs-css'].map(GM_getResourceText).forEach(GM_addStyle);
 
 require.config({
     paths: {
@@ -190,6 +193,7 @@ const tbody = jsx.bind(null, 'tbody');
 const tr = jsx.bind(null, 'tr');
 const th = jsx.bind(null, 'th');
 const td = jsx.bind(null, 'td');
+const video = jsx.bind(null, 'video');
 
 const memo = React.memo.bind(React);
 const useState = React.useState.bind(React);
@@ -539,10 +543,37 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
 const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
     const [broadcast, setBroadcast] = useState(data);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+    const [videoEl, setVideoEl] = useState(null);
+    const [player, setPlayer] = useState(null);
+    const videoElRef = useCallback(setVideoEl);
 
     useEffect(() => void setBroadcast(data), [data]);
 
+    useEffect(() => {
+        if (videoEl) {
+            const newPlayer = videojs(videoEl);
+            setPlayer(newPlayer);
+            return () => newPlayer.dispose();
+        }
+        else {
+            setPlayer(null);
+        }
+    }, [videoEl]);
+
+    useEffect(() => {
+        if (player && broadcast.hlsUrl) {
+            player.src(broadcast.hlsUrl);
+        }
+    }, [player, broadcast.hlsUrl]);
+
     return form(
+        broadcast.hlsUrl && p(video({
+            ref: videoElRef,
+            width: 320,
+            height: 200,
+            className: 'video-js vjs-default-skin',
+            controls: true,
+        })),
         p(img({
             src: getSlateImageUrl(broadcast.id),
             height: '100px',
@@ -692,6 +723,13 @@ const App = memo(function App({api}) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
         }),
+        jsx(LazyBroadcast, {
+            title: 'Broadcast',
+            promise: broadcastPromise,
+            getSlateImageUrl(broadcastId) {
+                return api.getBroadcastSlateImageUrl(broadcastId);
+            }
+        }),
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
             promise: broadcastsPromise,
@@ -704,13 +742,6 @@ const App = memo(function App({api}) {
             onLoadBroadcast(broadcastId) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
-        }),
-        jsx(LazyBroadcast, {
-            title: 'Broadcast',
-            promise: broadcastPromise,
-            getSlateImageUrl(broadcastId) {
-                return api.getBroadcastSlateImageUrl(broadcastId);
-            }
         }));
 });
 
