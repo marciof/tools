@@ -108,6 +108,17 @@ class Api {
 
     /**
      * @param broadcastId {string}
+     * @returns {string}
+     */
+    getShowSlateImageUrl(showId) {
+        return this.urlPathPrefix
+            + 'show/'
+            + encodeURIComponent(showId)
+            + '/image/slate';
+    }
+
+    /**
+     * @param broadcastId {string}
      * @returns {Promise<Object>}
      */
     readBroadcast(broadcastId) {
@@ -190,6 +201,12 @@ const Fragment = jsx.bind(null, React.Fragment);
 const VIDEO_SOURCES = {
     PHONE_CAMERA: 'Phone camera',
     THIRD_PARTY_ENCODER: 'Encoder',
+};
+
+const EMPTY_BROADCAST_DATA = {
+    id: '',
+    title: '',
+    videoSource: 'THIRD_PARTY_ENCODER',
 };
 
 function useToggleState(isEnabledAtStart) {
@@ -442,17 +459,15 @@ const Broadcasts = memo(function Broadcasts(props) {
                     onLoadBroadcast(selectedBroadcast.id);
                 }
             }, 'Load broadcast'),
-            button(
-                {
-                    disabled: !data.nextLink || isLoadingMore,
-                    type: 'button',
-                    className: 'btn btn-secondary mr-3',
-                    onClick() {
-                        setIsLoadingMore(true);
-                        onLoadMore(data.nextLink);
-                    }
-                },
-                'Load more broadcasts'),
+            button({
+                disabled: !data.nextLink || isLoadingMore,
+                type: 'button',
+                className: 'btn btn-secondary mr-3',
+                onClick() {
+                    setIsLoadingMore(true);
+                    onLoadMore(data.nextLink);
+                }
+            }, 'Load more broadcasts'),
             jsx(ToggleButton, {
                 label: 'Show/Hide JSON',
                 disabled: !selectedBroadcast,
@@ -528,7 +543,15 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
     useEffect(() => void setBroadcast(data), [data]);
 
     return form(
-        p(img({src: getSlateImageUrl(broadcast.id), height: '100px'})),
+        p(img({
+            src: getSlateImageUrl(broadcast.id),
+            height: '100px',
+        })),
+        p(input({
+            type: 'file',
+            name: 'slateImage',
+            accept: 'image/png',
+        })),
         p(label('Title: ', input({
             type: 'text',
             value: broadcast.title,
@@ -555,11 +578,19 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
                         }));
                     },
                 }), text))),
-        p(jsx(ToggleButton, {
-            label: 'Show/Hide JSON',
-            isToggled: isJsonShown,
-            onClick: toggleIsJsonShown,
-        })),
+        p(
+            button({
+                type: 'button',
+                className: 'btn btn-secondary mr-3',
+                onClick() {
+                    setBroadcast(EMPTY_BROADCAST_DATA);
+                }
+            }, 'Clear'),
+            jsx(ToggleButton, {
+                label: 'Show/Hide JSON',
+                isToggled: isJsonShown,
+                onClick: toggleIsJsonShown,
+            })),
         jsx(JsonAceEditor, {
             json: broadcast,
             style: {display: isJsonShown ? 'inherit' : 'none'}
@@ -633,10 +664,12 @@ const LazyBroadcast = lazy(Broadcast);
 const App = memo(function App({api}) {
     const [showsPromise,] = useState(() => api.listShows());
     const [liveDataPromise, setLiveDataPromise] = useState(null);
+    const [broadcastPromise, setBroadcastPromise] = useState(
+        Promise.resolve(EMPTY_BROADCAST_DATA));
+
     const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(false);
     const [broadcastsShowId, setBroadcastsShowId] = useState(null);
     const [broadcastsPromise, setBroadcastsPromise] = useState(null);
-    const [broadcastPromise, setBroadcastPromise] = useState(null);
 
     return Fragment(
         jsx(LazyShows, {
@@ -658,6 +691,13 @@ const App = memo(function App({api}) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
         }),
+        jsx(LazyBroadcast, {
+            title: 'Broadcast',
+            promise: broadcastPromise,
+            getSlateImageUrl(broadcastId) {
+                return api.getBroadcastSlateImageUrl(broadcastId);
+            }
+        }),
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
             promise: broadcastsPromise,
@@ -670,24 +710,15 @@ const App = memo(function App({api}) {
             onLoadBroadcast(broadcastId) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
-        }),
-        broadcastPromise && jsx(LazyBroadcast, {
-            title: 'Broadcast',
-            promise: broadcastPromise,
-            getSlateImageUrl(broadcastId) {
-                return api.getBroadcastSlateImageUrl(broadcastId);
-            }
         }));
 });
 
 const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
-// FIXME: use error boundary with error message?
 // FIXME: use functions for initial state in useState?
-// FIXME: disable buttons while loading?
 // FIXME: table spacing when there's <code/>? or <input/>?
-// FIXME: use callback for perf?
+// FIXME: handle broadcasts with no slate image (default to show?)
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
