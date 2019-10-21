@@ -691,13 +691,6 @@ const App = memo(function App({api}) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
         }),
-        jsx(LazyBroadcast, {
-            title: 'Broadcast',
-            promise: broadcastPromise,
-            getSlateImageUrl(broadcastId) {
-                return api.getBroadcastSlateImageUrl(broadcastId);
-            }
-        }),
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
             promise: broadcastsPromise,
@@ -710,6 +703,13 @@ const App = memo(function App({api}) {
             onLoadBroadcast(broadcastId) {
                 setBroadcastPromise(api.readBroadcast(broadcastId));
             },
+        }),
+        jsx(LazyBroadcast, {
+            title: 'Broadcast',
+            promise: broadcastPromise,
+            getSlateImageUrl(broadcastId) {
+                return api.getBroadcastSlateImageUrl(broadcastId);
+            }
         }));
 });
 
