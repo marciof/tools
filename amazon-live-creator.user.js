@@ -550,7 +550,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
         p(input({
             type: 'file',
             name: 'slateImage',
-            accept: 'image/png',
+            accept: 'image/*',
         })),
         p(label('Title: ', input({
             type: 'text',
