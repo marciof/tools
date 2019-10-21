@@ -259,6 +259,37 @@ const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
     });
 });
 
+const Video = memo(function Video({src}) {
+    const [videoEl, setVideoEl] = useState(null);
+    const [player, setPlayer] = useState(null);
+    const videoElRef = useCallback(setVideoEl);
+
+    useEffect(() => {
+        if (videoEl) {
+            const newPlayer = videojs(videoEl);
+            setPlayer(newPlayer);
+            return () => newPlayer.dispose();
+        }
+        else {
+            setPlayer(null);
+        }
+    }, [videoEl]);
+
+    useEffect(() => {
+        if (player && src) {
+            player.src(src);
+        }
+    }, [player, src]);
+
+    return video({
+        ref: videoElRef,
+        width: 320,
+        height: 200,
+        className: 'video-js',
+        controls: true,
+    });
+});
+
 const BroadcastPageLink = memo(function BroadcastPageLink({id, title}) {
     return a({href: 'https://www.amazon.com/live/broadcast/' + id}, title);
 });
@@ -543,37 +574,11 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
 const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
     const [broadcast, setBroadcast] = useState(data);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
-    const [videoEl, setVideoEl] = useState(null);
-    const [player, setPlayer] = useState(null);
-    const videoElRef = useCallback(setVideoEl);
 
     useEffect(() => void setBroadcast(data), [data]);
 
-    useEffect(() => {
-        if (videoEl) {
-            const newPlayer = videojs(videoEl);
-            setPlayer(newPlayer);
-            return () => newPlayer.dispose();
-        }
-        else {
-            setPlayer(null);
-        }
-    }, [videoEl]);
-
-    useEffect(() => {
-        if (player && broadcast.hlsUrl) {
-            player.src(broadcast.hlsUrl);
-        }
-    }, [player, broadcast.hlsUrl]);
-
     return form(
-        broadcast.hlsUrl && p(video({
-            ref: videoElRef,
-            width: 320,
-            height: 200,
-            className: 'video-js vjs-default-skin',
-            controls: true,
-        })),
+        broadcast.hlsUrl && p(jsx(Video, {src: broadcast.hlsUrl})),
         p(img({
             src: getSlateImageUrl(broadcast.id),
             height: '100px',
@@ -751,6 +756,8 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 // FIXME: use functions for initial state in useState?
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle broadcasts with no slate image (default to show?)
+// FIXME: preserve video playing state across broadcast?
+// FIXME: handle videojs JS errors
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
