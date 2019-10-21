@@ -582,6 +582,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
             button({
                 type: 'button',
                 className: 'btn btn-secondary mr-3',
+                disabled: broadcast === EMPTY_BROADCAST_DATA,
                 onClick() {
                     setBroadcast(EMPTY_BROADCAST_DATA);
                 }
