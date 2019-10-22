@@ -482,7 +482,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                             name: 'broadcastId',
                             value: broadcast.id,
                             checked: selectedBroadcast === broadcast,
-                            onChange(event) {
+                            onChange() {
                                 setSelectedBroadcast(broadcast);
                                 setSelectedBroadcastIndex(index);
                             },
