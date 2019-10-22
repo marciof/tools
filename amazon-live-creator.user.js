@@ -290,8 +290,8 @@ const Video = memo(function Video({src}) {
     });
 });
 
-const BroadcastPageLink = memo(function BroadcastPageLink({id, title}) {
-    return a({href: 'https://www.amazon.com/live/broadcast/' + id}, title);
+const BroadcastPageLink = memo(function BroadcastPageLink({id, text}) {
+    return a({href: 'https://www.amazon.com/live/broadcast/' + id}, text);
 });
 
 const LoginLink = memo(function LoginLink() {
@@ -303,20 +303,21 @@ const LoginLink = memo(function LoginLink() {
 const DateTime = memo(function DateTime({dateTime}) {
     const parsedMoment = moment(dateTime);
     const readOnlyOnChange = useCallback(() => {}, []);
+    const info = 'Original timestamp: ' + dateTime;
 
     return Fragment(
         input({
             type: 'date',
             value: parsedMoment.format('Y-MM-DD'),
             onChange: readOnlyOnChange,
-            title: dateTime,
+            title: info,
         }),
         ' ',
         input({
             type: 'time',
             value: parsedMoment.format('HH:mm:ss'),
             onChange: readOnlyOnChange,
-            title: dateTime,
+            title: info,
         }));
 });
 
@@ -444,10 +445,10 @@ const Broadcasts = memo(function Broadcasts(props) {
                         th('Stage'),
                         th('Duration'),
                         th(abbr(
-                            {title: 'local time of "broadcastStartDateTime"'},
+                            {title: 'Local time of "broadcastStartDateTime"'},
                             'Started')),
                         th(abbr(
-                            {title: 'local time of "broadcastEndDateTime"'},
+                            {title: 'Local time of "broadcastEndDateTime"'},
                             'Ended')))),
                 tbody(data.broadcasts.map((broadcast, index) =>
                     tr(
@@ -468,7 +469,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                             jsx(Id, {id: broadcast.id}))),
                         td(jsx(BroadcastPageLink, {
                             id: broadcast.id,
-                            title: broadcast.title,
+                            text: broadcast.title,
                         })),
                         td(jsx(Id, {id: broadcast.asin})),
                         td(broadcast.distribution),
@@ -539,14 +540,14 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
                         th('State'),
                         th('Status'),
                         th(abbr(
-                            {title: 'local time of "lvsLastMessageEpochTime"'},
+                            {title: 'Local time of "lvsLastMessageEpochTime"'},
                             'Last change')))),
                 tbody(
                     tr(
                         td(broadcastId && jsx(Id, {id: broadcastId})),
                         td(!broadcastId ? state : jsx(BroadcastPageLink, {
                             id: broadcastId,
-                            title: state})),
+                            text: state})),
                         td(data.showLiveData.status),
                         td(lvsLastMessageEpochTime && jsx(DateTime, {
                             dateTime: lvsLastMessageEpochTime * 1000,
@@ -753,11 +754,16 @@ const App = memo(function App({api}) {
 const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
     || confirm('Unsupported UserScript manager. Continue?');
 
-// FIXME: use functions for initial state in useState?
 // FIXME: table spacing when there's <code/>? or <input/>?
-// FIXME: handle broadcasts with no slate image (default to show?)
-// FIXME: preserve video playing state across broadcast?
 // FIXME: handle videojs JS errors
+// FIXME: handle empty broadcast list
+// FIXME: update broadcast from JSON in Ace editor
+// TODO: don't show Live Data in a table, since it isn't tabular data?
+// TODO: handle broadcasts with no slate image (default to show?)
+// TODO: use functions for initial state in useState?
+// TODO: disabled button tooltip and mouse cursor
+// TODO: link to moment duration format documentation
+// TODO: sortable tables
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
