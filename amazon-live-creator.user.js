@@ -392,7 +392,8 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
                             {htmlFor: 'show-' + show.id},
                             jsx(Id, {id: show.id}))),
                         td(a({
-                            href: 'https://www.amazon.com/live/channel/' + show.id,
+                            href: 'https://www.amazon.com/live/channel/'
+                                + show.id,
                         }, show.title)),
                         td(show.distribution),
                         td(show.featureGroup))))))),
@@ -462,7 +463,11 @@ const Broadcasts = memo(function Broadcasts(props) {
                         th('ASIN'),
                         th('Distribution'),
                         th('Stage'),
-                        th('Duration'),
+                        th(abbr(
+                            {title: 'Duration format is based on its magnitude'},
+                            a({
+                                href: 'https://github.com/jsmreese/moment-duration-format#default-template-function',
+                            }, 'Duration'))),
                         th(abbr(
                             {title: 'Local time of "broadcastStartDateTime"'},
                             'Started')),
@@ -652,7 +657,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
                 type: 'button',
                 disabled: !canClear,
                 title: !canClear ? 'Already cleared' : '',
-                className: classNames('btn', 'btn-secondary', 'mr-3', {
+                className: classNames('btn', 'btn-warning', 'mr-3', {
                     'cursor-not-allowed': !canClear,
                 }),
                 onClick() {
@@ -721,7 +726,8 @@ function refreshBroadcasts(oldData, newData) {
 
     if (_.isEqual(oldBroadcasts, newBroadcasts)) {
         return {
-            broadcasts: oldBroadcasts.concat(newData.broadcasts.slice(numBroadcasts)),
+            broadcasts: oldBroadcasts.concat(
+                newData.broadcasts.slice(numBroadcasts)),
             nextLink: newData.nextLink,
         };
     }
@@ -740,7 +746,8 @@ const App = memo(function App({api}) {
     const [broadcastPromise, setBroadcastPromise] = useState(
         Promise.resolve(EMPTY_BROADCAST_DATA));
 
-    const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(false);
+    const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(
+        false);
     const [broadcastsShowId, setBroadcastsShowId] = useState(null);
     const [broadcastsPromise, setBroadcastsPromise] = useState(null);
 
@@ -774,7 +781,9 @@ const App = memo(function App({api}) {
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
             promise: broadcastsPromise,
-            reducer: isLoadingMoreBroadcasts ? concatBroadcasts : refreshBroadcasts,
+            reducer: isLoadingMoreBroadcasts
+                ? concatBroadcasts
+                : refreshBroadcasts,
             onLoadMore(nextToken) {
                 setIsLoadingMoreBroadcasts(true);
                 setBroadcastsPromise(
@@ -793,6 +802,7 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 // FIXME: handle videojs JS errors
 // FIXME: handle empty broadcast list
 // FIXME: update broadcast from JSON in Ace editor
+// TODO: use Bootstrap tooltips?
 // TODO: don't show Live Data in a table, since it isn't tabular data?
 // TODO: handle broadcasts with no slate image (default to show?)
 // TODO: use functions for initial state in useState?
