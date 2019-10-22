@@ -284,7 +284,6 @@ const Video = memo(function Video({src}) {
 
     return video({
         ref: videoElRef,
-        width: 320,
         height: 200,
         className: 'video-js',
         controls: true,
