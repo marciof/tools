@@ -50,6 +50,7 @@ const rootEl = cleanPage(GM_info.script.name);
 rootEl.className = 'p-3';
 
 ['bootstrap-css', 'videojs-css'].map(GM_getResourceText).forEach(GM_addStyle);
+GM_addStyle('.cursor-not-allowed {cursor: not-allowed;}');
 
 require.config({
     paths: {
@@ -232,7 +233,7 @@ const AceEditor = memo(function AceEditor({text, mode, style}) {
         if (ace) {
             const editor = ace.edit(editorElRef.current);
             editor.setTheme('ace/theme/github');
-            editor.session.setMode(mode);
+            editor.getSession().setMode(mode);
             setEditor(editor);
         }
     }, [ace]);
@@ -330,19 +331,26 @@ const Id = memo(function Id({id}) {
 });
 
 const ToggleButton = memo(function ToggleButton(props) {
-    const {isToggled, label, onClick, disabled = false} = props;
+    const {
+        isToggled, label, onClick, isDisabled = false, disabledTitle = '',
+    } = props;
 
     return button({
         type: 'button',
-        disabled: disabled,
-        className: classNames('btn', 'btn-info', {active: isToggled}),
+        disabled: isDisabled,
         onClick: onClick,
+        title: isDisabled ? disabledTitle : '',
+        className: classNames('btn', 'btn-info', {
+            active: isToggled,
+            'cursor-not-allowed': isDisabled,
+        }),
     }, label);
 });
 
 const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
     const [selectedShow, setSelectedShow] = useState(null);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+    const SELECT_SHOW_BUTTON_TITLE = 'Select a show';
 
     useEffect(() => {
         if (data.shows && (data.shows.length > 0)) {
@@ -392,22 +400,29 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
             button({
                 disabled: !selectedShow,
                 type: 'button',
-                className: 'btn btn-primary mr-3',
+                title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
+                className: classNames('btn', 'btn-primary', 'mr-3', {
+                    'cursor-not-allowed': !selectedShow,
+                }),
                 onClick() {
                     onListBroadcasts(selectedShow.id);
-                }
+                },
             }, 'List broadcasts'),
             button({
                 disabled: !selectedShow,
                 type: 'button',
-                className: 'btn btn-primary mr-3',
+                title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
+                className: classNames('btn', 'btn-primary', 'mr-3', {
+                    'cursor-not-allowed': !selectedShow,
+                }),
                 onClick() {
                     onLoadLiveData(selectedShow.id);
-                }
+                },
             }, 'Load live data'),
             jsx(ToggleButton, {
                 label: 'Show/Hide JSON',
-                disabled: !selectedShow,
+                isDisabled: !selectedShow,
+                disabledTitle: SELECT_SHOW_BUTTON_TITLE,
                 isToggled: isJsonShown,
                 onClick: toggleIsJsonShown,
             })),
@@ -419,10 +434,14 @@ const Shows = memo(function Shows({data, onLoadLiveData, onListBroadcasts}) {
 
 const Broadcasts = memo(function Broadcasts(props) {
     const {data, onLoadMore, onLoadBroadcast} = props;
+
     const [selectedBroadcast, setSelectedBroadcast] = useState(null);
     const [selectedBroadcastIndex, setSelectedBroadcastIndex] = useState(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+
+    const SELECT_BROADCAST_BUTTON_TITLE = 'Select a broadcast';
+    const canLoadMoreBroadcasts = !!data.nextLink && !isLoadingMore;
 
     useEffect(() => {
         setIsLoadingMore(false);
@@ -462,7 +481,7 @@ const Broadcasts = memo(function Broadcasts(props) {
                             onChange(event) {
                                 setSelectedBroadcast(broadcast);
                                 setSelectedBroadcastIndex(index);
-                            }
+                            },
                         })),
                         td(label(
                             {htmlFor: 'broadcast-' + broadcast.id},
@@ -490,23 +509,32 @@ const Broadcasts = memo(function Broadcasts(props) {
             button({
                 type: 'button',
                 disabled: !selectedBroadcast,
-                className: 'btn btn-primary mr-3',
+                title: !selectedBroadcast ? SELECT_BROADCAST_BUTTON_TITLE : '',
+                className: classNames('btn', 'btn-primary', 'mr-3', {
+                    'cursor-not-allowed': !selectedBroadcast,
+                }),
                 onClick() {
                     onLoadBroadcast(selectedBroadcast.id);
-                }
+                },
             }, 'Load broadcast'),
             button({
-                disabled: !data.nextLink || isLoadingMore,
+                disabled: !canLoadMoreBroadcasts,
                 type: 'button',
-                className: 'btn btn-secondary mr-3',
+                className: classNames('btn', 'btn-secondary', 'mr-3', {
+                    'cursor-not-allowed': !canLoadMoreBroadcasts,
+                }),
+                title: !data.nextLink ? 'No more broadcasts'
+                    : isLoadingMore ? 'Loading more broadcasts'
+                    : '',
                 onClick() {
                     setIsLoadingMore(true);
                     onLoadMore(data.nextLink);
-                }
+                },
             }, 'Load more broadcasts'),
             jsx(ToggleButton, {
                 label: 'Show/Hide JSON',
-                disabled: !selectedBroadcast,
+                isDisabled: !selectedBroadcast,
+                disabledTitle: SELECT_BROADCAST_BUTTON_TITLE,
                 isToggled: isJsonShown,
                 onClick: toggleIsJsonShown,
             })),
@@ -556,7 +584,10 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
             button({
                 type: 'button',
                 disabled: !broadcastId,
-                className: 'btn btn-primary mr-3',
+                className: classNames('btn', 'btn-primary', 'mr-3', {
+                    'cursor-not-allowed': !broadcastId,
+                }),
+                title: !broadcastId ? 'No broadcast with live data' : '',
                 onClick() {
                     onLoadBroadcast(broadcastId);
                 },
@@ -575,6 +606,7 @@ const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
 const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
     const [broadcast, setBroadcast] = useState(data);
     const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+    const canClear = (broadcast !== EMPTY_BROADCAST_DATA);
 
     useEffect(() => void setBroadcast(data), [data]);
 
@@ -599,7 +631,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
                     ...prevBroadcast,
                     title: title,
                 }));
-            }
+            },
         }))),
         p('Video source: ',
             Object.entries(VIDEO_SOURCES).map(([value, text]) =>
@@ -618,11 +650,14 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
         p(
             button({
                 type: 'button',
-                className: 'btn btn-secondary mr-3',
-                disabled: broadcast === EMPTY_BROADCAST_DATA,
+                disabled: !canClear,
+                title: !canClear ? 'Already cleared' : '',
+                className: classNames('btn', 'btn-secondary', 'mr-3', {
+                    'cursor-not-allowed': !canClear,
+                }),
                 onClick() {
                     setBroadcast(EMPTY_BROADCAST_DATA);
-                }
+                },
             }, 'Clear'),
             jsx(ToggleButton, {
                 label: 'Show/Hide JSON',
@@ -631,7 +666,7 @@ const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
             })),
         jsx(JsonAceEditor, {
             json: broadcast,
-            style: {display: isJsonShown ? 'inherit' : 'none'}
+            style: {display: isJsonShown ? 'inherit' : 'none'},
         }));
 });
 
@@ -734,7 +769,7 @@ const App = memo(function App({api}) {
             promise: broadcastPromise,
             getSlateImageUrl(broadcastId) {
                 return api.getBroadcastSlateImageUrl(broadcastId);
-            }
+            },
         }),
         broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
             title: 'Broadcasts',
