@@ -794,9 +794,7 @@ const App = memo(function App({api}) {
         }));
 });
 
-const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
-    || confirm('Unsupported UserScript manager. Continue?');
-
+// FIXME: use requirejs to load modules for lower initial latency?
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
 // FIXME: handle empty broadcast list
@@ -808,6 +806,10 @@ const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
 // TODO: disabled button tooltip and mouse cursor
 // TODO: link to moment duration format documentation
 // TODO: sortable tables
+
+const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
+    || confirm('Unsupported UserScript manager. Continue?');
+
 if (shouldRun) {
     ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
 }
