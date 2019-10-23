@@ -59,32 +59,7 @@ const requireJs = pageReady.then(() => new Promise((resolve, reject) => {
     scriptEl.addEventListener('load', () => {
         const require = unsafeWindow.require;
         console.info('Loaded require.js', require);
-
-        require.config({
-            baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/',
-            paths: {
-                react: ['react/16.10.2/umd/react.development'],
-                reactDom: ['react-dom/16.10.2/umd/react-dom.development'],
-                lodash: ['lodash.js/4.17.15/lodash'],
-                classNames: ['classnames/2.2.6/index'],
-                moment: ['moment.js/2.24.0/moment'],
-                momentTimezone: ['moment-timezone/0.5.26/moment-timezone-with-data'],
-                momentDurationFormat: ['moment-duration-format/2.3.2/moment-duration-format'],
-                videoJs: ['video.js/7.6.5/video'],
-                // FIXME: breaks with direct path to its JS file
-                ace: ['ace/1.4.6/'],
-            },
-        });
-
-        resolve(moduleName => new Promise((resolve, reject) => {
-            require(
-                [moduleName],
-                module => {
-                    console.info('Loaded ' + moduleName, module);
-                    resolve(module);
-                },
-                reject);
-        }));
+        resolve(require);
     });
 
     scriptEl.addEventListener('error', reject);
@@ -92,10 +67,41 @@ const requireJs = pageReady.then(() => new Promise((resolve, reject) => {
     document.head.appendChild(scriptEl);
 }));
 
-Promise.all([pageReady, requireJs]).then(async ([rootEl, module]) => {
+const configuredRequireJs = requireJs.then(require => {
+    require.config({
+        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/',
+        paths: {
+            react: ['react/16.10.2/umd/react.development'],
+            reactDom: ['react-dom/16.10.2/umd/react-dom.development'],
+            lodash: ['lodash.js/4.17.15/lodash'],
+            classNames: ['classnames/2.2.6/index'],
+            moment: ['moment.js/2.24.0/moment'],
+            momentTimezone: ['moment-timezone/0.5.26/moment-timezone-with-data'],
+            momentDurationFormat: ['moment-duration-format/2.3.2/moment-duration-format'],
+            videoJs: ['video.js/7.6.5/video'],
+            // FIXME: breaks with direct path to its JS file
+            ace: ['ace/1.4.6/'],
+        },
+    });
+
+    return function loadModule(moduleName) {
+        return new Promise((resolve, reject) => {
+            require(
+                [moduleName],
+                module => {
+                    console.info('Loaded ' + moduleName, module);
+                    resolve(module);
+                },
+                reject);
+        });
+    };
+});
+
+Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const React = await module('react');
     const ReactDOM = await module('reactDom');
     const lodash = await module('lodash');
+    const classNames = await module('classNames');
 
     /**
      * @returns {boolean}
