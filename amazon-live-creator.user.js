@@ -70,17 +70,22 @@ const requireJs = pageReady.then(() => new Promise((resolve, reject) => {
 const configuredRequireJs = requireJs.then(require => {
     require.config({
         baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/',
+        map: {
+            '*': {
+                classNames: 'classnames',
+                aceEditor: 'ace/ace',
+            },
+        },
         paths: {
             react: ['react/16.10.2/umd/react.development'],
             reactDom: ['react-dom/16.10.2/umd/react-dom.development'],
             lodash: ['lodash.js/4.17.15/lodash'],
-            classNames: ['classnames/2.2.6/index'],
+            classnames: ['classnames/2.2.6/index'],
             moment: ['moment.js/2.24.0/moment'],
             momentTimezone: ['moment-timezone/0.5.26/moment-timezone-with-data'],
             momentDurationFormat: ['moment-duration-format/2.3.2/moment-duration-format'],
             videoJs: ['video.js/7.6.5/video'],
-            // FIXME: breaks with direct path to its JS file
-            ace: ['ace/1.4.6/'],
+            ace: ['ace/1.4.6'],
         },
     });
 
