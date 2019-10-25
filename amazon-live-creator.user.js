@@ -9,6 +9,7 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
+// FIXME: use need to useEffect with useRef?
 // FIXME: lazy load modules as needed (use React.Suspense and React.lazy?)
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
@@ -127,7 +128,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const ReactDOM = await module('reactDom');
     const lodash = await module('lodash');
     const classNames = await module('classNames');
-    const aceEditor = await module('aceEditor');
     const moment = await module('moment');
     const videoJs = await module('videoJs');
 
@@ -184,6 +184,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const video = jsx.bind(null, 'video');
 
     const memo = React.memo.bind(React);
+    const lazy = React.lazy.bind(React);
     const useState = React.useState.bind(React);
     const useCallback = React.useCallback.bind(React);
     const useRef = React.useRef.bind(React);
@@ -292,16 +293,56 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return [isEnabled, toggleIsEnabled];
     }
 
-    const AceEditor = memo(function AceEditor({text, mode, style}) {
-        const editorElRef = useRef(null);
+    function fakeModule(defaultExport) {
+        return {
+            default: defaultExport,
+        };
+    }
 
-        const editor = aceEditor.edit(editorElRef.current);
-        editor.setTheme('ace/theme/github');
-        editor.getSession().setMode(mode);
+    const LoadingSpinner = memo(function LoadingSpinner(props) {
+        const {description, style} = props;
 
-        useEffect(() => void editor.setValue(text, 1), [text]);
+        return p(
+            {style: style},
+            span({className: 'spinner-border spinner-border-sm'}),
+            ` Loading ${description}...`);
+    });
 
-        return div({ref: editorElRef, style: style});
+    const LazyAceEditor = lazy(async () => {
+        const aceEditor = await module('aceEditor');
+
+        return fakeModule(memo(function LazyAceEditor({text, mode, style}) {
+            const [editor, setEditor] = useState(null);
+            const editorElRef = useRef(null);
+
+            useEffect(() => {
+                if (editorElRef.current) {
+                    const newEditor = aceEditor.edit(editorElRef.current);
+                    newEditor.setTheme('ace/theme/github');
+                    newEditor.getSession().setMode(mode);
+                    setEditor(newEditor);
+                }
+            }, [editorElRef.current]);
+
+            useEffect(() => {
+                if (editor) {
+                    editor.setValue(text, 1);
+                }
+            }, [editor, text]);
+
+            return div({ref: editorElRef, style: style});
+        }));
+    });
+
+    const AceEditor = memo(function AceEditor(props) {
+        return jsx(React.Suspense,
+            {
+                fallback: jsx(LoadingSpinner, {
+                    description: 'JSON editor',
+                    style: props.style
+                }),
+            },
+            jsx(LazyAceEditor, props));
     });
 
     const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
@@ -737,7 +778,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
      * @param Component {React.Component}
      * @returns {React.Component}
      */
-    function lazy(Component) {
+    function lazyComponent(Component) {
         return memo(function LazyComponent(props) {
             const {title, promise, reducer, ...componentProps} = props;
             const [data, setData] = useState(null);
@@ -762,8 +803,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 {invisible: !isLoading || !data})},
                         'refreshing...')),
                 !data
-                    ? p(span({className: 'spinner-border spinner-border-sm'}),
-                    ' Loading...')
+                    ? jsx(LoadingSpinner, {description: title})
                     : jsx(Component, {data, ...componentProps}));
         });
     }
@@ -793,10 +833,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return newData;
     }
 
-    const LazyShows = lazy(Shows);
-    const LazyLiveData = lazy(LiveData);
-    const LazyBroadcasts = lazy(Broadcasts);
-    const LazyBroadcast = lazy(Broadcast);
+    const LazyShows = lazyComponent(Shows);
+    const LazyLiveData = lazyComponent(LiveData);
+    const LazyBroadcasts = lazyComponent(Broadcasts);
+    const LazyBroadcast = lazyComponent(Broadcast);
 
     const App = memo(function App({api}) {
         const [showsPromise,] = useState(() => api.listShows());
