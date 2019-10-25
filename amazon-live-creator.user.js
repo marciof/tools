@@ -15,6 +15,8 @@
 // FIXME: handle videojs JS errors
 // FIXME: handle empty broadcast list
 // FIXME: update broadcast from JSON in Ace editor
+
+// TODO: add alias for React.Suspense?
 // TODO: use Bootstrap tooltips?
 // TODO: don't show Live Data in a table, since it isn't tabular data?
 // TODO: handle broadcasts with no slate image (default to show?)
@@ -335,14 +337,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const AceEditor = memo(function AceEditor(props) {
-        return jsx(React.Suspense,
-            {
-                fallback: jsx(LoadingSpinner, {
-                    description: 'JSON editor',
-                    style: props.style
-                }),
-            },
-            jsx(LazyAceEditor, props));
+        return jsx(React.Suspense, {
+            fallback: jsx(LoadingSpinner, {
+                description: 'JSON editor',
+                style: props.style
+            }),
+        }, jsx(LazyAceEditor, props));
     });
 
     const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
