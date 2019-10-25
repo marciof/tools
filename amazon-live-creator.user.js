@@ -84,13 +84,9 @@ const requireJs = pageReady.then(() => new Promise((resolve, reject) => {
 }));
 
 const configuredRequireJs = requireJs.then(([require, define]) => {
-    define('global/window', [], () => {
-        return window;
-    });
-
-    define('global/document', ['global/window'], (window) => {
-        return window.document;
-    });
+    // Workaround video.js bug, https://github.com/videojs/video.js/issues/5680
+    define('global/window', [], () => window);
+    define('global/document', [], () => document);
 
     require.config({
         baseUrl: CDN_BASE_URL,
