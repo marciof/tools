@@ -307,7 +307,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         return div(
             {style: style},
-            span({className: 'spinner-border spinner-border-sm'}),
+            span({className: 'spinner-border text-secondary spinner-border-sm'}),
             !child ? null : Fragment(' ', child));
     });
 
