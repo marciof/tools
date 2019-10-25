@@ -130,12 +130,14 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
 });
 
 Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
-    const React = await module('react');
-    const ReactDOM = await module('reactDom');
-    const lodash = await module('lodash');
-    const classNames = await module('classNames');
-    const videoJs = await module('videoJs');
+    const [React, ReactDOM, lodash, classNames] = await Promise.all([
+        module('react'),
+        module('reactDom'),
+        module('lodash'),
+        module('classNames'),
+    ]);
 
+    const videoJs = await module('videoJs');
     await loadCss(CDN_BASE_URL + 'video.js/7.6.5/video-js.css');
 
     /**
