@@ -9,7 +9,7 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: lazy load modules as needed (use React.Suspense and React.lazy?)
+// FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
 // FIXME: handle errors in lazy loading
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
@@ -17,9 +17,8 @@
 // FIXME: update broadcast from JSON in Ace editor
 
 // TODO: add alias for React.Suspense?
-// TODO: use Bootstrap tooltips?
+// TODO: use tooltips? https://getbootstrap.com/docs/4.3/components/tooltips/
 // TODO: don't show Live Data in a table, since it isn't tabular data?
-// TODO: handle broadcasts with no slate image (default to show?)
 // TODO: use functions for initial state in useState?
 // TODO: sortable tables? datatable
 // TODO: searchable tables? datatable
@@ -136,9 +135,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         module('lodash'),
         module('classNames'),
     ]);
-
-    const videoJs = await module('videoJs');
-    await loadCss(CDN_BASE_URL + 'video.js/7.6.5/video-js.css');
 
     /**
      * @returns {boolean}
@@ -307,7 +303,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const LoadingSpinner = memo(function LoadingSpinner(props) {
         const {child, style} = props;
 
-        return div(
+        return span(
             {style: style},
             span({className: 'spinner-border text-secondary spinner-border-sm'}),
             !child ? null : Fragment(' ', child));
@@ -350,6 +346,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 child: pre(text),
                 style: {
                     overflow: 'auto',
+                    display: 'block',
                     ...style,
                 },
             }),
@@ -369,34 +366,63 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         });
     });
 
+    const LazyVideo = lazy(async () => {
+        const [videoJs, ] = await Promise.all([
+            module('videoJs'),
+            loadCss(CDN_BASE_URL + 'video.js/7.6.5/video-js.css'),
+        ]);
+
+        return fakeModule(memo(function LazyVideo({src, height}) {
+            const [videoEl, setVideoEl] = useState(null);
+            const [player, setPlayer] = useState(null);
+            const videoElRef = useCallback(setVideoEl);
+
+            useEffect(() => {
+                if (videoEl) {
+                    const newPlayer = videoJs(videoEl);
+                    setPlayer(newPlayer);
+                    return () => newPlayer.dispose();
+                }
+                else {
+                    setPlayer(null);
+                }
+            }, [videoEl]);
+
+            useEffect(() => {
+                if (player && src) {
+                    player.src(src);
+                }
+            }, [player, src]);
+
+            return span(
+                {
+                    style: {
+                        height: height,
+                        display: 'block',
+                        overflow: 'auto',
+                    },
+                },
+                video({
+                    ref: videoElRef,
+                    height: height,
+                    className: 'video-js',
+                    controls: true,
+                }));
+        }));
+    });
+
     const Video = memo(function Video({src}) {
-        const [videoEl, setVideoEl] = useState(null);
-        const [player, setPlayer] = useState(null);
-        const videoElRef = useCallback(setVideoEl);
+        const height = '200px';
 
-        useEffect(() => {
-            if (videoEl) {
-                const newPlayer = videoJs(videoEl);
-                setPlayer(newPlayer);
-                return () => newPlayer.dispose();
-            }
-            else {
-                setPlayer(null);
-            }
-        }, [videoEl]);
-
-        useEffect(() => {
-            if (player && src) {
-                player.src(src);
-            }
-        }, [player, src]);
-
-        return video({
-            ref: videoElRef,
-            height: 200,
-            className: 'video-js',
-            controls: true,
-        });
+        return jsx(React.Suspense, {
+            fallback: jsx(LoadingSpinner, {
+                style: {
+                    height: height,
+                    overflow: 'auto',
+                    display: 'block',
+                },
+            }),
+        }, jsx(LazyVideo, {src: src, height: height}));
     });
 
     const BroadcastPageLink = memo(function BroadcastPageLink({id, text}) {
