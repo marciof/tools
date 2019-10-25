@@ -9,7 +9,6 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: use need to useEffect with useRef?
 // FIXME: lazy load modules as needed (use React.Suspense and React.lazy?)
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
@@ -54,7 +53,7 @@ const CDN_BASE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/';
 const pageReady = loadCss(CDN_BASE_URL + 'twitter-bootstrap/4.3.1/css/bootstrap.css').then(() => {
     const loadingEl = document.createElement('span');
     loadingEl.className = 'badge badge-pill badge-info';
-    loadingEl.textContent = 'Loading...';
+    loadingEl.textContent = `Loading...`;
 
     const rootEl = document.createElement('div');
     rootEl.className = 'm-3';
@@ -314,17 +313,22 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         const aceEditor = await module('aceEditor');
 
         return fakeModule(memo(function LazyAceEditor({text, mode, style}) {
+            const [editorEl, setEditorEl] = useState(null);
             const [editor, setEditor] = useState(null);
-            const editorElRef = useRef(null);
+            const editorElRef = useCallback(setEditorEl);
 
             useEffect(() => {
-                if (editorElRef.current) {
-                    const newEditor = aceEditor.edit(editorElRef.current);
+                if (editorEl) {
+                    const newEditor = aceEditor.edit(editorEl);
                     newEditor.setTheme('ace/theme/github');
                     newEditor.getSession().setMode(mode);
                     setEditor(newEditor);
+                    return () => newEditor.destroy();
                 }
-            }, [editorElRef.current]);
+                else {
+                    setEditor(null);
+                }
+            }, [editorEl]);
 
             useEffect(() => {
                 if (editor) {
