@@ -10,6 +10,7 @@
 // ==/UserScript==
 
 // FIXME: lazy load modules as needed (use React.Suspense and React.lazy?)
+// FIXME: handle errors in lazy loading
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
 // FIXME: handle empty broadcast list
@@ -51,13 +52,17 @@ function loadCss(url) {
 const CDN_BASE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/';
 
 const pageReady = loadCss(CDN_BASE_URL + 'twitter-bootstrap/4.3.1/css/bootstrap.css').then(() => {
-    const loadingEl = document.createElement('span');
-    loadingEl.className = 'badge badge-pill badge-info';
-    loadingEl.textContent = `Loading...`;
+    const loadingSpinnerEl = document.createElement('span');
+    loadingSpinnerEl.className = 'spinner-border spinner-border-sm';
+
+    const loadingBadgeEl = document.createElement('div');
+    loadingBadgeEl.className = 'badge badge-pill badge-info';
+    loadingBadgeEl.appendChild(loadingSpinnerEl);
+    loadingBadgeEl.appendChild(document.createTextNode(' Loading...'));
 
     const rootEl = document.createElement('div');
     rootEl.className = 'm-3';
-    rootEl.appendChild(loadingEl);
+    rootEl.appendChild(loadingBadgeEl);
 
     document.body.appendChild(rootEl);
     GM_addStyle('.cursor-not-allowed {cursor: not-allowed;}');
@@ -116,7 +121,7 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
             require(
                 [moduleName],
                 module => {
-                    console.info('Loaded ' + moduleName, module);
+                    console.info('Loaded module ' + moduleName, module);
                     resolve(module);
                 },
                 reject);
@@ -129,11 +134,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const ReactDOM = await module('reactDom');
     const lodash = await module('lodash');
     const classNames = await module('classNames');
-    const moment = await module('moment');
     const videoJs = await module('videoJs');
 
-    await module('momentTimezone');
-    await module('momentDurationFormat');
     await loadCss(CDN_BASE_URL + 'video.js/7.6.5/video-js.css');
 
     /**
@@ -170,6 +172,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const p = jsx.bind(null, 'p');
     const a = jsx.bind(null, 'a');
     const div = jsx.bind(null, 'div');
+    const pre = jsx.bind(null, 'pre');
     const abbr = jsx.bind(null, 'abbr');
     const span = jsx.bind(null, 'span');
     const img = jsx.bind(null, 'img');
@@ -188,7 +191,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const lazy = React.lazy.bind(React);
     const useState = React.useState.bind(React);
     const useCallback = React.useCallback.bind(React);
-    const useRef = React.useRef.bind(React);
     const useEffect = React.useEffect.bind(React);
     const Fragment = jsx.bind(null, React.Fragment);
 
@@ -301,12 +303,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     }
 
     const LoadingSpinner = memo(function LoadingSpinner(props) {
-        const {description, style} = props;
+        const {child, style} = props;
 
-        return p(
+        return div(
             {style: style},
             span({className: 'spinner-border spinner-border-sm'}),
-            ` Loading ${description}...`);
+            !child ? null : Fragment(' ', child));
     });
 
     const LazyAceEditor = lazy(async () => {
@@ -340,13 +342,16 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         }));
     });
 
-    const AceEditor = memo(function AceEditor(props) {
+    const AceEditor = memo(function AceEditor({style, text, ...props}) {
         return jsx(React.Suspense, {
             fallback: jsx(LoadingSpinner, {
-                description: 'JSON editor',
-                style: props.style
+                child: pre(text),
+                style: {
+                    overflow: 'auto',
+                    ...style,
+                },
             }),
-        }, jsx(LazyAceEditor, props));
+        }, jsx(LazyAceEditor, {style: style, text: text, ...props}));
     });
 
     const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
@@ -402,29 +407,51 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             'Please login to your Amazon account first.'));
     });
 
-    const DateTime = memo(function DateTime({dateTime}) {
-        const parsedMoment = moment(dateTime);
-        const readOnlyOnChange = useCallback(() => {}, []);
-        const info = 'Original timestamp: ' + dateTime;
+    const LazyDateTime = lazy(async () => {
+        const [moment, ] = await Promise.all(
+            [module('moment'), module('momentTimezone')]);
 
-        return Fragment(
-            input({
-                type: 'date',
-                value: parsedMoment.format('Y-MM-DD'),
-                onChange: readOnlyOnChange,
-                title: info,
-            }),
-            ' ',
-            input({
-                type: 'time',
-                value: parsedMoment.format('HH:mm:ss'),
-                onChange: readOnlyOnChange,
-                title: info,
-            }));
+        return fakeModule(memo(function LazyDateTime({dateTime}) {
+            const parsedMoment = moment(dateTime);
+            const readOnlyOnChange = useCallback(() => {}, []);
+            const info = 'Original timestamp: ' + dateTime;
+
+            return Fragment(
+                input({
+                    type: 'date',
+                    value: parsedMoment.format('Y-MM-DD'),
+                    onChange: readOnlyOnChange,
+                    title: info,
+                }),
+                ' ',
+                input({
+                    type: 'time',
+                    value: parsedMoment.format('HH:mm:ss'),
+                    onChange: readOnlyOnChange,
+                    title: info,
+                }));
+        }));
     });
 
-    const Duration = memo(function Duration({from, to}) {
-        return moment.duration(moment(to).diff(from)).format();
+    const DateTime = memo(function DateTime({dateTime}) {
+        return jsx(React.Suspense, {
+            fallback: jsx(LoadingSpinner, {child: dateTime}),
+        }, jsx(LazyDateTime, {dateTime}));
+    });
+
+    const LazyDuration = lazy(async () => {
+        const [moment, ] = await Promise.all(
+            [module('moment'), module('momentDurationFormat')]);
+
+        return fakeModule(memo(function LazyDuration({from, to}) {
+            return moment.duration(moment(to).diff(from)).format();
+        }));
+    });
+
+    const Duration = memo(function Duration(props) {
+        return jsx(React.Suspense,
+            {fallback: jsx(LoadingSpinner)},
+            jsx(LazyDuration, props));
     });
 
     const Id = memo(function Id({id}) {
@@ -807,7 +834,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 {invisible: !isLoading || !data})},
                         'refreshing...')),
                 !data
-                    ? jsx(LoadingSpinner, {description: title})
+                    ? jsx(LoadingSpinner)
                     : jsx(Component, {data, ...componentProps}));
         });
     }
@@ -826,7 +853,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         const oldBroadcasts = oldData.broadcasts.slice(0, numBroadcasts);
         const newBroadcasts = newData.broadcasts.slice(0, numBroadcasts);
 
-        if (_.isEqual(oldBroadcasts, newBroadcasts)) {
+        if (lodash.isEqual(oldBroadcasts, newBroadcasts)) {
             return {
                 broadcasts: oldBroadcasts.concat(
                     newData.broadcasts.slice(numBroadcasts)),
