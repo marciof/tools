@@ -15,6 +15,7 @@
 // FIXME: handle videojs JS errors
 // FIXME: handle empty broadcast list
 // FIXME: update broadcast from JSON in Ace editor
+// FIXME: fix column widths on the Shows table to prevent content from "jumping"
 
 // TODO: add alias for React.Suspense?
 // TODO: use tooltips? https://getbootstrap.com/docs/4.3/components/tooltips/
@@ -441,25 +442,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             [module('moment'), module('momentTimezone')]);
 
         return fakeModule(memo(function LazyDateTime({dateTime}) {
-            const parsedMoment = moment(dateTime);
-            const readOnlyOnChange = useCallback(() => {}, []);
-            const info = 'Original timestamp: ' + dateTime;
-
-            return Fragment(
-                input({
-                    type: 'date',
-                    className: 'p-0 border-0 mr-1 bg-transparent',
-                    value: parsedMoment.format('Y-MM-DD'),
-                    onChange: readOnlyOnChange,
-                    title: info,
-                }),
-                input({
-                    type: 'time',
-                    className: 'p-0 border-0 bg-transparent',
-                    value: parsedMoment.format('HH:mm:ss'),
-                    onChange: readOnlyOnChange,
-                    title: info,
-                }));
+            return span(
+                {title: 'Original timestamp: ' + dateTime},
+                moment(dateTime).calendar(null, {sameElse: 'llll'}));
         }));
     });
 
@@ -474,7 +459,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             [module('moment'), module('momentDurationFormat')]);
 
         return fakeModule(memo(function LazyDuration({from, to}) {
-            return moment.duration(moment(to).diff(from)).format();
+            const duration = moment.duration(moment(to).diff(from));
+            return span({title: duration.humanize()}, duration.format());
         }));
     });
 
@@ -549,7 +535,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 },
                             })),
                             td(label(
-                                {htmlFor: 'show-' + show.id},
+                                {
+                                    htmlFor: 'show-' + show.id,
+                                    className: 'mb-0',
+                                },
                                 jsx(Id, {id: show.id}))),
                             td(a({
                                 href: 'https://www.amazon.com/live/channel/'
@@ -627,10 +616,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                     a({
                                         href: 'https://github.com/jsmreese/moment-duration-format#default-template-function',
                                     }, 'Duration'))),
-                            th({width: '16%'},
+                            th({width: '15%'},
                                 abbr({title: 'Local time of "broadcastStartDateTime"'},
                                     'Started')),
-                            th({width: '16%'},
+                            th({width: '15%'},
                                 abbr({title: 'Local time of "broadcastEndDateTime"'},
                                     'Ended')))),
                     tbody(data.broadcasts.map((broadcast, index) =>
