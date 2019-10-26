@@ -15,7 +15,7 @@
 // FIXME: detect logged in, but no account
 // FIXME: type check with eslint and typescript+jsdoc
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
-// FIXME: use tooltips on disabled buttons
+// FIXME: use tooltips on disabled buttons (and refactor)
 // FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
 // FIXME: handle errors in lazy loading
@@ -317,20 +317,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return [isEnabled, toggleIsEnabled];
     }
 
-    function useTooltip(jQuery) {
-        const [element, setElement] = useState(null);
-        const elementRef = useCallback(setElement);
-
-        useEffect(() => {
-            if (element) {
-                jQuery(element).tooltip();
-                return () => jQuery(element).tooltip('dispose');
-            }
-        }, [element]);
-
-        return elementRef;
-    }
-
     function fakeModule(defaultExport) {
         return {
             default: defaultExport,
@@ -478,12 +464,26 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             [module('jQuery'), module('bootstrapBundle')]);
 
         return fakeModule(memo(function LazyTooltip({title, type, children}) {
-            return jsx(type, {
-                'data-toggle': 'tooltip',
-                'data-placement': 'right',
-                ref: useTooltip(jQuery),
-                title: title,
-            }, children);
+            const [element, setElement] = useState(null);
+            const [tooltipEl, setTooltipEl] = useState(null);
+
+            useEffect(() => {
+                if (element) {
+                    setTooltipEl(jQuery(element));
+                }
+            }, [element]);
+
+            useEffect(() => {
+                if (tooltipEl) {
+                    tooltipEl.tooltip({
+                        placement: 'right',
+                        title: title,
+                    });
+                    return () => tooltipEl.tooltip('dispose');
+                }
+            }, [tooltipEl, title]);
+
+            return jsx(type, {ref: useCallback(setElement)}, children);
         }));
     });
 
@@ -889,17 +889,18 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         },
                     }), text))),
             p(
-                button({
-                    type: 'button',
-                    disabled: !canClear,
-                    title: !canClear ? 'Already cleared' : '',
-                    className: classNames('btn', 'btn-warning', 'mr-3', {
-                        'cursor-not-allowed': !canClear,
-                    }),
-                    onClick() {
-                        setBroadcast(EMPTY_BROADCAST_DATA);
-                    },
-                }, 'Clear'),
+                jsx(Tooltip,
+                    {title: !canClear ? 'Already cleared' : ''},
+                    button({
+                        type: 'button',
+                        disabled: !canClear,
+                        className: classNames('btn', 'btn-warning', 'mr-3', {
+                            'cursor-not-allowed': !canClear,
+                        }),
+                        onClick() {
+                            setBroadcast(EMPTY_BROADCAST_DATA);
+                        },
+                    }, 'Clear')),
                 jsx(ToggleButton, {
                     label: 'Show/Hide JSON',
                     isToggled: isJsonShown,
