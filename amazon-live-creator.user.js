@@ -9,6 +9,7 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
+// FIXME: refactor ToggleButton?
 // FIXME: use minified versions by default if faster, with dev mode option?
 // FIXME: handle empty broadcast/shows list table
 // FIXME: use tooltips on disabled buttons (and refactor)
@@ -493,6 +494,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const Tooltip = memo(function Tooltip({title, children, type = 'span'}) {
+        if (!title) {
+            return jsx(type, children);
+        }
         return jsx(React.Suspense,
             {fallback: jsx(type, {title: title}, children)},
             jsx(LazyTooltip, {title: title, type: type}, children));
@@ -556,20 +560,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const ToggleButton = memo(function ToggleButton(props) {
-        const {
-            isToggled, label, onClick, isDisabled = false, disabledTitle = '',
-        } = props;
+        const {isToggled, children, ...restProps} = props;
 
-        return button({
-            type: 'button',
-            disabled: isDisabled,
-            onClick: onClick,
-            title: isDisabled ? disabledTitle : '',
-            className: classNames('btn', 'btn-info', {
-                active: isToggled,
-                'cursor-not-allowed': isDisabled,
-            }),
-        }, label);
+        return jsx(Button, {
+            className: classNames('btn-info', {active: isToggled}),
+            ...restProps,
+        }, children);
     });
 
     const RadioTable = memo(function RadioTable(props) {
@@ -691,12 +687,11 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     },
                 }, 'Load live data'),
                 jsx(ToggleButton, {
-                    label: 'Show/Hide JSON',
-                    isDisabled: !selectedShow,
-                    disabledTitle: SELECT_SHOW_BUTTON_TITLE,
+                    disabled: !selectedShow,
+                    title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
                     isToggled: isJsonShown,
                     onClick: toggleIsJsonShown,
-                })),
+                }, 'Show/Hide JSON')),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
                 style: {display: isJsonShown ? null : 'none'},
@@ -796,12 +791,11 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     },
                 }, 'Load more broadcasts'),
                 jsx(ToggleButton, {
-                    label: 'Show/Hide JSON',
-                    isDisabled: !selectedBroadcast,
-                    disabledTitle: SELECT_BROADCAST_BUTTON_TITLE,
+                    disabled: !selectedBroadcast,
+                    title: !selectedBroadcast ? SELECT_BROADCAST_BUTTON_TITLE : '',
                     isToggled: isJsonShown,
                     onClick: toggleIsJsonShown,
-                })),
+                }, 'Show/Hide JSON')),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
                 style: {display: isJsonShown ? null : 'none'},
@@ -858,10 +852,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     },
                 }, 'Load broadcast'),
                 jsx(ToggleButton, {
-                    label: 'Show/Hide JSON',
                     isToggled: isJsonShown,
                     onClick: toggleIsJsonShown,
-                })),
+                }, 'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: data,
                 style: {display: isJsonShown ? null : 'none'},
@@ -922,10 +915,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     },
                 }, 'Clear'),
                 jsx(ToggleButton, {
-                    label: 'Show/Hide JSON',
                     isToggled: isJsonShown,
                     onClick: toggleIsJsonShown,
-                })),
+                }, 'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {display: isJsonShown ? null : 'none'},
