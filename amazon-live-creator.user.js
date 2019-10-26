@@ -10,6 +10,7 @@
 // ==/UserScript==
 
 // FIXME: refactor ToggleButton?
+// FIXME: does Button with tooltip breaks focus?
 // FIXME: use minified versions by default if faster, with dev mode option?
 // FIXME: handle empty broadcast/shows list table
 // FIXME: use tooltips on disabled buttons (and refactor)
@@ -167,7 +168,7 @@ class Api {
     }
 
     /**
-     * @param broadcastId {string}
+     * @param showId {string}
      * @returns {string}
      */
     getShowSlateImageUrl(showId) {
@@ -205,7 +206,7 @@ class Api {
             'shows/'
             + encodeURIComponent(showId)
             + '/broadcasts/?direction=all&ascending=true&maxResults=10'
-            + (!nextToken
+            + (nextToken === undefined
                 ? ''
                 : '&nextToken=' + encodeURIComponent(nextToken)));
     }
@@ -334,9 +335,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         return span(
             {style: style},
-            !before ? null : Fragment(before, ' '),
+            (before !== undefined) ? Fragment(before, ' ') : null,
             span({className: 'spinner-border text-secondary spinner-border-sm'}),
-            !after ? null : Fragment(' ', after));
+            (after !== undefined) ? Fragment(' ', after) : null);
     });
 
     const LazyAceEditor = lazy(async () => {
@@ -493,8 +494,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         }));
     });
 
-    const Tooltip = memo(function Tooltip({title, children, type = 'span'}) {
-        if (!title) {
+    const Tooltip = memo(function Tooltip({title = '', children, type = 'span'}) {
+        if (title === '') {
             return jsx(type, children);
         }
         return jsx(React.Suspense,
@@ -608,9 +609,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 },
                             },
                             row.map(({content, name}, cellIndex) =>
-                                td({key: cellIndex},
-                                    content
-                                    || input({
+                                td({key: cellIndex}, (name === undefined)
+                                    ? content
+                                    : input({
                                         type: 'radio',
                                         name: name,
                                         checked: selectedRowIndex === rowIndex,
@@ -664,24 +665,18 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 ]),
             }),
             p(
-                button({
-                    disabled: !selectedShow,
-                    type: 'button',
+                jsx(Button, {
                     title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
-                    className: classNames('btn', 'btn-primary', 'mr-3', {
-                        'cursor-not-allowed': !selectedShow,
-                    }),
+                    disabled: !selectedShow,
+                    className: 'btn-primary mr-3',
                     onClick() {
                         onListBroadcasts(selectedShow.id);
                     },
                 }, 'List broadcasts'),
-                button({
-                    disabled: !selectedShow,
-                    type: 'button',
+                jsx(Button, {
                     title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
-                    className: classNames('btn', 'btn-primary', 'mr-3', {
-                        'cursor-not-allowed': !selectedShow,
-                    }),
+                    disabled: !selectedShow,
+                    className: 'btn-primary mr-3',
                     onClick() {
                         onLoadLiveData(selectedShow.id);
                     },
@@ -765,23 +760,17 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 ]),
             }),
             p(
-                button({
-                    type: 'button',
-                    disabled: !selectedBroadcast,
+                jsx(Button, {
                     title: !selectedBroadcast ? SELECT_BROADCAST_BUTTON_TITLE : '',
-                    className: classNames('btn', 'btn-primary', 'mr-3', {
-                        'cursor-not-allowed': !selectedBroadcast,
-                    }),
+                    disabled: !selectedBroadcast,
+                    className: 'btn-primary mr-3',
                     onClick() {
                         onLoadBroadcast(selectedBroadcast.id);
                     },
                 }, 'Load broadcast'),
-                button({
+                jsx(Button, {
                     disabled: !canLoadMoreBroadcasts,
-                    type: 'button',
-                    className: classNames('btn', 'btn-secondary', 'mr-3', {
-                        'cursor-not-allowed': !canLoadMoreBroadcasts,
-                    }),
+                    className: 'btn-secondary mr-3',
                     title: !data.nextLink ? 'No more broadcasts'
                         : isLoadingMore ? 'Loading more broadcasts'
                         : '',
@@ -840,13 +829,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 dateTime: lvsLastMessageEpochTime * 1000,
                             }))))))),
             p(
-                button({
-                    type: 'button',
-                    disabled: !broadcastId,
-                    className: classNames('btn', 'btn-primary', 'mr-3', {
-                        'cursor-not-allowed': !broadcastId,
-                    }),
+                jsx(Button, {
                     title: !broadcastId ? 'No broadcast with live data' : '',
+                    disabled: !broadcastId,
+                    className: 'btn-primary mr-3',
                     onClick() {
                         onLoadBroadcast(broadcastId);
                     },
