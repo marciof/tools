@@ -76,7 +76,7 @@ const pageReady = loadCss(CDN_BASE_URL + 'twitter-bootstrap/4.3.1/css/bootstrap.
     return rootEl;
 });
 
-const requireJs = pageReady.then(() => new Promise((resolve, reject) => {
+const requireJs = new Promise((resolve, reject) => {
     const scriptEl = document.createElement('script');
 
     scriptEl.addEventListener('load', () => {
@@ -88,7 +88,7 @@ const requireJs = pageReady.then(() => new Promise((resolve, reject) => {
     scriptEl.addEventListener('error', reject);
     scriptEl.src = CDN_BASE_URL + 'require.js/2.3.6/require.js';
     document.head.appendChild(scriptEl);
-}));
+});
 
 const configuredRequireJs = requireJs.then(([require, define]) => {
     // Workaround video.js bug, https://github.com/videojs/video.js/issues/5680
@@ -101,6 +101,7 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
             '*': {
                 classNames: 'classnames',
                 aceEditor: 'ace/ace',
+                jQuery: 'jquery',
             },
         },
         paths: {
@@ -113,6 +114,8 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
             momentDurationFormat: ['moment-duration-format/2.3.2/moment-duration-format'],
             videoJs: ['video.js/7.6.5/video'],
             ace: ['ace/1.4.6'],
+            bootstrap: ['twitter-bootstrap/4.3.1/js/bootstrap.bundle'],
+            jquery: ['jquery/3.4.1/jquery'],
         },
     });
 
