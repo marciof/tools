@@ -104,17 +104,21 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
                 jQuery: 'jquery',
             },
         },
+        shim: {
+            bootstrapBundle: {
+                deps: ['jQuery'],
+            },
+        },
         paths: {
             react: ['react/16.10.2/umd/react.development'],
             reactDom: ['react-dom/16.10.2/umd/react-dom.development'],
             lodash: ['lodash.js/4.17.15/lodash'],
             classnames: ['classnames/2.2.6/index'],
             moment: ['moment.js/2.24.0/moment'],
-            momentTimezone: ['moment-timezone/0.5.26/moment-timezone-with-data'],
             momentDurationFormat: ['moment-duration-format/2.3.2/moment-duration-format'],
             videoJs: ['video.js/7.6.5/video'],
             ace: ['ace/1.4.6'],
-            bootstrap: ['twitter-bootstrap/4.3.1/js/bootstrap.bundle'],
+            bootstrapBundle: ['twitter-bootstrap/4.3.1/js/bootstrap.bundle'],
             jquery: ['jquery/3.4.1/jquery'],
         },
     });
@@ -137,8 +141,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         module('react'),
         module('reactDom'),
         module('lodash'),
-        module('classNames'),
-    ]);
+        module('classNames')]);
 
     /**
      * @returns {boolean}
@@ -298,6 +301,20 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return [isEnabled, toggleIsEnabled];
     }
 
+    function useTooltip(jQuery) {
+        const [element, setElement] = useState(null);
+        const elementRef = useCallback(setElement);
+
+        useEffect(() => {
+            if (element) {
+                jQuery(element).tooltip();
+                return () => jQuery(element).tooltip('dispose');
+            }
+        }, [element]);
+
+        return elementRef;
+    }
+
     function fakeModule(defaultExport) {
         return {
             default: defaultExport,
@@ -441,13 +458,18 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const LazyDateTime = lazy(async () => {
-        const [moment, ] = await Promise.all(
-            [module('moment'), module('momentTimezone')]);
+        const [jQuery, moment, ] = await Promise.all([
+            module('jQuery'),
+            module('moment'),
+            module('bootstrapBundle')]);
 
         return fakeModule(memo(function LazyDateTime({dateTime}) {
-            return span(
-                {title: 'Original timestamp: ' + dateTime},
-                moment(dateTime).calendar(null, {sameElse: 'llll'}));
+            return span({
+                'data-toggle': 'tooltip',
+                'data-placement': 'right',
+                ref: useTooltip(jQuery),
+                title: 'Original timestamp: ' + dateTime,
+            }, moment(dateTime).calendar(null, {sameElse: 'llll'}));
         }));
     });
 
@@ -458,12 +480,21 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const LazyDuration = lazy(async () => {
-        const [moment, ] = await Promise.all(
-            [module('moment'), module('momentDurationFormat')]);
+        const [jQuery, moment, ] = await Promise.all([
+            module('jQuery'),
+            module('moment'),
+            module('momentDurationFormat'),
+            module('bootstrapBundle')]);
 
         return fakeModule(memo(function LazyDuration({from, to}) {
             const duration = moment.duration(moment(to).diff(from));
-            return span({title: duration.humanize()}, duration.format());
+
+            return span({
+                'data-toggle': 'tooltip',
+                'data-placement': 'right',
+                ref: useTooltip(jQuery),
+                title: duration.humanize(),
+            }, duration.format());
         }));
     });
 
@@ -614,11 +645,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             th('Title'),
                             th({width: '7%'}, 'ASIN'),
                             th({width: '5%'}, 'Distribution'),
-                            th({width: '5%'},
-                                abbr({title: 'Duration format is based on its magnitude'},
-                                    a({
-                                        href: 'https://github.com/jsmreese/moment-duration-format#default-template-function',
-                                    }, 'Duration'))),
+                            th({width: '5%'}, 'Duration'),
                             th({width: '15%'},
                                 abbr({title: 'Local time of "broadcastStartDateTime"'},
                                     'Started')),
