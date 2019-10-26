@@ -9,21 +9,25 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
+// FIXME: use minified versions by default if faster, with dev mode option?
 // FIXME: handle empty broadcast/shows list table
+// FIXME: use tooltips on disabled buttons (and refactor)
 // FIXME: don't show Live Data in a table, since it isn't tabular data?
 // FIXME: open LazyComponent every time data changes
 // FIXME: detect logged in, but no account
 // FIXME: type check with eslint and typescript+jsdoc
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
-// FIXME: use tooltips on disabled buttons (and refactor)
 // FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
 // FIXME: handle errors in lazy loading
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
 // FIXME: update broadcast from JSON in Ace editor
+// FIXME: make some JSON Ace editors read-only?
 // FIXME: use <label>s instead of onclick+focus
 
+// TODO: refresh live data periodically?
+// TODO: show broadcast slate image and video side by side?
 // TODO: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
 // TODO: sortable tables? datatable
 // TODO: searchable tables? datatable
@@ -31,6 +35,7 @@
 // TODO: use functions for initial state in useState?
 // TODO: show skeleton by having fake data? cached/mocked while being verified?
 // TODO: offline mode? https://www.html5rocks.com/en/mobile/workingoffthegrid/
+// TODO: service workers for faster background API calls, downloading CSS/JS?
 
 'use strict';
 document.body.textContent = '';
@@ -517,7 +522,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             const duration = moment.duration(moment(to).diff(from));
 
             return jsx(Tooltip,
-                {title: duration.humanize()},
+                {title: duration.humanize(), type: 'abbr'},
                 duration.format());
         }));
     });
@@ -530,6 +535,24 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
     const Id = memo(function Id({id}) {
         return span({className: 'text-nowrap text-monospace'}, id);
+    });
+
+    const Button = memo(function Button(props) {
+        const {
+            title, children, disabled, style, className, ...restProps
+        } = props;
+
+        return jsx(Tooltip, {title: title},
+            button({
+                type: 'button',
+                disabled: disabled,
+                style: {
+                    cursor: disabled ? 'not-allowed' : null,
+                    ...style,
+                },
+                className: classNames('btn', className),
+                ...restProps,
+            }, children));
     });
 
     const ToggleButton = memo(function ToggleButton(props) {
@@ -569,8 +592,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return div({className: 'card mb-3'},
             div({className: 'table-responsive'},
                 table(
-                    {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
+                    {className: 'table table-sm table-hover mb-0'},
                     thead(
+                        {className: 'thead-light'},
                         tr(headers.map(({width, content}, index) =>
                             th({key: index, width: width},
                                 content)))),
@@ -675,7 +699,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 })),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
-                style: {display: isJsonShown ? 'inherit' : 'none'},
+                style: {display: isJsonShown ? null : 'none'},
             }));
     });
 
@@ -780,7 +804,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 })),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
-                style: {display: isJsonShown ? 'inherit' : 'none'},
+                style: {display: isJsonShown ? null : 'none'},
             }));
     });
 
@@ -840,7 +864,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 })),
             jsx(JsonAceEditor, {
                 json: data,
-                style: {display: isJsonShown ? 'inherit' : 'none'},
+                style: {display: isJsonShown ? null : 'none'},
             }));
     });
 
@@ -889,18 +913,14 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         },
                     }), text))),
             p(
-                jsx(Tooltip,
-                    {title: !canClear ? 'Already cleared' : ''},
-                    button({
-                        type: 'button',
-                        disabled: !canClear,
-                        className: classNames('btn', 'btn-warning', 'mr-3', {
-                            'cursor-not-allowed': !canClear,
-                        }),
-                        onClick() {
-                            setBroadcast(EMPTY_BROADCAST_DATA);
-                        },
-                    }, 'Clear')),
+                jsx(Button, {
+                    title: !canClear ? 'Already cleared' : '',
+                    disabled: !canClear,
+                    className: 'btn-warning mr-3',
+                    onClick() {
+                        setBroadcast(EMPTY_BROADCAST_DATA);
+                    },
+                }, 'Clear'),
                 jsx(ToggleButton, {
                     label: 'Show/Hide JSON',
                     isToggled: isJsonShown,
@@ -908,7 +928,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 })),
             jsx(JsonAceEditor, {
                 json: broadcast,
-                style: {display: isJsonShown ? 'inherit' : 'none'},
+                style: {display: isJsonShown ? null : 'none'},
             }));
     });
 
