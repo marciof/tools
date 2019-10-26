@@ -9,6 +9,9 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
+// FIXME: handle empty broadcast/shows list table
+// FIXME: don't show Live Data in a table, since it isn't tabular data?
+// FIXME: open LazyComponent every time data changes
 // FIXME: detect logged in, but no account
 // FIXME: type check with eslint and typescript+jsdoc
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
@@ -18,10 +21,8 @@
 // FIXME: handle errors in lazy loading
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
-// FIXME: handle empty broadcast list
-// FIXME: handle empty show list
 // FIXME: update broadcast from JSON in Ace editor
-// FIXME: don't show Live Data in a table, since it isn't tabular data?
+// FIXME: use <label>s instead of onclick+focus
 
 // TODO: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
 // TODO: sortable tables? datatable
@@ -548,6 +549,58 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         }, label);
     });
 
+    const RadioTable = memo(function RadioTable(props) {
+        const {headers, rows, onSelectedRowIndex} = props;
+        const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+
+        useEffect(() => {
+            if (selectedRowIndex === null) {
+                if (rows.length === 1) {
+                    setSelectedRowIndex(0);
+                    onSelectedRowIndex(0);
+                }
+            }
+            else if (selectedRowIndex >= rows.length) {
+                setSelectedRowIndex(null);
+                onSelectedRowIndex(null);
+            }
+        }, [rows]);
+
+        return div({className: 'card mb-3'},
+            div({className: 'table-responsive'},
+                table(
+                    {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
+                    thead(
+                        tr(headers.map(({width, content}, index) =>
+                            th({key: index, width: width},
+                                content)))),
+                    tbody(rows.map((row, rowIndex) =>
+                        tr(
+                            {
+                                key: rowIndex,
+                                className: classNames(
+                                    {'table-primary': selectedRowIndex === rowIndex}),
+                                onClick() {
+                                    if (!hasSelection()) {
+                                        setSelectedRowIndex(rowIndex);
+                                        onSelectedRowIndex(rowIndex);
+                                    }
+                                },
+                            },
+                            row.map(({content, name}, cellIndex) =>
+                                td({key: cellIndex},
+                                    content
+                                    || input({
+                                        type: 'radio',
+                                        name: name,
+                                        checked: selectedRowIndex === rowIndex,
+                                        onChange() {
+                                            setSelectedRowIndex(rowIndex);
+                                            onSelectedRowIndex(rowIndex);
+                                        },
+                                    })))))))));
+    });
+
     const Shows = memo(function Shows(props) {
         const {data, onLoadLiveData, onListBroadcasts} = props;
 
@@ -556,51 +609,40 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         const SELECT_SHOW_BUTTON_TITLE = 'Select a show';
 
         useEffect(() => {
-            if (data.shows && (data.shows.length > 0)) {
-                let show = data.shows[0];
-                setSelectedShow(show);
-                onLoadLiveData(show.id);
-                onListBroadcasts(show.id);
+            if (selectedShow) {
+                onLoadLiveData(selectedShow.id);
+                onListBroadcasts(selectedShow.id);
             }
-        }, [data]);
+        }, [selectedShow]);
 
         if (data.errors) {
             return jsx(LoginLink);
         }
 
         return form(
-            div({className: 'card mb-3'}, div({className: 'table-responsive'},
-                table(
-                    {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
-                    thead(
-                        tr(
-                            th({colSpan: 2}, 'ID'),
-                            th('Title'),
-                            th('Distribution'),
-                            th('Feature Group'))),
-                    tbody(data.shows.map(show =>
-                        tr(
-                            {key: show.id},
-                            td(input({
-                                type: 'radio',
-                                id: 'show-' + show.id,
-                                name: 'showId',
-                                value: show.id,
-                                checked: selectedShow === show,
-                                onChange() {
-                                    setSelectedShow(show);
-                                },
-                            })),
-                            td(label({
-                                htmlFor: 'show-' + show.id,
-                                className: 'mb-0',
-                            }, jsx(Id, {id: show.id}))),
-                            td(a({
-                                href: 'https://www.amazon.com/live/channel/'
-                                    + show.id,
-                            }, show.title)),
-                            td(show.distribution),
-                            td(show.featureGroup))))))),
+            jsx(RadioTable, {
+                onSelectedRowIndex(rowIndex) {
+                    setSelectedShow(rowIndex !== null
+                        ? data.shows[rowIndex]
+                        : null);
+                },
+                headers: [
+                    {},
+                    {content: 'Title'},
+                    {content: 'ID'},
+                    {content: 'Distribution'},
+                    {content: 'Feature Group'},
+                ],
+                rows: data.shows.map(show => [
+                    {name: 'show'},
+                    {content: a({
+                        href: 'https://www.amazon.com/live/channel/' + show.id,
+                    }, show.title)},
+                    {content: jsx(Id, {id: show.id})},
+                    {content: show.distribution},
+                    {content: show.featureGroup},
+                ]),
+            }),
             p(
                 button({
                     disabled: !selectedShow,
@@ -641,78 +683,68 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         const {data, onLoadMore, onLoadBroadcast} = props;
 
         const [selectedBroadcast, setSelectedBroadcast] = useState(null);
-        const [selectedBroadcastIndex, setSelectedBroadcastIndex] = useState(null);
         const [isLoadingMore, setIsLoadingMore] = useState(false);
         const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
 
         const SELECT_BROADCAST_BUTTON_TITLE = 'Select a broadcast';
         const canLoadMoreBroadcasts = !!data.nextLink && !isLoadingMore;
 
-        useEffect(() => {
-            setIsLoadingMore(false);
-            if (selectedBroadcastIndex >= data.broadcasts.length) {
-                setSelectedBroadcast(null);
-                setSelectedBroadcastIndex(null);
-            }
-        }, [data]);
+        useEffect(() => void setIsLoadingMore(false), [data]);
 
         return form(
-            div({className: 'card mb-3'}, div({className: 'table-responsive'},
-                table(
-                    {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
-                    thead(
-                        tr(
-                            th({colSpan: 2, width: '23%'}, 'ID'),
-                            th('Title'),
-                            th({width: '7%'}, 'ASIN'),
-                            th({width: '5%'}, 'Distribution'),
-                            th({width: '5%'}, 'Duration'),
-                            th({width: '15%'},
-                                jsx(Tooltip, {
-                                    title: 'Local time of "broadcastStartDateTime"',
-                                    type: 'abbr',
-                                }, 'Started')),
-                            th({width: '15%'},
-                                jsx(Tooltip, {
-                                    title: 'Local time of "broadcastEndDateTime"',
-                                    type: 'abbr',
-                                }, 'Ended')))),
-                    tbody(data.broadcasts.map((broadcast, index) =>
-                        tr(
-                            {key: broadcast.id},
-                            td(input({
-                                type: 'radio',
-                                id: 'broadcast-' + broadcast.id,
-                                name: 'broadcastId',
-                                value: broadcast.id,
-                                checked: selectedBroadcast === broadcast,
-                                onChange() {
-                                    setSelectedBroadcast(broadcast);
-                                    setSelectedBroadcastIndex(index);
-                                },
-                            })),
-                            td(label({
-                                htmlFor: 'broadcast-' + broadcast.id,
-                                className: 'mb-0',
-                            }, jsx(Id, {id: broadcast.id}))),
-                            td(jsx(BroadcastPageLink, {
-                                id: broadcast.id,
-                                text: broadcast.title,
-                            })),
-                            td(jsx(Id, {id: broadcast.asin})),
-                            td(broadcast.distribution),
-                            td(broadcast.broadcastStartDateTime
-                                && broadcast.broadcastEndDateTime
-                                && jsx(Duration, {
-                                    from: broadcast.broadcastStartDateTime,
-                                    to: broadcast.broadcastEndDateTime,
-                                })),
-                            td(broadcast.broadcastStartDateTime && jsx(DateTime, {
-                                dateTime: broadcast.broadcastStartDateTime,
-                            })),
-                            td(broadcast.broadcastEndDateTime && jsx(DateTime, {
-                                dateTime: broadcast.broadcastEndDateTime,
-                            })))))))),
+            jsx(RadioTable, {
+                onSelectedRowIndex(rowIndex) {
+                    setSelectedBroadcast(rowIndex !== null
+                        ? data.broadcasts[rowIndex]
+                        : null);
+                },
+                headers: [
+                    {width: '1%'},
+                    {content: 'Title'},
+                    {width: '22%', content: 'ID'},
+                    {width: '7%', content: 'ASIN'},
+                    {width: '5%', content: 'Distribution'},
+                    {width: '5%', content: 'Duration'},
+                    {
+                        width: '15%',
+                        content: jsx(Tooltip, {
+                            title: 'Local time of "broadcastStartDateTime"',
+                            type: 'abbr',
+                        }, 'Started'),
+                    },
+                    {
+                        width: '15%',
+                        content: jsx(Tooltip, {
+                            title: 'Local time of "broadcastEndDateTime"',
+                            type: 'abbr',
+                        }, 'Ended'),
+                    },
+                ],
+                rows: data.broadcasts.map(broadcast => [
+                    {name: 'broadcast'},
+                    {content: jsx(BroadcastPageLink, {
+                        id: broadcast.id,
+                        text: broadcast.title,
+                    })},
+                    {content: jsx(Id, {id: broadcast.id})},
+                    {content: jsx(Id, {id: broadcast.asin})},
+                    {content: broadcast.distribution},
+                    {content: broadcast.broadcastStartDateTime
+                        && broadcast.broadcastEndDateTime
+                        && jsx(Duration, {
+                            from: broadcast.broadcastStartDateTime,
+                            to: broadcast.broadcastEndDateTime,
+                        })},
+                    {content: broadcast.broadcastStartDateTime
+                        && jsx(DateTime, {
+                            dateTime: broadcast.broadcastStartDateTime,
+                    })},
+                    {content: broadcast.broadcastEndDateTime
+                        && jsx(DateTime, {
+                            dateTime: broadcast.broadcastEndDateTime,
+                    })},
+                ]),
+            }),
             p(
                 button({
                     type: 'button',
@@ -733,7 +765,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     }),
                     title: !data.nextLink ? 'No more broadcasts'
                         : isLoadingMore ? 'Loading more broadcasts'
-                            : '',
+                        : '',
                     onClick() {
                         setIsLoadingMore(true);
                         onLoadMore(data.nextLink);
