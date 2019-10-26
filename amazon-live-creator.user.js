@@ -301,12 +301,13 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     }
 
     const LoadingSpinner = memo(function LoadingSpinner(props) {
-        const {child, style} = props;
+        const {before, after, style} = props;
 
         return span(
             {style: style},
+            !before ? null : Fragment(before, ' '),
             span({className: 'spinner-border text-secondary spinner-border-sm'}),
-            !child ? null : Fragment(' ', child));
+            !after ? null : Fragment(' ', after));
     });
 
     const LazyAceEditor = lazy(async () => {
@@ -343,7 +344,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const AceEditor = memo(function AceEditor({style, text, ...props}) {
         return jsx(React.Suspense, {
             fallback: jsx(LoadingSpinner, {
-                child: pre(text),
+                after: pre(text),
                 style: {
                     overflow: 'auto',
                     display: 'block',
@@ -447,13 +448,14 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             return Fragment(
                 input({
                     type: 'date',
+                    className: 'p-0 border-0 mr-1 bg-transparent',
                     value: parsedMoment.format('Y-MM-DD'),
                     onChange: readOnlyOnChange,
                     title: info,
                 }),
-                ' ',
                 input({
                     type: 'time',
+                    className: 'p-0 border-0 bg-transparent',
                     value: parsedMoment.format('HH:mm:ss'),
                     onChange: readOnlyOnChange,
                     title: info,
@@ -463,7 +465,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
     const DateTime = memo(function DateTime({dateTime}) {
         return jsx(React.Suspense, {
-            fallback: jsx(LoadingSpinner, {child: dateTime}),
+            fallback: jsx(LoadingSpinner, {before: dateTime}),
         }, jsx(LazyDateTime, {dateTime}));
     });
 
@@ -616,22 +618,21 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
                     thead(
                         tr(
-                            th({colSpan: 2}, 'ID'),
+                            th({colSpan: 2, width: '23%'}, 'ID'),
                             th('Title'),
-                            th('ASIN'),
-                            th('Distribution'),
-                            th('Stage'),
-                            th(abbr(
-                                {title: 'Duration format is based on its magnitude'},
-                                a({
-                                    href: 'https://github.com/jsmreese/moment-duration-format#default-template-function',
-                                }, 'Duration'))),
-                            th(abbr(
-                                {title: 'Local time of "broadcastStartDateTime"'},
-                                'Started')),
-                            th(abbr(
-                                {title: 'Local time of "broadcastEndDateTime"'},
-                                'Ended')))),
+                            th({width: '7%'}, 'ASIN'),
+                            th({width: '5%'}, 'Distribution'),
+                            th({width: '5%'},
+                                abbr({title: 'Duration format is based on its magnitude'},
+                                    a({
+                                        href: 'https://github.com/jsmreese/moment-duration-format#default-template-function',
+                                    }, 'Duration'))),
+                            th({width: '16%'},
+                                abbr({title: 'Local time of "broadcastStartDateTime"'},
+                                    'Started')),
+                            th({width: '16%'},
+                                abbr({title: 'Local time of "broadcastEndDateTime"'},
+                                    'Ended')))),
                     tbody(data.broadcasts.map((broadcast, index) =>
                         tr(
                             {key: broadcast.id},
@@ -647,7 +648,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 },
                             })),
                             td(label(
-                                {htmlFor: 'broadcast-' + broadcast.id},
+                                {
+                                    htmlFor: 'broadcast-' + broadcast.id,
+                                    className: 'mb-0',
+                                },
                                 jsx(Id, {id: broadcast.id}))),
                             td(jsx(BroadcastPageLink, {
                                 id: broadcast.id,
@@ -655,7 +659,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             })),
                             td(jsx(Id, {id: broadcast.asin})),
                             td(broadcast.distribution),
-                            td(broadcast.stage),
                             td(broadcast.broadcastStartDateTime
                                 && broadcast.broadcastEndDateTime
                                 && jsx(Duration, {
