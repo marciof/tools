@@ -23,6 +23,7 @@
 // FIXME: update broadcast from JSON in Ace editor
 // FIXME: don't show Live Data in a table, since it isn't tabular data?
 
+// TODO: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
 // TODO: sortable tables? datatable
 // TODO: searchable tables? datatable
 // TODO: add alias for React.Suspense?
@@ -245,7 +246,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     }
 
     /**
-     *
      * @param tag {string|React.Component}
      * @param [props] {Object}
      * @param children {Array<string|React.Element>}
@@ -266,7 +266,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const a = jsx.bind(null, 'a');
     const div = jsx.bind(null, 'div');
     const pre = jsx.bind(null, 'pre');
-    const abbr = jsx.bind(null, 'abbr');
     const span = jsx.bind(null, 'span');
     const img = jsx.bind(null, 'img');
     const form = jsx.bind(null, 'form');
@@ -297,6 +296,17 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         title: '',
         videoSource: 'THIRD_PARTY_ENCODER',
     };
+
+    function hasSelection() {
+        const selection = window.getSelection();
+
+        if (selection.rangeCount === 0) {
+            return false;
+        }
+
+        const range = selection.getRangeAt(0);
+        return !range.collapsed;
+    }
 
     function useToggleState(isEnabledAtStart) {
         const [isEnabled, setIsEnabled] = useState(isEnabledAtStart);
