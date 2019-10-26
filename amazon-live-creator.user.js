@@ -9,20 +9,26 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
+// FIXME: detect logged in, but no account
+// FIXME: type check with eslint and typescript+jsdoc
+// FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
+// FIXME: use tooltips on disabled buttons
+// FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
 // FIXME: handle errors in lazy loading
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
 // FIXME: handle empty broadcast list
+// FIXME: handle empty show list
 // FIXME: update broadcast from JSON in Ace editor
-// FIXME: fix column widths on the Shows table to prevent content from "jumping"
+// FIXME: don't show Live Data in a table, since it isn't tabular data?
 
-// TODO: add alias for React.Suspense?
-// TODO: use tooltips? https://getbootstrap.com/docs/4.3/components/tooltips/
-// TODO: don't show Live Data in a table, since it isn't tabular data?
-// TODO: use functions for initial state in useState?
 // TODO: sortable tables? datatable
 // TODO: searchable tables? datatable
+// TODO: add alias for React.Suspense?
+// TODO: use functions for initial state in useState?
+// TODO: show skeleton by having fake data? cached/mocked while being verified?
+// TODO: offline mode? https://www.html5rocks.com/en/mobile/workingoffthegrid/
 
 'use strict';
 document.body.textContent = '';
@@ -457,17 +463,31 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             'Please login to your Amazon account first.'));
     });
 
-    const LazyDateTime = lazy(async () => {
-        const [jQuery, moment, ] = await Promise.all([
-            module('jQuery'),
-            module('moment'),
-            module('bootstrapBundle')]);
+    const LazyTooltip = lazy(async () => {
+        const [jQuery, ] = await Promise.all(
+            [module('jQuery'), module('bootstrapBundle')]);
 
-        return fakeModule(memo(function LazyDateTime({dateTime}) {
-            return span({
+        return fakeModule(memo(function LazyTooltip({title, type, children}) {
+            return jsx(type, {
                 'data-toggle': 'tooltip',
                 'data-placement': 'right',
                 ref: useTooltip(jQuery),
+                title: title,
+            }, children);
+        }));
+    });
+
+    const Tooltip = memo(function Tooltip({title, children, type = 'span'}) {
+        return jsx(React.Suspense, {
+            fallback: jsx(type, {title: title}, children),
+        }, jsx(LazyTooltip, {title: title, type: type}, children));
+    });
+
+    const LazyDateTime = lazy(async () => {
+        const moment = await module('moment');
+
+        return fakeModule(memo(function LazyDateTime({dateTime}) {
+            return jsx(Tooltip, {
                 title: 'Original timestamp: ' + dateTime,
             }, moment(dateTime).calendar(null, {sameElse: 'llll'}));
         }));
@@ -480,19 +500,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const LazyDuration = lazy(async () => {
-        const [jQuery, moment, ] = await Promise.all([
-            module('jQuery'),
-            module('moment'),
-            module('momentDurationFormat'),
-            module('bootstrapBundle')]);
+        const [moment, ] = await Promise.all(
+            [module('moment'), module('momentDurationFormat')]);
 
         return fakeModule(memo(function LazyDuration({from, to}) {
             const duration = moment.duration(moment(to).diff(from));
-
-            return span({
-                'data-toggle': 'tooltip',
-                'data-placement': 'right',
-                ref: useTooltip(jQuery),
+            return jsx(Tooltip, {
                 title: duration.humanize(),
             }, duration.format());
         }));
@@ -647,11 +660,15 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             th({width: '5%'}, 'Distribution'),
                             th({width: '5%'}, 'Duration'),
                             th({width: '15%'},
-                                abbr({title: 'Local time of "broadcastStartDateTime"'},
-                                    'Started')),
+                                jsx(Tooltip, {
+                                    title: 'Local time of "broadcastStartDateTime"',
+                                    type: 'abbr',
+                                }, 'Started')),
                             th({width: '15%'},
-                                abbr({title: 'Local time of "broadcastEndDateTime"'},
-                                    'Ended')))),
+                                jsx(Tooltip, {
+                                    title: 'Local time of "broadcastEndDateTime"',
+                                    type: 'abbr',
+                                }, 'Ended')))),
                     tbody(data.broadcasts.map((broadcast, index) =>
                         tr(
                             {key: broadcast.id},
@@ -752,9 +769,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             th('ID'),
                             th('State'),
                             th('Status'),
-                            th(abbr(
-                                {title: 'Local time of "lvsLastMessageEpochTime"'},
-                                'Last change')))),
+                            th(jsx(Tooltip, {
+                                title: 'Local time of "lvsLastMessageEpochTime"',
+                                type: 'abbr',
+                            }, 'Last change')))),
                     tbody(
                         tr(
                             td(broadcastId && jsx(Id, {id: broadcastId})),
