@@ -142,6 +142,88 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
     };
 });
 
+class Api {
+    constructor() {
+        this.urlPathPrefix = '/api/v1/';
+    }
+
+    /**
+     * @param broadcastId {string}
+     * @returns {string}
+     */
+    getBroadcastSlateImageUrl(broadcastId) {
+        return this.urlPathPrefix
+            + 'broadcasts/'
+            + encodeURIComponent(broadcastId)
+            + '/image/slate';
+    }
+
+    /**
+     * @param broadcastId {string}
+     * @returns {string}
+     */
+    getShowSlateImageUrl(showId) {
+        return this.urlPathPrefix
+            + 'show/'
+            + encodeURIComponent(showId)
+            + '/image/slate';
+    }
+
+    /**
+     * @param broadcastId {string}
+     * @returns {Promise<Object>}
+     */
+    readBroadcast(broadcastId) {
+        return this.request(
+            'broadcasts/' + encodeURIComponent(broadcastId));
+    }
+
+    /**
+     * @param showId {string}
+     * @returns {Promise<Object>}
+     */
+    readShowLiveData(showId) {
+        return this.request(
+            'poller?fields=showLiveData&showId=' + encodeURIComponent(showId));
+    }
+
+    /**
+     * @param showId {string}
+     * @param [nextToken] {string}
+     * @returns {Promise<Object>}
+     */
+    listShowBroadcasts(showId, nextToken) {
+        return this.request(
+            'shows/'
+            + encodeURIComponent(showId)
+            + '/broadcasts/?direction=all&ascending=true&maxResults=10'
+            + (!nextToken
+                ? ''
+                : '&nextToken=' + encodeURIComponent(nextToken)));
+    }
+
+    /**
+     * @returns {Promise<Object>}
+     */
+    listShows() {
+        return this.request('user/shows');
+    }
+
+    /**
+     * @param path {string}
+     * @returns {Promise<Response>}
+     */
+    async request(path) {
+        const fullPath = this.urlPathPrefix + path;
+        console.info('API request:', fullPath);
+
+        const response = await fetch(new Request(fullPath));
+        console.info('API response:', response);
+
+        return response.json();
+    }
+}
+
 Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const [React, ReactDOM, lodash, classNames] = await Promise.all([
         module('react'),
@@ -215,89 +297,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         title: '',
         videoSource: 'THIRD_PARTY_ENCODER',
     };
-
-    class Api {
-        constructor() {
-            this.urlPathPrefix = '/api/v1/';
-        }
-
-        /**
-         * @param broadcastId {string}
-         * @returns {string}
-         */
-        getBroadcastSlateImageUrl(broadcastId) {
-            return this.urlPathPrefix
-                + 'broadcasts/'
-                + encodeURIComponent(broadcastId)
-                + '/image/slate';
-        }
-
-        /**
-         * @param broadcastId {string}
-         * @returns {string}
-         */
-        getShowSlateImageUrl(showId) {
-            return this.urlPathPrefix
-                + 'show/'
-                + encodeURIComponent(showId)
-                + '/image/slate';
-        }
-
-        /**
-         * @param broadcastId {string}
-         * @returns {Promise<Object>}
-         */
-        readBroadcast(broadcastId) {
-            return this.request(
-                'broadcasts/' + encodeURIComponent(broadcastId));
-        }
-
-        /**
-         * @param showId {string}
-         * @returns {Promise<Object>}
-         */
-        readShowLiveData(showId) {
-            return this.request(
-                'poller?fields=showLiveData&showId='
-                + encodeURIComponent(showId));
-        }
-
-        /**
-         * @param showId {string}
-         * @param [nextToken] {string}
-         * @returns {Promise<Object>}
-         */
-        listShowBroadcasts(showId, nextToken) {
-            return this.request(
-                'shows/'
-                + encodeURIComponent(showId)
-                + '/broadcasts/?direction=all&ascending=true&maxResults=10'
-                + (!nextToken
-                    ? ''
-                    : '&nextToken=' + encodeURIComponent(nextToken)));
-        }
-
-        /**
-         * @returns {Promise<Object>}
-         */
-        listShows() {
-            return this.request('user/shows');
-        }
-
-        /**
-         * @param path {string}
-         * @returns {Promise<Response>}
-         */
-        async request(path) {
-            const fullPath = this.urlPathPrefix + path;
-            console.info('API request:', fullPath);
-
-            const response = await fetch(new Request(fullPath));
-            console.info('API response:', response);
-
-            return response.json();
-        }
-    }
 
     function useToggleState(isEnabledAtStart) {
         const [isEnabled, setIsEnabled] = useState(isEnabledAtStart);
@@ -478,25 +477,25 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const Tooltip = memo(function Tooltip({title, children, type = 'span'}) {
-        return jsx(React.Suspense, {
-            fallback: jsx(type, {title: title}, children),
-        }, jsx(LazyTooltip, {title: title, type: type}, children));
+        return jsx(React.Suspense,
+            {fallback: jsx(type, {title: title}, children)},
+            jsx(LazyTooltip, {title: title, type: type}, children));
     });
 
     const LazyDateTime = lazy(async () => {
         const moment = await module('moment');
 
         return fakeModule(memo(function LazyDateTime({dateTime}) {
-            return jsx(Tooltip, {
-                title: 'Original timestamp: ' + dateTime,
-            }, moment(dateTime).calendar(null, {sameElse: 'llll'}));
+            return jsx(Tooltip,
+                {title: 'Original timestamp: ' + dateTime},
+                moment(dateTime).calendar(null, {sameElse: 'llll'}));
         }));
     });
 
     const DateTime = memo(function DateTime({dateTime}) {
-        return jsx(React.Suspense, {
-            fallback: jsx(LoadingSpinner, {before: dateTime}),
-        }, jsx(LazyDateTime, {dateTime}));
+        return jsx(React.Suspense,
+            {fallback: jsx(LoadingSpinner, {before: dateTime})},
+            jsx(LazyDateTime, {dateTime}));
     });
 
     const LazyDuration = lazy(async () => {
@@ -505,9 +504,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         return fakeModule(memo(function LazyDuration({from, to}) {
             const duration = moment.duration(moment(to).diff(from));
-            return jsx(Tooltip, {
-                title: duration.humanize(),
-            }, duration.format());
+
+            return jsx(Tooltip,
+                {title: duration.humanize()},
+                duration.format());
         }));
     });
 
@@ -581,12 +581,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                     setSelectedShow(show);
                                 },
                             })),
-                            td(label(
-                                {
-                                    htmlFor: 'show-' + show.id,
-                                    className: 'mb-0',
-                                },
-                                jsx(Id, {id: show.id}))),
+                            td(label({
+                                htmlFor: 'show-' + show.id,
+                                className: 'mb-0',
+                            }, jsx(Id, {id: show.id}))),
                             td(a({
                                 href: 'https://www.amazon.com/live/channel/'
                                     + show.id,
@@ -683,12 +681,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                     setSelectedBroadcastIndex(index);
                                 },
                             })),
-                            td(label(
-                                {
-                                    htmlFor: 'broadcast-' + broadcast.id,
-                                    className: 'mb-0',
-                                },
-                                jsx(Id, {id: broadcast.id}))),
+                            td(label({
+                                htmlFor: 'broadcast-' + broadcast.id,
+                                className: 'mb-0',
+                            }, jsx(Id, {id: broadcast.id}))),
                             td(jsx(BroadcastPageLink, {
                                 id: broadcast.id,
                                 text: broadcast.title,
