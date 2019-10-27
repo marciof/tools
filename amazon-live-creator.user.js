@@ -9,11 +9,8 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: refactor ToggleButton?
-// FIXME: does Button with tooltip breaks focus?
 // FIXME: use minified versions by default if faster, with dev mode option?
 // FIXME: handle empty broadcast/shows list table
-// FIXME: use tooltips on disabled buttons (and refactor)
 // FIXME: don't show Live Data in a table, since it isn't tabular data?
 // FIXME: open LazyComponent every time data changes
 // FIXME: detect logged in, but no account
@@ -26,7 +23,8 @@
 // FIXME: handle videojs JS errors
 // FIXME: update broadcast from JSON in Ace editor
 // FIXME: make some JSON Ace editors read-only?
-// FIXME: use <label>s instead of onclick+focus
+// FIXME: use <label>s instead of onclick+focus?
+// FIXME: does Button with tooltip breaks focus?
 
 // TODO: refresh live data periodically?
 // TODO: show broadcast slate image and video side by side?
@@ -495,7 +493,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const Tooltip = memo(function Tooltip({title = '', children, type = 'span'}) {
-        if (title === '') {
+        if ((title === '') || lodash.isBoolean(title)) {
             return jsx(type, children);
         }
         return jsx(React.Suspense,
@@ -551,8 +549,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             button({
                 type: 'button',
                 disabled: disabled,
-                style: {
-                    cursor: disabled ? 'not-allowed' : null,
+                style: !disabled ? style : {
+                    cursor: 'not-allowed',
+                    opacity: 0.25,
                     ...style,
                 },
                 className: classNames('btn', className),
@@ -561,10 +560,11 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const ToggleButton = memo(function ToggleButton(props) {
-        const {isToggled, children, ...restProps} = props;
+        const {children, className, ...restProps} = props;
 
         return jsx(Button, {
-            className: classNames('btn-info', {active: isToggled}),
+            className: classNames('btn-info', className),
+            'data-toggle': 'button',
             ...restProps,
         }, children);
     });
@@ -666,7 +666,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             }),
             p(
                 jsx(Button, {
-                    title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
+                    title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
                     className: 'btn-primary mr-3',
                     onClick() {
@@ -674,7 +674,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     },
                 }, 'List broadcasts'),
                 jsx(Button, {
-                    title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
+                    title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
                     className: 'btn-primary mr-3',
                     onClick() {
@@ -683,8 +683,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 }, 'Load live data'),
                 jsx(ToggleButton, {
                     disabled: !selectedShow,
-                    title: !selectedShow ? SELECT_SHOW_BUTTON_TITLE : '',
-                    isToggled: isJsonShown,
+                    title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     onClick: toggleIsJsonShown,
                 }, 'Show/Hide JSON')),
             selectedShow && jsx(JsonAceEditor, {
@@ -770,7 +769,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 }, 'Load broadcast'),
                 jsx(Button, {
                     disabled: !canLoadMoreBroadcasts,
-                    className: 'btn-secondary mr-3',
+                    className: 'btn-primary mr-3',
                     title: !data.nextLink ? 'No more broadcasts'
                         : isLoadingMore ? 'Loading more broadcasts'
                         : '',
@@ -781,8 +780,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 }, 'Load more broadcasts'),
                 jsx(ToggleButton, {
                     disabled: !selectedBroadcast,
-                    title: !selectedBroadcast ? SELECT_BROADCAST_BUTTON_TITLE : '',
-                    isToggled: isJsonShown,
+                    title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
                     onClick: toggleIsJsonShown,
                 }, 'Show/Hide JSON')),
             selectedBroadcast && jsx(JsonAceEditor, {
@@ -830,17 +828,15 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             }))))))),
             p(
                 jsx(Button, {
-                    title: !broadcastId ? 'No broadcast with live data' : '',
+                    title: !!broadcastId || 'No broadcast with live data',
                     disabled: !broadcastId,
                     className: 'btn-primary mr-3',
                     onClick() {
                         onLoadBroadcast(broadcastId);
                     },
                 }, 'Load broadcast'),
-                jsx(ToggleButton, {
-                    isToggled: isJsonShown,
-                    onClick: toggleIsJsonShown,
-                }, 'Show/Hide JSON')),
+                jsx(ToggleButton, {onClick: toggleIsJsonShown},
+                    'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: data,
                 style: {display: isJsonShown ? null : 'none'},
@@ -893,17 +889,15 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     }), text))),
             p(
                 jsx(Button, {
-                    title: !canClear ? 'Already cleared' : '',
+                    title: canClear || 'Already cleared',
                     disabled: !canClear,
-                    className: 'btn-warning mr-3',
+                    className: 'btn-primary mr-3',
                     onClick() {
                         setBroadcast(EMPTY_BROADCAST_DATA);
                     },
                 }, 'Clear'),
-                jsx(ToggleButton, {
-                    isToggled: isJsonShown,
-                    onClick: toggleIsJsonShown,
-                }, 'Show/Hide JSON')),
+                jsx(ToggleButton, {onClick: toggleIsJsonShown},
+                    'Show/Hide JSON')),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {display: isJsonShown ? null : 'none'},
