@@ -420,7 +420,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
             useEffect(() => {
                 if (player && src) {
+                    const wasPaused = player.paused();
                     player.src(src);
+
+                    if (!wasPaused) {
+                        player.play();
+                    }
                 }
             }, [player, src]);
 
@@ -480,7 +485,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             }, [element]);
 
             useEffect(() => {
-                if (tooltipEl && (title !== '') && !lodash.isBoolean(title)) {
+                if (tooltipEl && (title !== '')) {
                     tooltipEl.tooltip({
                         placement: 'right',
                         title: title,
@@ -494,6 +499,10 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const Tooltip = memo(function Tooltip({title = '', children, type = 'span'}) {
+        if (lodash.isBoolean(title)) {
+            title = '';
+        }
+
         return jsx(React.Suspense,
             {fallback: jsx(type, {title: title}, children)},
             jsx(LazyTooltip, {title: title, type: type}, children));
@@ -758,7 +767,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             }),
             p(
                 jsx(Button, {
-                    title: !selectedBroadcast ? SELECT_BROADCAST_BUTTON_TITLE : '',
+                    title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
                     disabled: !selectedBroadcast,
                     className: 'btn-primary mr-3',
                     onPointerDown() {
@@ -997,13 +1006,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
             }),
-            jsx(LazyBroadcast, {
-                title: 'Broadcast',
-                promise: broadcastPromise,
-                getSlateImageUrl(broadcastId) {
-                    return api.getBroadcastSlateImageUrl(broadcastId);
-                },
-            }),
             broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
                 title: 'Broadcasts',
                 promise: broadcastsPromise,
@@ -1017,6 +1019,13 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 },
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
+                },
+            }),
+            jsx(LazyBroadcast, {
+                title: 'Broadcast',
+                promise: broadcastPromise,
+                getSlateImageUrl(broadcastId) {
+                    return api.getBroadcastSlateImageUrl(broadcastId);
                 },
             }));
     });
