@@ -480,7 +480,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             }, [element]);
 
             useEffect(() => {
-                if (tooltipEl) {
+                if (tooltipEl && (title !== '') && !lodash.isBoolean(title)) {
                     tooltipEl.tooltip({
                         placement: 'right',
                         title: title,
@@ -494,9 +494,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const Tooltip = memo(function Tooltip({title = '', children, type = 'span'}) {
-        if ((title === '') || lodash.isBoolean(title)) {
-            return jsx(type, children);
-        }
         return jsx(React.Suspense,
             {fallback: jsx(type, {title: title}, children)},
             jsx(LazyTooltip, {title: title, type: type}, children));
