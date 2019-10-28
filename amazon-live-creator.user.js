@@ -630,7 +630,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const Shows = memo(function Shows(props) {
-        const {data, onLoadLiveData, onListBroadcasts} = props;
+        const {data, onLoadLiveData, onListBroadcasts, onLogin} = props;
 
         const [selectedShow, setSelectedShow] = useState(null);
         const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
@@ -642,6 +642,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 onListBroadcasts(selectedShow.id);
             }
         }, [selectedShow]);
+
+        useEffect(() => {
+            if (!data.errors) {
+                onLogin();
+            }
+        }, [data]);
 
         if (data.errors) {
             return jsx(LoginLink);
@@ -978,18 +984,24 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const App = memo(function App({api}) {
         const [showsPromise,] = useState(() => api.listShows());
         const [liveDataPromise, setLiveDataPromise] = useState(null);
-        const [broadcastPromise, setBroadcastPromise] = useState(
-            Promise.resolve(EMPTY_BROADCAST_DATA));
-
-        const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(
-            false);
-        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
+        const [broadcastPromise, setBroadcastPromise] = useState(null);
         const [broadcastsPromise, setBroadcastsPromise] = useState(null);
+        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
+        const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts]
+            = useState(false);
 
         return Fragment(
             jsx(LazyShows, {
                 title: 'Shows',
                 promise: showsPromise,
+                onLogin() {
+                    setBroadcastPromise(previousBroadcastPromise => {
+                        if (previousBroadcastPromise === null) {
+                            setBroadcastPromise(
+                                Promise.resolve(EMPTY_BROADCAST_DATA));
+                        }
+                    });
+                },
                 onLoadLiveData(showId) {
                     setLiveDataPromise(api.readShowLiveData(showId));
                 },
@@ -1021,7 +1033,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
             }),
-            jsx(LazyBroadcast, {
+            broadcastPromise && jsx(LazyBroadcast, {
                 title: 'Broadcast',
                 promise: broadcastPromise,
                 getSlateImageUrl(broadcastId) {
