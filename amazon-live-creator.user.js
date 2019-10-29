@@ -513,30 +513,24 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         return jsx(React.Suspense, {
             fallback: jsx(type,
-                {title: actualTitle, ...restProps},
-                children),
+                {title: actualTitle, ...restProps}, children),
         }, jsx(LazyTooltip,
-            {title: actualTitle, type: type, ...restProps},
-            children));
+            {title: actualTitle, type: type, ...restProps}, children));
     });
 
     const LazyDateTime = lazy(async () => {
         const moment = await module('moment');
 
         return fakeModule(memo(function LazyDateTime({children}) {
-            return jsx(Tooltip, {
-                title: 'Original timestamp: ' + children,
-                className: 'text-nowrap',
-            }, moment(children).calendar(null, {sameElse: 'llll'}));
+            return jsx(Tooltip,
+                {title: 'Original timestamp: ' + children},
+                moment(children).calendar(null, {sameElse: 'llll'}));
         }));
     });
 
     const DateTime = memo(function DateTime({children}) {
         return jsx(React.Suspense, {
-            fallback: jsx(LoadingSpinner, {
-                before: children,
-                className: 'text-nowrap',
-            }),
+            fallback: jsx(LoadingSpinner, {before: children}),
         }, jsx(LazyDateTime, children));
     });
 
@@ -687,7 +681,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         {width: '1%'},
                         {content: 'Name'},
                         {width: '55%', content: 'ID'},
-                        {width: '14%', content: 'Type'},
+                        {width: '19%', content: 'Type'},
                     ],
                     rows: data.map(account => [
                         {name: 'account'},
@@ -740,9 +734,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 headers: [
                     {width: '1%'},
                     {content: 'Title'},
-                    {width: '41%', content: 'ID'},
-                    {width: '14%', content: 'Distribution'},
-                    {width: '14%', content: 'Feature Group'},
+                    {width: '42%', content: 'ID'},
+                    {width: '16%', content: 'Distribution'},
+                    {width: '16%', content: 'Feature Group'},
                 ],
                 rows: data.shows.map(show => [
                     {name: 'show'},
@@ -809,19 +803,19 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 headers: [
                     {width: '1%'},
                     {content: 'Title'},
-                    {width: '30%', content: 'ID'},
-                    {width: '7%', content: 'ASIN'},
-                    {width: '5%', content: 'Distribution'},
-                    {width: '5%', content: 'Duration'},
+                    {width: '25%', content: 'ID'},
+                    {width: '9%', content: 'ASIN'},
+                    {width: '6%', content: 'Distribution'},
+                    {width: '6%', content: 'Duration'},
                     {
-                        width: '11%',
+                        width: '14%',
                         content: jsx(Tooltip, {
                             title: 'Local time of "broadcastStartDateTime"',
                             type: 'abbr',
                         }, 'Started'),
                     },
                     {
-                        width: '11%',
+                        width: '14%',
                         content: jsx(Tooltip, {
                             title: 'Local time of "broadcastEndDateTime"',
                             type: 'abbr',
