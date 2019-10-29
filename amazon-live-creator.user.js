@@ -11,7 +11,6 @@
 // ==/UserScript==
 
 // FIXME: add RadioTable footer that knows whether it's empty or not
-// FIXME: use children in DateTime?
 // FIXME: toggle button active status
 // FIXME: split Load Broadcast into a combined two-button? Load / From server
 // FIXME: handle empty broadcast/shows list table
@@ -344,10 +343,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     }
 
     const LoadingSpinner = memo(function LoadingSpinner(props) {
-        const {before, after, style} = props;
+        const {before, after, ...restProps} = props;
 
-        return span(
-            {style: style},
+        return span(restProps,
             (before !== undefined) ? Fragment(before, ' ') : null,
             span({className: 'spinner-border text-secondary spinner-border-sm'}),
             (after !== undefined) ? Fragment(' ', after) : null);
@@ -482,7 +480,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         const [jQuery, ] = await Promise.all(
             [module('jQuery'), module('bootstrapBundle')]);
 
-        return fakeModule(memo(function LazyTooltip({title, type, children}) {
+        return fakeModule(memo(function LazyTooltip(props) {
+            const {title, type, children, ...restProps} = props;
             const [element, setElement] = useState(null);
             const [tooltipEl, setTooltipEl] = useState(null);
 
@@ -502,34 +501,43 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 }
             }, [tooltipEl, title]);
 
-            return jsx(type, {ref: useCallback(setElement)}, children);
+            return jsx(type,
+                {ref: useCallback(setElement), ...restProps},
+                children);
         }));
     });
 
-    const Tooltip = memo(function Tooltip({title = '', children, type = 'span'}) {
-        if (lodash.isBoolean(title)) {
-            title = '';
-        }
+    const Tooltip = memo(function Tooltip(props) {
+        const {title = '', type = 'span', children, ...restProps} = props;
+        const actualTitle = lodash.isBoolean(title) ? '' : title;
 
-        return jsx(React.Suspense,
-            {fallback: jsx(type, {title: title}, children)},
-            jsx(LazyTooltip, {title: title, type: type}, children));
+        return jsx(React.Suspense, {
+            fallback: jsx(type,
+                {title: actualTitle, ...restProps},
+                children),
+        }, jsx(LazyTooltip,
+            {title: actualTitle, type: type, ...restProps},
+            children));
     });
 
     const LazyDateTime = lazy(async () => {
         const moment = await module('moment');
 
-        return fakeModule(memo(function LazyDateTime({dateTime}) {
-            return jsx(Tooltip,
-                {title: 'Original timestamp: ' + dateTime},
-                moment(dateTime).calendar(null, {sameElse: 'llll'}));
+        return fakeModule(memo(function LazyDateTime({children}) {
+            return jsx(Tooltip, {
+                title: 'Original timestamp: ' + children,
+                className: 'text-nowrap',
+            }, moment(children).calendar(null, {sameElse: 'llll'}));
         }));
     });
 
-    const DateTime = memo(function DateTime({dateTime}) {
-        return jsx(React.Suspense,
-            {fallback: jsx(LoadingSpinner, {before: dateTime})},
-            jsx(LazyDateTime, {dateTime}));
+    const DateTime = memo(function DateTime({children}) {
+        return jsx(React.Suspense, {
+            fallback: jsx(LoadingSpinner, {
+                before: children,
+                className: 'text-nowrap',
+            }),
+        }, jsx(LazyDateTime, children));
     });
 
     const LazyDuration = lazy(async () => {
@@ -836,13 +844,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             to: broadcast.broadcastEndDateTime,
                         })},
                     {content: broadcast.broadcastStartDateTime
-                        && jsx(DateTime, {
-                            dateTime: broadcast.broadcastStartDateTime,
-                    })},
+                        && jsx(DateTime, broadcast.broadcastStartDateTime)},
                     {content: broadcast.broadcastEndDateTime
-                        && jsx(DateTime, {
-                            dateTime: broadcast.broadcastEndDateTime,
-                    })},
+                        && jsx(DateTime, broadcast.broadcastEndDateTime)},
                 ]),
             }),
             p(
@@ -910,9 +914,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 id: broadcastId,
                                 text: state})),
                             td(data.showLiveData.status),
-                            td(lvsLastMessageEpochTime && jsx(DateTime, {
-                                dateTime: lvsLastMessageEpochTime * 1000,
-                            }))))))),
+                            td(lvsLastMessageEpochTime
+                                && jsx(DateTime, lvsLastMessageEpochTime * 1000))))))),
             p(
                 jsx(Button, {
                     title: !!broadcastId || 'No broadcast with live data',
