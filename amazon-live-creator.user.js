@@ -1,5 +1,6 @@
 // ==UserScript==
 // @name Amazon Live Creator
+// @author Márcio
 // @version 0.1
 // @namespace https://github.com/marciof
 // @icon https://www.amazon.com/favicon.ico
@@ -9,7 +10,10 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: use minified versions by default if faster, with dev mode option?
+// FIXME: add RadioTable footer that knows whether it's empty or not
+// FIXME: use children in DateTime?
+// FIXME: toggle button active status
+// FIXME: split Load Broadcast into a combined two-button? Load / From server
 // FIXME: handle empty broadcast/shows list table
 // FIXME: don't show Live Data in a table, since it isn't tabular data?
 // FIXME: open LazyComponent every time data changes
@@ -22,11 +26,14 @@
 // FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: handle videojs JS errors
 // FIXME: update broadcast from JSON in Ace editor
+// FIXME: use children in Ace editor?
 // FIXME: make some JSON Ace editors read-only?
 // FIXME: use <label>s instead of onclick+focus?
 // FIXME: does Button with tooltip breaks focus?
 // FIXME: don't select table row when clicking on links?
 
+// TODO: refactor toggle JSON button
+// TODO: use minified versions by default if faster, with dev mode option?
 // TODO: refresh live data periodically?
 // TODO: show broadcast slate image and video side by side?
 // TODO: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
@@ -193,6 +200,13 @@ class Api {
     readShowLiveData(showId) {
         return this.request(
             'poller?fields=showLiveData&showId=' + encodeURIComponent(showId));
+    }
+
+    /**
+     * @returns {Promise<Object>}
+     */
+    listAccounts() {
+        return this.request('user/accounts');
     }
 
     /**
@@ -464,12 +478,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return a({href: 'https://www.amazon.com/live/broadcast/' + id}, text);
     });
 
-    const LoginLink = memo(function LoginLink() {
-        return p(a(
-            {href: 'https://www.amazon.com/gp/sign-in.html'},
-            'Please login to your Amazon account first.'));
-    });
-
     const LazyTooltip = lazy(async () => {
         const [jQuery, ] = await Promise.all(
             [module('jQuery'), module('bootstrapBundle')]);
@@ -543,8 +551,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             jsx(LazyDuration, props));
     });
 
-    const Id = memo(function Id({id}) {
-        return span({className: 'text-nowrap text-monospace'}, id);
+    const Id = memo(function Id({children}) {
+        return span({className: 'text-nowrap text-monospace'}, children);
     });
 
     const Button = memo(function Button(props) {
@@ -577,102 +585,163 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const RadioTable = memo(function RadioTable(props) {
-        const {headers, rows, onSelectedRowIndex} = props;
+        const {headers, rows, onSelectedRowIndex, onEmpty} = props;
         const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
         useEffect(() => {
             if (selectedRowIndex === null) {
                 if (rows.length === 1) {
                     setSelectedRowIndex(0);
-                    onSelectedRowIndex(0);
                 }
             }
             else if (selectedRowIndex >= rows.length) {
                 setSelectedRowIndex(null);
-                onSelectedRowIndex(null);
             }
         }, [rows]);
 
-        return div({className: 'card mb-3'},
-            div({className: 'table-responsive'},
-                table(
-                    {className: 'table table-sm table-hover mb-0'},
-                    thead(
-                        {className: 'thead-light'},
-                        tr(headers.map(({width, content}, index) =>
-                            th({key: index, width: width},
-                                content)))),
-                    tbody(rows.map((row, rowIndex) =>
-                        tr(
-                            {
-                                key: rowIndex,
-                                className: classNames(
-                                    {'table-primary': selectedRowIndex === rowIndex}),
-                                onPointerDown() {
-                                    if (!hasSelection()) {
-                                        setSelectedRowIndex(rowIndex);
-                                        onSelectedRowIndex(rowIndex);
-                                    }
-                                },
+        useEffect(() => {
+            if (selectedRowIndex !== null) {
+                onSelectedRowIndex(selectedRowIndex);
+            }
+        }, [selectedRowIndex]);
+
+        if (rows.length === 0) {
+            return onEmpty();
+        }
+
+        return div({className: 'table-responsive border mb-3'},
+            table(
+                {className: 'table table-sm table-hover mb-0'},
+                thead(
+                    {className: 'thead-light'},
+                    tr(headers.map(({width, content}, index) =>
+                        th({key: index, width: width},
+                            content)))),
+                tbody(rows.map((row, rowIndex) =>
+                    tr(
+                        {
+                            key: rowIndex,
+                            className: classNames(
+                                {'table-primary': selectedRowIndex === rowIndex}),
+                            onPointerDown() {
+                                if (!hasSelection()) {
+                                    setSelectedRowIndex(rowIndex);
+                                }
                             },
-                            row.map(({content, name}, cellIndex) =>
-                                td({key: cellIndex}, (name === undefined)
-                                    ? content
-                                    : input({
-                                        type: 'radio',
-                                        name: name,
-                                        checked: selectedRowIndex === rowIndex,
-                                        onChange() {
-                                            setSelectedRowIndex(rowIndex);
-                                            onSelectedRowIndex(rowIndex);
-                                        },
-                                    })))))))));
+                        },
+                        row.map(({content, name}, cellIndex) =>
+                            td({key: cellIndex}, (name === undefined)
+                                ? content
+                                : input({
+                                    type: 'radio',
+                                    name: name,
+                                    checked: selectedRowIndex === rowIndex,
+                                    onChange() {
+                                        setSelectedRowIndex(rowIndex);
+                                    },
+                                }))))))));
+    });
+
+    const Accounts = memo(function Accounts({data, onListShows}) {
+        const [selectedAccount, setSelectedAccount] = useState(null);
+        const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+        const SELECT_ACCOUNT_BUTTON_TITLE = 'Select an account';
+        const isLoggedOut = lodash.isPlainObject(data)
+            && data.errors.some(error => error.code === 'notLoggedIn');
+
+        useEffect(() => {
+            if (selectedAccount && (data.length === 1)) {
+                onListShows(selectedAccount);
+            }
+        }, [selectedAccount, data]);
+
+        if (isLoggedOut) {
+            return p(a(
+                {href: 'https://www.amazon.com/gp/sign-in.html'},
+                'Login to your Amazon account first.'));
+        }
+
+        return Fragment(
+            p(a(
+                {href: 'https://www.amazon.com/gp/navigation/redirector.html?switchAccount=picker'},
+                'Switch Amazon accounts.')),
+            form(
+                jsx(RadioTable, {
+                    onEmpty() {
+                        return p(a(
+                            {href: 'https://apps.apple.com/app/id1265170914'},
+                            'Create an Amazon Live Creator account first.'));
+                    },
+                    onSelectedRowIndex(rowIndex) {
+                        setSelectedAccount(data[rowIndex]);
+                    },
+                    headers: [
+                        {width: '1%'},
+                        {content: 'Name'},
+                        {width: '55%', content: 'ID'},
+                        {width: '14%', content: 'Type'},
+                    ],
+                    rows: data.map(account => [
+                        {name: 'account'},
+                        {content: account.name},
+                        {content: jsx(Id, account.id)},
+                        {content: account.type},
+                    ]),
+                }),
+                p(
+                    jsx(Button, {
+                        title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
+                        disabled: !selectedAccount,
+                        className: 'btn-primary mr-3',
+                        onPointerDown() {
+                            onListShows(selectedAccount);
+                        },
+                    }, 'List shows'),
+                    jsx(ToggleButton, {
+                        title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
+                        disabled: !selectedAccount,
+                        onPointerDown: toggleIsJsonShown,
+                    }, 'Show/Hide JSON')),
+                selectedAccount && jsx(JsonAceEditor, {
+                    json: selectedAccount,
+                    style: {display: isJsonShown ? null : 'none'},
+                })));
     });
 
     const Shows = memo(function Shows(props) {
-        const {data, onLoadLiveData, onListBroadcasts, onLogin} = props;
-
+        const {data, onLoadLiveData, onListBroadcasts} = props;
         const [selectedShow, setSelectedShow] = useState(null);
         const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
         const SELECT_SHOW_BUTTON_TITLE = 'Select a show';
 
         useEffect(() => {
-            if (selectedShow) {
-                onLoadLiveData(selectedShow.id);
-                onListBroadcasts(selectedShow.id);
+            if (selectedShow && (data.shows.length === 1)) {
+                onLoadLiveData(selectedShow);
+                onListBroadcasts(selectedShow);
             }
-        }, [selectedShow]);
-
-        useEffect(() => {
-            if (!data.errors) {
-                onLogin();
-            }
-        }, [data]);
-
-        if (data.errors) {
-            return jsx(LoginLink);
-        }
+        }, [selectedShow, data]);
 
         return form(
             jsx(RadioTable, {
+                onEmpty() {
+                    return p('No shows in this account.');
+                },
                 onSelectedRowIndex(rowIndex) {
-                    setSelectedShow(rowIndex !== null
-                        ? data.shows[rowIndex]
-                        : null);
+                    setSelectedShow(data.shows[rowIndex]);
                 },
                 headers: [
-                    {},
+                    {width: '1%'},
                     {content: 'Title'},
-                    {content: 'ID'},
-                    {content: 'Distribution'},
-                    {content: 'Feature Group'},
+                    {width: '41%', content: 'ID'},
+                    {width: '14%', content: 'Distribution'},
+                    {width: '14%', content: 'Feature Group'},
                 ],
                 rows: data.shows.map(show => [
                     {name: 'show'},
                     {content: a({
                         href: 'https://www.amazon.com/live/channel/' + show.id,
                     }, show.title)},
-                    {content: jsx(Id, {id: show.id})},
+                    {content: jsx(Id, show.id)},
                     {content: show.distribution},
                     {content: show.featureGroup},
                 ]),
@@ -683,7 +752,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     disabled: !selectedShow,
                     className: 'btn-primary mr-3',
                     onPointerDown() {
-                        onListBroadcasts(selectedShow.id);
+                        onListBroadcasts(selectedShow);
                     },
                 }, 'List broadcasts'),
                 jsx(Button, {
@@ -691,12 +760,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     disabled: !selectedShow,
                     className: 'btn-primary mr-3',
                     onPointerDown() {
-                        onLoadLiveData(selectedShow.id);
+                        onLoadLiveData(selectedShow);
                     },
                 }, 'Load live data'),
                 jsx(ToggleButton, {
-                    disabled: !selectedShow,
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
+                    disabled: !selectedShow,
                     onPointerDown: toggleIsJsonShown,
                 }, 'Show/Hide JSON')),
             selectedShow && jsx(JsonAceEditor, {
@@ -707,39 +776,44 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
     const Broadcasts = memo(function Broadcasts(props) {
         const {data, onLoadMore, onLoadBroadcast} = props;
-
         const [selectedBroadcast, setSelectedBroadcast] = useState(null);
         const [isLoadingMore, setIsLoadingMore] = useState(false);
         const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
-
         const SELECT_BROADCAST_BUTTON_TITLE = 'Select a broadcast';
         const canLoadMoreBroadcasts = !!data.nextLink && !isLoadingMore;
 
         useEffect(() => void setIsLoadingMore(false), [data]);
 
+        useEffect(() => {
+            if (selectedBroadcast && (data.broadcasts.length === 1)) {
+                onLoadBroadcast(selectedBroadcast);
+            }
+        }, [selectedBroadcast, data]);
+
         return form(
             jsx(RadioTable, {
+                onEmpty() {
+                    return p('No broadcasts in this show.');
+                },
                 onSelectedRowIndex(rowIndex) {
-                    setSelectedBroadcast(rowIndex !== null
-                        ? data.broadcasts[rowIndex]
-                        : null);
+                    setSelectedBroadcast(data.broadcasts[rowIndex]);
                 },
                 headers: [
                     {width: '1%'},
                     {content: 'Title'},
-                    {width: '22%', content: 'ID'},
+                    {width: '30%', content: 'ID'},
                     {width: '7%', content: 'ASIN'},
                     {width: '5%', content: 'Distribution'},
                     {width: '5%', content: 'Duration'},
                     {
-                        width: '15%',
+                        width: '11%',
                         content: jsx(Tooltip, {
                             title: 'Local time of "broadcastStartDateTime"',
                             type: 'abbr',
                         }, 'Started'),
                     },
                     {
-                        width: '15%',
+                        width: '11%',
                         content: jsx(Tooltip, {
                             title: 'Local time of "broadcastEndDateTime"',
                             type: 'abbr',
@@ -752,8 +826,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         id: broadcast.id,
                         text: broadcast.title,
                     })},
-                    {content: jsx(Id, {id: broadcast.id})},
-                    {content: jsx(Id, {id: broadcast.asin})},
+                    {content: jsx(Id, broadcast.id)},
+                    {content: jsx(Id, broadcast.asin)},
                     {content: broadcast.distribution},
                     {content: broadcast.broadcastStartDateTime
                         && broadcast.broadcastEndDateTime
@@ -792,8 +866,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     },
                 }, 'Load more broadcasts'),
                 jsx(ToggleButton, {
-                    disabled: !selectedBroadcast,
                     title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
+                    disabled: !selectedBroadcast,
                     onPointerDown: toggleIsJsonShown,
                 }, 'Show/Hide JSON')),
             selectedBroadcast && jsx(JsonAceEditor, {
@@ -831,7 +905,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                             }, 'Last change')))),
                     tbody(
                         tr(
-                            td(broadcastId && jsx(Id, {id: broadcastId})),
+                            td(broadcastId && jsx(Id, broadcastId)),
                             td(!broadcastId ? state : jsx(BroadcastPageLink, {
                                 id: broadcastId,
                                 text: state})),
@@ -921,7 +995,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
      * @param Component {React.Component}
      * @returns {React.Component}
      */
-    function lazyComponent(Component) {
+    function lazyComponentSection(Component) {
         return memo(function LazyComponent(props) {
             const {title, promise, reducer, ...componentProps} = props;
             const [data, setData] = useState(null);
@@ -976,13 +1050,15 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         return newData;
     }
 
-    const LazyShows = lazyComponent(Shows);
-    const LazyLiveData = lazyComponent(LiveData);
-    const LazyBroadcasts = lazyComponent(Broadcasts);
-    const LazyBroadcast = lazyComponent(Broadcast);
+    const LazyAccounts = lazyComponentSection(Accounts);
+    const LazyShows = lazyComponentSection(Shows);
+    const LazyLiveData = lazyComponentSection(LiveData);
+    const LazyBroadcasts = lazyComponentSection(Broadcasts);
+    const LazyBroadcast = lazyComponentSection(Broadcast);
 
     const App = memo(function App({api}) {
-        const [showsPromise,] = useState(() => api.listShows());
+        const [accountsPromise, ] = useState(api.listAccounts());
+        const [showsPromise, setShowsPromise] = useState(null);
         const [liveDataPromise, setLiveDataPromise] = useState(null);
         const [broadcastPromise, setBroadcastPromise] = useState(null);
         const [broadcastsPromise, setBroadcastsPromise] = useState(null);
@@ -991,31 +1067,24 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             = useState(false);
 
         return Fragment(
-            jsx(LazyShows, {
-                title: 'Shows',
-                promise: showsPromise,
-                onLogin() {
-                    setBroadcastPromise(previousBroadcastPromise => {
-                        if (previousBroadcastPromise === null) {
-                            setBroadcastPromise(
-                                Promise.resolve(EMPTY_BROADCAST_DATA));
-                        }
-                    });
-                },
-                onLoadLiveData(showId) {
-                    setLiveDataPromise(api.readShowLiveData(showId));
-                },
-                onListBroadcasts(showId) {
-                    setIsLoadingMoreBroadcasts(false);
-                    setBroadcastsShowId(showId);
-                    setBroadcastsPromise(api.listShowBroadcasts(showId));
+            jsx(LazyAccounts, {
+                title: 'Accounts',
+                promise: accountsPromise,
+                onListShows(account) {
+                    setShowsPromise(api.listShows());
+                    setBroadcastPromise(Promise.resolve(EMPTY_BROADCAST_DATA));
                 },
             }),
-            liveDataPromise && jsx(LazyLiveData, {
-                title: 'Live Data',
-                promise: liveDataPromise,
-                onLoadBroadcast(broadcastId) {
-                    setBroadcastPromise(api.readBroadcast(broadcastId));
+            showsPromise && jsx(LazyShows, {
+                title: 'Shows',
+                promise: showsPromise,
+                onLoadLiveData(show) {
+                    setLiveDataPromise(api.readShowLiveData(show.id));
+                },
+                onListBroadcasts(show) {
+                    setIsLoadingMoreBroadcasts(false);
+                    setBroadcastsShowId(show.id);
+                    setBroadcastsPromise(api.listShowBroadcasts(show.id));
                 },
             }),
             broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
@@ -1029,6 +1098,13 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     setBroadcastsPromise(
                         api.listShowBroadcasts(broadcastsShowId, nextToken));
                 },
+                onLoadBroadcast(broadcastId) {
+                    setBroadcastPromise(api.readBroadcast(broadcastId));
+                },
+            }),
+            liveDataPromise && jsx(LazyLiveData, {
+                title: 'Live Data',
+                promise: liveDataPromise,
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
