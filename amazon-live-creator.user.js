@@ -83,9 +83,7 @@ const pageReady = loadCss(CDN_BASE_URL + 'twitter-bootstrap/4.3.1/css/bootstrap.
     const rootEl = document.createElement('div');
     rootEl.className = 'm-3';
     rootEl.appendChild(loadingBadgeEl);
-
     document.body.appendChild(rootEl);
-    GM_addStyle('.cursor-not-allowed {cursor: not-allowed;}');
 
     const faviconLink = document.querySelector('link[rel*=icon]')
         || document.createElement('link');
@@ -306,15 +304,24 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const useEffect = React.useEffect.bind(React);
     const Fragment = jsx.bind(null, React.Fragment);
 
-    const VIDEO_SOURCES = {
-        PHONE_CAMERA: 'Phone camera',
-        THIRD_PARTY_ENCODER: 'Encoder',
+    const EMPTY_SHOWS_DATA = {
+        shows: [],
+    };
+
+    const EMPTY_BROADCASTS_DATA = {
+        broadcasts: [],
+        nextLink: null,
     };
 
     const EMPTY_BROADCAST_DATA = {
         id: '',
         title: '',
         videoSource: 'THIRD_PARTY_ENCODER',
+    };
+
+    const VIDEO_SOURCES = {
+        PHONE_CAMERA: 'Phone camera',
+        THIRD_PARTY_ENCODER: 'Encoder',
     };
 
     function hasSelection() {
@@ -587,7 +594,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const RadioTable = memo(function RadioTable(props) {
-        const {headers, rows, onSelectedRowIndex, onEmpty} = props;
+        const {headers, rows, emptyNotice, onSelectedRowIndex} = props;
         const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
         useEffect(() => {
@@ -607,20 +614,36 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             }
         }, [selectedRowIndex]);
 
-        if (rows.length === 0) {
-            return onEmpty();
-        }
-
-        return div({className: 'table-responsive border mb-3'},
+        return div({className: 'table-responsive border-bottom mb-3'},
             table(
-                {className: 'table table-sm table-hover mb-0'},
+                {
+                    className: classNames('table table-sm mb-0', {
+                        'table-hover': rows.length > 0,
+                    }),
+                },
                 thead(
                     {className: 'thead-light'},
                     tr(headers.map(({width, content}, index) =>
                         th({key: index, width: width},
                             content)))),
-                tbody(rows.map((row, rowIndex) =>
-                    tr(
+                tbody(rows.length === 0
+                    ? tr(td(
+                        {
+                            colSpan: headers.length,
+                            className: classNames('text-center', {
+                                'text-muted': (emptyNotice === undefined),
+                            }),
+                            style: emptyNotice === undefined
+                                ? {cursor: 'not-allowed'}
+                                : null,
+                        },
+                        emptyNotice !== undefined
+                            ? emptyNotice
+                            : jsx(Tooltip, {
+                                title: 'None found',
+                                type: 'abbr',
+                            }, 'N/A')))
+                    : rows.map((row, rowIndex) => tr(
                         {
                             key: rowIndex,
                             className: classNames(
@@ -657,23 +680,12 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             }
         }, [selectedAccount, data]);
 
-        if (isLoggedOut) {
-            return p(a(
-                {href: 'https://www.amazon.com/gp/sign-in.html'},
-                'Login to your Amazon account first.'));
-        }
-
         return Fragment(
-            p(a(
+            !isLoggedOut && p(a(
                 {href: 'https://www.amazon.com/gp/navigation/redirector.html?switchAccount=picker'},
                 'Switch Amazon accounts.')),
             form(
                 jsx(RadioTable, {
-                    onEmpty() {
-                        return p(a(
-                            {href: 'https://apps.apple.com/app/id1265170914'},
-                            'Create an Amazon Live Creator account first.'));
-                    },
                     onSelectedRowIndex(rowIndex) {
                         setSelectedAccount(data[rowIndex]);
                     },
@@ -683,12 +695,19 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         {width: '55%', content: 'ID'},
                         {width: '19%', content: 'Type'},
                     ],
-                    rows: data.map(account => [
+                    rows: isLoggedOut ? [] : data.map(account => [
                         {name: 'account'},
                         {content: account.name},
                         {content: jsx(Id, account.id)},
                         {content: account.type},
                     ]),
+                    emptyNotice: isLoggedOut
+                        ? a(
+                            {href: 'https://www.amazon.com/gp/sign-in.html'},
+                            'Login to your Amazon account first.')
+                        : a(
+                            {href: 'https://apps.apple.com/app/id1265170914'},
+                            'Create an Amazon Live Creator account first.')
                 }),
                 p(
                     jsx(Button, {
@@ -725,9 +744,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         return form(
             jsx(RadioTable, {
-                onEmpty() {
-                    return p('No shows in this account.');
-                },
                 onSelectedRowIndex(rowIndex) {
                     setSelectedShow(data.shows[rowIndex]);
                 },
@@ -794,9 +810,6 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         return form(
             jsx(RadioTable, {
-                onEmpty() {
-                    return p('No broadcasts in this show.');
-                },
                 onSelectedRowIndex(rowIndex) {
                     setSelectedBroadcast(data.broadcasts[rowIndex]);
                 },
@@ -999,11 +1012,13 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
-                setIsLoading(true);
-                promise.then(newData => {
-                    setData(data && reducer ? reducer(data, newData) : newData);
-                    setIsLoading(false);
-                });
+                if (promise) {
+                    setIsLoading(true);
+                    promise.then(newData => {
+                        setData(data && reducer ? reducer(data, newData) : newData);
+                        setIsLoading(false);
+                    });
+                }
             }, [promise]);
 
             return details(
@@ -1016,9 +1031,11 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                                 'badge', 'badge-secondary', 'badge-pill',
                                 {invisible: !isLoading || !data})},
                         'refreshing...')),
-                !data
-                    ? jsx(LoadingSpinner)
-                    : jsx(Component, {data, ...componentProps}));
+                !promise
+                    ? p('Not yet loaded.')
+                    : !data
+                        ? jsx(LoadingSpinner)
+                        : jsx(Component, {data, ...componentProps}));
         });
     }
 
@@ -1055,13 +1072,15 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
     const App = memo(function App({api}) {
         const [accountsPromise, ] = useState(api.listAccounts());
-        const [showsPromise, setShowsPromise] = useState(null);
+        const [showsPromise, setShowsPromise] = useState(
+            Promise.resolve(EMPTY_SHOWS_DATA));
+        const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(
+            false);
+        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
+        const [broadcastsPromise, setBroadcastsPromise] = useState(
+            Promise.resolve(EMPTY_BROADCASTS_DATA));
         const [liveDataPromise, setLiveDataPromise] = useState(null);
         const [broadcastPromise, setBroadcastPromise] = useState(null);
-        const [broadcastsPromise, setBroadcastsPromise] = useState(null);
-        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
-        const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts]
-            = useState(false);
 
         return Fragment(
             jsx(LazyAccounts, {
@@ -1072,7 +1091,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     setBroadcastPromise(Promise.resolve(EMPTY_BROADCAST_DATA));
                 },
             }),
-            showsPromise && jsx(LazyShows, {
+            jsx(LazyShows, {
                 title: 'Shows',
                 promise: showsPromise,
                 onLoadLiveData(show) {
@@ -1084,7 +1103,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     setBroadcastsPromise(api.listShowBroadcasts(show.id));
                 },
             }),
-            broadcastsShowId && broadcastsPromise && jsx(LazyBroadcasts, {
+            jsx(LazyBroadcasts, {
                 title: 'Broadcasts',
                 promise: broadcastsPromise,
                 reducer: isLoadingMoreBroadcasts
@@ -1099,14 +1118,14 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
             }),
-            liveDataPromise && jsx(LazyLiveData, {
+            jsx(LazyLiveData, {
                 title: 'Live Data',
                 promise: liveDataPromise,
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
             }),
-            broadcastPromise && jsx(LazyBroadcast, {
+            jsx(LazyBroadcast, {
                 title: 'Broadcast',
                 promise: broadcastPromise,
                 getSlateImageUrl(broadcastId) {
