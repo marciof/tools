@@ -1,26 +1,34 @@
-# Install
+# Software
+
+- [Debian](https://www.debian.org) OS
+- [Xfce](https://xfce.org) desktop environment
+- [Fira Code](https://github.com/tonsky/FiraCode) font
+- [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
+- [VeraCrypt](https://www.veracrypt.fr) disk encryption
+- [KeePassXC](https://keepassxc.org) password manager
+- [Xournal](http://xournal.sourceforge.net) GUI PDF editor
+
+# Configuration
+
+## Install
 
 - [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
 - [Firmware](https://wiki.debian.org/Firmware)
 - [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download)
 
-# Sudo rights
+## Sudo rights
 
     su -
     adduser marcio sudo
     adduser marcio adm
 
-# High DPI
+## High DPI
 
 Appearance: Xfce + Numix (color style, icons, window style)
 
     apt install numix-gtk-theme numix-icon-theme
 
-Menu editor: `menulibre`
-
-    apt install menulibre
-
-## WM/DE
+### WM/DE
 
 `/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
 
@@ -33,22 +41,30 @@ Menu editor: `menulibre`
     [greeter]
     xft-dpi=145
 
-## Qt4
+### Qt4
 
 Change font size:
 
     apt install qt4-qtconfig
     qtconfig
 
-## Gtk
+### Gtk
 
 Logout and login to apply:
 
     xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
 
-## Xfce
+### Xfce
 
     xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
+
+### Spotify
+
+    spotify --force-device-scale-factor=1.5
+
+### Mouse
+
+Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 ## Firefox
 
@@ -59,19 +75,11 @@ Faster scrolling:
   - Search for `WEBRENDER_QUALIFIED` in the [troubleshooting page](about:support) to check if qualified hardware was found.
   - To force enable regardless, set `gfx.webrender.all` to `true` in the [config page](about:config).
 
-## Spotify
-
-    spotify --force-device-scale-factor=1.5
-
-## Mouse
-
-Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
-
-# Logitech Unifying Receiver
+## Logitech Unifying Receiver
 
     apt install solaar
 
-# Mouse speed
+## Mouse speed
 
     apt install xinput
 
@@ -81,7 +89,7 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 Run `./dbus-xsessionrc.sh` at login.
 
-# Passwords and keys
+## Passwords and keys
 
 GUI for Gnome Keyring:
 
@@ -92,38 +100,38 @@ GUI for Gnome Keyring:
 - Add *SSH Key Agent* to *Application Autostart*.
 - Enable *Launch GNOME services on startup*.
 
-# PC speaker off
+## PC speaker off
 
 `~/.xsessionrc`
 
     xset -b
 
-# Digital clock format
+## Digital clock format
 
     %-l:%M%P %a %-m/%-e
 
-# Login screen background
+## Login screen background
 
 `/etc/lightdm/lightdm-gtk-greeter.conf`
 
     [greeter]
     background=COLOR-OR-PATH-TO-IMAGE-FILE
 
-# Profile image
+## Profile image
 
     apt install accountsservice mugshot
 
-# Clipboard
+## Clipboard
 
     apt install xfce4-clipman xfce4-clipman-plugin
 
-# Printer
+## Printer
 
 [Add printer from network](http://localhost:631).
 
     apt install task-print-server
 
-# Unattended upgrades
+## Unattended upgrades
 
 https://wiki.debian.org/UnattendedUpgrades
 
@@ -131,7 +139,7 @@ https://wiki.debian.org/UnattendedUpgrades
 
     apt install pk-update-icon
 
-# Evince (Document Viewer) zoom level
+## Evince (Document Viewer) zoom level
 
 https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.xml
 
