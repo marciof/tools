@@ -31,6 +31,7 @@ mode_help_vcs='show VCS revisions via "git", HEAD by default'
 # TODO: markdown rendering? https://github.com/kneufeld/consolemd
 # TODO: images? https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fix blocking input? eg. `cat | show.sh -h`
+# TODO: tests (functional, performance)
 
 mode_options_bin=
 mode_options_color=
