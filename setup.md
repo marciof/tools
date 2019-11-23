@@ -16,7 +16,7 @@
 - [Firmware](https://wiki.debian.org/Firmware)
 - [Wifi firmware package](https://packages.debian.org/stretch/all/firmware-iwlwifi/download)
 
-## Sudo rights
+### Sudo rights
 
     su -
     adduser marcio sudo
@@ -66,20 +66,28 @@ Logout and login to apply:
 
 Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
-## Firefox
+## Audio
 
-Faster scrolling:
+### PC speaker off
 
-1. Disable *smooth scrooling* in *Preferences*.
-2. Enable *WebRender* (ie. *Quantum Render*).
-  - Search for `WEBRENDER_QUALIFIED` in the [troubleshooting page](about:support) to check if qualified hardware was found.
-  - To force enable regardless, set `gfx.webrender.all` to `true` in the [config page](about:config).
+`~/.xsessionrc`
 
-## Logitech Unifying Receiver
+    xset -b
+
+### Bluetooth Audio Sink
+
+[Fix *Protocol Not available*:](https://askubuntu.com/a/801669/163034)
+
+    sudo apt-get install pulseaudio-module-bluetooth
+    pactl load-module module-bluetooth-discover
+
+## Mouse
+
+### Logitech Unifying Receiver
 
     apt install solaar
 
-## Mouse speed
+### Pointer speed
 
     apt install xinput
 
@@ -89,7 +97,18 @@ Faster scrolling:
 
 Run `./dbus-xsessionrc.sh` at login.
 
-## Passwords and keys
+## Miscellaneous
+
+### Firefox
+
+Faster scrolling:
+
+1. Disable *smooth scrooling* in *Preferences*.
+2. Enable *WebRender* (ie. *Quantum Render*).
+  - Search for `WEBRENDER_QUALIFIED` in the [troubleshooting page](about:support) to check if qualified hardware was found.
+  - To force enable regardless, set `gfx.webrender.all` to `true` in the [config page](about:config).
+
+### Passwords and keys
 
 GUI for Gnome Keyring:
 
@@ -100,46 +119,40 @@ GUI for Gnome Keyring:
 - Add *SSH Key Agent* to *Application Autostart*.
 - Enable *Launch GNOME services on startup*.
 
-## PC speaker off
-
-`~/.xsessionrc`
-
-    xset -b
-
-## Digital clock format
+### Digital clock format
 
     %-l:%M%P %a %-m/%-e
 
-## Login screen background
+### Clipboard
+
+    apt install xfce4-clipman xfce4-clipman-plugin
+
+### Login screen background
 
 `/etc/lightdm/lightdm-gtk-greeter.conf`
 
     [greeter]
     background=COLOR-OR-PATH-TO-IMAGE-FILE
 
-## Profile image
+### Profile image
 
     apt install accountsservice mugshot
 
-## Clipboard
+### Printer
 
-    apt install xfce4-clipman xfce4-clipman-plugin
-
-## Printer
-
-[Add printer from network](http://localhost:631).
+[Add printer from network.](http://localhost:631)
 
     apt install task-print-server
 
-## Unattended upgrades
+### Unattended upgrades
 
 https://wiki.debian.org/UnattendedUpgrades
 
-[Tray notifications](https://code.guido-berhoerster.org/projects/pk-update-icon/):
+[Tray notifications:](https://code.guido-berhoerster.org/projects/pk-update-icon/)
 
     apt install pk-update-icon
 
-## Evince (Document Viewer) zoom level
+### Evince (Document Viewer) zoom level
 
 https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.xml
 
