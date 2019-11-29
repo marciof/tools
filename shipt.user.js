@@ -55,7 +55,7 @@ function prepareProductNote(id, note) {
         return note;
     }
 
-    note = 'Replacement allowed: ';
+    note = 'Replacements allowed: ';
     console.log('Setting default product note:', note);
     return note;
 }
