@@ -10,15 +10,17 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
+// FIXME: make Broadcast form read-only when logged out or with no account
+// FIXME: refactor duplicate text strings and buttons (eg. JSON)
 // FIXME: add RadioTable footer that knows whether it's empty or not
 // FIXME: toggle button active status
 // FIXME: split Load Broadcast into a combined two-button? Load / From server
 // FIXME: handle empty broadcast/shows list table
-// FIXME: don't show Live Data in a table, since it isn't tabular data?
 // FIXME: open LazyComponent every time data changes
 // FIXME: detect logged in, but no account
 // FIXME: type check with eslint and typescript+jsdoc
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
+// FIXME: show video placeholder even when there's no video
 // FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
 // FIXME: handle errors in lazy loading
@@ -154,6 +156,58 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
     };
 });
 
+const customStyles = new Promise(resolve => {
+    GM_addStyle(`
+        details[open] summary ~ * {
+            animation: appear 0.5s ease-in-out;
+        }
+
+        @keyframes appear {
+            0% {
+                opacity: 0;
+                margin-top: -3px;
+            }
+            100% {
+                opacity: 1;
+                margin-top: 0;
+            }
+        }
+
+        .fadeIn {
+            animation: fadeIn 0.6s ease-in-out forwards;
+        }
+
+        .fadeOut {
+            animation: fadeOut 0.2s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            100% {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                visibility: visible;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+    `);
+
+    resolve();
+});
+
 class Api {
     constructor() {
         this.urlPathPrefix = '/api/v1/';
@@ -243,7 +297,9 @@ class Api {
     }
 }
 
-Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
+Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
+    const [rootEl, module] = args;
+
     const [React, ReactDOM, lodash, classNames] = await Promise.all([
         module('react'),
         module('reactDom'),
@@ -282,6 +338,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const label = jsx.bind(null, 'label');
     const p = jsx.bind(null, 'p');
     const a = jsx.bind(null, 'a');
+    const dl = jsx.bind(null, 'dl');
+    const dt = jsx.bind(null, 'dt');
+    const dd = jsx.bind(null, 'dd');
     const div = jsx.bind(null, 'div');
     const pre = jsx.bind(null, 'pre');
     const span = jsx.bind(null, 'span');
@@ -304,8 +363,20 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const useEffect = React.useEffect.bind(React);
     const Fragment = jsx.bind(null, React.Fragment);
 
+    const EMPTY_ACCOUNTS_DATA = {
+        errors: [
+            {code: 'notLoggedIn'},
+        ],
+    };
+
     const EMPTY_SHOWS_DATA = {
         shows: [],
+    };
+
+    const EMPTY_LIVE_DATA = {
+        showLiveData: {
+            value: {},
+        },
     };
 
     const EMPTY_BROADCASTS_DATA = {
@@ -323,6 +394,31 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         PHONE_CAMERA: 'Phone camera',
         THIRD_PARTY_ENCODER: 'Encoder',
     };
+
+    function concatBroadcastData(oldData, newData) {
+        return {
+            broadcasts: oldData.broadcasts.concat(newData.broadcasts),
+            nextLink: newData.nextLink,
+        };
+    }
+
+    function refreshBroadcastData(oldData, newData) {
+        const numBroadcasts = Math.min(
+            oldData.broadcasts.length, newData.broadcasts.length);
+
+        const oldBroadcasts = oldData.broadcasts.slice(0, numBroadcasts);
+        const newBroadcasts = newData.broadcasts.slice(0, numBroadcasts);
+
+        if (lodash.isEqual(oldBroadcasts, newBroadcasts)) {
+            return {
+                broadcasts: oldBroadcasts.concat(
+                    newData.broadcasts.slice(numBroadcasts)),
+                nextLink: newData.nextLink,
+            };
+        }
+
+        return newData;
+    }
 
     function hasSelection() {
         const selection = window.getSelection();
@@ -352,7 +448,8 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const LoadingSpinner = memo(function LoadingSpinner(props) {
         const {before, after, ...restProps} = props;
 
-        return span(restProps,
+        return span(
+            restProps,
             (before !== undefined) ? Fragment(before, ' ') : null,
             span({className: 'spinner-border text-secondary spinner-border-sm'}),
             (after !== undefined) ? Fragment(' ', after) : null);
@@ -480,7 +577,9 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     });
 
     const BroadcastPageLink = memo(function BroadcastPageLink({id, text}) {
-        return a({href: 'https://www.amazon.com/live/broadcast/' + id}, text);
+        return a(
+            {href: 'https://www.amazon.com/live/broadcast/' + id},
+            text === undefined ? id : text);
     });
 
     const LazyTooltip = lazy(async () => {
@@ -549,7 +648,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             const duration = moment.duration(moment(to).diff(from));
 
             return jsx(Tooltip,
-                {title: duration.humanize(), type: 'abbr'},
+                {title: duration.humanize()},
                 duration.format());
         }));
     });
@@ -562,6 +661,13 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
     const Id = memo(function Id({children}) {
         return span({className: 'text-nowrap text-monospace'}, children);
+    });
+
+    const NotAvailableNotice = memo(function NotAvailableNotice() {
+        return jsx(Tooltip, {
+            title: 'Not available',
+            type: 'abbr',
+        }, 'N/A');
     });
 
     const Button = memo(function Button(props) {
@@ -587,7 +693,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         const {children, className, ...restProps} = props;
 
         return jsx(Button, {
-            className: classNames('btn-info', className),
+            className: classNames('btn-outline-info', className),
             'data-toggle': 'button',
             ...restProps,
         }, children);
@@ -639,10 +745,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         },
                         emptyNotice !== undefined
                             ? emptyNotice
-                            : jsx(Tooltip, {
-                                title: 'None found',
-                                type: 'abbr',
-                            }, 'N/A')))
+                            : jsx(NotAvailableNotice)))
                     : rows.map((row, rowIndex) => tr(
                         {
                             key: rowIndex,
@@ -681,7 +784,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
         }, [selectedAccount, data]);
 
         return Fragment(
-            !isLoggedOut && p(a(
+            p(a(
                 {href: 'https://www.amazon.com/gp/navigation/redirector.html?switchAccount=picker'},
                 'Switch Amazon accounts.')),
             form(
@@ -713,7 +816,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     jsx(Button, {
                         title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
                         disabled: !selectedAccount,
-                        className: 'btn-primary mr-3',
+                        className: 'btn-outline-primary mr-3',
                         onPointerDown() {
                             onListShows(selectedAccount);
                         },
@@ -722,7 +825,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                         title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
                         disabled: !selectedAccount,
                         onPointerDown: toggleIsJsonShown,
-                    }, 'Show/Hide JSON')),
+                    }, 'View JSON')),
                 selectedAccount && jsx(JsonAceEditor, {
                     json: selectedAccount,
                     style: {display: isJsonShown ? null : 'none'},
@@ -768,7 +871,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 jsx(Button, {
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
-                    className: 'btn-primary mr-3',
+                    className: 'btn-outline-primary mr-3',
                     onPointerDown() {
                         onListBroadcasts(selectedShow);
                     },
@@ -776,7 +879,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 jsx(Button, {
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
-                    className: 'btn-primary mr-3',
+                    className: 'btn-outline-primary mr-3',
                     onPointerDown() {
                         onLoadLiveData(selectedShow);
                     },
@@ -785,7 +888,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
                     onPointerDown: toggleIsJsonShown,
-                }, 'Show/Hide JSON')),
+                }, 'View JSON')),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
                 style: {display: isJsonShown ? null : 'none'},
@@ -860,14 +963,14 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 jsx(Button, {
                     title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
                     disabled: !selectedBroadcast,
-                    className: 'btn-primary mr-3',
+                    className: 'btn-outline-primary mr-3',
                     onPointerDown() {
                         onLoadBroadcast(selectedBroadcast.id);
                     },
                 }, 'Load broadcast'),
                 jsx(Button, {
                     disabled: !canLoadMoreBroadcasts,
-                    className: 'btn-primary mr-3',
+                    className: 'btn-outline-primary mr-3',
                     title: !data.nextLink ? 'No more broadcasts'
                         : isLoadingMore ? 'Loading more broadcasts'
                         : '',
@@ -880,7 +983,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                     title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
                     disabled: !selectedBroadcast,
                     onPointerDown: toggleIsJsonShown,
-                }, 'Show/Hide JSON')),
+                }, 'View JSON')),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
                 style: {display: isJsonShown ? null : 'none'},
@@ -900,40 +1003,50 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
 
         const broadcastId = broadcastStartedId || lockedBroadcastId;
         const state = lockedBroadcastState || lvsLastMessageSubject;
+        const status = data.showLiveData.status;
 
         return form(
-            div({className: 'card mb-3'}, div({className: 'table-responsive'},
-                table(
-                    {className: 'table table-striped table-sm table-hover table-borderless mb-0'},
-                    thead(
-                        tr(
-                            th('ID'),
-                            th('State'),
-                            th('Status'),
-                            th(jsx(Tooltip, {
-                                title: 'Local time of "lvsLastMessageEpochTime"',
-                                type: 'abbr',
-                            }, 'Last change')))),
-                    tbody(
-                        tr(
-                            td(broadcastId && jsx(Id, broadcastId)),
-                            td(!broadcastId ? state : jsx(BroadcastPageLink, {
-                                id: broadcastId,
-                                text: state})),
-                            td(data.showLiveData.status),
-                            td(lvsLastMessageEpochTime
-                                && jsx(DateTime, lvsLastMessageEpochTime * 1000))))))),
+            dl(
+                dt(jsx(Tooltip, {
+                    title: 'Value of "broadcastStartedId" or "lockedBroadcastId"',
+                    type: 'abbr',
+                }, 'Broadcast ID')),
+                dd({className: 'ml-4'}, broadcastId
+                    ? jsx(BroadcastPageLink, {id: broadcastId})
+                    : jsx(NotAvailableNotice)),
+
+                dt(jsx(Tooltip, {
+                    title: 'Value of "lockedBroadcastState" or "lvsLastMessageSubject"',
+                    type: 'abbr',
+                }, 'State')),
+                dd({className: 'ml-4'}, state !== undefined
+                    ? state
+                    : jsx(NotAvailableNotice)),
+
+                dt('Status'),
+                dd({className: 'ml-4'}, status !== undefined
+                    ? status
+                    : jsx(NotAvailableNotice)),
+
+                dt(jsx(Tooltip, {
+                    title: 'Local time of "lvsLastMessageEpochTime"',
+                    type: 'abbr',
+                }, 'Last change')),
+
+                dd({className: 'ml-4'}, lvsLastMessageEpochTime
+                    ? jsx(DateTime, lvsLastMessageEpochTime * 1000)
+                    : jsx(NotAvailableNotice))),
             p(
                 jsx(Button, {
                     title: !!broadcastId || 'No broadcast with live data',
                     disabled: !broadcastId,
-                    className: 'btn-primary mr-3',
+                    className: 'btn-outline-primary mr-3',
                     onPointerDown() {
                         onLoadBroadcast(broadcastId);
                     },
                 }, 'Load broadcast'),
                 jsx(ToggleButton, {onPointerDown: toggleIsJsonShown},
-                    'Show/Hide JSON')),
+                    'View JSON')),
             jsx(JsonAceEditor, {
                 json: data,
                 style: {display: isJsonShown ? null : 'none'},
@@ -943,7 +1056,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
     const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
         const [broadcast, setBroadcast] = useState(data);
         const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
-        const canClear = (broadcast !== EMPTY_BROADCAST_DATA);
+        const canClear = (broadcast !== data);
 
         useEffect(() => void setBroadcast(data), [data]);
 
@@ -988,13 +1101,13 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
                 jsx(Button, {
                     title: canClear || 'Already cleared',
                     disabled: !canClear,
-                    className: 'btn-primary mr-3',
+                    className: 'btn-outline-primary mr-3',
                     onPointerDown() {
-                        setBroadcast(EMPTY_BROADCAST_DATA);
+                        setBroadcast(data);
                     },
                 }, 'Clear'),
                 jsx(ToggleButton, {onPointerDown: toggleIsJsonShown},
-                    'Show/Hide JSON')),
+                    'View JSON')),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {display: isJsonShown ? null : 'none'},
@@ -1005,122 +1118,112 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
      * @param Component {React.Component}
      * @returns {React.Component}
      */
-    function lazyComponentSection(Component) {
-        return memo(function LazyComponent(props) {
-            const {title, promise, reducer, ...componentProps} = props;
-            const [data, setData] = useState(null);
-            const [isLoading, setIsLoading] = useState(true);
+    function lazySectionComponent(Component) {
+        return memo(function LazySection(props) {
+            const {title, promise, defaultData, ...componentProps} = props;
+            const [isLoading, setIsLoading] = useState(false);
+            const [data, setData] = useState(defaultData);
 
             useEffect(() => {
                 if (promise) {
                     setIsLoading(true);
+
+                    // Set data state separately to prevent race conditions.
                     promise.then(newData => {
-                        setData(data && reducer ? reducer(data, newData) : newData);
                         setIsLoading(false);
+                        return newData;
                     });
                 }
             }, [promise]);
 
+            useEffect(() => {
+                if (promise && !isLoading) {
+                    promise.then(setData);
+                }
+            }, [promise, isLoading]);
+
             return details(
-                {className: 'mb-4', open: true},
+                {className: 'mb-4', open: data !== defaultData},
                 summary(
-                    {className: 'font-weight-bold h4'},
-                    title, ' ',
-                    span(
-                        {className: classNames(
-                                'badge', 'badge-secondary', 'badge-pill',
-                                {invisible: !isLoading || !data})},
-                        'refreshing...')),
-                !promise
-                    ? p('Not yet loaded.')
-                    : !data
-                        ? jsx(LoadingSpinner)
-                        : jsx(Component, {data, ...componentProps}));
+                    {className: 'mb-2 fadeIn'},
+                    span({className: 'font-weight-bold h5'}, title),
+                    jsx(LoadingSpinner, {
+                        className: classNames({fadeOut: !isLoading}),
+                        before: true,
+                    })),
+                jsx(Component, {data, ...componentProps}));
         });
     }
 
-    function concatBroadcasts(oldData, newData) {
-        return {
-            broadcasts: oldData.broadcasts.concat(newData.broadcasts),
-            nextLink: newData.nextLink,
-        };
-    }
-
-    function refreshBroadcasts(oldData, newData) {
-        const numBroadcasts = Math.min(
-            oldData.broadcasts.length, newData.broadcasts.length);
-
-        const oldBroadcasts = oldData.broadcasts.slice(0, numBroadcasts);
-        const newBroadcasts = newData.broadcasts.slice(0, numBroadcasts);
-
-        if (lodash.isEqual(oldBroadcasts, newBroadcasts)) {
-            return {
-                broadcasts: oldBroadcasts.concat(
-                    newData.broadcasts.slice(numBroadcasts)),
-                nextLink: newData.nextLink,
-            };
-        }
-
-        return newData;
-    }
-
-    const LazyAccounts = lazyComponentSection(Accounts);
-    const LazyShows = lazyComponentSection(Shows);
-    const LazyLiveData = lazyComponentSection(LiveData);
-    const LazyBroadcasts = lazyComponentSection(Broadcasts);
-    const LazyBroadcast = lazyComponentSection(Broadcast);
+    const LazyAccounts = lazySectionComponent(Accounts);
+    const LazyShows = lazySectionComponent(Shows);
+    const LazyLiveData = lazySectionComponent(LiveData);
+    const LazyBroadcasts = lazySectionComponent(Broadcasts);
+    const LazyBroadcast = lazySectionComponent(Broadcast);
 
     const App = memo(function App({api}) {
-        const [accountsPromise, ] = useState(api.listAccounts());
-        const [showsPromise, setShowsPromise] = useState(
-            Promise.resolve(EMPTY_SHOWS_DATA));
-        const [isLoadingMoreBroadcasts, setIsLoadingMoreBroadcasts] = useState(
-            false);
-        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
-        const [broadcastsPromise, setBroadcastsPromise] = useState(
-            Promise.resolve(EMPTY_BROADCASTS_DATA));
+        const [accountsPromise, setAccountsPromise] = useState(null);
+        const [showsPromise, setShowsPromise] = useState(null);
         const [liveDataPromise, setLiveDataPromise] = useState(null);
+        const [broadcastsPromise, setBroadcastsPromise] = useState(null);
+        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
         const [broadcastPromise, setBroadcastPromise] = useState(null);
+
+        useEffect(() => void setAccountsPromise(api.listAccounts()), [api]);
 
         return Fragment(
             jsx(LazyAccounts, {
                 title: 'Accounts',
                 promise: accountsPromise,
+                defaultData: EMPTY_ACCOUNTS_DATA,
                 onListShows(account) {
                     setShowsPromise(api.listShows());
-                    setBroadcastPromise(Promise.resolve(EMPTY_BROADCAST_DATA));
+                    setBroadcastPromise(Promise.resolve(
+                        // Clone broadcast so it doesn't compare as equal.
+                        lodash.clone(EMPTY_BROADCAST_DATA)));
                 },
             }),
             jsx(LazyShows, {
                 title: 'Shows',
                 promise: showsPromise,
+                defaultData: EMPTY_SHOWS_DATA,
                 onLoadLiveData(show) {
                     setLiveDataPromise(api.readShowLiveData(show.id));
                 },
                 onListBroadcasts(show) {
-                    setIsLoadingMoreBroadcasts(false);
                     setBroadcastsShowId(show.id);
-                    setBroadcastsPromise(api.listShowBroadcasts(show.id));
-                },
-            }),
-            jsx(LazyBroadcasts, {
-                title: 'Broadcasts',
-                promise: broadcastsPromise,
-                reducer: isLoadingMoreBroadcasts
-                    ? concatBroadcasts
-                    : refreshBroadcasts,
-                onLoadMore(nextToken) {
-                    setIsLoadingMoreBroadcasts(true);
-                    setBroadcastsPromise(
-                        api.listShowBroadcasts(broadcastsShowId, nextToken));
-                },
-                onLoadBroadcast(broadcastId) {
-                    setBroadcastPromise(api.readBroadcast(broadcastId));
+                    setBroadcastsPromise(oldBroadcastsPromise =>
+                        Promise.all([
+                            oldBroadcastsPromise || EMPTY_BROADCASTS_DATA,
+                            api.listShowBroadcasts(show.id),
+                        ])
+                        .then(([oldData, newData]) => {
+                            return refreshBroadcastData(oldData, newData);
+                        }));
                 },
             }),
             jsx(LazyLiveData, {
                 title: 'Live Data',
                 promise: liveDataPromise,
+                defaultData: EMPTY_LIVE_DATA,
+                onLoadBroadcast(broadcastId) {
+                    setBroadcastPromise(api.readBroadcast(broadcastId));
+                },
+            }),
+            jsx(LazyBroadcasts, {
+                title: 'Broadcasts',
+                promise: broadcastsPromise,
+                defaultData: EMPTY_BROADCASTS_DATA,
+                onLoadMore(nextToken) {
+                    setBroadcastsPromise(oldBroadcastsPromise =>
+                        Promise.all([
+                            oldBroadcastsPromise,
+                            api.listShowBroadcasts(broadcastsShowId, nextToken),
+                        ])
+                        .then(([oldData, newData]) => {
+                            return concatBroadcastData(oldData, newData);
+                        }));
+                },
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
@@ -1128,6 +1231,7 @@ Promise.all([pageReady, configuredRequireJs]).then(async ([rootEl, module]) => {
             jsx(LazyBroadcast, {
                 title: 'Broadcast',
                 promise: broadcastPromise,
+                defaultData: EMPTY_BROADCAST_DATA,
                 getSlateImageUrl(broadcastId) {
                     return api.getBroadcastSlateImageUrl(broadcastId);
                 },
