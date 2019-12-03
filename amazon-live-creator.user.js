@@ -10,20 +10,15 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: add RadioTable footer that knows whether it's empty or not
-// FIXME: toggle button active status
-// FIXME: split Load Broadcast into a combined two-button? Load / From server
-// FIXME: handle empty broadcast/shows list table
-// FIXME: open LazyComponent every time data changes
-// FIXME: detect logged in, but no account
-// FIXME: type check with eslint and typescript+jsdoc
-// FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
+// FIXME: handle errors in lazy loading, use error boundaries
+// FIXME: focus radio button on row selection?
 // FIXME: show video placeholder even when there's no video
 // FIXME: fix column widths on the Shows table to prevent content from "jumping"
-// FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
-// FIXME: handle errors in lazy loading
-// FIXME: table spacing when there's <code/>? or <input/>?
+// FIXME: type check with eslint and typescript+jsdoc
+// FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
 // FIXME: handle videojs JS errors
+// FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
+// FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: update broadcast from JSON in Ace editor
 // FIXME: use children in Ace editor?
 // FIXME: make some JSON Ace editors read-only?
@@ -33,7 +28,6 @@
 
 // TODO: use minified versions by default if faster, with dev mode option?
 // TODO: refresh live data periodically?
-// TODO: show broadcast slate image and video side by side?
 // TODO: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
 // TODO: sortable tables? datatable
 // TODO: searchable tables? datatable
@@ -811,6 +805,13 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     onSelectedRowIndex(rowIndex) {
                         setSelectedAccount(data[rowIndex]);
                     },
+                    emptyNotice: isLoggedOut
+                        ? a(
+                            {href: 'https://www.amazon.com/gp/sign-in.html'},
+                            'Login to your Amazon account.')
+                        : a(
+                            {href: 'https://apps.apple.com/app/id1265170914'},
+                            'Create an Amazon Live Creator account.'),
                     headers: [
                         {width: '1%'},
                         {content: 'Name'},
@@ -823,13 +824,6 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                         {content: jsx(Id, account.id)},
                         {content: account.type},
                     ]),
-                    emptyNotice: isLoggedOut
-                        ? a(
-                            {href: 'https://www.amazon.com/gp/sign-in.html'},
-                            'Login to your Amazon account first.')
-                        : a(
-                            {href: 'https://apps.apple.com/app/id1265170914'},
-                            'Create an Amazon Live Creator account first.')
                 }),
                 p(
                     jsx(Button, {
@@ -869,6 +863,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 onSelectedRowIndex(rowIndex) {
                     setSelectedShow(data.shows[rowIndex]);
                 },
+                emptyNotice: 'Select an account.',
                 headers: [
                     {width: '1%'},
                     {content: 'Title'},
@@ -935,6 +930,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 onSelectedRowIndex(rowIndex) {
                     setSelectedBroadcast(data.broadcasts[rowIndex]);
                 },
+                emptyNotice: 'Select a show.',
                 headers: [
                     {width: '1%'},
                     {content: 'Title'},
