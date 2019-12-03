@@ -11,6 +11,8 @@
 // ==/UserScript==
 
 // FIXME: type check with eslint and typescript+jsdoc
+// FIXME: set Ace editor cursor on 1:1 on first load
+// FIXME: update broadcast from JSON in Ace editor
 // FIXME: table spacing when there's <code/>? or <input/>? radio adds spacing?
 // FIXME: handle errors in lazy loading, use error boundaries
 // FIXME: radio button on row selection, use <label>s instead of onclick+focus?
@@ -19,8 +21,6 @@
 // FIXME: show video placeholder even when there's no video
 // FIXME: handle videojs JS errors
 // FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
-// FIXME: update broadcast from JSON in Ace editor
-// FIXME: make some JSON Ace editors read-only?
 // FIXME: use minified versions by default if faster, with dev mode option?
 // FIXME: refresh live data periodically?
 // FIXME: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
@@ -442,7 +442,8 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     const LazyAceEditor = lazy(async () => {
         const aceEditor = await module('aceEditor');
 
-        return fakeModule(memo(function LazyAceEditor({children, mode, style}) {
+        return fakeModule(memo(function LazyAceEditor(props) {
+            const {children, mode, isReadOnly, style} = props;
             const [editorEl, setEditorEl] = useState(null);
             const [editor, setEditor] = useState(null);
             const editorElRef = useCallback(setEditorEl);
@@ -466,6 +467,12 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 }
             }, [editor, children]);
 
+            useEffect(() => {
+                if (editor && (isReadOnly !== undefined)) {
+                    editor.setReadOnly(isReadOnly);
+                }
+            }, [editor, isReadOnly]);
+
             return div({ref: editorElRef, style: style});
         }));
     });
@@ -483,7 +490,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         }, jsx(LazyAceEditor, {style: style, ...props}, children));
     });
 
-    const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
+    const JsonAceEditor = memo(function JsonAceEditor({json, style, ...props}) {
         return jsx(AceEditor, {
             mode: 'ace/mode/json',
             style: {
@@ -492,6 +499,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 border: '1px solid lightgray',
                 ...style,
             },
+            ...props,
         }, JSON.stringify(json, undefined, 4));
     });
 
@@ -831,6 +839,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     })),
                 selectedAccount && jsx(JsonAceEditor, {
                     json: selectedAccount,
+                    isReadOnly: true,
                     style: {display: isJsonShown ? null : 'none'},
                 })));
     });
@@ -895,6 +904,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 })),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
+                isReadOnly: true,
                 style: {display: isJsonShown ? null : 'none'},
             }));
     });
@@ -991,6 +1001,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 })),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
+                isReadOnly: true,
                 style: {display: isJsonShown ? null : 'none'},
             }));
     });
@@ -1053,6 +1064,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 jsx(ToggleJsonButton, {onToggle: setIsJsonShown})),
             jsx(JsonAceEditor, {
                 json: data,
+                isReadOnly: true,
                 style: {display: isJsonShown ? null : 'none'},
             }));
     });
@@ -1238,7 +1250,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const shouldRun = /Violentmonkey/i.test(GM_info.scriptHandler)
-        || confirm('Unsupported UserScript manager. Continue?');
+        || confirm('Unsupported UserScript manager (Violentmonkey not detected).\nContinue anyway?');
 
     if (shouldRun) {
         ReactDOM.render(jsx(App, {api: new Api()}), rootEl);
