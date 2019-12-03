@@ -10,7 +10,6 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: refactor duplicate text strings and buttons (eg. JSON)
 // FIXME: add RadioTable footer that knows whether it's empty or not
 // FIXME: toggle button active status
 // FIXME: split Load Broadcast into a combined two-button? Load / From server
@@ -32,7 +31,6 @@
 // FIXME: does Button with tooltip breaks focus?
 // FIXME: don't select table row when clicking on links?
 
-// TODO: refactor toggle JSON button
 // TODO: use minified versions by default if faster, with dev mode option?
 // TODO: refresh live data periodically?
 // TODO: show broadcast slate image and video side by side?
@@ -691,7 +689,10 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const ToggleButton = memo(function ToggleButton(props) {
-        const {children, className, onToggle, ...restProps} = props;
+        const {
+            children, alternativeChildren, className, onToggle, ...restProps
+        } = props;
+
         const [isToggled, toggle] = useToggleState(false);
 
         useEffect(() => void onToggle(isToggled), [isToggled]);
@@ -699,9 +700,22 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         return jsx(Button, {
             className: classNames('btn-outline-info', className),
             'data-toggle': 'button',
-            onPointerDown: toggle,
+            onClick: toggle,
             ...restProps,
-        }, children);
+        }, (alternativeChildren !== undefined) && isToggled
+            ? alternativeChildren
+            : children);
+    });
+
+    const ToggleJsonButton = memo(function ToggleJsonButton(props) {
+        const {disabled, title, ...restProps} = props;
+
+        return jsx(ToggleButton, {
+            title: disabled ? title : false,
+            disabled: disabled,
+            alternativeChildren: 'Hide JSON',
+            ...restProps,
+        }, 'View JSON');
     });
 
     const RadioTable = memo(function RadioTable(props) {
@@ -756,7 +770,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                             key: rowIndex,
                             className: classNames(
                                 {'table-primary': selectedRowIndex === rowIndex}),
-                            onPointerDown() {
+                            onClick() {
                                 if (!hasSelection()) {
                                     setSelectedRowIndex(rowIndex);
                                 }
@@ -822,15 +836,15 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                         title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
                         disabled: !selectedAccount,
                         className: 'btn-outline-primary mr-3',
-                        onPointerDown() {
+                        onClick() {
                             onListShows(selectedAccount);
                         },
                     }, 'List shows'),
-                    jsx(ToggleButton, {
-                        title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
+                    jsx(ToggleJsonButton, {
+                        title: SELECT_ACCOUNT_BUTTON_TITLE,
                         disabled: !selectedAccount,
                         onToggle: setIsJsonShown,
-                    }, 'View JSON')),
+                    })),
                 selectedAccount && jsx(JsonAceEditor, {
                     json: selectedAccount,
                     style: {display: isJsonShown ? null : 'none'},
@@ -877,7 +891,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
                     className: 'btn-outline-primary mr-3',
-                    onPointerDown() {
+                    onClick() {
                         onListBroadcasts(selectedShow);
                     },
                 }, 'List broadcasts'),
@@ -885,15 +899,15 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
                     className: 'btn-outline-primary mr-3',
-                    onPointerDown() {
+                    onClick() {
                         onLoadLiveData(selectedShow);
                     },
                 }, 'Load live data'),
-                jsx(ToggleButton, {
-                    title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
+                jsx(ToggleJsonButton, {
+                    title: SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
                     onToggle: setIsJsonShown,
-                }, 'View JSON')),
+                })),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
                 style: {display: isJsonShown ? null : 'none'},
@@ -969,7 +983,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
                     disabled: !selectedBroadcast,
                     className: 'btn-outline-primary mr-3',
-                    onPointerDown() {
+                    onClick() {
                         onLoadBroadcast(selectedBroadcast.id);
                     },
                 }, 'Load broadcast'),
@@ -979,16 +993,16 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     title: !data.nextLink ? 'No more broadcasts'
                         : isLoadingMore ? 'Loading more broadcasts'
                         : '',
-                    onPointerDown() {
+                    onClick() {
                         setIsLoadingMore(true);
                         onLoadMore(data.nextLink);
                     },
                 }, 'Load more broadcasts'),
-                jsx(ToggleButton, {
-                    title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
+                jsx(ToggleJsonButton, {
+                    title: SELECT_BROADCAST_BUTTON_TITLE,
                     disabled: !selectedBroadcast,
                     onToggle: setIsJsonShown,
-                }, 'View JSON')),
+                })),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
                 style: {display: isJsonShown ? null : 'none'},
@@ -1046,11 +1060,11 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     title: !!broadcastId || 'No broadcast with live data',
                     disabled: !broadcastId,
                     className: 'btn-outline-primary mr-3',
-                    onPointerDown() {
+                    onClick() {
                         onLoadBroadcast(broadcastId);
                     },
                 }, 'Load broadcast'),
-                jsx(ToggleButton, {onToggle: setIsJsonShown}, 'View JSON')),
+                jsx(ToggleJsonButton, {onToggle: setIsJsonShown})),
             jsx(JsonAceEditor, {
                 json: data,
                 style: {display: isJsonShown ? null : 'none'},
@@ -1106,11 +1120,11 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     title: canClear || 'Already cleared',
                     disabled: !canClear,
                     className: 'btn-outline-primary mr-3',
-                    onPointerDown() {
+                    onClick() {
                         setBroadcast(data);
                     },
                 }, 'Clear'),
-                jsx(ToggleButton, {onToggle: setIsJsonShown}, 'View JSON')),
+                jsx(ToggleJsonButton, {onToggle: setIsJsonShown})),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {display: isJsonShown ? null : 'none'},
@@ -1148,7 +1162,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             return details(
                 {className: 'mb-4', open: data !== defaultData},
                 summary(
-                    {className: 'mb-2 fadeIn'},
+                    {className: 'mb-2'},
                     span({className: 'font-weight-bold h5'}, title),
                     jsx(LoadingSpinner, {
                         className: classNames({fadeOut: !isLoading}),
