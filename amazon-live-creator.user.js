@@ -10,32 +10,23 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: handle errors in lazy loading, use error boundaries
-// FIXME: focus radio button on row selection?
-// FIXME: show video placeholder even when there's no video
-// FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: type check with eslint and typescript+jsdoc
+// FIXME: table spacing when there's <code/>? or <input/>? radio adds spacing?
+// FIXME: handle errors in lazy loading, use error boundaries
+// FIXME: radio button on row selection, use <label>s instead of onclick+focus?
+// FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
+// FIXME: show video placeholder even when there's no video
 // FIXME: handle videojs JS errors
 // FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
-// FIXME: table spacing when there's <code/>? or <input/>?
 // FIXME: update broadcast from JSON in Ace editor
-// FIXME: use children in Ace editor?
 // FIXME: make some JSON Ace editors read-only?
-// FIXME: use <label>s instead of onclick+focus?
-// FIXME: does Button with tooltip breaks focus?
-// FIXME: don't select table row when clicking on links?
-
-// TODO: use minified versions by default if faster, with dev mode option?
-// TODO: refresh live data periodically?
-// TODO: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
-// TODO: sortable tables? datatable
-// TODO: searchable tables? datatable
-// TODO: add alias for React.Suspense?
-// TODO: use functions for initial state in useState?
-// TODO: show skeleton by having fake data? cached/mocked while being verified?
-// TODO: offline mode? https://www.html5rocks.com/en/mobile/workingoffthegrid/
-// TODO: service workers for faster background API calls, downloading CSS/JS?
+// FIXME: use minified versions by default if faster, with dev mode option?
+// FIXME: refresh live data periodically?
+// FIXME: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
+// FIXME: sortable tables? searchable? datatable
+// FIXME: add alias for React.Suspense?
+// FIXME: service workers for faster background API calls, downloading CSS/JS?
 
 'use strict';
 document.body.textContent = '';
@@ -451,7 +442,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     const LazyAceEditor = lazy(async () => {
         const aceEditor = await module('aceEditor');
 
-        return fakeModule(memo(function LazyAceEditor({text, mode, style}) {
+        return fakeModule(memo(function LazyAceEditor({children, mode, style}) {
             const [editorEl, setEditorEl] = useState(null);
             const [editor, setEditor] = useState(null);
             const editorElRef = useCallback(setEditorEl);
@@ -471,30 +462,29 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
             useEffect(() => {
                 if (editor) {
-                    editor.setValue(text, 1);
+                    editor.setValue(children, 1);
                 }
-            }, [editor, text]);
+            }, [editor, children]);
 
             return div({ref: editorElRef, style: style});
         }));
     });
 
-    const AceEditor = memo(function AceEditor({style, text, ...props}) {
+    const AceEditor = memo(function AceEditor({style, children, ...props}) {
         return jsx(React.Suspense, {
             fallback: jsx(LoadingSpinner, {
-                after: pre(text),
+                after: pre(children),
                 style: {
                     overflow: 'auto',
                     display: 'block',
                     ...style,
                 },
             }),
-        }, jsx(LazyAceEditor, {style: style, text: text, ...props}));
+        }, jsx(LazyAceEditor, {style: style, ...props}, children));
     });
 
     const JsonAceEditor = memo(function JsonAceEditor({json, style}) {
         return jsx(AceEditor, {
-            text: JSON.stringify(json, undefined, 4),
             mode: 'ace/mode/json',
             style: {
                 width: '100%',
@@ -502,7 +492,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 border: '1px solid lightgray',
                 ...style,
             },
-        });
+        }, JSON.stringify(json, undefined, 4));
     });
 
     const LazyVideo = lazy(async () => {
