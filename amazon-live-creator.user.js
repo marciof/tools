@@ -10,7 +10,6 @@
 // @grant GM_addStyle
 // ==/UserScript==
 
-// FIXME: make Broadcast form read-only when logged out or with no account
 // FIXME: refactor duplicate text strings and buttons (eg. JSON)
 // FIXME: add RadioTable footer that knows whether it's empty or not
 // FIXME: toggle button active status
@@ -159,7 +158,7 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
 const customStyles = new Promise(resolve => {
     GM_addStyle(`
         details[open] summary ~ * {
-            animation: appear 0.5s ease-in-out;
+            animation: appear 0.3s ease-in-out;
         }
 
         @keyframes appear {
@@ -433,8 +432,10 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
     function useToggleState(isEnabledAtStart) {
         const [isEnabled, setIsEnabled] = useState(isEnabledAtStart);
+
         const toggleIsEnabled = useCallback(
-            () => void setIsEnabled(prevIsEnabled => !prevIsEnabled));
+            () => void setIsEnabled(prevIsEnabled => !prevIsEnabled),
+            []);
 
         return [isEnabled, toggleIsEnabled];
     }
@@ -690,11 +691,15 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const ToggleButton = memo(function ToggleButton(props) {
-        const {children, className, ...restProps} = props;
+        const {children, className, onToggle, ...restProps} = props;
+        const [isToggled, toggle] = useToggleState(false);
+
+        useEffect(() => void onToggle(isToggled), [isToggled]);
 
         return jsx(Button, {
             className: classNames('btn-outline-info', className),
             'data-toggle': 'button',
+            onPointerDown: toggle,
             ...restProps,
         }, children);
     });
@@ -772,7 +777,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
     const Accounts = memo(function Accounts({data, onListShows}) {
         const [selectedAccount, setSelectedAccount] = useState(null);
-        const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+        const [isJsonShown, setIsJsonShown] = useState(null);
         const SELECT_ACCOUNT_BUTTON_TITLE = 'Select an account';
         const isLoggedOut = lodash.isPlainObject(data)
             && data.errors.some(error => error.code === 'notLoggedIn');
@@ -824,7 +829,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     jsx(ToggleButton, {
                         title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
                         disabled: !selectedAccount,
-                        onPointerDown: toggleIsJsonShown,
+                        onToggle: setIsJsonShown,
                     }, 'View JSON')),
                 selectedAccount && jsx(JsonAceEditor, {
                     json: selectedAccount,
@@ -835,7 +840,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     const Shows = memo(function Shows(props) {
         const {data, onLoadLiveData, onListBroadcasts} = props;
         const [selectedShow, setSelectedShow] = useState(null);
-        const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+        const [isJsonShown, setIsJsonShown] = useState(null);
         const SELECT_SHOW_BUTTON_TITLE = 'Select a show';
 
         useEffect(() => {
@@ -887,7 +892,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 jsx(ToggleButton, {
                     title: !!selectedShow || SELECT_SHOW_BUTTON_TITLE,
                     disabled: !selectedShow,
-                    onPointerDown: toggleIsJsonShown,
+                    onToggle: setIsJsonShown,
                 }, 'View JSON')),
             selectedShow && jsx(JsonAceEditor, {
                 json: selectedShow,
@@ -899,7 +904,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         const {data, onLoadMore, onLoadBroadcast} = props;
         const [selectedBroadcast, setSelectedBroadcast] = useState(null);
         const [isLoadingMore, setIsLoadingMore] = useState(false);
-        const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+        const [isJsonShown, setIsJsonShown] = useState(null);
         const SELECT_BROADCAST_BUTTON_TITLE = 'Select a broadcast';
         const canLoadMoreBroadcasts = !!data.nextLink && !isLoadingMore;
 
@@ -982,7 +987,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 jsx(ToggleButton, {
                     title: !!selectedBroadcast || SELECT_BROADCAST_BUTTON_TITLE,
                     disabled: !selectedBroadcast,
-                    onPointerDown: toggleIsJsonShown,
+                    onToggle: setIsJsonShown,
                 }, 'View JSON')),
             selectedBroadcast && jsx(JsonAceEditor, {
                 json: selectedBroadcast,
@@ -991,7 +996,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const LiveData = memo(function LiveData({data, onLoadBroadcast}) {
-        const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+        const [isJsonShown, setIsJsonShown] = useState(null);
 
         const {
             broadcastStartedId,
@@ -1045,8 +1050,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                         onLoadBroadcast(broadcastId);
                     },
                 }, 'Load broadcast'),
-                jsx(ToggleButton, {onPointerDown: toggleIsJsonShown},
-                    'View JSON')),
+                jsx(ToggleButton, {onToggle: setIsJsonShown}, 'View JSON')),
             jsx(JsonAceEditor, {
                 json: data,
                 style: {display: isJsonShown ? null : 'none'},
@@ -1055,7 +1059,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
     const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
         const [broadcast, setBroadcast] = useState(data);
-        const [isJsonShown, toggleIsJsonShown] = useToggleState(false);
+        const [isJsonShown, setIsJsonShown] = useState(null);
         const canClear = (broadcast !== data);
 
         useEffect(() => void setBroadcast(data), [data]);
@@ -1106,8 +1110,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                         setBroadcast(data);
                     },
                 }, 'Clear'),
-                jsx(ToggleButton, {onPointerDown: toggleIsJsonShown},
-                    'View JSON')),
+                jsx(ToggleButton, {onToggle: setIsJsonShown}, 'View JSON')),
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {display: isJsonShown ? null : 'none'},
@@ -1197,9 +1200,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                             oldBroadcastsPromise || EMPTY_BROADCASTS_DATA,
                             api.listShowBroadcasts(show.id),
                         ])
-                        .then(([oldData, newData]) => {
-                            return refreshBroadcastData(oldData, newData);
-                        }));
+                        .then(([oldData, newData]) => refreshBroadcastData(oldData, newData)));
                 },
             }),
             jsx(LazyLiveData, {
@@ -1220,9 +1221,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                             oldBroadcastsPromise,
                             api.listShowBroadcasts(broadcastsShowId, nextToken),
                         ])
-                        .then(([oldData, newData]) => {
-                            return concatBroadcastData(oldData, newData);
-                        }));
+                        .then(([oldData, newData]) => concatBroadcastData(oldData, newData)));
                 },
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
