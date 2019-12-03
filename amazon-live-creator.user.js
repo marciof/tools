@@ -11,22 +11,16 @@
 // ==/UserScript==
 
 // FIXME: type check with eslint and typescript+jsdoc
-// FIXME: set Ace editor cursor on 1:1 on first load
-// FIXME: update broadcast from JSON in Ace editor
+// FIXME: radio button on row selection, use <label>s instead of onclick+focus?
 // FIXME: table spacing when there's <code/>? or <input/>? radio adds spacing?
 // FIXME: handle errors in lazy loading, use error boundaries
-// FIXME: radio button on row selection, use <label>s instead of onclick+focus?
-// FIXME: fix column widths on the Shows table to prevent content from "jumping"
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
-// FIXME: show video placeholder even when there's no video
 // FIXME: handle videojs JS errors
-// FIXME: handle broadcasts with no slate image (lazy load?) (default to show?)
-// FIXME: use minified versions by default if faster, with dev mode option?
+// FIXME: show broadcast video and slate placeholder always (even when absent)
 // FIXME: refresh live data periodically?
-// FIXME: add a on-hover copy-to-clipboard icon next to IDs and ASINs?
 // FIXME: sortable tables? searchable? datatable
-// FIXME: add alias for React.Suspense?
-// FIXME: service workers for faster background API calls, downloading CSS/JS?
+// FIXME: service workers for performance? new Worker(URL.createObjectURL(new Blob([
+// FIXME: use minified versions by default if faster, with dev mode option?
 
 'use strict';
 document.body.textContent = '';
@@ -344,6 +338,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     const useCallback = React.useCallback.bind(React);
     const useEffect = React.useEffect.bind(React);
     const Fragment = jsx.bind(null, React.Fragment);
+    const Suspense = React.Suspense;
 
     const EMPTY_ACCOUNTS_DATA = {
         errors: [
@@ -429,6 +424,18 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         };
     }
 
+    function getAceEditorValidValue(editor) {
+        const annotations = editor.getSession().getAnnotations();
+
+        for (let i = 0; i < annotations.length; ++i) {
+            if (annotations[i].type === 'error') {
+                return null;
+            }
+        }
+
+        return editor.getValue();
+    }
+
     const LoadingSpinner = memo(function LoadingSpinner(props) {
         const {before, after, ...restProps} = props;
 
@@ -443,7 +450,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         const aceEditor = await module('aceEditor');
 
         return fakeModule(memo(function LazyAceEditor(props) {
-            const {children, mode, isReadOnly, style} = props;
+            const {children, mode, style, isReadOnly, onChange} = props;
             const [editorEl, setEditorEl] = useState(null);
             const [editor, setEditor] = useState(null);
             const editorElRef = useCallback(setEditorEl);
@@ -463,7 +470,10 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
             useEffect(() => {
                 if (editor) {
-                    editor.setValue(children, 1);
+                    // Changing the editor's value also changes cursor position.
+                    const {row, column} = editor.getCursorPosition();
+                    editor.setValue(children);
+                    editor.gotoLine(row + 1, column);
                 }
             }, [editor, children]);
 
@@ -473,12 +483,31 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 }
             }, [editor, isReadOnly]);
 
+            useEffect(() => {
+                if (editor && onChange) {
+                    const listener = () => {
+                        const value = getAceEditorValidValue(editor);
+                        if (value !== null) {
+                            onChange(value);
+                        }
+                    };
+
+                    // Listen to the tokenizer so that it has a chance to
+                    // parse and validate input (no need for throttling or
+                    // debouncing).
+                    editor.getSession().on('tokenizerUpdate', listener);
+
+                    return () => editor.getSession().off(
+                        'tokenizerUpdate', listener);
+                }
+            }, [editor, onChange]);
+
             return div({ref: editorElRef, style: style});
         }));
     });
 
     const AceEditor = memo(function AceEditor({style, children, ...props}) {
-        return jsx(React.Suspense, {
+        return jsx(Suspense, {
             fallback: jsx(LoadingSpinner, {
                 after: pre(children),
                 style: {
@@ -556,7 +585,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     const Video = memo(function Video({src}) {
         const height = '200px';
 
-        return jsx(React.Suspense, {
+        return jsx(Suspense, {
             fallback: jsx(LoadingSpinner, {
                 style: {
                     height: height,
@@ -608,7 +637,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         const {title = '', type = 'span', children, ...restProps} = props;
         const actualTitle = lodash.isBoolean(title) ? '' : title;
 
-        return jsx(React.Suspense, {
+        return jsx(Suspense, {
             fallback: jsx(type,
                 {title: actualTitle, ...restProps}, children),
         }, jsx(LazyTooltip,
@@ -626,7 +655,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const DateTime = memo(function DateTime({children}) {
-        return jsx(React.Suspense, {
+        return jsx(Suspense, {
             fallback: jsx(LoadingSpinner, {before: children}),
         }, jsx(LazyDateTime, children));
     });
@@ -645,7 +674,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const Duration = memo(function Duration(props) {
-        return jsx(React.Suspense,
+        return jsx(Suspense,
             {fallback: jsx(LoadingSpinner)},
             jsx(LazyDuration, props));
     });
@@ -1078,7 +1107,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
         return form(
             broadcast.hlsUrl && p(jsx(Video, {src: broadcast.hlsUrl})),
-            p(img({
+            broadcast.id && p(img({
                 src: getSlateImageUrl(broadcast.id),
                 height: '100px',
             })),
@@ -1089,7 +1118,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             })),
             p(label('Title: ', input({
                 type: 'text',
-                value: broadcast.title,
+                value: broadcast.title || '',
                 onChange(event) {
                     const title = event.target.value;
 
@@ -1126,6 +1155,14 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             jsx(JsonAceEditor, {
                 json: broadcast,
                 style: {display: isJsonShown ? null : 'none'},
+                onChange(validValue) {
+                    const newBroadcast = JSON.parse(validValue);
+
+                    setBroadcast(prevBroadcast =>
+                        lodash.isEqual(prevBroadcast, newBroadcast)
+                            ? prevBroadcast
+                            : newBroadcast);
+                },
             }));
     });
 
