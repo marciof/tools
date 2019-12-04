@@ -13,14 +13,12 @@
 // FIXME: type check with eslint and typescript+jsdoc
 // FIXME: radio button on row selection, use <label>s instead of onclick+focus?
 // FIXME: table spacing when there's <code/>? or <input/>? radio adds spacing?
-// FIXME: handle errors in lazy loading, use error boundaries
+// FIXME: handle errors in lazy loading, network, use error boundaries
 // FIXME: use more lightweight video player? https://github.com/video-dev/hls.js
 // FIXME: handle videojs JS errors
-// FIXME: show broadcast video and slate placeholder always (even when absent)
-// FIXME: refresh live data periodically?
 // FIXME: sortable tables? searchable? datatable
 // FIXME: service workers for performance? new Worker(URL.createObjectURL(new Blob([
-// FIXME: use minified versions by default if faster, with dev mode option?
+// FIXME: use minified versions by default if faster?
 
 'use strict';
 document.body.textContent = '';
@@ -1101,13 +1099,13 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
         const [broadcast, setBroadcast] = useState(data);
         const [isJsonShown, setIsJsonShown] = useState(null);
-        const canClear = (broadcast !== data);
+        const canReset = (broadcast !== data);
 
         useEffect(() => void setBroadcast(data), [data]);
 
         return form(
-            broadcast.hlsUrl && p(jsx(Video, {src: broadcast.hlsUrl})),
-            broadcast.id && p(img({
+            p(jsx(Video, {src: broadcast.hlsUrl})),
+            p(img({
                 src: getSlateImageUrl(broadcast.id),
                 height: '100px',
             })),
@@ -1144,13 +1142,13 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     }), text))),
             p(
                 jsx(Button, {
-                    title: canClear || 'Already cleared',
-                    disabled: !canClear,
+                    title: canReset || 'Already reset',
+                    disabled: !canReset,
                     className: 'btn-outline-primary mr-3',
                     onClick() {
                         setBroadcast(data);
                     },
-                }, 'Clear'),
+                }, 'Reset'),
                 jsx(ToggleJsonButton, {onToggle: setIsJsonShown})),
             jsx(JsonAceEditor, {
                 json: broadcast,
