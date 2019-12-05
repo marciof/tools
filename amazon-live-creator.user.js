@@ -468,10 +468,14 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
             useEffect(() => {
                 if (editor) {
-                    // Changing the editor's value also changes cursor position.
+                    // Changing the editor's value also changes cursor position
+                    // and selection ranges.
                     const {row, column} = editor.getCursorPosition();
+                    const range = editor.getSelectionRange();
+
                     editor.setValue(children);
                     editor.gotoLine(row + 1, column);
+                    editor.getSelection().setSelectionRange(range);
                 }
             }, [editor, children]);
 
