@@ -521,7 +521,9 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         }, jsx(LazyAceEditor, {style: style, ...props}, children));
     });
 
-    const JsonAceEditor = memo(function JsonAceEditor({json, style, ...props}) {
+    const JsonAceEditor = memo(function JsonAceEditor(props) {
+        const {json, style, onChange, ...restProps} = props;
+
         return jsx(AceEditor, {
             mode: 'ace/mode/json',
             style: {
@@ -530,7 +532,12 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 border: '1px solid lightgray',
                 ...style,
             },
-            ...props,
+            onChange: !onChange ? null : function(validValue) {
+                if (validValue.trim().length > 0) {
+                    onChange(validValue);
+                }
+            },
+            ...restProps,
         }, JSON.stringify(json, undefined, 4));
     });
 
