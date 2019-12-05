@@ -1111,13 +1111,16 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         const [broadcast, setBroadcast] = useState(data);
         const [isJsonShown, setIsJsonShown] = useState(null);
         const canReset = (broadcast !== data);
+        const safeBroadcast = lodash.isPlainObject(broadcast)
+            ? broadcast
+            : {};
 
         useEffect(() => void setBroadcast(data), [data]);
 
         return form(
-            p(jsx(Video, {src: broadcast.hlsUrl})),
+            p(jsx(Video, {src: safeBroadcast.hlsUrl})),
             p(img({
-                src: getSlateImageUrl(broadcast.id),
+                src: getSlateImageUrl(safeBroadcast.id),
                 height: '100px',
             })),
             p(input({
@@ -1127,7 +1130,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             })),
             p(label('Title: ', input({
                 type: 'text',
-                value: broadcast.title || '',
+                value: safeBroadcast.title || '',
                 onChange(event) {
                     const title = event.target.value;
 
@@ -1143,7 +1146,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                         type: 'radio',
                         name: 'videoSource',
                         value: value,
-                        checked: broadcast.videoSource === value,
+                        checked: safeBroadcast.videoSource === value,
                         onChange() {
                             setBroadcast(prevBroadcast => ({
                                 ...prevBroadcast,
