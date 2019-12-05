@@ -29,9 +29,7 @@ mode_help_vcs='show VCS revisions via "git", HEAD by default'
 # TODO: support file://?
 # TODO: support http/https?
 # TODO: support intra-line diff? https://github.com/ymattw/ydiff
-# TODO: markdown rendering? https://github.com/kneufeld/consolemd
 # TODO: images? https://github.com/stefanhaustein/TerminalImageViewer
-# TODO: fix blocking input? eg. `cat | show.sh -h`
 # TODO: tests (functional, performance)
 
 mode_options_bin=
