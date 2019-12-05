@@ -4,13 +4,14 @@
 // @version 0.1
 // @namespace https://github.com/marciof
 // @icon https://www.amazon.com/favicon.ico
-// @match https://amazonlivetools.amazon.com/
+// @include https://amazonlivetools*.amazon.com/
 // @run-at document-start
 // @grant GM_info
 // @grant GM_addStyle
 // ==/UserScript==
 
 // FIXME: type check with eslint and typescript+jsdoc
+// FIXME: make List Broadcasts not cut short the existing list?
 // FIXME: radio button on row selection, use <label>s instead of onclick+focus?
 // FIXME: table spacing when there's <code/>? or <input/>? radio adds spacing?
 // FIXME: handle errors in lazy loading, network, use error boundaries
@@ -591,9 +592,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         }));
     });
 
-    const Video = memo(function Video({src}) {
-        const height = '200px';
-
+    const Video = memo(function Video({src, height}) {
         return jsx(Suspense, {
             fallback: jsx(LoadingSpinner, {
                 style: {
@@ -833,9 +832,6 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         }, [selectedAccount, data]);
 
         return Fragment(
-            p(a(
-                {href: 'https://www.amazon.com/gp/navigation/redirector.html?switchAccount=picker'},
-                'Switch Amazon accounts.')),
             form(
                 jsx(RadioTable, {
                     onSelectedRowIndex(rowIndex) {
@@ -862,6 +858,10 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     ]),
                 }),
                 p(
+                    a({
+                        href: 'https://www.amazon.com/gp/navigation/redirector.html?switchAccount=picker',
+                        className: 'btn btn-outline-primary mr-3',
+                    }, 'Switch account'),
                     jsx(Button, {
                         title: !!selectedAccount || SELECT_ACCOUNT_BUTTON_TITLE,
                         disabled: !selectedAccount,
@@ -1118,10 +1118,13 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         useEffect(() => void setBroadcast(data), [data]);
 
         return form(
-            p(jsx(Video, {src: safeBroadcast.hlsUrl})),
+            p(jsx(Video, {
+                src: safeBroadcast.hlsUrl,
+                height: '200px',
+            })),
             p(img({
                 src: getSlateImageUrl(safeBroadcast.id),
-                height: '100px',
+                height: '200px',
             })),
             p(input({
                 type: 'file',
