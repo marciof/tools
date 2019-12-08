@@ -549,12 +549,17 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             }, [videoEl]);
 
             useEffect(() => {
-                if (player && src) {
-                    const wasPaused = player.paused();
-                    player.src(src);
+                if (player) {
+                    if (src) {
+                        const wasPaused = player.paused();
+                        player.src(src);
 
-                    if (!wasPaused) {
-                        player.play();
+                        if (!wasPaused) {
+                            player.play();
+                        }
+                    }
+                    else {
+                        player.reset();
                     }
                 }
             }, [player, src]);
@@ -1144,6 +1149,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         const {data, create, getSlateImageUrl} = props;
         const [broadcast, setBroadcast] = useState(data);
         const [isJsonShown, setIsJsonShown] = useState(null);
+        const canClear = (broadcast !== EMPTY_BROADCAST_DATA);
         const canReset = (broadcast !== data);
         const safeBroadcast = lodash.isPlainObject(broadcast)
             ? broadcast
@@ -1201,6 +1207,14 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     },
                 }, 'Create'),
                 jsx(Button, {
+                    title: canClear || 'Already cleared',
+                    disabled: !canClear,
+                    className: 'btn-outline-primary mr-3',
+                    onClick() {
+                        setBroadcast(EMPTY_BROADCAST_DATA);
+                    },
+                }, 'Clear'),
+                jsx(Button, {
                     title: canReset || 'Already reset',
                     disabled: !canReset,
                     className: 'btn-outline-primary mr-3',
@@ -1246,7 +1260,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             }, [promise]);
 
             return details(
-                {className: 'mb-4', open: hasData && !isLoading},
+                {className: 'mb-4', open: hasData},
                 summary(
                     {className: 'mb-2'},
                     span({className: 'font-weight-bold h5'}, title),
