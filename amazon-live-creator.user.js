@@ -12,6 +12,7 @@
 
 // FIXME: type check with eslint and typescript+jsdoc
 // FIXME: make List Broadcasts not cut short the existing list?
+// FIXME: add option to allow mapping different API URLs to different Amazon.com URLs
 // FIXME: radio button on row selection, use <label>s instead of onclick+focus?
 // FIXME: table spacing when there's <code/>? or <input/>? radio adds spacing?
 // FIXME: handle errors in lazy loading, network, use error boundaries
@@ -21,7 +22,6 @@
 // FIXME: service workers for performance? new Worker(URL.createObjectURL(new Blob([
 // FIXME: use minified versions by default if faster?
 // FIXME: update timestamps every X?
-// FIXME: add option to allow mapping different API URLs to different Amazon.com URLs
 // FIXME: preload modules when idle
 
 'use strict';
@@ -352,6 +352,10 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         PHONE_CAMERA: 'Phone camera',
         THIRD_PARTY_ENCODER: 'Encoder',
     };
+
+    function reducePromises(promises, reducer) {
+        return Promise.all(promises).then(values => values.reduce(reducer));
+    }
 
     function concatBroadcastData(oldData, newData) {
         return {
@@ -1146,7 +1150,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const Broadcast = memo(function Broadcast(props) {
-        const {data, create, getSlateImageUrl} = props;
+        const {data, onCreate, getSlateImageUrl} = props;
         const [broadcast, setBroadcast] = useState(data);
         const [isJsonShown, setIsJsonShown] = useState(null);
         const canClear = (broadcast !== EMPTY_BROADCAST_DATA);
@@ -1199,11 +1203,11 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     }), text))),
             p(
                 jsx(Button, {
-                    title: !!create || 'Select a show',
-                    disabled: !create,
+                    title: !!onCreate || 'Select a show',
+                    disabled: !onCreate,
                     className: 'btn-outline-primary mr-3',
                     onClick() {
-                        create(broadcast);
+                        onCreate(broadcast);
                     },
                 }, 'Create'),
                 jsx(Button, {
@@ -1237,13 +1241,12 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             }));
     });
 
-    /**
-     * @param Component {React.Component}
-     * @returns {React.Component}
-     */
-    function lazySectionComponent(Component) {
+    function lazySectionComponent(Component, defaultProps = {}) {
         return memo(function LazySection(props) {
-            const {title, promise, defaultData, ...componentProps} = props;
+            const {
+                title, promise, defaultData, ...componentProps
+            } = {...defaultProps, ...props};
+
             const [isLoading, setIsLoading] = useState(false);
             const [hasData, setHasData] = useState(false);
             const [data, setData] = useState(defaultData);
@@ -1272,11 +1275,30 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         });
     }
 
-    const LazyAccounts = lazySectionComponent(Accounts);
-    const LazyShows = lazySectionComponent(Shows);
-    const LazyLiveData = lazySectionComponent(LiveData);
-    const LazyBroadcasts = lazySectionComponent(Broadcasts);
-    const LazyBroadcast = lazySectionComponent(Broadcast);
+    const LazyAccounts = lazySectionComponent(Accounts, {
+        title: 'Accounts',
+        defaultData: EMPTY_ACCOUNTS_DATA,
+    });
+
+    const LazyShows = lazySectionComponent(Shows, {
+        title: 'Shows',
+        defaultData: EMPTY_SHOWS_DATA,
+    });
+
+    const LazyLiveData = lazySectionComponent(LiveData, {
+        title: 'Live Data',
+        defaultData: EMPTY_LIVE_DATA,
+    });
+
+    const LazyBroadcasts = lazySectionComponent(Broadcasts, {
+        title: 'Broadcasts',
+        defaultData: EMPTY_BROADCASTS_DATA,
+    });
+
+    const LazyBroadcast = lazySectionComponent(Broadcast, {
+        title: 'Broadcast',
+        defaultData: EMPTY_BROADCAST_DATA,
+    });
 
     const App = memo(function App({api}) {
         const [accountsPromise, setAccountsPromise] = useState(null);
@@ -1289,19 +1311,14 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         useEffect(() => void setAccountsPromise(api.listAccounts()), [api]);
 
         return Fragment(
-            // jsx(DataTable),
             jsx(LazyAccounts, {
-                title: 'Accounts',
                 promise: accountsPromise,
-                defaultData: EMPTY_ACCOUNTS_DATA,
                 onListShows(account) {
                     setShowsPromise(api.listShows());
                 },
             }),
             jsx(LazyShows, {
-                title: 'Shows',
                 promise: showsPromise,
-                defaultData: EMPTY_SHOWS_DATA,
                 onSelectShow(show) {
                     setSelectedShowId(show.id);
                     setBroadcastPromise(Promise.resolve(EMPTY_BROADCAST_DATA));
@@ -1310,43 +1327,33 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     setLiveDataPromise(api.readShowLiveData(show.id));
                 },
                 onListBroadcasts(show) {
-                    setBroadcastsPromise(oldBroadcastsPromise =>
-                        Promise.all([
-                            oldBroadcastsPromise || EMPTY_BROADCASTS_DATA,
-                            api.listShowBroadcasts(show.id),
-                        ])
-                        .then(([oldData, newData]) => refreshBroadcastData(oldData, newData)));
+                    setBroadcastsPromise(oldPromise => reducePromises([
+                        oldPromise || EMPTY_BROADCASTS_DATA,
+                        api.listShowBroadcasts(show.id),
+                    ], refreshBroadcastData));
                 },
             }),
             jsx(LazyLiveData, {
-                title: 'Live Data',
                 promise: liveDataPromise,
-                defaultData: EMPTY_LIVE_DATA,
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
             }),
             jsx(LazyBroadcasts, {
-                title: 'Broadcasts',
                 promise: broadcastsPromise,
-                defaultData: EMPTY_BROADCASTS_DATA,
                 onLoadMore(nextToken) {
-                    setBroadcastsPromise(oldBroadcastsPromise =>
-                        Promise.all([
-                            oldBroadcastsPromise,
-                            api.listShowBroadcasts(selectedShowId, nextToken),
-                        ])
-                        .then(([oldData, newData]) => concatBroadcastData(oldData, newData)));
+                    setBroadcastsPromise(oldPromise => reducePromises([
+                        oldPromise,
+                        api.listShowBroadcasts(selectedShowId, nextToken),
+                    ], concatBroadcastData));
                 },
                 onLoadBroadcast(broadcastId) {
                     setBroadcastPromise(api.readBroadcast(broadcastId));
                 },
             }),
             jsx(LazyBroadcast, {
-                title: 'Broadcast',
                 promise: broadcastPromise,
-                defaultData: EMPTY_BROADCAST_DATA,
-                create: selectedShowId && function create(broadcast) {
+                onCreate: selectedShowId && function onCreate(broadcast) {
                     api.createBroadcast(selectedShowId, broadcast);
                 },
                 getSlateImageUrl(broadcastId) {
