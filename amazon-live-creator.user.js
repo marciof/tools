@@ -96,10 +96,12 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
     require.config({
         baseUrl: CDN_BASE_URL,
         map: {
+            // Aliases where needed for decoupling from the module name.
             '*': {
                 classNames: 'classnames',
                 aceEditor: 'ace/ace',
                 jQuery: 'jquery',
+                dataTables: 'datatables.net',
             },
         },
         shim: {
@@ -118,6 +120,8 @@ const configuredRequireJs = requireJs.then(([require, define]) => {
             ace: ['ace/1.4.6'],
             bootstrapBundle: ['twitter-bootstrap/4.3.1/js/bootstrap.bundle'],
             jquery: ['jquery/3.4.1/jquery'],
+            'datatables.net': ['datatables/1.10.19/js/jquery.dataTables'],
+            bootstrapDataTables: ['datatables/1.10.19/js/dataTables.bootstrap'],
         },
     });
 
@@ -655,6 +659,53 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 {title: actualTitle, ...restProps}, children),
         }, jsx(LazyTooltip,
             {title: actualTitle, type: type, ...restProps}, children));
+    });
+
+    const LazyDataTable = lazy(async () => {
+        const [jQuery, ] = await Promise.all([
+            module('jQuery'),
+            module('dataTables'),
+            module('bootstrapDataTables'),
+            loadCss(CDN_BASE_URL + 'datatables/1.10.19/css/dataTables.bootstrap4.css')
+        ]);
+
+        return fakeModule(memo(function LazyDataTable(props) {
+            const [element, setElement] = useState(null);
+            const [dataTableEl, setDataTableEl] = useState(null);
+
+            useEffect(() => {
+                if (element) {
+                    setDataTableEl(jQuery(element));
+                }
+            }, [element]);
+
+            useEffect(() => {
+                if (dataTableEl) {
+                    dataTableEl.DataTable({
+                        data: [
+                            ['hello', 'moto'],
+                            ['goodbye', 'world'],
+                        ],
+                        columns: [
+                            {title: 'Name'},
+                            {title: 'Position'},
+                        ],
+                    });
+                }
+            }, [dataTableEl]);
+
+            return table({
+                className: 'table table-striped table-bordered',
+                style: {width: '100%'},
+                ref: useCallback(setElement),
+            });
+        }));
+    });
+
+    const DataTable = memo(function DataTable(props) {
+        return jsx(Suspense, {
+            fallback: jsx(LoadingSpinner, {before: 'loading datatables...'}),
+        }, jsx(LazyDataTable, props));
     });
 
     const LazyDateTime = lazy(async () => {
@@ -1248,6 +1299,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         useEffect(() => void setAccountsPromise(api.listAccounts()), [api]);
 
         return Fragment(
+            jsx(DataTable),
             jsx(LazyAccounts, {
                 title: 'Accounts',
                 promise: accountsPromise,
