@@ -101,12 +101,7 @@ Run `./dbus-xsessionrc.sh` at login.
 
 ### Firefox
 
-Faster scrolling:
-
-1. Disable *smooth scrooling* in *Preferences*.
-2. Enable *WebRender* (ie. *Quantum Render*).
-  - Search for `WEBRENDER_QUALIFIED` in the [troubleshooting page](about:support) to check if qualified hardware was found.
-  - To force enable regardless, set `gfx.webrender.all` to `true` in the [config page](about:config).
+For faster scrolling disable *smooth scrooling* in *Preferences*.
 
 ### Passwords and keys
 
