@@ -3,10 +3,14 @@
 - [Debian](https://www.debian.org) OS
 - [Xfce](https://xfce.org) desktop environment
 - [Fira Code](https://github.com/tonsky/FiraCode) font
+- [Firefox](https://www.firefox.com) browser
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
-- [Xournal](http://xournal.sourceforge.net) GUI PDF editor
+- [Spotify](https://www.spotify.com) music streaming
+- [Xournal](http://xournal.sourceforge.net) PDF editor
+- [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer
+- [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 
 # Configuration
 
