@@ -28,10 +28,6 @@
 document.body.textContent = '';
 document.title = GM_info.script.name;
 
-/**
- * @param url {string}
- * @returns {Promise<HTMLLinkElement>}
- */
 function loadCss(url) {
     return new Promise((resolve, reject) => {
         const linkEl = document.createElement('link');
@@ -195,10 +191,17 @@ class Api {
         this.urlPathPrefix = '/api/v1/';
     }
 
-    /**
-     * @param broadcastId {string}
-     * @returns {string}
-     */
+    createBroadcast(showId, broadcast) {
+        const options = {
+            method: 'POST',
+            body: JSON.stringify(broadcast),
+        };
+
+        return this.request(
+            'shows/' + encodeURIComponent(showId) + '/broadcast',
+            options);
+    }
+
     getBroadcastSlateImageUrl(broadcastId) {
         return this.urlPathPrefix
             + 'broadcasts/'
@@ -206,10 +209,6 @@ class Api {
             + '/image/slate';
     }
 
-    /**
-     * @param showId {string}
-     * @returns {string}
-     */
     getShowSlateImageUrl(showId) {
         return this.urlPathPrefix
             + 'show/'
@@ -217,36 +216,20 @@ class Api {
             + '/image/slate';
     }
 
-    /**
-     * @param broadcastId {string}
-     * @returns {Promise<Object>}
-     */
     readBroadcast(broadcastId) {
         return this.request(
             'broadcasts/' + encodeURIComponent(broadcastId));
     }
 
-    /**
-     * @param showId {string}
-     * @returns {Promise<Object>}
-     */
     readShowLiveData(showId) {
         return this.request(
             'poller?fields=showLiveData&showId=' + encodeURIComponent(showId));
     }
 
-    /**
-     * @returns {Promise<Object>}
-     */
     listAccounts() {
         return this.request('user/accounts');
     }
 
-    /**
-     * @param showId {string}
-     * @param [nextToken] {string}
-     * @returns {Promise<Object>}
-     */
     listShowBroadcasts(showId, nextToken) {
         return this.request(
             'shows/'
@@ -257,22 +240,15 @@ class Api {
                 : '&nextToken=' + encodeURIComponent(nextToken)));
     }
 
-    /**
-     * @returns {Promise<Object>}
-     */
     listShows() {
         return this.request('user/shows');
     }
 
-    /**
-     * @param path {string}
-     * @returns {Promise<Response>}
-     */
-    async request(path) {
+    async request(path, options) {
         const fullPath = this.urlPathPrefix + path;
         console.info('API request:', fullPath);
 
-        const response = await fetch(new Request(fullPath));
+        const response = await fetch(new Request(fullPath), options);
         console.info('API response:', response);
 
         return response.json();
@@ -368,7 +344,6 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     };
 
     const EMPTY_BROADCAST_DATA = {
-        id: '',
         title: '',
         videoSource: 'THIRD_PARTY_ENCODER',
     };
@@ -1222,6 +1197,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     disabled: !create,
                     className: 'btn-outline-primary mr-3',
                     onClick() {
+                        create(broadcast);
                     },
                 }, 'Create'),
                 jsx(Button, {
@@ -1299,7 +1275,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         useEffect(() => void setAccountsPromise(api.listAccounts()), [api]);
 
         return Fragment(
-            jsx(DataTable),
+            // jsx(DataTable),
             jsx(LazyAccounts, {
                 title: 'Accounts',
                 promise: accountsPromise,
@@ -1356,7 +1332,8 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 title: 'Broadcast',
                 promise: broadcastPromise,
                 defaultData: EMPTY_BROADCAST_DATA,
-                create: selectedShowId && function create() {
+                create: selectedShowId && function create(broadcast) {
+                    api.createBroadcast(selectedShowId, broadcast);
                 },
                 getSlateImageUrl(broadcastId) {
                     return api.getBroadcastSlateImageUrl(broadcastId);
