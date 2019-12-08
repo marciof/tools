@@ -883,15 +883,19 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
     });
 
     const Shows = memo(function Shows(props) {
-        const {data, onLoadLiveData, onListBroadcasts} = props;
+        const {data, onSelectShow, onLoadLiveData, onListBroadcasts} = props;
         const [selectedShow, setSelectedShow] = useState(null);
         const [isJsonShown, setIsJsonShown] = useState(null);
         const SELECT_SHOW_BUTTON_TITLE = 'Select a show';
 
         useEffect(() => {
-            if (selectedShow && (data.shows.length === 1)) {
-                onLoadLiveData(selectedShow);
-                onListBroadcasts(selectedShow);
+            if (selectedShow) {
+                onSelectShow(selectedShow);
+
+                if (data.shows.length === 1) {
+                    onLoadLiveData(selectedShow);
+                    onListBroadcasts(selectedShow);
+                }
             }
         }, [selectedShow, data]);
 
@@ -974,17 +978,16 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     {content: 'Title'},
                     {width: '25%', content: 'ID'},
                     {width: '9%', content: 'ASIN'},
-                    {width: '6%', content: 'Distribution'},
                     {width: '6%', content: 'Duration'},
                     {
-                        width: '14%',
+                        width: '17%',
                         content: jsx(Tooltip, {
                             title: 'Local time of "broadcastStartDateTime"',
                             type: 'abbr',
                         }, 'Started'),
                     },
                     {
-                        width: '14%',
+                        width: '17%',
                         content: jsx(Tooltip, {
                             title: 'Local time of "broadcastEndDateTime"',
                             type: 'abbr',
@@ -999,7 +1002,6 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     })},
                     {content: jsx(Id, broadcast.id)},
                     {content: jsx(Id, broadcast.asin)},
-                    {content: broadcast.distribution},
                     {content: broadcast.broadcastStartDateTime
                         && broadcast.broadcastEndDateTime
                         && jsx(Duration, {
@@ -1107,7 +1109,8 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
             }));
     });
 
-    const Broadcast = memo(function Broadcast({data, getSlateImageUrl}) {
+    const Broadcast = memo(function Broadcast(props) {
+        const {data, create, getSlateImageUrl} = props;
         const [broadcast, setBroadcast] = useState(data);
         const [isJsonShown, setIsJsonShown] = useState(null);
         const canReset = (broadcast !== data);
@@ -1159,6 +1162,13 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     }), text))),
             p(
                 jsx(Button, {
+                    title: !!create || 'Select a show',
+                    disabled: !create,
+                    className: 'btn-outline-primary mr-3',
+                    onClick() {
+                    },
+                }, 'Create'),
+                jsx(Button, {
                     title: canReset || 'Already reset',
                     disabled: !canReset,
                     className: 'btn-outline-primary mr-3',
@@ -1189,36 +1199,30 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         return memo(function LazySection(props) {
             const {title, promise, defaultData, ...componentProps} = props;
             const [isLoading, setIsLoading] = useState(false);
+            const [hasData, setHasData] = useState(false);
             const [data, setData] = useState(defaultData);
 
             useEffect(() => {
                 if (promise) {
                     setIsLoading(true);
-
-                    // Set data state separately to prevent race conditions.
                     promise.then(newData => {
+                        setData(newData);
+                        setHasData(true);
                         setIsLoading(false);
-                        return newData;
                     });
                 }
             }, [promise]);
 
-            useEffect(() => {
-                if (promise && !isLoading) {
-                    promise.then(setData);
-                }
-            }, [promise, isLoading]);
-
             return details(
-                {className: 'mb-4', open: data !== defaultData},
+                {className: 'mb-4', open: hasData && !isLoading},
                 summary(
                     {className: 'mb-2'},
                     span({className: 'font-weight-bold h5'}, title),
-                    jsx(LoadingSpinner, {
+                    !!promise && jsx(LoadingSpinner, {
                         className: classNames({fadeOut: !isLoading}),
                         before: true,
                     })),
-                jsx(Component, {data, ...componentProps}));
+                jsx(Component, {data: data, ...componentProps}));
         });
     }
 
@@ -1233,8 +1237,8 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
         const [showsPromise, setShowsPromise] = useState(null);
         const [liveDataPromise, setLiveDataPromise] = useState(null);
         const [broadcastsPromise, setBroadcastsPromise] = useState(null);
-        const [broadcastsShowId, setBroadcastsShowId] = useState(null);
         const [broadcastPromise, setBroadcastPromise] = useState(null);
+        const [selectedShowId, setSelectedShowId] = useState(null);
 
         useEffect(() => void setAccountsPromise(api.listAccounts()), [api]);
 
@@ -1245,20 +1249,20 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 defaultData: EMPTY_ACCOUNTS_DATA,
                 onListShows(account) {
                     setShowsPromise(api.listShows());
-                    setBroadcastPromise(Promise.resolve(
-                        // Clone broadcast so it doesn't compare as equal.
-                        lodash.clone(EMPTY_BROADCAST_DATA)));
                 },
             }),
             jsx(LazyShows, {
                 title: 'Shows',
                 promise: showsPromise,
                 defaultData: EMPTY_SHOWS_DATA,
+                onSelectShow(show) {
+                    setSelectedShowId(show.id);
+                    setBroadcastPromise(Promise.resolve(EMPTY_BROADCAST_DATA));
+                },
                 onLoadLiveData(show) {
                     setLiveDataPromise(api.readShowLiveData(show.id));
                 },
                 onListBroadcasts(show) {
-                    setBroadcastsShowId(show.id);
                     setBroadcastsPromise(oldBroadcastsPromise =>
                         Promise.all([
                             oldBroadcastsPromise || EMPTY_BROADCASTS_DATA,
@@ -1283,7 +1287,7 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                     setBroadcastsPromise(oldBroadcastsPromise =>
                         Promise.all([
                             oldBroadcastsPromise,
-                            api.listShowBroadcasts(broadcastsShowId, nextToken),
+                            api.listShowBroadcasts(selectedShowId, nextToken),
                         ])
                         .then(([oldData, newData]) => concatBroadcastData(oldData, newData)));
                 },
@@ -1295,6 +1299,8 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
                 title: 'Broadcast',
                 promise: broadcastPromise,
                 defaultData: EMPTY_BROADCAST_DATA,
+                create: selectedShowId && function create() {
+                },
                 getSlateImageUrl(broadcastId) {
                     return api.getBroadcastSlateImageUrl(broadcastId);
                 },
