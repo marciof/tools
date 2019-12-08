@@ -20,6 +20,9 @@
 // FIXME: sortable tables? searchable? datatable
 // FIXME: service workers for performance? new Worker(URL.createObjectURL(new Blob([
 // FIXME: use minified versions by default if faster?
+// FIXME: update timestamps every X?
+// FIXME: add option to allow mapping different API URLs to different Amazon.com URLs
+// FIXME: preload modules when idle
 
 'use strict';
 document.body.textContent = '';
@@ -469,14 +472,16 @@ Promise.all([pageReady, configuredRequireJs, customStyles]).then(async args => {
 
             useEffect(() => {
                 if (editor) {
-                    // Changing the editor's value also changes cursor position
-                    // and selection ranges.
+                    // Changing the editor's value also changes cursor position,
+                    // selection range, and scroll position.
                     const {row, column} = editor.getCursorPosition();
                     const range = editor.getSelectionRange();
+                    const scrollTop = editor.getSession().getScrollTop();
 
                     editor.setValue(children);
                     editor.gotoLine(row + 1, column);
                     editor.getSelection().setSelectionRange(range);
+                    editor.getSession().setScrollTop(scrollTop);
                 }
             }, [editor, children]);
 
