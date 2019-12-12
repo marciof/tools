@@ -26,11 +26,11 @@ mode_help_tree='list directories via "tree", cwd by default'
 # shellcheck disable=SC2034
 mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
-# TODO: support file://?
-# TODO: support http/https?
-# TODO: support intra-line diff? https://github.com/ymattw/ydiff
-# TODO: images? https://github.com/stefanhaustein/TerminalImageViewer
-# TODO: tests (functional, performance)
+# TODO: file://
+# TODO: HTTP
+# TODO: intra-line diff: https://github.com/ymattw/ydiff
+# TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
+# TODO: tests: functional, performance
 
 mode_options_bin=
 mode_options_color=
