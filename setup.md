@@ -7,10 +7,13 @@
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
+- [Signal](https://www.signal.org/) instant messaging
+- [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [Xournal](http://xournal.sourceforge.net) PDF editor
 - [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
+- [KDocker](https://github.com/user-none/KDocker) system tray application docker
 
 # Configuration
 
