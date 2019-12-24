@@ -7,6 +7,7 @@
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
+- [ClipIt](https://github.com/CristianHenzel/ClipIt) clipboard manager
 - [Signal](https://www.signal.org/) instant messaging
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
