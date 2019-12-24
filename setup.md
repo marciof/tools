@@ -166,3 +166,13 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
 ### Signal
 
     kdocker signal-desktop --no-sandbox
+
+### Keyboard shortcuts
+
+- `exo-open --launch FileManager`: Alt-E
+- `exo-open --launch TerminalEmulator`: Alt-T
+- `exo-open --launch WebBrowser`: Alt-W
+- `keepassxc`: Alt-K
+- `xfce4-popup-whiskermenu`: Alt-M
+- `xflock4`: Alt-L
+- ClipIt history: Alt-C
