@@ -128,7 +128,7 @@ GUI for Gnome Keyring:
 
 ### Clipboard
 
-    apt install xfce4-clipman xfce4-clipman-plugin
+    screen -d -m script -q -c clipit
 
 ### Login screen background
 
@@ -162,3 +162,7 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
     gsettings list-recursively org.gnome.Evince
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
+
+### Signal
+
+    kdocker signal-desktop --no-sandbox
