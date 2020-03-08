@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name Safeway
 // @match https://www.safeway.com/erums/cart/*
+// @match https://www.safeway.com/erums/order/edit/cart/*
 // @run-at document-idle
 // ==/UserScript==
 
