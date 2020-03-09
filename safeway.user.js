@@ -38,7 +38,7 @@ function prepareProductNote(product, id) {
         console.log('Got saved product note:', note);
     }
     else {
-        note = 'Replacement allowed: ';
+        note = 'Replacement: ';
         console.log('Using default product note:', note);
     }
 
