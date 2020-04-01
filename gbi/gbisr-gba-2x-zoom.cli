@@ -1,0 +1,5 @@
+--vfilter=.5:.5:.0:.5:.0:.5
+--format=custom,offset=0,scaled-size=0
+--scan-mode=non-interlace
+--volume=0.2:0.2
+--
