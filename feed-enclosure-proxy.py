@@ -3,13 +3,15 @@
 
 # Standard:
 from http import HTTPStatus
+import io
 import mimetypes
 import re
 import sys
 from urllib.parse import urlencode
+import xml.etree.ElementTree as ElementTree
 
 # External:
-from defusedxml import ElementTree # v0.6.0
+import defusedxml.ElementTree as DefusedElementTree # v0.6.0
 from flask import Flask, Response, Request, request, redirect # v1.1.2
 import requests # v2.12.4
 import youtube_dl # v2020.3.24
@@ -55,25 +57,37 @@ def extract_video_url(page_url):
     return url
 
 
-# FIXME: doesn't preserve namespaces from input
-# FIXME: adds a default namespace
 def proxy_feed_enclosure_urls(feed_url, transform_url):
+    """
+    http://www.rssboard.org/media-rss#media-content
+    """
+
     feed_response = requests.get(feed_url)
     feed_response.raise_for_status()
 
-    feed_xml = ElementTree.fromstring(feed_response.text)
-    namespaces = {'media': 'http://search.yahoo.com/mrss/'}
+    feed_xml = io.StringIO(feed_response.text)
+    events = {'start', 'start-ns'}
+    feed_root = None
 
-    for content in feed_xml.findall('.//media:content', namespaces):
-        url = content.attrib['url']
-        (content_type, encoding) = mimetypes.guess_type(url)
+    for event, element in DefusedElementTree.iterparse(feed_xml, events):
+        if event == 'start-ns':
+            (ns_prefix, ns_uri) = element
+            ElementTree.register_namespace(ns_prefix, ns_uri)
+        elif event == 'start':
+            if feed_root is None:
+                feed_root = element
 
-        if (content_type is None) or (not content_type.startswith('video/')):
-            content.attrib['url'] = transform_url(url)
-        else:
-            print('Not proxying enclosure:', url, file = sys.stderr)
+            if element.tag == '{http://search.yahoo.com/mrss/}content':
+                url = element.attrib['url']
+                (content_type, encoding) = mimetypes.guess_type(url)
 
-    return ElementTree.tostring(feed_xml, encoding = 'unicode')
+                if (content_type is None) or (not content_type.startswith('video/')):
+                    element.attrib['url'] = transform_url(url)
+                    del element.attrib['type']
+                else:
+                    print('Not proxying enclosure:', url, file = sys.stderr)
+
+    return DefusedElementTree.tostring(feed_root, encoding = 'unicode')
 
 
 def make_enclosure_proxy_url(url):
