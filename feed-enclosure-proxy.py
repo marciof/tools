@@ -16,6 +16,7 @@ from feedgen.feed import FeedGenerator # v0.9.0
 import feedparser # v5.2.1
 from flask import Flask, Response, request, redirect # v1.1.2
 import requests # v2.12.4
+from unidecode import unidecode # v1.1.1
 import youtube_dl # v2020.3.24
 
 
@@ -93,11 +94,11 @@ def proxy_feed_enclosure_urls(feed_xml, transform_url, title_url):
 
 def make_enclosure_proxy_url(url, title):
     if title is None:
-        subpath = ''
+        title_path = ''
     else:
-        subpath = '/' + re.sub(r'[^\w]+', '-', title).strip('-')
+        title_path = '/' + unidecode(re.sub(r'[^\w]+', '-', title).strip('-'))
 
-    return request.host_url + 'enclosure' + subpath + '?' + urlencode({'url': url})
+    return request.host_url + 'enclosure' + title_path + '?' + urlencode({'url': url})
 
 
 def download_feed(feed_url):
