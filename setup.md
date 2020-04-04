@@ -165,10 +165,6 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
 
-### Signal
-
-    kdocker signal-desktop --no-sandbox
-
 ### Keyboard shortcuts
 
 - `exo-open --launch FileManager`: Alt-E
