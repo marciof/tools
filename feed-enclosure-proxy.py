@@ -61,7 +61,7 @@ def extract_video_url(page_url):
     return url
 
 
-def proxy_feed_enclosure_urls(feed_xml, transform_url):
+def proxy_feed_enclosure_urls(feed_xml, transform_url, title_url):
     """
     http://www.rssboard.org/media-rss#media-content
     """
@@ -83,7 +83,7 @@ def proxy_feed_enclosure_urls(feed_xml, transform_url):
                 (content_type, encoding) = mimetypes.guess_type(url)
 
                 if (content_type is None) or (not content_type.startswith('video/')):
-                    element.attrib['url'] = transform_url(url)
+                    element.attrib['url'] = transform_url(url, title_url(url))
                     del element.attrib['type']
                 else:
                     print('Not proxying enclosure:', url, file = sys.stderr)
@@ -91,8 +91,13 @@ def proxy_feed_enclosure_urls(feed_xml, transform_url):
     return DefusedElementTree.tostring(feed_root, encoding = 'unicode')
 
 
-def make_enclosure_proxy_url(url):
-    return request.host_url + 'enclosure?' + urlencode({'url': url})
+def make_enclosure_proxy_url(url, title):
+    if title is None:
+        subpath = ''
+    else:
+        subpath = '/' + re.sub(r'[^\w]+', '-', title).strip('-')
+
+    return request.host_url + 'enclosure' + subpath + '?' + urlencode({'url': url})
 
 
 def download_feed(feed_url):
@@ -103,59 +108,67 @@ def download_feed(feed_url):
 
 def convert_feed_to_rss(feed_xml):
     feed = feedparser.parse(feed_xml)
+    is_already_rss = re.match('rss', feed.version, re.IGNORECASE)
+    enclosure_url_to_title = dict()
+    rss_feed = None
 
-    if re.match('rss', feed.version, re.IGNORECASE):
-        return feed_xml
-
-    rss_feed = FeedGenerator()
-
-    if 'id' in feed.feed:
-        rss_feed.id(feed.feed.id)
-    if 'title' in feed.feed:
-        rss_feed.title(feed.feed.title)
-    if 'link' in feed.feed:
-        rss_feed.link({'href': feed.feed.link})
-    if 'published' in feed.feed:
-        rss_feed.pubDate(feed.feed.published)
-    if 'description' in feed.feed:
-        rss_feed.description(feed.feed.description)
-    else:
-        rss_feed.description('-')
+    if not is_already_rss:
+        rss_feed = FeedGenerator()
+        if 'id' in feed.feed:
+            rss_feed.id(feed.feed.id)
+        if 'title' in feed.feed:
+            rss_feed.title(feed.feed.title)
+        if 'link' in feed.feed:
+            rss_feed.link({'href': feed.feed.link})
+        if 'published' in feed.feed:
+            rss_feed.pubDate(feed.feed.published)
+        if 'description' in feed.feed:
+            rss_feed.description(feed.feed.description)
+        else:
+            rss_feed.description('-')
 
     for entry in feed.entries:
-        rss_entry = rss_feed.add_entry()
+        rss_entry = None
 
-        if 'id' in entry:
-            rss_entry.id(entry.id)
-        if 'title' in entry:
+        if not is_already_rss:
+            rss_entry = rss_feed.add_entry()
             rss_entry.title(entry.title)
-        if 'link' in entry:
-            rss_entry.link({'href': entry.link})
-        if 'published' in entry:
-            rss_entry.published(entry.published)
-        if 'updated' in entry:
-            rss_entry.updated(entry.updated)
-        if ('content' in entry) and (len(entry.content) > 0):
-            first_content = entry.content[0]
-            rss_entry.content(
-                content = first_content['value'],
-                type = first_content['type'])
-        if 'summary' in entry:
-            rss_entry.summary(entry.summary)
-        if 'description' in entry:
-            rss_entry.description(entry.description)
+            if 'id' in entry:
+                rss_entry.id(entry.id)
+            if 'link' in entry:
+                rss_entry.link({'href': entry.link})
+            if 'published' in entry:
+                rss_entry.published(entry.published)
+            if 'updated' in entry:
+                rss_entry.updated(entry.updated)
+            if ('content' in entry) and (len(entry.content) > 0):
+                first_content = entry.content[0]
+                rss_entry.content(
+                    content = first_content['value'],
+                    type = first_content['type'])
+            if 'summary' in entry:
+                rss_entry.summary(entry.summary)
+            if 'description' in entry:
+                rss_entry.description(entry.description)
+
         if 'enclosures' in entry:
             for enclosure in entry.enclosures:
-                rss_entry.enclosure(
-                    url = enclosure['href'],
-                    type = enclosure['type'])
+                url = enclosure['href']
+                enclosure_url_to_title[url] = entry.title
+                if not is_already_rss:
+                    rss_entry.enclosure(url = url, type = enclosure['type'])
+
         if 'media_content' in entry:
             for content in entry.media_content:
-                rss_entry.enclosure(
-                    url = content['url'],
-                    type = content['type'])
+                url = content['url']
+                enclosure_url_to_title[url] = entry.title
+                if not is_already_rss:
+                    rss_entry.enclosure(url = url, type = content['type'])
 
-    return rss_feed.rss_str().decode()
+    if is_already_rss:
+        return (feed_xml, enclosure_url_to_title)
+    else:
+        return (rss_feed.rss_str().decode(), enclosure_url_to_title)
 
 
 app = Flask(__name__)
@@ -164,28 +177,31 @@ app = Flask(__name__)
 @app.route('/feed')
 def proxy_feed():
     url = request.args.get('url')
-    feed_format = request.args.get('format')
 
     if url is None:
         return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
 
-    if feed_format == 'rss':
-        convert_feed_format = convert_feed_to_rss
-    elif feed_format is None:
-        convert_feed_format = lambda feed_xml: feed_xml
-    else:
-        return 'Invalid `format` query string parameter value', HTTPStatus.BAD_REQUEST
+    (feed_xml, enclosure_url_to_title) = convert_feed_to_rss(download_feed(url))
 
-    feed_xml = proxy_feed_enclosure_urls(
-        convert_feed_format(download_feed(url)),
-        make_enclosure_proxy_url)
+    feed_xml = proxy_feed_enclosure_urls(feed_xml,
+        transform_url = make_enclosure_proxy_url,
+        title_url = enclosure_url_to_title.get)
 
     return Response(feed_xml, mimetype = 'text/xml')
 
 
-# TODO: use feed entry title as the download file
 @app.route('/enclosure')
 def proxy_enclosure():
+    url = request.args.get('url')
+
+    if url is None:
+        return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
+
+    return redirect(extract_video_url(url))
+
+
+@app.route('/enclosure/<title>')
+def proxy_titled_enclosure(title):
     url = request.args.get('url')
 
     if url is None:
