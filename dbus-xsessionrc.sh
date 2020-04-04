@@ -10,6 +10,6 @@ dbus-monitor --system --profile "type=signal,$path,$interface" 2>/dev/null |
         case "$member" in
             Session*)
                 logger --stderr --tag "$app" "got $member: re-apply"
-                sh ~/.xsessionrc || true
+                (sh ~/.xsessionrc 2>&1 || true) | logger --stderr --tag "$app"
         esac
     done
