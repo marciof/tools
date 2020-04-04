@@ -40,10 +40,15 @@ class YoutubeDlUrlInterceptingLogger (object):
 
 # TODO: higher resolution IGN Daily Fix videos (youtube_dl extractor?)
 # TODO: option to merge YouTube video+audio on the fly? stream -> download
-def extract_video_url(page_url):
+def extract_video_url(url):
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
     """
+
+    (content_type, encoding) = mimetypes.guess_type(url)
+
+    if (content_type is not None) and content_type.startswith('video/'):
+        return url
 
     logger = YoutubeDlUrlInterceptingLogger()
 
@@ -55,10 +60,10 @@ def extract_video_url(page_url):
     }
 
     with youtube_dl.YoutubeDL(youtubedl_options) as ydl:
-        ydl.download([page_url])
+        ydl.download([url])
 
-    [url] = logger.urls
-    return url
+    [extracted_url] = logger.urls
+    return extracted_url
 
 
 def proxy_feed_enclosure_urls(feed_xml, transform_url, title_url):
@@ -80,13 +85,8 @@ def proxy_feed_enclosure_urls(feed_xml, transform_url, title_url):
 
             if element.tag in ('enclosure', '{http://search.yahoo.com/mrss/}content'):
                 url = element.attrib['url']
-                (content_type, encoding) = mimetypes.guess_type(url)
-
-                if (content_type is None) or (not content_type.startswith('video/')):
-                    element.attrib['url'] = transform_url(url, title_url(url))
-                    del element.attrib['type']
-                else:
-                    print('Not proxying enclosure:', url, file = sys.stderr)
+                element.attrib['url'] = transform_url(url, title_url(url))
+                del element.attrib['type']
 
     return DefusedElementTree.tostring(feed_root, encoding = 'unicode')
 
@@ -200,6 +200,7 @@ def proxy_enclosure():
     return redirect(extract_video_url(url))
 
 
+# TODO: not all enclosures get a title (eg. IGN Daily Fix, vs YouTube)
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     url = request.args.get('url')
