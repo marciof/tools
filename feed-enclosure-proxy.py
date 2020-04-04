@@ -20,6 +20,7 @@ from unidecode import unidecode # v1.1.1
 import youtube_dl # v2020.3.24
 
 
+# TODO: use a proper logger for warnings and errors
 class YoutubeDlUrlInterceptingLogger (object):
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
@@ -107,6 +108,7 @@ def download_feed(feed_url):
     return feed_response.text
 
 
+# TODO: make RSS conversion optional and refactor
 def convert_feed_to_rss(feed_xml):
     feed = feedparser.parse(feed_xml)
     is_already_rss = re.match('rss', feed.version, re.IGNORECASE)
