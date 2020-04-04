@@ -1,4 +1,6 @@
 #!/bin/sh
+# Monitors session changes through D-Bus and re-applies `~/.xsessionrc`.
+
 set -e -u
 
 app="$(basename "$0")"
