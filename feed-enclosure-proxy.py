@@ -51,8 +51,8 @@ class YoutubeDlUrlInterceptingLogger (object):
         logger.error('youtube-dl error while intercepting URLs: %s', msg)
 
 
-# TODO: high-res IGN Daily Fix videos (youtube_dl extractor?)
-# TODO: merge high-res YouTube video+audio on the fly while streaming
+# TODO: higher-res IGN Daily Fix videos, <https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site>
+# TODO: merge high-res YouTube video+audio on the fly while streaming?
 def extract_video_url(url):
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
