@@ -24,6 +24,7 @@ import youtube_dl # v2020.3.24
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(stream_handler)
@@ -50,8 +51,8 @@ class YoutubeDlUrlInterceptingLogger (object):
         logger.error('youtube-dl error while intercepting URLs: %s', msg)
 
 
-# TODO: higher resolution IGN Daily Fix videos (youtube_dl extractor?)
-# TODO: option to merge YouTube video+audio on the fly? stream -> download
+# TODO: high-res IGN Daily Fix videos (youtube_dl extractor?)
+# TODO: merge high-res YouTube video+audio on the fly while streaming
 def extract_video_url(url):
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
@@ -113,7 +114,8 @@ def download_feed(feed_url):
     return feed_response.text
 
 
-# TODO: make RSS conversion optional and refactor
+# TODO: make RSS conversion optional
+# TODO: refactor and add some logging
 def convert_feed_to_rss(feed_xml):
     feed = feedparser.parse(feed_xml)
     is_already_rss = re.match('rss', feed.version, re.IGNORECASE)
@@ -228,7 +230,7 @@ def proxy_enclosure():
     return redirect(extract_video_url(url))
 
 
-# TODO: when streaming, allow resumable downloads for seeking
+# TODO: allow resumable downloads for seeking when streaming
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     url = request.args.get('url')
