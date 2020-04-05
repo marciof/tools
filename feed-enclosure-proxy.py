@@ -7,7 +7,7 @@ import io
 import mimetypes
 import re
 import sys
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote as urlquote
 import xml.etree.ElementTree as ElementTree
 
 # External:
@@ -97,7 +97,7 @@ def make_enclosure_proxy_url(url, title):
     if title is None:
         title_path = ''
     else:
-        title_path = '/' + unidecode(re.sub(r'[^\w-]+', ' ', title).strip())
+        title_path = '/' + urlquote(unidecode(re.sub(r'[^\w-]+', ' ', title).strip()))
 
     return request.host_url + 'enclosure' + title_path + '?stream&' + urlencode({'url': url})
 
