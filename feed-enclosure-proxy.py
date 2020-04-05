@@ -244,9 +244,7 @@ def proxy_titled_enclosure(title):
     elif stream != '':
         return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
 
-    video_url = extract_video_url(url)
-    logger.info('Streaming enclosure with title "%s" from URL <%s>', title, video_url)
-    enclosure = requests.get(video_url, stream = True)
+    enclosure = requests.get(extract_video_url(url), stream=True)
 
     return Response(enclosure.iter_content(chunk_size = 1 * 1024),
         mimetype = enclosure.headers['Content-Type'],
