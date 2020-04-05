@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 # Standard:
+from functools import partial
 from http import HTTPStatus
 import io
 import mimetypes
@@ -93,15 +94,6 @@ def proxy_feed_enclosure_urls(feed_xml, transform_url, title_url):
     return DefusedElementTree.tostring(feed_root, encoding = 'unicode')
 
 
-def make_enclosure_proxy_url(url, title):
-    if title is None:
-        title_path = ''
-    else:
-        title_path = '/' + urlquote(unidecode(re.sub(r'[^\w-]+', ' ', title).strip()))
-
-    return request.host_url + 'enclosure' + title_path + '?stream&' + urlencode({'url': url})
-
-
 def download_feed(feed_url):
     feed_response = requests.get(feed_url)
     feed_response.raise_for_status()
@@ -174,20 +166,38 @@ def convert_feed_to_rss(feed_xml):
         return (rss_feed.rss_str().decode(), enclosure_url_to_title)
 
 
+def make_enclosure_proxy_url(url, title = None, stream = False):
+    if title is None:
+        title_path = ''
+    else:
+        title_path = '/' + urlquote(unidecode(re.sub(r'[^\w-]+', ' ', title).strip()))
+
+    stream_qs_param = 'stream&' if stream else ''
+    return request.host_url + 'enclosure' + title_path + '?' + stream_qs_param + urlencode({'url': url})
+
+
 app = Flask(__name__)
 
 
 @app.route('/feed')
 def proxy_feed():
     url = request.args.get('url')
+    stream = request.args.get('stream')
 
     if url is None:
         return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
 
+    if stream is None:
+        do_stream = False
+    elif stream == '':
+        do_stream = True
+    else:
+        return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
+
     (feed_xml, enclosure_url_to_title) = convert_feed_to_rss(download_feed(url))
 
     feed_xml = proxy_feed_enclosure_urls(feed_xml,
-        transform_url = make_enclosure_proxy_url,
+        transform_url = partial(make_enclosure_proxy_url, stream = do_stream),
         title_url = enclosure_url_to_title.get)
 
     return Response(feed_xml, mimetype = 'text/xml')
