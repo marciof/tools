@@ -186,7 +186,7 @@ def make_enclosure_proxy_url(url, title = None, stream = False):
         title_path = ''
     else:
         safe_title = unidecode(re.sub(r"[^\w',()-]+", ' ', title).strip())
-        title_path = '/' + urlquote(safe_title, safe = ',')
+        title_path = '/' + urlquote(safe_title, safe = "',()-")
 
     stream_qs_param = 'stream&' if stream else ''
     query_string = '?' + stream_qs_param + urlencode({'url': url})
