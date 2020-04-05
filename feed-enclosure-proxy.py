@@ -230,7 +230,6 @@ def proxy_enclosure():
     return redirect(extract_video_url(url))
 
 
-# TODO: allow resumable downloads for seeking when streaming
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     url = request.args.get('url')
@@ -244,11 +243,30 @@ def proxy_titled_enclosure(title):
     elif stream != '':
         return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
 
-    enclosure = requests.get(extract_video_url(url), stream=True)
+    proxy_request_headers = {
+        header: request.headers[header]
+            for header in {'Range'} if header in request.headers
+    }
+
+    enclosure = requests.get(extract_video_url(url),
+        stream = True,
+        headers = proxy_request_headers)
+
+    proxy_response_status = None
+
+    proxy_response_headers = {
+        header: enclosure.headers[header]
+            for header in {'Accept-Ranges', 'Content-Range', 'Content-Length'}
+            if header in enclosure.headers
+    }
+
+    if 'Content-Range' in proxy_response_headers:
+        proxy_response_status = HTTPStatus.PARTIAL_CONTENT
 
     return Response(enclosure.iter_content(chunk_size = 1 * 1024),
+        status = proxy_response_status,
         mimetype = enclosure.headers['Content-Type'],
-        headers = {'Content-Length': enclosure.headers['Content-Length']})
+        headers = proxy_response_headers)
 
 
 if __name__ == '__main__':
