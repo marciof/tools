@@ -5,9 +5,9 @@
 from functools import partial
 from http import HTTPStatus
 import io
+import logging
 import mimetypes
 import re
-import sys
 from urllib.parse import urlencode, quote as urlquote
 import xml.etree.ElementTree as ElementTree
 
@@ -21,7 +21,14 @@ from unidecode import unidecode # v1.1.1
 import youtube_dl # v2020.3.24
 
 
-# TODO: use a proper logger for warnings and errors
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(stream_handler)
+
+
 class YoutubeDlUrlInterceptingLogger (object):
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
@@ -33,12 +40,14 @@ class YoutubeDlUrlInterceptingLogger (object):
     def debug(self, msg):
         if re.match(r'^\w+://', msg):
             self.urls.append(msg)
+        else:
+            logger.debug('youtube-dl debug while intercepting URLs: %s', msg)
 
     def warning(self, msg):
-        print(msg, file = sys.stderr)
+        logger.warning('youtube-dl warning while intercepting URLs: %s', msg)
 
     def error(self, msg):
-        print(msg, file = sys.stderr)
+        logger.error('youtube-dl error while intercepting URLs: %s', msg)
 
 
 # TODO: higher resolution IGN Daily Fix videos (youtube_dl extractor?)
@@ -51,21 +60,24 @@ def extract_video_url(url):
     (content_type, encoding) = mimetypes.guess_type(url)
 
     if (content_type is not None) and content_type.startswith('video/'):
+        logger.info('Skip extracting video with MIME type "%s" from URL <%s>',
+            content_type, url)
         return url
 
-    logger = YoutubeDlUrlInterceptingLogger()
+    youtube_dl_logger = YoutubeDlUrlInterceptingLogger()
 
-    youtubedl_options = {
+    youtube_dl_options = {
         'format': 'best',
         'forceurl': True,
         'simulate': True,
-        'logger': logger,
+        'logger': youtube_dl_logger,
     }
 
-    with youtube_dl.YoutubeDL(youtubedl_options) as ydl:
+    with youtube_dl.YoutubeDL(youtube_dl_options) as ydl:
         ydl.download([url])
 
-    [extracted_url] = logger.urls
+    [extracted_url] = youtube_dl_logger.urls
+    logger.info('Extracted from URL <%s> video URL <%s>', url, extracted_url)
     return extracted_url
 
 
@@ -95,6 +107,7 @@ def proxy_feed_enclosure_urls(feed_xml, transform_url, title_url):
 
 
 def download_feed(feed_url):
+    logger.info('Downloading feed from URL <%s>', feed_url)
     feed_response = requests.get(feed_url)
     feed_response.raise_for_status()
     return feed_response.text
@@ -170,10 +183,12 @@ def make_enclosure_proxy_url(url, title = None, stream = False):
     if title is None:
         title_path = ''
     else:
-        title_path = '/' + urlquote(unidecode(re.sub(r'[^\w-]+', ' ', title).strip()))
+        safe_title = unidecode(re.sub(r'[^\w-]+', ' ', title).strip())
+        title_path = '/' + urlquote(safe_title)
 
     stream_qs_param = 'stream&' if stream else ''
-    return request.host_url + 'enclosure' + title_path + '?' + stream_qs_param + urlencode({'url': url})
+    query_string = '?' + stream_qs_param + urlencode({'url': url})
+    return request.host_url + 'enclosure' + title_path + query_string
 
 
 app = Flask(__name__)
@@ -227,13 +242,14 @@ def proxy_titled_enclosure(title):
     elif stream != '':
         return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
 
-    enclosure = requests.get(extract_video_url(url), stream = True)
+    video_url = extract_video_url(url)
+    logger.info('Streaming enclosure with title "%s" from URL <%s>', title, video_url)
+    enclosure = requests.get(video_url, stream = True)
 
     return Response(enclosure.iter_content(chunk_size = 1 * 1024),
         mimetype = enclosure.headers['Content-Type'],
         headers = {'Content-Length': enclosure.headers['Content-Length']})
 
 
-# TODO: add more logging as operations are taking place
 if __name__ == '__main__':
     app.run()
