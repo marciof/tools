@@ -99,7 +99,7 @@ def make_enclosure_proxy_url(url, title):
     else:
         title_path = '/' + unidecode(re.sub(r'[^\w]+', '-', title).strip('-'))
 
-    return request.host_url + 'enclosure' + title_path + '?' + urlencode({'url': url})
+    return request.host_url + 'enclosure' + title_path + '?stream&' + urlencode({'url': url})
 
 
 def download_feed(feed_url):
@@ -203,16 +203,26 @@ def proxy_enclosure():
     return redirect(extract_video_url(url))
 
 
-# TODO: not all enclosures get a title (eg. IGN Daily Fix, vs YouTube)
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     url = request.args.get('url')
+    stream = request.args.get('stream')
 
     if url is None:
         return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
 
-    return redirect(extract_video_url(url))
+    if stream is None:
+        return redirect(extract_video_url(url))
+    elif stream != '':
+        return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
+
+    enclosure = requests.get(extract_video_url(url), stream = True)
+
+    return Response(enclosure.iter_content(chunk_size = 1 * 1024),
+        mimetype = enclosure.headers['Content-Type'],
+        headers = {'Content-Length': enclosure.headers['Content-Length']})
 
 
+# TODO: add more logging as operations are taking place
 if __name__ == '__main__':
     app.run()
