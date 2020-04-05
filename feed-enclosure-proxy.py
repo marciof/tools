@@ -97,7 +97,7 @@ def make_enclosure_proxy_url(url, title):
     if title is None:
         title_path = ''
     else:
-        title_path = '/' + unidecode(re.sub(r'[^\w]+', '-', title).strip('-'))
+        title_path = '/' + unidecode(re.sub(r'[^\w-]+', ' ', title).strip())
 
     return request.host_url + 'enclosure' + title_path + '?stream&' + urlencode({'url': url})
 
@@ -203,6 +203,7 @@ def proxy_enclosure():
     return redirect(extract_video_url(url))
 
 
+# TODO: when streaming, allow resumable downloads for seeking
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     url = request.args.get('url')
