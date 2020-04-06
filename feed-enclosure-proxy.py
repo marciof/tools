@@ -211,8 +211,12 @@ def proxy_feed():
     feed_xml = download_feed(url)
     parsed_feed = feedparser.parse(feed_xml)
     enclosure_url_to_title = dict()
+
+    ADD_ENCLOSURE_NO_OP = lambda url, type: None
+    ADD_NEW_FEED_ENTRY_NO_OP = lambda entry: (None, ADD_ENCLOSURE_NO_OP)
+
     new_feed = None
-    add_new_feed_entry = lambda entry: (None, lambda url, type: None)
+    add_new_feed_entry = ADD_NEW_FEED_ENTRY_NO_OP
 
     if do_rss:
         if re.match('rss', parsed_feed.version, re.IGNORECASE):
