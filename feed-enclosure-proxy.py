@@ -82,7 +82,7 @@ def extract_video_url(url):
     return extracted_url
 
 
-def proxy_feed_enclosure_urls(feed_xml, transform_url):
+def transform_feed_enclosure_urls(feed_xml, transform_url):
     """
     http://www.rssboard.org/media-rss#media-content
     """
@@ -113,53 +113,52 @@ def download_feed(feed_url):
     return feed_response.text
 
 
-def build_rss_feed_entry(feed_entry, rss_feed):
-    rss_feed_entry = rss_feed.add_entry()
-    rss_feed_entry.title(feed_entry.title)
+def rebuild_parsed_feed_entry(feed_entry, new_feed):
+    new_feed_entry = new_feed.add_entry()
+    new_feed_entry.title(feed_entry.title)
 
     if 'id' in feed_entry:
-        rss_feed_entry.id(feed_entry.id)
+        new_feed_entry.id(feed_entry.id)
     if 'link' in feed_entry:
-        rss_feed_entry.link({'href': feed_entry.link})
+        new_feed_entry.link({'href': feed_entry.link})
     if 'published' in feed_entry:
-        rss_feed_entry.published(feed_entry.published)
+        new_feed_entry.published(feed_entry.published)
     if 'updated' in feed_entry:
-        rss_feed_entry.updated(feed_entry.updated)
+        new_feed_entry.updated(feed_entry.updated)
     if 'summary' in feed_entry:
-        rss_feed_entry.summary(feed_entry.summary)
+        new_feed_entry.summary(feed_entry.summary)
     if 'description' in feed_entry:
-        rss_feed_entry.description(feed_entry.description)
+        new_feed_entry.description(feed_entry.description)
 
     if ('content' in feed_entry) and (len(feed_entry.content) > 0):
         first_content = feed_entry.content[0]
-        rss_feed_entry.content(
+        new_feed_entry.content(
             content = first_content['value'],
             type = first_content['type'])
 
-    return (rss_feed_entry, lambda url, type:
-        rss_feed_entry.enclosure(url = url, type = type))
+    return (new_feed_entry, lambda url, type:
+        new_feed_entry.enclosure(url = url, type = type))
 
 
-def build_rss_feed(feed):
-    logger.info('Converting feed to RSS')
-    rss_feed = FeedGenerator()
+def rebuild_parsed_feed(parsed_feed):
+    new_feed = FeedGenerator()
 
-    if 'id' in feed:
-        rss_feed.id(feed.id)
-    if 'title' in feed:
-        rss_feed.title(feed.title)
-    if 'link' in feed:
-        rss_feed.link({'href': feed.link})
-    if 'published' in feed:
-        rss_feed.pubDate(feed.published)
+    if 'id' in parsed_feed.feed:
+        new_feed.id(parsed_feed.feed.id)
+    if 'title' in parsed_feed.feed:
+        new_feed.title(parsed_feed.feed.title)
+    if 'link' in parsed_feed.feed:
+        new_feed.link({'href': parsed_feed.feed.link})
+    if 'published' in parsed_feed.feed:
+        new_feed.pubDate(parsed_feed.feed.published)
 
-    if 'description' in feed:
-        rss_feed.description(feed.description)
+    if 'description' in parsed_feed.feed:
+        new_feed.description(parsed_feed.feed.description)
     else:
         # `feedgen` requires a non-empty feed description.
-        rss_feed.description('-')
+        new_feed.description('-')
 
-    return (rss_feed, partial(build_rss_feed_entry, rss_feed = rss_feed))
+    return (new_feed, partial(rebuild_parsed_feed_entry, new_feed = new_feed))
 
 
 def list_feed_entry_enclosures(feed_entry):
@@ -212,26 +211,27 @@ def proxy_feed():
     feed_xml = download_feed(url)
     parsed_feed = feedparser.parse(feed_xml)
     enclosure_url_to_title = dict()
-    rss_feed = None
-    add_rss_feed_entry = lambda entry: (None, lambda url, type: None)
+    new_feed = None
+    add_new_feed_entry = lambda entry: (None, lambda url, type: None)
 
     if do_rss:
         if re.match('rss', parsed_feed.version, re.IGNORECASE):
             do_rss = False
         else:
-            (rss_feed, add_rss_feed_entry) = build_rss_feed(parsed_feed.feed)
+            logger.info('Converting feed to RSS in URL <%s>', url)
+            (new_feed, add_new_feed_entry) = rebuild_parsed_feed(parsed_feed)
 
     for entry in parsed_feed.entries:
-        (rss_feed_entry, add_enclosure) = add_rss_feed_entry(entry)
+        (new_feed_entry, add_enclosure) = add_new_feed_entry(entry)
 
         for (enclosure_url, enclosure_type) in list_feed_entry_enclosures(entry):
             enclosure_url_to_title[enclosure_url] = entry.title
             add_enclosure(enclosure_url, enclosure_type)
 
     if do_rss:
-        feed_xml = rss_feed.rss_str().decode()
+        feed_xml = new_feed.rss_str().decode()
 
-    proxied_feed_xml = proxy_feed_enclosure_urls(feed_xml,
+    proxied_feed_xml = transform_feed_enclosure_urls(feed_xml,
         transform_url = lambda url:
             make_enclosure_proxy_url(url,
                 title = enclosure_url_to_title.get(url),
