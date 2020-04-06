@@ -232,10 +232,9 @@ def proxy_feed():
         feed_xml = new_feed.rss_str().decode()
 
     proxied_feed_xml = transform_feed_enclosure_urls(feed_xml,
-        transform_url = lambda url:
-            make_enclosure_proxy_url(url,
-                title = enclosure_url_to_title.get(url),
-                stream = do_stream))
+        transform_url = lambda url: make_enclosure_proxy_url(url,
+            title = enclosure_url_to_title.get(url),
+            stream = do_stream))
 
     return Response(proxied_feed_xml, mimetype = 'text/xml')
 
