@@ -62,26 +62,39 @@ def extract_video_url(url):
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
     """
 
-    (content_type, encoding) = mimetypes.guess_type(url)
+    if re.search(r'://assets\d*\.ign\.com/videos/', url):
+        high_res_url = re.sub(
+            r'(?<=/) \d+ (/[a-f0-9]+-) \d+ (-\d+\.)',
+            r'1920\g<1>3906000\2',
+            url,
+            flags = re.IGNORECASE + re.VERBOSE)
 
-    if (content_type is not None) and content_type.startswith('video/'):
-        logger.info('Skip extracting video with MIME type "%s" from URL <%s>',
-            content_type, url)
-        return url
+        response = requests.head(high_res_url)
 
-    youtube_dl_logger = YoutubeDlUrlInterceptingLogger()
+        if response.ok:
+            extracted_url = high_res_url
+    else:
+        (content_type, encoding) = mimetypes.guess_type(url)
 
-    youtube_dl_options = {
-        'format': 'best',
-        'forceurl': True,
-        'simulate': True,
-        'logger': youtube_dl_logger,
-    }
+        if (content_type is not None) and content_type.startswith('video/'):
+            logger.info('Skip extracting video with MIME type "%s" from URL <%s>',
+                content_type, url)
+            return url
 
-    with youtube_dl.YoutubeDL(youtube_dl_options) as ydl:
-        ydl.download([url])
+        youtube_dl_logger = YoutubeDlUrlInterceptingLogger()
 
-    [extracted_url] = youtube_dl_logger.urls
+        youtube_dl_options = {
+            'format': 'best',
+            'forceurl': True,
+            'simulate': True,
+            'logger': youtube_dl_logger,
+        }
+
+        with youtube_dl.YoutubeDL(youtube_dl_options) as ydl:
+            ydl.download([url])
+
+        [extracted_url] = youtube_dl_logger.urls
+
     logger.info('Extracted from URL <%s> video URL <%s>', url, extracted_url)
     return extracted_url
 
