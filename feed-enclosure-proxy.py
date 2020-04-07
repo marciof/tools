@@ -99,6 +99,7 @@ def extract_video_url(url):
     return extracted_url
 
 
+# TODO: transform `feedburner:origEnclosureLink` tags as well?
 def transform_feed_enclosure_urls(feed_xml, transform_url):
     """
     http://www.rssboard.org/media-rss#media-content
