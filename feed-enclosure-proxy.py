@@ -33,6 +33,15 @@ logger.addHandler(stream_handler)
 ADD_ENCLOSURE_NO_OP = lambda url, type: None
 ADD_NEW_FEED_ENTRY_NO_OP = lambda entry: (None, ADD_ENCLOSURE_NO_OP)
 
+ENCLOSURE_TAG_TO_EXTRACT_URL = {
+    'enclosure':
+        lambda element: element.attrib['url'],
+    '{http://search.yahoo.com/mrss/}content':
+        lambda element: element.attrib['url'],
+    '{http://rssnamespace.org/feedburner/ext/1.0}origEnclosureLink':
+        lambda element: element.text,
+}
+
 
 class YoutubeDlUrlInterceptingLogger (object):
     """
@@ -56,12 +65,7 @@ class YoutubeDlUrlInterceptingLogger (object):
 
 
 # TODO: higher-res IGN Daily Fix videos, <https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site>
-# TODO: merge high-res YouTube video+audio on the fly while streaming?
-def extract_video_url(url):
-    """
-    https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
-    """
-
+def extract_ign_daily_fix_video(url):
     if re.search(r'://assets\d*\.ign\.com/videos/', url):
         high_res_url = re.sub(
             r'(?<=/) \d+ (/[a-f0-9]+-) \d+ (-\d+\.)',
@@ -72,8 +76,19 @@ def extract_video_url(url):
         response = requests.head(high_res_url)
 
         if response.ok:
-            extracted_url = high_res_url
-    else:
+            return high_res_url
+
+    return None
+
+# TODO: merge high-res YouTube video+audio on the fly while streaming?
+def extract_video_url(url):
+    """
+    https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
+    """
+
+    extracted_url = extract_ign_daily_fix_video(url)
+
+    if extracted_url is None:
         (content_type, encoding) = mimetypes.guess_type(url)
 
         if (content_type is not None) and content_type.startswith('video/'):
@@ -106,7 +121,7 @@ def transform_feed_enclosure_urls(feed_xml, transform_url):
     """
 
     feed_xml_io = io.StringIO(feed_xml)
-    events = {'start', 'start-ns'}
+    events = {'start', 'end', 'start-ns'}
     feed_root = None
 
     for (event, element) in DefusedElementTree.iterparse(feed_xml_io, events):
@@ -116,10 +131,10 @@ def transform_feed_enclosure_urls(feed_xml, transform_url):
         elif event == 'start':
             if feed_root is None:
                 feed_root = element
-
-            if element.tag in {'enclosure', '{http://search.yahoo.com/mrss/}content'}:
-                element.attrib['url'] = transform_url(element.attrib['url'])
-                del element.attrib['type']
+        elif event == 'end':
+            if element.tag in ENCLOSURE_TAG_TO_EXTRACT_URL:
+                extract_url = ENCLOSURE_TAG_TO_EXTRACT_URL[element.tag]
+                element.attrib['url'] = transform_url(extract_url(element))
 
     return DefusedElementTree.tostring(feed_root, encoding = 'unicode')
 
