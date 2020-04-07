@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 # Standard:
-from _collections import OrderedDict
+from collections import OrderedDict
 from functools import partial
 from http import HTTPStatus
 import io
