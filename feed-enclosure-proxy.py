@@ -30,16 +30,27 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(stream_handler)
 
-ADD_ENCLOSURE_NO_OP = lambda url, type: None
-ADD_NEW_FEED_ENTRY_NO_OP = lambda entry: (None, ADD_ENCLOSURE_NO_OP)
 
-ENCLOSURE_TAG_TO_EXTRACT_URL = {
-    'enclosure':
-        lambda element: element.attrib['url'],
-    '{http://search.yahoo.com/mrss/}content':
-        lambda element: element.attrib['url'],
-    '{http://rssnamespace.org/feedburner/ext/1.0}origEnclosureLink':
-        lambda element: element.text,
+def add_new_feed_entry_no_op(entry):
+    return (None, lambda url, type: None)
+
+
+def transform_enclosure_element_url(element, transform_url):
+    element.attrib['url'] = transform_url(element.attrib['url'])
+
+
+def transform_mrss_content_element_url(element, transform_url):
+    element.attrib['url'] = transform_url(element.attrib['url'])
+
+
+def transform_feedburner_enclosure_element_url(element, transform_url):
+    element.text = transform_url(element.text)
+
+
+ENCLOSURE_TAG_TO_TRANSFORM_ELEMENT_URL = {
+    'enclosure': transform_enclosure_element_url,
+    '{http://search.yahoo.com/mrss/}content': transform_mrss_content_element_url,
+    '{http://rssnamespace.org/feedburner/ext/1.0}origEnclosureLink': transform_feedburner_enclosure_element_url,
 }
 
 
@@ -131,9 +142,9 @@ def transform_feed_enclosure_urls(feed_xml, transform_url):
             if feed_root is None:
                 feed_root = element
         elif event == 'end':
-            if element.tag in ENCLOSURE_TAG_TO_EXTRACT_URL:
-                extract_url = ENCLOSURE_TAG_TO_EXTRACT_URL[element.tag]
-                element.attrib['url'] = transform_url(extract_url(element))
+            if element.tag in ENCLOSURE_TAG_TO_TRANSFORM_ELEMENT_URL:
+                ENCLOSURE_TAG_TO_TRANSFORM_ELEMENT_URL[element.tag](
+                    element, transform_url)
 
     return DefusedElementTree.tostring(feed_root, encoding = 'unicode')
 
@@ -253,10 +264,10 @@ def proxy_feed():
     parsed_feed = feedparser.parse(feed_xml)
     feed_entry_by_enclosure_url = dict()
     new_feed = None
-    add_new_feed_entry = ADD_NEW_FEED_ENTRY_NO_OP
+    add_new_feed_entry = add_new_feed_entry_no_op
 
     if do_rss:
-        logger.info('Rebuilding feed in URL <%s>', url)
+        logger.info('Rebuilding feed as RSS in URL <%s>', url)
         (new_feed, add_new_feed_entry) = rebuild_parsed_feed(parsed_feed)
 
     for entry in parsed_feed.entries:
