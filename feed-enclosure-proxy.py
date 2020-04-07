@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 # Standard:
+from _collections import OrderedDict
 from functools import partial
 from http import HTTPStatus
 import io
@@ -29,6 +30,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(stream_handler)
 
+ADD_ENCLOSURE_NO_OP = lambda url, type: None
+ADD_NEW_FEED_ENTRY_NO_OP = lambda entry: (None, ADD_ENCLOSURE_NO_OP)
+
 
 class YoutubeDlUrlInterceptingLogger (object):
     """
@@ -39,7 +43,7 @@ class YoutubeDlUrlInterceptingLogger (object):
         self.urls = []
 
     def debug(self, msg):
-        if re.match(r'^\w+://', msg):
+        if re.search(r'^\w+://', msg):
             self.urls.append(msg)
         else:
             logger.debug('youtube-dl debug while intercepting URLs: %s', msg)
@@ -99,7 +103,7 @@ def transform_feed_enclosure_urls(feed_xml, transform_url):
             if feed_root is None:
                 feed_root = element
 
-            if element.tag in ('enclosure', '{http://search.yahoo.com/mrss/}content'):
+            if element.tag in {'enclosure', '{http://search.yahoo.com/mrss/}content'}:
                 element.attrib['url'] = transform_url(element.attrib['url'])
                 del element.attrib['type']
 
@@ -162,11 +166,20 @@ def rebuild_parsed_feed(parsed_feed):
 
 
 def list_feed_entry_enclosures(feed_entry):
+    enclosure_type_by_url = OrderedDict()
+
+    if 'feedburner_origenclosurelink' in feed_entry:
+        url = feed_entry.feedburner_origenclosurelink
+        (content_type, encoding) = mimetypes.guess_type(url)
+        enclosure_type_by_url[url] = content_type
+
     for enclosure in feed_entry.enclosures:
-        yield (enclosure['href'], enclosure['type'])
+        enclosure_type_by_url[enclosure['href']] = enclosure['type']
 
     for media in feed_entry.media_content:
-        yield (media['url'], media['type'])
+        enclosure_type_by_url[media['url']] = media['type']
+
+    yield from enclosure_type_by_url.items()
 
 
 def make_enclosure_proxy_url(url, title = None, stream = False):
@@ -210,34 +223,29 @@ def proxy_feed():
 
     feed_xml = download_feed(url)
     parsed_feed = feedparser.parse(feed_xml)
-    enclosure_url_to_title = dict()
-
-    ADD_ENCLOSURE_NO_OP = lambda url, type: None
-    ADD_NEW_FEED_ENTRY_NO_OP = lambda entry: (None, ADD_ENCLOSURE_NO_OP)
-
+    feed_entry_by_enclosure_url = dict()
     new_feed = None
     add_new_feed_entry = ADD_NEW_FEED_ENTRY_NO_OP
 
     if do_rss:
-        if re.match('rss', parsed_feed.version, re.IGNORECASE):
-            do_rss = False
-        else:
-            logger.info('Converting feed to RSS in URL <%s>', url)
-            (new_feed, add_new_feed_entry) = rebuild_parsed_feed(parsed_feed)
+        logger.info('Rebuilding feed in URL <%s>', url)
+        (new_feed, add_new_feed_entry) = rebuild_parsed_feed(parsed_feed)
 
     for entry in parsed_feed.entries:
         (new_feed_entry, add_enclosure) = add_new_feed_entry(entry)
 
-        for (enclosure_url, enclosure_type) in list_feed_entry_enclosures(entry):
-            enclosure_url_to_title[enclosure_url] = entry.title
+        # Reverse from least to most preferred, since `feedgen` will only keep
+        # the last one for RSS feeds.
+        for (enclosure_url, enclosure_type) in reversed(list(list_feed_entry_enclosures(entry))):
             add_enclosure(enclosure_url, enclosure_type)
+            feed_entry_by_enclosure_url[enclosure_url] = entry
 
-    if do_rss:
+    if new_feed:
         feed_xml = new_feed.rss_str().decode()
 
     proxied_feed_xml = transform_feed_enclosure_urls(feed_xml,
         transform_url = lambda url: make_enclosure_proxy_url(url,
-            title = enclosure_url_to_title.get(url),
+            title = feed_entry_by_enclosure_url[url].title,
             stream = do_stream))
 
     return Response(proxied_feed_xml, mimetype = 'text/xml')
