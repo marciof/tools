@@ -183,20 +183,20 @@ def rebuild_parsed_feed_entry(feed_entry, new_feed):
         new_feed_entry.enclosure(url = url, type = type))
 
 
-def rebuild_parsed_feed(parsed_feed):
+def rebuild_parsed_feed(feed):
     new_feed = FeedGenerator()
 
-    if 'id' in parsed_feed.feed:
-        new_feed.id(parsed_feed.feed.id)
-    if 'title' in parsed_feed.feed:
-        new_feed.title(parsed_feed.feed.title)
-    if 'link' in parsed_feed.feed:
-        new_feed.link({'href': parsed_feed.feed.link})
-    if 'published' in parsed_feed.feed:
-        new_feed.pubDate(parsed_feed.feed.published)
+    if 'id' in feed.feed:
+        new_feed.id(feed.feed.id)
+    if 'title' in feed.feed:
+        new_feed.title(feed.feed.title)
+    if 'link' in feed.feed:
+        new_feed.link({'href': feed.feed.link})
+    if 'published' in feed.feed:
+        new_feed.pubDate(feed.feed.published)
 
-    if 'description' in parsed_feed.feed:
-        new_feed.description(parsed_feed.feed.description)
+    if 'description' in feed.feed:
+        new_feed.description(feed.feed.description)
     else:
         # `feedgen` requires a non-empty feed description.
         new_feed.description('-')
@@ -204,7 +204,7 @@ def rebuild_parsed_feed(parsed_feed):
     return (new_feed, partial(rebuild_parsed_feed_entry, new_feed = new_feed))
 
 
-def list_feed_entry_enclosures(feed_entry):
+def list_parsed_feed_entry_enclosures(feed_entry):
     enclosure_type_by_url = OrderedDict()
 
     if 'feedburner_origenclosurelink' in feed_entry:
@@ -261,21 +261,20 @@ def proxy_feed():
         return '`rss` query string parameter must have no value', HTTPStatus.BAD_REQUEST
 
     feed_xml = download_feed(url)
-    parsed_feed = feedparser.parse(feed_xml)
+    feed = feedparser.parse(feed_xml)
     feed_entry_by_enclosure_url = dict()
-    new_feed = None
-    add_new_feed_entry = add_new_feed_entry_no_op
+    (new_feed, add_new_feed_entry) = (None, add_new_feed_entry_no_op)
 
     if do_rss:
         logger.info('Rebuilding feed as RSS in URL <%s>', url)
-        (new_feed, add_new_feed_entry) = rebuild_parsed_feed(parsed_feed)
+        (new_feed, add_new_feed_entry) = rebuild_parsed_feed(feed)
 
-    for entry in parsed_feed.entries:
+    for entry in feed.entries:
         (new_feed_entry, add_enclosure) = add_new_feed_entry(entry)
 
         # Reverse from least to most preferred, since `feedgen` will only keep
         # the last one for RSS feeds.
-        for (enclosure_url, enclosure_type) in reversed(list(list_feed_entry_enclosures(entry))):
+        for (enclosure_url, enclosure_type) in reversed(list(list_parsed_feed_entry_enclosures(entry))):
             add_enclosure(enclosure_url, enclosure_type)
             feed_entry_by_enclosure_url[enclosure_url] = entry
 
@@ -313,30 +312,22 @@ def proxy_titled_enclosure(title):
     elif not do_stream:
         return redirect(extract_video_url(url))
 
-    proxy_request_headers = {
-        header: request.headers[header]
-            for header in {'Range'} if header in request.headers
-    }
+    range_header = request.headers.get('Range')
 
     enclosure = requests.get(extract_video_url(url),
         stream = True,
-        headers = proxy_request_headers)
+        headers = {'Range': range_header} if range_header else None)
 
-    proxy_response_status = None
-
-    proxy_response_headers = {
+    response_headers = {
         header: enclosure.headers[header]
             for header in {'Accept-Ranges', 'Content-Range', 'Content-Length'}
             if header in enclosure.headers
     }
 
-    if 'Content-Range' in proxy_response_headers:
-        proxy_response_status = HTTPStatus.PARTIAL_CONTENT
-
     return Response(enclosure.iter_content(chunk_size = 1 * 1024),
-        status = proxy_response_status,
+        status = HTTPStatus.PARTIAL_CONTENT if 'Content-Range' in response_headers else None,
         mimetype = enclosure.headers['Content-Type'],
-        headers = proxy_response_headers)
+        headers = response_headers)
 
 
 if __name__ == '__main__':
