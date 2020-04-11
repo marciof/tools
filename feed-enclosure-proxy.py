@@ -35,22 +35,18 @@ def add_new_feed_entry_no_op(entry):
     return (None, lambda url, type: None)
 
 
-def transform_enclosure_element_url(element, transform_url):
+def transform_url_attrib_element_url(element, transform_url):
     element.attrib['url'] = transform_url(element.attrib['url'])
 
 
-def transform_mrss_content_element_url(element, transform_url):
-    element.attrib['url'] = transform_url(element.attrib['url'])
-
-
-def transform_feedburner_enclosure_element_url(element, transform_url):
+def transform_url_text_element_url(element, transform_url):
     element.text = transform_url(element.text)
 
 
 ENCLOSURE_TAG_TO_TRANSFORM_ELEMENT_URL = {
-    'enclosure': transform_enclosure_element_url,
-    '{http://search.yahoo.com/mrss/}content': transform_mrss_content_element_url,
-    '{http://rssnamespace.org/feedburner/ext/1.0}origEnclosureLink': transform_feedburner_enclosure_element_url,
+    'enclosure': transform_url_attrib_element_url,
+    '{http://search.yahoo.com/mrss/}content': transform_url_attrib_element_url,
+    '{http://rssnamespace.org/feedburner/ext/1.0}origEnclosureLink': transform_url_text_element_url,
 }
 
 
@@ -90,6 +86,7 @@ def extract_ign_daily_fix_video(url):
             return high_res_url
 
     return None
+
 
 # TODO: merge high-res YouTube video+audio on the fly while streaming?
 def extract_video_url(url):
