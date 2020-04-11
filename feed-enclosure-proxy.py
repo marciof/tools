@@ -50,7 +50,7 @@ ENCLOSURE_TAG_TO_TRANSFORM_ELEMENT_URL = {
 }
 
 
-class YoutubeDlUrlInterceptingLogger (object):
+class YoutubeDlUrlInterceptingLogger:
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
     """
@@ -72,7 +72,7 @@ class YoutubeDlUrlInterceptingLogger (object):
 
 
 # TODO: higher-res IGN Daily Fix videos, <https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site>
-def extract_ign_daily_fix_video(url):
+def extract_ign_daily_fix_video_url(url):
     if re.search(r'://assets\d*\.ign\.com/videos/', url):
         high_res_url = re.sub(
             r'(?<=/) \d+ (/[a-f0-9]+-) \d+ (-\d+\.)',
@@ -94,7 +94,7 @@ def extract_video_url(url):
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
     """
 
-    extracted_url = extract_ign_daily_fix_video(url)
+    extracted_url = extract_ign_daily_fix_video_url(url)
 
     if extracted_url is None:
         (content_type, encoding) = mimetypes.guess_type(url)
