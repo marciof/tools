@@ -286,28 +286,23 @@ def proxy_feed():
     return Response(proxied_feed_xml, mimetype = 'text/xml')
 
 
-@app.route('/enclosure')
-def proxy_enclosure():
-    url = request.args.get('url')
-
-    if url is None:
-        return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
-
-    return redirect(extract_video_url(url))
-
-
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     url = request.args.get('url')
     do_stream = get_bool_request_qs_param('stream')
+    do_download = get_bool_request_qs_param('download')
 
     if url is None:
         return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
-
     if do_stream is None:
         return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
-    elif not do_stream:
+    if do_download is None:
+        return '`download` query string parameter must have no value', HTTPStatus.BAD_REQUEST
+
+    if (not do_stream) and (not do_download):
         return redirect(extract_video_url(url))
+    elif do_stream and do_download:
+        return '`stream` and `download` query string parameters are mutually exclusive', HTTPStatus.BAD_REQUEST
 
     range_header = request.headers.get('Range')
 
@@ -315,16 +310,29 @@ def proxy_titled_enclosure(title):
         stream = True,
         headers = {'Range': range_header} if range_header else None)
 
+    content_type = enclosure.headers['Content-Type']
+
     response_headers = {
         header: enclosure.headers[header]
             for header in {'Accept-Ranges', 'Content-Range', 'Content-Length'}
             if header in enclosure.headers
     }
 
+    if do_download:
+        extension = mimetypes.guess_extension(content_type)
+        file_name = title + (extension or '')
+        response_headers['Content-Disposition'] = 'attachment; filename="%s"' % file_name
+
     return Response(enclosure.iter_content(chunk_size = 1 * 1024),
         status = HTTPStatus.PARTIAL_CONTENT if 'Content-Range' in response_headers else None,
-        mimetype = enclosure.headers['Content-Type'],
+        mimetype = content_type,
         headers = response_headers)
+
+
+# TODO: extract title from video where possible
+@app.route('/enclosure')
+def proxy_enclosure():
+    return proxy_titled_enclosure('video')
 
 
 if __name__ == '__main__':
