@@ -26,10 +26,15 @@ mode_help_tree='list directories via "tree", cwd by default'
 # shellcheck disable=SC2034
 mode_help_vcs='show VCS revisions via "git", HEAD by default'
 
+# TODO: remove "tree" plugin? unused? not very helpful?
 # TODO: file://
 # TODO: HTTP
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
+# TODO: intra-line diff: https://github.com/git/git/tree/master/contrib/diff-highlight
+# TODO: fancier diff: https://github.com/so-fancy/diff-so-fancy
+# TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
+# TODO: fancier highlighting: https://github.com/willmcgugan/rich
 # TODO: tests: functional, performance
 
 mode_options_bin=
