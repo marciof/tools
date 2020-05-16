@@ -174,3 +174,19 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
 - `xfce4-popup-whiskermenu`: Alt-M
 - `xflock4`: Alt-L
 - ClipIt history: Alt-C
+
+### Light Locker
+
+Workaround for bug ["This session is locked, you'll be redirected to the unlock
+dialog in a few seconds."](https://github.com/the-cavalry/light-locker/issues/126):
+
+1. [Disable Light Locker](https://askubuntu.com/questions/544818/how-do-i-disable-automatic-screen-locking-in-xubuntu#544824) (not removing since it seems to be part of Xfce4?)
+  - In *Session and Startup*, *Application Autostart*, disable *Screen Locker*.
+  - `killall light-locker`
+2. `apt install xscreensaver`
+3. In *Power Manager*, *Display*, disable *Handle display power management*.
+4. In *Screensaver*:
+  - *Display Modes*, enable *Lock Screen After* 0 minutes.
+  - *Advanced*, enable *Display Power Management*.
+
+Reboot and re-apply High DPI settings if needed.
