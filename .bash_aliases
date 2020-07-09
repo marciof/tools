@@ -96,10 +96,10 @@ fi
 if have ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
-        alias f="$NAME --follow --hidden --pager \"$PAGER\""
+        alias f="$NAME --follow --pager \"$PAGER\""
     else
         # shellcheck disable=SC2139
-        alias f="$NAME --follow --hidden"
+        alias f="$NAME --follow"
     fi
 fi
 
