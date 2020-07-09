@@ -60,8 +60,6 @@ Change font size:
 
 ### Gtk
 
-Logout and login to apply:
-
     xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
 
 ### Xfce
