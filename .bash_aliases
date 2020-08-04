@@ -11,7 +11,7 @@ have() {
         fi
     done
 
-    echo "* Missing: $*" >&2
+    echo "* Missing: $*$DESC" >&2
     return 1
 }
 
@@ -41,7 +41,7 @@ shopt -s autocd dirspell histappend
 alias -- -='cd -'
 alias ..='cd ..'
 
-have fd
+DESC=' <https://github.com/sharkdp/fd>' have fd
 have dircolors && eval "$("$NAME" -b)"
 have lesspipe lesspipe.sh && eval "$("$NAME")"
 
@@ -93,7 +93,7 @@ if have show.sh; then
     export PAGER="$NAME" GIT_PAGER="$NAME"
 fi
 
-if have ag; then
+if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
         alias f="$NAME --follow --pager \"$PAGER\""
