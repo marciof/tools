@@ -8,25 +8,26 @@ disable_mode_opt=d
 help_opt=h
 mode_option_opt=p
 input_modes_option_opt=i
+no_depth_option_opt=a
+is_depth_enabled=Y
 
-# shellcheck disable=SC2034
-mode_help_bin='read binary files via "lesspipe" or "lesspipe.sh"'
-# shellcheck disable=SC2034
-mode_help_color="syntax highlight via Andre Simon's \"highlight\""
-# shellcheck disable=SC2034
-mode_help_dir='list directories via "ls", cwd by default'
-# shellcheck disable=SC2034
-mode_help_pager='page output via "less", as needed'
-# shellcheck disable=SC2034
-mode_help_stdin='read standard input via "cat"'
-# shellcheck disable=SC2034
-mode_help_text='read plain text files via "cat"'
-# shellcheck disable=SC2034
-mode_help_tree='list directories via "tree", cwd by default'
-# shellcheck disable=SC2034
-mode_help_vcs='show VCS revisions via "git", HEAD by default'
+# shellcheck disable=SC2034,SC2016
+mode_help_bin='read binary file, `lesspipe` or `lesspipe.sh`'
+# shellcheck disable=SC2034,SC2016
+mode_help_color="syntax highlight, Andre Simon's \`highlight\`"
+# shellcheck disable=SC2034,SC2016
+mode_help_dir='list directory, `ls` or `tree` with depth disabled (default cwd)'
+# shellcheck disable=SC2034,SC2016
+mode_help_pager='page output as needed, `less`'
+# shellcheck disable=SC2034,SC2016
+mode_help_stdin='read standard input, `cat`'
+# shellcheck disable=SC2034,SC2016
+mode_help_text='read plain text file, `cat`'
+# shellcheck disable=SC2034,SC2016
+mode_help_vcs='show VCS revision, `git` (default HEAD)'
 
-# TODO: remove "tree" plugin? unused? not very helpful?
+# TODO: make options dependent on the mode implementation, not the mode itself
+# TODO: show separate help section for mode implementations
 # TODO: file://
 # TODO: HTTP
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
@@ -43,8 +44,15 @@ mode_options_dir=
 mode_options_pager=
 mode_options_stdin=
 mode_options_text=
-mode_options_tree=
 mode_options_vcs=
+
+mode_impl_options_lesspipe=
+mode_impl_options_highlight=
+mode_impl_options_ls=
+mode_impl_options_tree=
+mode_impl_options_cat=
+mode_impl_options_less=
+mode_impl_options_git=
 
 if [ -t 1 ]; then
     is_tty_out=Y
@@ -96,10 +104,18 @@ mode_has_dir() {
 
 mode_run_dir() {
     if [ "$is_tty_out" = Y ]; then
-        set -- -C --color=always "$@"
+        set -- -C "$@"
     fi
 
-    run_with_mode_options "$mode_options_dir" N ls "$@"
+    if [ "$is_depth_enabled" = N ] && command -v tree >/dev/null; then
+        run_with_mode_options "$mode_impl_options_tree" N tree "$@"
+    else
+        if [ "$is_tty_out" = Y ]; then
+            set -- --color=always "$@"
+        fi
+
+        run_with_mode_options "$mode_options_dir" N ls "$@"
+    fi
 }
 
 mode_can_text() {
@@ -160,22 +176,6 @@ mode_run_stdin() {
     else
         run_with_mode_options "$mode_options_stdin" Y cat
     fi
-}
-
-mode_can_tree() {
-    test -d "$1"
-}
-
-mode_has_tree() {
-    command -v tree >/dev/null
-}
-
-mode_run_tree() {
-    if [ "$is_tty_out" = Y ]; then
-        set -- -C "$@"
-    fi
-
-    run_with_mode_options "$mode_options_tree" N tree "$@"
 }
 
 mode_can_vcs() {
@@ -289,11 +289,12 @@ Options:
   -$disable_mode_opt NAME      disable mode "NAME"
   -$mode_option_opt NAME=OPT  pass option "OPT" to mode "NAME"
   -$input_modes_option_opt OPT       pass option "OPT" to all named input modes
+  -$no_depth_option_opt           disable depth (mode dependent)
 
 Mode:
 USAGE
 
-    for _help_mode in bin color dir text pager stdin tree vcs; do
+    for _help_mode in bin color dir text pager stdin vcs; do
         if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
             || "mode_has_$_help_mode"
         then
@@ -308,7 +309,7 @@ USAGE
 }
 
 process_options() {
-    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:$input_modes_option_opt:" _getopt_opt "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:$input_modes_option_opt:$no_depth_option_opt" _getopt_opt "$@"; do
         case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
@@ -323,6 +324,9 @@ process_options() {
             "$input_modes_option_opt")
                 add_input_mode_option "$OPTARG"
                 ;;
+            "$no_depth_option_opt")
+                is_depth_enabled=N
+                ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
                 return 1
@@ -334,12 +338,12 @@ process_options() {
 run_named_input_modes() {
     if mode_can_stdin; then
         mode_run_stdin
-    elif [ $# -eq 0 ] && (mode_has_dir || mode_has_tree); then
+    elif [ $# -eq 0 ] && mode_has_dir; then
         set -- .
     fi
 
     for _run_all_input in "$@"; do
-        for _run_all_mode in bin text dir tree vcs; do
+        for _run_all_mode in bin text dir vcs; do
             if "mode_can_$_run_all_mode" "$_run_all_input" \
                     && "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
