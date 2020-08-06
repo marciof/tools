@@ -197,7 +197,7 @@ mode_run_vcs() {
 is_file_binary() {
     _is_bin_path="$1"
 
-    if [ -L "$1" ]; then
+    if [ -L "$_is_bin_path" ]; then
         _is_bin_path="$(resolve_symlink "$_is_bin_path")"
     fi
 
@@ -208,8 +208,13 @@ is_file_binary() {
 }
 
 resolve_symlink() {
-    _symlink_path="$(LC_MESSAGES=C file "$1")"
-    _symlink_path="${_symlink_path#"$1: symbolic link to "}"
+    _symlink_src="$1"
+    _symlink_path="$(LC_MESSAGES=C file "$_symlink_src")"
+    _symlink_path="${_symlink_path#"$_symlink_src: symbolic link to "}"
+
+    if [ ! -d "$_symlink_src" ]; then
+        _symlink_path="$(dirname "$_symlink_src")/$_symlink_path"
+    fi
 
     if [ -L "$_symlink_path" ]; then
         resolve_symlink "$_symlink_path"
