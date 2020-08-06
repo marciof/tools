@@ -2,12 +2,24 @@
 # shellcheck disable=SC2039
 set -e -u
 
+# TODO: refactor naming (eg. confusing "mode", "named input", "mode implementation")
+# TODO: show separate help section for mode implementations
+# TODO: file://
+# TODO: HTTP
+# TODO: intra-line diff: https://github.com/ymattw/ydiff
+# TODO: intra-line diff: https://github.com/git/git/tree/master/contrib/diff-highlight
+# TODO: fancier diff: https://github.com/so-fancy/diff-so-fancy
+# TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
+# TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
+# TODO: fancier highlighting: https://github.com/willmcgugan/rich
+# TODO: tests: functional, performance
+
 arg_var_separator="$(printf '\036')" # ASCII RS char
 
 disable_mode_opt=d
 help_opt=h
-mode_option_opt=p
-input_modes_option_opt=i
+mode_impl_option_opt=p
+named_input_modes_impl_option_opt=i
 no_depth_option_opt=a
 is_depth_enabled=Y
 
@@ -26,33 +38,16 @@ mode_help_text='read plain text file, `cat`'
 # shellcheck disable=SC2034,SC2016
 mode_help_vcs='show VCS revision, `git` (default HEAD)'
 
-# TODO: make options dependent on the mode implementation, not the mode itself
-# TODO: show separate help section for mode implementations
-# TODO: file://
-# TODO: HTTP
-# TODO: intra-line diff: https://github.com/ymattw/ydiff
-# TODO: intra-line diff: https://github.com/git/git/tree/master/contrib/diff-highlight
-# TODO: fancier diff: https://github.com/so-fancy/diff-so-fancy
-# TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
-# TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
-# TODO: fancier highlighting: https://github.com/willmcgugan/rich
-# TODO: tests: functional, performance
+# Set to a non-empty string so that `is_var_non_null` can detect the variable
+# as being defined.
 
-mode_options_bin=
-mode_options_color=
-mode_options_dir=
-mode_options_pager=
-mode_options_stdin=
-mode_options_text=
-mode_options_vcs=
-
-mode_impl_options_lesspipe=
-mode_impl_options_highlight=
-mode_impl_options_ls=
-mode_impl_options_tree=
-mode_impl_options_cat=
-mode_impl_options_less=
-mode_impl_options_git=
+mode_impl_options_lesspipe="$arg_var_separator"
+mode_impl_options_highlight="$arg_var_separator"
+mode_impl_options_ls="$arg_var_separator"
+mode_impl_options_tree="$arg_var_separator"
+mode_impl_options_cat="$arg_var_separator"
+mode_impl_options_less="$arg_var_separator"
+mode_impl_options_git="$arg_var_separator"
 
 if [ -t 1 ]; then
     is_tty_out=Y
@@ -78,7 +73,7 @@ mode_run_bin() {
     fi
 
     # shellcheck disable=SC2037
-    PAGER=cat run_with_mode_options "$mode_options_bin" N "$_bin_exec" "$1"
+    PAGER=cat run_with_options "$mode_impl_options_lesspipe" N "$_bin_exec" "$1"
 }
 
 mode_can_color() {
@@ -90,7 +85,7 @@ mode_has_color() {
 }
 
 mode_run_color() {
-    run_with_mode_options "$mode_options_color" N \
+    run_with_options "$mode_impl_options_highlight" N \
         highlight --force -O ansi "$@" 2>/dev/null
 }
 
@@ -108,13 +103,13 @@ mode_run_dir() {
     fi
 
     if [ "$is_depth_enabled" = N ] && command -v tree >/dev/null; then
-        run_with_mode_options "$mode_impl_options_tree" N tree "$@"
+        run_with_options "$mode_impl_options_tree" N tree "$@"
     else
         if [ "$is_tty_out" = Y ]; then
             set -- --color=always "$@"
         fi
 
-        run_with_mode_options "$mode_options_dir" N ls "$@"
+        run_with_options "$mode_impl_options_ls" N ls "$@"
     fi
 }
 
@@ -128,10 +123,10 @@ mode_has_text() {
 
 mode_run_text() {
     if mode_has_color && mode_can_color; then
-        run_with_mode_options "$mode_options_text" N cat "$1" \
+        run_with_options "$mode_impl_options_cat" N cat "$1" \
             | mode_run_color "$1"
     else
-        run_with_mode_options "$mode_options_text" N cat "$1"
+        run_with_options "$mode_impl_options_cat" N cat "$1"
     fi
 }
 
@@ -158,7 +153,7 @@ mode_run_pager() {
         return
     fi
 
-    cat "$_pager_buffer" - | run_with_mode_options "$mode_options_pager" Y less
+    cat "$_pager_buffer" - | run_with_options "$mode_impl_options_less" Y less
     rm "$_pager_buffer"
 }
 
@@ -172,9 +167,9 @@ mode_has_stdin() {
 
 mode_run_stdin() {
     if mode_has_color && mode_can_color; then
-        run_with_mode_options "$mode_options_stdin" Y cat | mode_run_color
+        run_with_options "$mode_impl_options_cat" Y cat | mode_run_color
     else
-        run_with_mode_options "$mode_options_stdin" Y cat
+        run_with_options "$mode_impl_options_cat" Y cat
     fi
 }
 
@@ -191,7 +186,7 @@ mode_run_vcs() {
         set -- --color=always "$@"
     fi
 
-    run_with_mode_options "$mode_options_vcs" N git --no-pager show "$@"
+    run_with_options "$mode_impl_options_git" N git --no-pager show "$@"
 }
 
 is_file_binary() {
@@ -232,6 +227,15 @@ assert_mode_exists() {
     fi
 }
 
+assert_mode_impl_exists() {
+    if ! is_var_non_null "mode_impl_options_$1"; then
+        echo "$1: no such mode implementation" >&2
+        return 1
+    else
+        return 0
+    fi
+}
+
 disable_mode() {
     assert_mode_exists "$1"
     eval "mode_can_$1() { return 1; }"
@@ -239,7 +243,7 @@ disable_mode() {
     eval "mode_run_$1() { return 1; }"
 }
 
-add_mode_option() {
+add_mode_impl_option() {
     _add_opt_name="${1%%=?*}"
 
     if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
@@ -248,28 +252,29 @@ add_mode_option() {
     fi
 
     _add_opt_option="${1#?*=}"
-    add_parsed_mode_option "$_add_opt_name" "$_add_opt_option"
+    add_parsed_mode_impl_option "$_add_opt_name" "$_add_opt_option"
 }
 
-add_input_mode_option() {
-    for _add_in_opt_mode in text dir vcs; do
-        add_parsed_mode_option "$_add_in_opt_mode" "$1"
+add_named_input_mode_impl_option() {
+    for _add_in_opt_mode in lesspipe cat ls tree git; do
+        add_parsed_mode_impl_option "$_add_in_opt_mode" "$1"
     done
 }
 
-add_parsed_mode_option() {
+add_parsed_mode_impl_option() {
     _add_p_opt_name="$1"
     _add_p_opt_option="$2"
 
-    assert_mode_exists "$_add_p_opt_name"
-    _add_p_opt_current="$(var "mode_options_$_add_p_opt_name")"
+    assert_mode_impl_exists "$_add_p_opt_name"
+    _add_p_opt_current="$(var "mode_impl_options_$_add_p_opt_name")"
+    _add_p_opt_current=${_add_p_opt_current#$arg_var_separator}
 
-    export "mode_options_$_add_p_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_var_separator}$_add_p_opt_option"
+    export "mode_impl_options_$_add_p_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_var_separator}$_add_p_opt_option"
     return 0
 }
 
-run_with_mode_options() {
-    _run_opts="$1"
+run_with_options() {
+    _run_opts="${1#$arg_var_separator}"
     _run_uses_stdin="$2"
     shift 2
 
@@ -292,14 +297,14 @@ Usage: $(basename "$0") [OPTION]... [INPUT]...
 Options:
   -$help_opt           display this help and exit
   -$disable_mode_opt NAME      disable mode "NAME"
-  -$mode_option_opt NAME=OPT  pass option "OPT" to mode "NAME"
-  -$input_modes_option_opt OPT       pass option "OPT" to all named input modes
-  -$no_depth_option_opt           disable depth (mode dependent)
+  -$mode_impl_option_opt NAME=OPT  pass option "OPT" to mode implementation "NAME"
+  -$named_input_modes_impl_option_opt OPT       pass option "OPT" to all named input mode implementations
+  -$no_depth_option_opt           disable depth limitation (mode dependent)
 
 Mode:
 USAGE
 
-    for _help_mode in bin color dir text pager stdin vcs; do
+    for _help_mode in bin color text dir pager stdin vcs; do
         if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
             || "mode_has_$_help_mode"
         then
@@ -314,7 +319,7 @@ USAGE
 }
 
 process_options() {
-    while getopts "$disable_mode_opt:$help_opt$mode_option_opt:$input_modes_option_opt:$no_depth_option_opt" _getopt_opt "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$mode_impl_option_opt:$named_input_modes_impl_option_opt:$no_depth_option_opt" _getopt_opt "$@"; do
         case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
@@ -323,11 +328,11 @@ process_options() {
                 print_usage
                 exit 0
                 ;;
-            "$mode_option_opt")
-                add_mode_option "$OPTARG"
+            "$mode_impl_option_opt")
+                add_mode_impl_option "$OPTARG"
                 ;;
-            "$input_modes_option_opt")
-                add_input_mode_option "$OPTARG"
+            "$named_input_modes_impl_option_opt")
+                add_named_input_mode_impl_option "$OPTARG"
                 ;;
             "$no_depth_option_opt")
                 is_depth_enabled=N
@@ -360,6 +365,14 @@ run_named_input_modes() {
     done
 
     return 0
+}
+
+is_var_non_null() {
+    if [ "$(eval echo "\${$1:+NON_NULL}")" = NON_NULL ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 var() {
