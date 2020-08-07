@@ -75,7 +75,7 @@ else
 fi
 
 tool_has_cat() {
-    command -v lesspipe >/dev/null
+    command -v cat >/dev/null
 }
 
 tool_has_git() {
