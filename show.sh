@@ -4,9 +4,9 @@ set -e -u
 
 # TODO: avoid temporary files
 # TODO: refactor naming
-# TODO: show which tools are available or not
+# TODO: check modes for missing depedencies
 # TODO: file://
-# TODO: HTTP
+# TODO: http://
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
 # TODO: intra-line diff: https://github.com/git/git/tree/master/contrib/diff-highlight
 # TODO: fancier diff: https://github.com/so-fancy/diff-so-fancy
@@ -74,12 +74,40 @@ else
     is_tty_out=N
 fi
 
+tool_has_cat() {
+    command -v lesspipe >/dev/null
+}
+
+tool_has_git() {
+    command -v git >/dev/null
+}
+
+tool_has_highlight() {
+    command -v highlight >/dev/null
+}
+
+tool_has_less() {
+    command -v less >/dev/null
+}
+
+tool_has_lesspipe() {
+    command -v lesspipe >/dev/null || command -v lesspipe.sh >/dev/null
+}
+
+tool_has_ls() {
+    command -v ls >/dev/null
+}
+
+tool_has_tree() {
+    command -v tree >/dev/null
+}
+
 mode_can_bin() {
     test -e "$1" && test ! -d "$1" && is_file_binary "$1"
 }
 
 mode_has_bin() {
-    command -v lesspipe >/dev/null || command -v lesspipe.sh >/dev/null
+    tool_has_lesspipe
 }
 
 mode_run_bin() {
@@ -100,7 +128,7 @@ mode_can_color() {
 }
 
 mode_has_color() {
-    command -v highlight >/dev/null
+    tool_has_highlight
 }
 
 mode_run_color() {
@@ -113,7 +141,7 @@ mode_can_dir() {
 }
 
 mode_has_dir() {
-    return 0
+    tool_has_ls || tool_has_tree
 }
 
 mode_run_dir() {
@@ -121,7 +149,7 @@ mode_run_dir() {
         set -- -C "$@"
     fi
 
-    if [ "$is_depth_enabled" = N ] && command -v tree >/dev/null; then
+    if [ "$is_depth_enabled" = N ] && tool_has_tree; then
         run_with_options "$tool_options_tree" N tree "$@"
     else
         if [ "$is_tty_out" = Y ]; then
@@ -137,7 +165,7 @@ mode_can_text() {
 }
 
 mode_has_text() {
-    return 0
+    tool_has_cat
 }
 
 mode_run_text() {
@@ -153,7 +181,7 @@ mode_can_pager() {
 }
 
 mode_has_pager() {
-    command -v less >/dev/null
+    tool_has_less
 }
 
 mode_run_pager() {
@@ -180,7 +208,7 @@ mode_can_stdin() {
 }
 
 mode_has_stdin() {
-    return 0
+    tool_has_cat
 }
 
 mode_run_stdin() {
@@ -196,7 +224,7 @@ mode_can_vcs() {
 }
 
 mode_has_vcs() {
-    command -v git >/dev/null
+    tool_has_git
 }
 
 mode_run_vcs() {
@@ -323,9 +351,7 @@ Modes:
 USAGE
 
     for _help_mode in bin color text dir pager stdin vcs; do
-        if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
-            || "mode_has_$_help_mode"
-        then
+        if "mode_has_$_help_mode"; then
             _help_has=' '
         else
             _help_has=x
@@ -337,17 +363,15 @@ USAGE
 
     printf '\nTools:\n'
 
-    for _help_mode in cat git highlight less lesspipe ls tree; do
-        if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
-            || "mode_has_$_help_mode"
-        then
+    for _help_tool in cat git highlight less lesspipe ls tree; do
+        if "tool_has_$_help_tool"; then
             _help_has=' '
         else
             _help_has=x
         fi
 
-        printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
-            "$(var "tool_help_$_help_mode")"
+        printf '%c %-13s%s%s\n' "$_help_has" "$_help_tool" \
+            "$(var "tool_help_$_help_tool")"
     done
 
 }
