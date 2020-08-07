@@ -2,7 +2,8 @@
 # shellcheck disable=SC2039
 set -e -u
 
-# TODO: refactor naming (eg. confusing "mode", "named input", "mode implementation")
+# TODO: avoid temporary files
+# TODO: refactor naming
 # TODO: show separate help section for tools
 # TODO: file://
 # TODO: HTTP
@@ -14,7 +15,8 @@ set -e -u
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
 # TODO: tests: functional, performance
 
-arg_separator="$(printf '\036')" # ASCII RS char
+# Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
+arg_separator="$(printf '\036')"
 
 disable_mode_opt=d
 help_opt=h
@@ -22,6 +24,7 @@ tool_option_opt=p
 global_tool_option_opt=i
 disable_depth_opt=a
 
+global_tool_options=
 is_depth_enabled=Y
 
 # shellcheck disable=SC2034,SC2016
@@ -242,9 +245,9 @@ assert_mode_exists() {
     fi
 }
 
-assert_mode_impl_exists() {
+assert_tool_exists() {
     if ! is_var_non_null "tool_options_$1"; then
-        echo "$1: no such mode implementation" >&2
+        echo "$1: no such tool" >&2
         return 1
     else
         return 0
@@ -258,7 +261,7 @@ disable_mode() {
     eval "mode_run_$1() { return 1; }"
 }
 
-add_mode_impl_option() {
+add_tool_option() {
     _add_opt_name="${1%%=?*}"
 
     if [ ${#_add_opt_name} -eq ${#1} ] || [ ${#_add_opt_name} -eq 0 ]; then
@@ -267,20 +270,18 @@ add_mode_impl_option() {
     fi
 
     _add_opt_option="${1#?*=}"
-    add_parsed_mode_impl_option "$_add_opt_name" "$_add_opt_option"
+    add_parsed_tool_option "$_add_opt_name" "$_add_opt_option"
 }
 
-add_named_input_mode_impl_option() {
-    for _add_in_opt_mode in lesspipe cat ls tree git; do
-        add_parsed_mode_impl_option "$_add_in_opt_mode" "$1"
-    done
+add_global_tool_option() {
+    global_tool_options="$global_tool_options${global_tool_options:+$arg_separator}$1"
 }
 
-add_parsed_mode_impl_option() {
+add_parsed_tool_option() {
     _add_p_opt_name="$1"
     _add_p_opt_option="$2"
 
-    assert_mode_impl_exists "$_add_p_opt_name"
+    assert_tool_exists "$_add_p_opt_name"
     _add_p_opt_current="$(var "tool_options_$_add_p_opt_name")"
     _add_p_opt_current=${_add_p_opt_current#$arg_separator}
 
@@ -293,13 +294,15 @@ run_with_options() {
     _run_uses_stdin="$2"
     shift 2
 
-    if [ -z "$_run_opts" ]; then
+    _run_all_opts="$global_tool_options${global_tool_options:+$arg_separator}$_run_opts"
+
+    if [ -z "$_run_all_opts" ]; then
         "$@"
     elif [ "$_run_uses_stdin" = N ]; then
-        printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
+        printf %s "$_run_all_opts" | xargs -d "$arg_separator" -- "$@"
     else
         _run_args_file="$(mktemp)"
-        printf %s "$_run_opts" >"$_run_args_file"
+        printf %s "$_run_all_opts" >"$_run_args_file"
         xargs -a "$_run_args_file" -d "$arg_separator" -- "$@"
         rm "$_run_args_file"
     fi
@@ -360,10 +363,10 @@ process_options() {
                 exit 0
                 ;;
             "$tool_option_opt")
-                add_mode_impl_option "$OPTARG"
+                add_tool_option "$OPTARG"
                 ;;
             "$global_tool_option_opt")
-                add_named_input_mode_impl_option "$OPTARG"
+                add_global_tool_option "$OPTARG"
                 ;;
             "$disable_depth_opt")
                 is_depth_enabled=N
@@ -376,7 +379,7 @@ process_options() {
     done
 }
 
-run_named_input_modes() {
+run_non_paging_modes() {
     if mode_can_stdin; then
         mode_run_stdin
     elif [ $# -eq 0 ] && mode_has_dir; then
@@ -414,7 +417,7 @@ process_options "$@"
 shift $((OPTIND - 1))
 
 if mode_can_pager; then
-    run_named_input_modes "$@" | mode_run_pager
+    run_non_paging_modes "$@" | mode_run_pager
 else
-    run_named_input_modes "$@"
+    run_non_paging_modes "$@"
 fi
