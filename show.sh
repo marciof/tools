@@ -3,7 +3,6 @@
 set -e -u
 
 # TODO: avoid temporary files
-# TODO: refactor naming
 # TODO: check modes for missing depedencies
 # TODO: file://
 # TODO: http://
@@ -25,7 +24,7 @@ global_tool_option_opt=i
 disable_depth_opt=a
 
 global_tool_options=
-is_depth_enabled=Y
+is_depth_enabled=true
 
 # shellcheck disable=SC2034,SC2016
 mode_help_bin='read binary file, via "lesspipe"'
@@ -57,21 +56,18 @@ tool_help_less='https://www.gnu.org/software/less/'
 # shellcheck disable=SC2034
 tool_help_git='https://git-scm.com'
 
-# Set to a non-empty string so that `is_var_non_null` can detect the variable
-# as being defined.
-
-tool_options_lesspipe="$arg_separator"
-tool_options_highlight="$arg_separator"
-tool_options_ls="$arg_separator"
-tool_options_tree="$arg_separator"
-tool_options_cat="$arg_separator"
-tool_options_less="$arg_separator"
-tool_options_git="$arg_separator"
+tool_options_lesspipe=
+tool_options_highlight=
+tool_options_ls=
+tool_options_tree=
+tool_options_cat=
+tool_options_less=
+tool_options_git=
 
 if [ -t 1 ]; then
-    is_tty_out=Y
+    is_tty_out=true
 else
-    is_tty_out=N
+    is_tty_out=false
 fi
 
 tool_has_cat() {
@@ -120,11 +116,11 @@ mode_run_bin() {
     fi
 
     # shellcheck disable=SC2037
-    PAGER=cat run_with_options "$tool_options_lesspipe" N "$_bin_exec" "$1"
+    PAGER=cat run_with_options "$tool_options_lesspipe" false "$_bin_exec" "$1"
 }
 
 mode_can_color() {
-    test "$is_tty_out" = Y
+    test "$is_tty_out" = true
 }
 
 mode_has_color() {
@@ -132,7 +128,7 @@ mode_has_color() {
 }
 
 mode_run_color() {
-    run_with_options "$tool_options_highlight" N \
+    run_with_options "$tool_options_highlight" false \
         highlight --force -O ansi "$@" 2>/dev/null
 }
 
@@ -145,18 +141,16 @@ mode_has_dir() {
 }
 
 mode_run_dir() {
-    if [ "$is_tty_out" = Y ]; then
-        set -- -C "$@"
-    fi
-
-    if [ "$is_depth_enabled" = N ] && tool_has_tree; then
-        run_with_options "$tool_options_tree" N tree "$@"
-    else
-        if [ "$is_tty_out" = Y ]; then
-            set -- --color=always "$@"
+    if [ "$is_depth_enabled" = false ] && tool_has_tree; then
+        if [ "$is_tty_out" = true ]; then
+            set -- -C "$@"
         fi
-
-        run_with_options "$tool_options_ls" N ls "$@"
+        run_with_options "$tool_options_tree" false tree "$@"
+    else
+        if [ "$is_tty_out" = true ]; then
+            set -- -C --color=always "$@"
+        fi
+        run_with_options "$tool_options_ls" false ls "$@"
     fi
 }
 
@@ -170,14 +164,15 @@ mode_has_text() {
 
 mode_run_text() {
     if mode_has_color && mode_can_color; then
-        run_with_options "$tool_options_cat" N cat "$1" | mode_run_color "$1"
+        run_with_options "$tool_options_cat" false cat "$1" \
+            | mode_run_color "$1"
     else
-        run_with_options "$tool_options_cat" N cat "$1"
+        run_with_options "$tool_options_cat" false cat "$1"
     fi
 }
 
 mode_can_pager() {
-    test "$is_tty_out" = Y
+    test "$is_tty_out" = true
 }
 
 mode_has_pager() {
@@ -199,7 +194,7 @@ mode_run_pager() {
         return
     fi
 
-    cat "$_pager_buffer" - | run_with_options "$tool_options_less" Y less
+    cat "$_pager_buffer" - | run_with_options "$tool_options_less" true less
     rm "$_pager_buffer"
 }
 
@@ -213,9 +208,9 @@ mode_has_stdin() {
 
 mode_run_stdin() {
     if mode_has_color && mode_can_color; then
-        run_with_options "$tool_options_cat" Y cat | mode_run_color
+        run_with_options "$tool_options_cat" true cat | mode_run_color
     else
-        run_with_options "$tool_options_cat" Y cat
+        run_with_options "$tool_options_cat" true cat
     fi
 }
 
@@ -228,11 +223,11 @@ mode_has_vcs() {
 }
 
 mode_run_vcs() {
-    if [ "$is_tty_out" = Y ]; then
+    if [ "$is_tty_out" = true ]; then
         set -- --color=always "$@"
     fi
 
-    run_with_options "$tool_options_git" N git --no-pager show "$@"
+    run_with_options "$tool_options_git" false git --no-pager show "$@"
 }
 
 is_file_binary() {
@@ -274,7 +269,7 @@ assert_mode_exists() {
 }
 
 assert_tool_exists() {
-    if ! is_var_non_null "tool_options_$1"; then
+    if ! type "tool_has_$1" >/dev/null 2>&1; then
         echo "$1: no such tool" >&2
         return 1
     else
@@ -297,28 +292,21 @@ add_tool_option() {
         return 1
     fi
 
+    assert_tool_exists "$_add_opt_name"
+
     _add_opt_option="${1#?*=}"
-    add_parsed_tool_option "$_add_opt_name" "$_add_opt_option"
+    _add_p_opt_current="$(var "tool_options_$_add_opt_name")"
+
+    export "tool_options_$_add_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_opt_option"
+    return 0
 }
 
 add_global_tool_option() {
     global_tool_options="$global_tool_options${global_tool_options:+$arg_separator}$1"
 }
 
-add_parsed_tool_option() {
-    _add_p_opt_name="$1"
-    _add_p_opt_option="$2"
-
-    assert_tool_exists "$_add_p_opt_name"
-    _add_p_opt_current="$(var "tool_options_$_add_p_opt_name")"
-    _add_p_opt_current=${_add_p_opt_current#$arg_separator}
-
-    export "tool_options_$_add_p_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_p_opt_option"
-    return 0
-}
-
 run_with_options() {
-    _run_opts="${1#$arg_separator}"
+    _run_opts="$1"
     _run_uses_stdin="$2"
     shift 2
 
@@ -326,7 +314,7 @@ run_with_options() {
 
     if [ -z "$_run_all_opts" ]; then
         "$@"
-    elif [ "$_run_uses_stdin" = N ]; then
+    elif [ "$_run_uses_stdin" = false ]; then
         printf %s "$_run_all_opts" | xargs -d "$arg_separator" -- "$@"
     else
         _run_args_file="$(mktemp)"
@@ -393,7 +381,7 @@ process_options() {
                 add_global_tool_option "$OPTARG"
                 ;;
             "$disable_depth_opt")
-                is_depth_enabled=N
+                is_depth_enabled=false
                 ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
@@ -423,14 +411,6 @@ run_non_paging_modes() {
     done
 
     return 0
-}
-
-is_var_non_null() {
-    if [ "$(eval echo "\${$1:+NON_NULL}")" = NON_NULL ]; then
-        return 0
-    else
-        return 1
-    fi
 }
 
 var() {
