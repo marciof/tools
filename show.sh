@@ -3,7 +3,7 @@
 set -e -u
 
 # TODO: refactor naming (eg. confusing "mode", "named input", "mode implementation")
-# TODO: show separate help section for mode implementations
+# TODO: show separate help section for tools
 # TODO: file://
 # TODO: HTTP
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
@@ -14,13 +14,14 @@ set -e -u
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
 # TODO: tests: functional, performance
 
-arg_var_separator="$(printf '\036')" # ASCII RS char
+arg_separator="$(printf '\036')" # ASCII RS char
 
 disable_mode_opt=d
 help_opt=h
-mode_impl_option_opt=p
-named_input_modes_impl_option_opt=i
-no_depth_option_opt=a
+tool_option_opt=p
+global_tool_option_opt=i
+disable_depth_opt=a
+
 is_depth_enabled=Y
 
 # shellcheck disable=SC2034,SC2016
@@ -38,16 +39,31 @@ mode_help_text='read plain text file, `cat`'
 # shellcheck disable=SC2034,SC2016
 mode_help_vcs='show VCS revision, `git` (default HEAD)'
 
+# shellcheck disable=SC2034
+tool_help_lesspipe=
+# shellcheck disable=SC2034
+tool_help_highlight=
+# shellcheck disable=SC2034
+tool_help_ls=
+# shellcheck disable=SC2034
+tool_help_tree=
+# shellcheck disable=SC2034
+tool_help_cat=
+# shellcheck disable=SC2034
+tool_help_less=
+# shellcheck disable=SC2034
+tool_help_git=
+
 # Set to a non-empty string so that `is_var_non_null` can detect the variable
 # as being defined.
 
-mode_impl_options_lesspipe="$arg_var_separator"
-mode_impl_options_highlight="$arg_var_separator"
-mode_impl_options_ls="$arg_var_separator"
-mode_impl_options_tree="$arg_var_separator"
-mode_impl_options_cat="$arg_var_separator"
-mode_impl_options_less="$arg_var_separator"
-mode_impl_options_git="$arg_var_separator"
+tool_options_lesspipe="$arg_separator"
+tool_options_highlight="$arg_separator"
+tool_options_ls="$arg_separator"
+tool_options_tree="$arg_separator"
+tool_options_cat="$arg_separator"
+tool_options_less="$arg_separator"
+tool_options_git="$arg_separator"
 
 if [ -t 1 ]; then
     is_tty_out=Y
@@ -73,7 +89,7 @@ mode_run_bin() {
     fi
 
     # shellcheck disable=SC2037
-    PAGER=cat run_with_options "$mode_impl_options_lesspipe" N "$_bin_exec" "$1"
+    PAGER=cat run_with_options "$tool_options_lesspipe" N "$_bin_exec" "$1"
 }
 
 mode_can_color() {
@@ -85,7 +101,7 @@ mode_has_color() {
 }
 
 mode_run_color() {
-    run_with_options "$mode_impl_options_highlight" N \
+    run_with_options "$tool_options_highlight" N \
         highlight --force -O ansi "$@" 2>/dev/null
 }
 
@@ -103,13 +119,13 @@ mode_run_dir() {
     fi
 
     if [ "$is_depth_enabled" = N ] && command -v tree >/dev/null; then
-        run_with_options "$mode_impl_options_tree" N tree "$@"
+        run_with_options "$tool_options_tree" N tree "$@"
     else
         if [ "$is_tty_out" = Y ]; then
             set -- --color=always "$@"
         fi
 
-        run_with_options "$mode_impl_options_ls" N ls "$@"
+        run_with_options "$tool_options_ls" N ls "$@"
     fi
 }
 
@@ -123,10 +139,9 @@ mode_has_text() {
 
 mode_run_text() {
     if mode_has_color && mode_can_color; then
-        run_with_options "$mode_impl_options_cat" N cat "$1" \
-            | mode_run_color "$1"
+        run_with_options "$tool_options_cat" N cat "$1" | mode_run_color "$1"
     else
-        run_with_options "$mode_impl_options_cat" N cat "$1"
+        run_with_options "$tool_options_cat" N cat "$1"
     fi
 }
 
@@ -153,7 +168,7 @@ mode_run_pager() {
         return
     fi
 
-    cat "$_pager_buffer" - | run_with_options "$mode_impl_options_less" Y less
+    cat "$_pager_buffer" - | run_with_options "$tool_options_less" Y less
     rm "$_pager_buffer"
 }
 
@@ -167,9 +182,9 @@ mode_has_stdin() {
 
 mode_run_stdin() {
     if mode_has_color && mode_can_color; then
-        run_with_options "$mode_impl_options_cat" Y cat | mode_run_color
+        run_with_options "$tool_options_cat" Y cat | mode_run_color
     else
-        run_with_options "$mode_impl_options_cat" Y cat
+        run_with_options "$tool_options_cat" Y cat
     fi
 }
 
@@ -186,7 +201,7 @@ mode_run_vcs() {
         set -- --color=always "$@"
     fi
 
-    run_with_options "$mode_impl_options_git" N git --no-pager show "$@"
+    run_with_options "$tool_options_git" N git --no-pager show "$@"
 }
 
 is_file_binary() {
@@ -228,7 +243,7 @@ assert_mode_exists() {
 }
 
 assert_mode_impl_exists() {
-    if ! is_var_non_null "mode_impl_options_$1"; then
+    if ! is_var_non_null "tool_options_$1"; then
         echo "$1: no such mode implementation" >&2
         return 1
     else
@@ -266,26 +281,26 @@ add_parsed_mode_impl_option() {
     _add_p_opt_option="$2"
 
     assert_mode_impl_exists "$_add_p_opt_name"
-    _add_p_opt_current="$(var "mode_impl_options_$_add_p_opt_name")"
-    _add_p_opt_current=${_add_p_opt_current#$arg_var_separator}
+    _add_p_opt_current="$(var "tool_options_$_add_p_opt_name")"
+    _add_p_opt_current=${_add_p_opt_current#$arg_separator}
 
-    export "mode_impl_options_$_add_p_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_var_separator}$_add_p_opt_option"
+    export "tool_options_$_add_p_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_p_opt_option"
     return 0
 }
 
 run_with_options() {
-    _run_opts="${1#$arg_var_separator}"
+    _run_opts="${1#$arg_separator}"
     _run_uses_stdin="$2"
     shift 2
 
     if [ -z "$_run_opts" ]; then
         "$@"
     elif [ "$_run_uses_stdin" = N ]; then
-        printf %s "$_run_opts" | xargs -d "$arg_var_separator" -- "$@"
+        printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
     else
         _run_args_file="$(mktemp)"
         printf %s "$_run_opts" >"$_run_args_file"
-        xargs -a "$_run_args_file" -d "$arg_var_separator" -- "$@"
+        xargs -a "$_run_args_file" -d "$arg_separator" -- "$@"
         rm "$_run_args_file"
     fi
 }
@@ -297,11 +312,11 @@ Usage: $(basename "$0") [OPTION]... [INPUT]...
 Options:
   -$help_opt           display this help and exit
   -$disable_mode_opt NAME      disable mode "NAME"
-  -$mode_impl_option_opt NAME=OPT  pass option "OPT" to mode implementation "NAME"
-  -$named_input_modes_impl_option_opt OPT       pass option "OPT" to all named input mode implementations
-  -$no_depth_option_opt           disable depth limitation (mode dependent)
+  -$tool_option_opt NAME=OPT  pass option "OPT" to tool "NAME"
+  -$global_tool_option_opt OPT       pass option "OPT" to all tools
+  -$disable_depth_opt           disable depth limitation (mode dependent)
 
-Mode:
+Modes:
 USAGE
 
     for _help_mode in bin color text dir pager stdin vcs; do
@@ -316,10 +331,26 @@ USAGE
         printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
             "$(var "mode_help_$_help_mode")"
     done
+
+    printf '\nTools:\n'
+
+    for _help_mode in cat git highlight less lesspipe ls tree; do
+        if ! type "mode_has_$_help_mode" >/dev/null 2>&1 \
+            || "mode_has_$_help_mode"
+        then
+            _help_has=' '
+        else
+            _help_has=x
+        fi
+
+        printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
+            "$(var "tool_help_$_help_mode")"
+    done
+
 }
 
 process_options() {
-    while getopts "$disable_mode_opt:$help_opt$mode_impl_option_opt:$named_input_modes_impl_option_opt:$no_depth_option_opt" _getopt_opt "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$tool_option_opt:$global_tool_option_opt:$disable_depth_opt" _getopt_opt "$@"; do
         case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
@@ -328,13 +359,13 @@ process_options() {
                 print_usage
                 exit 0
                 ;;
-            "$mode_impl_option_opt")
+            "$tool_option_opt")
                 add_mode_impl_option "$OPTARG"
                 ;;
-            "$named_input_modes_impl_option_opt")
+            "$global_tool_option_opt")
                 add_named_input_mode_impl_option "$OPTARG"
                 ;;
-            "$no_depth_option_opt")
+            "$disable_depth_opt")
                 is_depth_enabled=N
                 ;;
             ?)
