@@ -4,7 +4,7 @@ set -e -u
 
 # TODO: avoid temporary files
 # TODO: refactor naming
-# TODO: show separate help section for tools
+# TODO: show which tools are available or not
 # TODO: file://
 # TODO: HTTP
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
@@ -28,34 +28,34 @@ global_tool_options=
 is_depth_enabled=Y
 
 # shellcheck disable=SC2034,SC2016
-mode_help_bin='read binary file, `lesspipe` or `lesspipe.sh`'
+mode_help_bin='read binary file, via "lesspipe"'
 # shellcheck disable=SC2034,SC2016
-mode_help_color="syntax highlight, Andre Simon's \`highlight\`"
+mode_help_color='syntax highlighting, via "highlight"'
 # shellcheck disable=SC2034,SC2016
-mode_help_dir='list directory, `ls` or `tree` with depth disabled (default cwd)'
+mode_help_dir='list directory, via "ls" or "tree" when depth is disabled'
 # shellcheck disable=SC2034,SC2016
-mode_help_pager='page output as needed, `less`'
+mode_help_pager='page output as needed, via "less"'
 # shellcheck disable=SC2034,SC2016
-mode_help_stdin='read standard input, `cat`'
+mode_help_stdin='read standard input, via "cat"'
 # shellcheck disable=SC2034,SC2016
-mode_help_text='read plain text file, `cat`'
+mode_help_text='read plain text file, via "cat"'
 # shellcheck disable=SC2034,SC2016
-mode_help_vcs='show VCS revision, `git` (default HEAD)'
+mode_help_vcs='show VCS revision, via "git show"'
 
+# shellcheck disable=SC2034,SC2016
+tool_help_lesspipe='`lesspipe` or `lesspipe.sh`, https://www.gnu.org/software/less/'
 # shellcheck disable=SC2034
-tool_help_lesspipe=
+tool_help_highlight='http://www.andre-simon.de/doku/highlight/en/highlight.php'
+# shellcheck disable=SC2034,SC2016
+tool_help_ls='POSIX `ls`'
 # shellcheck disable=SC2034
-tool_help_highlight=
+tool_help_tree='http://mama.indstate.edu/users/ice/tree/'
+# shellcheck disable=SC2034,SC2016
+tool_help_cat='POSIX `cat`'
 # shellcheck disable=SC2034
-tool_help_ls=
+tool_help_less='https://www.gnu.org/software/less/'
 # shellcheck disable=SC2034
-tool_help_tree=
-# shellcheck disable=SC2034
-tool_help_cat=
-# shellcheck disable=SC2034
-tool_help_less=
-# shellcheck disable=SC2034
-tool_help_git=
+tool_help_git='https://git-scm.com'
 
 # Set to a non-empty string so that `is_var_non_null` can detect the variable
 # as being defined.
