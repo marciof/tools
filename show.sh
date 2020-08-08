@@ -1,8 +1,7 @@
 #!/bin/sh
 set -e -u
 
-# TODO: measure performance
-# TODO: check dependencies for POSIX compliance, including flags
+# TODO: global options are passed to `less`, and not passed to `tput`
 # TODO: check modes for missing dependencies
 # TODO: file://
 # TODO: http://
@@ -12,7 +11,11 @@ set -e -u
 # TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
+# TODO: make `xargs` call POSIX compliant
+# TODO: avoid `eval` to be POSIX compliant
+# TODO: avoid `mktemp` to be POSIX compliant
 # TODO: tests
+# TODO: measure performance
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
 arg_separator="$(printf '\036')"
@@ -41,6 +44,7 @@ tool_options_tree=
 tool_options_cat=
 tool_options_less=
 tool_options_git=
+tool_options_tput=
 
 # shellcheck disable=SC2034,SC2016
 mode_help_bin='read binary file, via "lesspipe"'
@@ -71,6 +75,8 @@ tool_help_cat='POSIX `cat`'
 tool_help_less='https://www.gnu.org/software/less/'
 # shellcheck disable=SC2034
 tool_help_git='https://git-scm.com'
+# shellcheck disable=SC2034,SC2016
+tool_help_tput='POSIX `tput`'
 
 if [ -t 1 ]; then
     is_tty_out=true
@@ -106,6 +112,10 @@ tool_has_tree() {
     command -v tree >/dev/null
 }
 
+tool_has_tput() {
+    command -v tput >/dev/null
+}
+
 mode_can_bin() {
     test "$mode_is_disabled_bin" = false -a -e "$1" -a ! -d "$1" \
         && is_file_binary "$1"
@@ -123,7 +133,7 @@ mode_run_bin() {
     fi
 
     # shellcheck disable=SC2037
-    PAGER=cat run_with_options "$tool_options_lesspipe" false "$_bin_exec" "$1"
+    PAGER= run_with_options "$tool_options_lesspipe" false "$_bin_exec" "$1"
 }
 
 mode_can_color() {
@@ -185,7 +195,10 @@ mode_can_pager() {
 
 mode_has_pager() {
     # Check for these tput operands since they're not POSIX compliant.
-    tool_has_less && tput cols 2>/dev/null >&2 && tput lines 2>/dev/null >&2
+    tool_has_less \
+        && tool_has_tput \
+        && tput cols 2>/dev/null >&2 \
+        && tput lines 2>/dev/null >&2
 }
 
 mode_run_pager() {
@@ -193,7 +206,7 @@ mode_run_pager() {
     _pager_max_lines=$(($(tput lines) / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
 
-    # Add a trailing character to avoid newline removal.
+    # Add a trailing character to avoid trailing newline removal.
     _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null; printf E)"
 
     _pager_lines="$(printf %s "${_pager_buffer%E}" \
@@ -283,7 +296,7 @@ assert_function_exists() {
 
 disable_mode() {
     assert_function_exists "mode_has_$1" "$1: no such mode"
-    eval "mode_is_disabled_$1=true"
+    export "mode_is_disabled_$1=true"
 }
 
 add_tool_option() {
@@ -300,7 +313,7 @@ add_tool_option() {
     _add_opt_option="${1#?*=}"
     _add_p_opt_current="$(var "tool_options_$_add_opt_name")"
 
-    eval "tool_options_$_add_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_opt_option"
+    export "tool_options_$_add_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_opt_option"
     return 0
 }
 
@@ -354,7 +367,7 @@ USAGE
 
     printf '\nTools:\n'
 
-    for _help_tool in cat git highlight less lesspipe ls tree; do
+    for _help_tool in cat git highlight less lesspipe ls tput tree; do
         if "tool_has_$_help_tool"; then
             _help_has=' '
         else
