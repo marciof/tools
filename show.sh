@@ -184,18 +184,18 @@ mode_run_pager() {
     _pager_max_cols="$(tput cols)"
     _pager_max_lines=$(($(tput lines) / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
-    _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null)"
+    _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null; printf E)"
 
-    _pager_lines="$(printf '%s\n' "$_pager_buffer" \
+    _pager_lines="$(printf %s "${_pager_buffer%E}" \
         | fold -b -w "$_pager_max_cols" \
         | wc -l)"
 
     if [ "$_pager_lines" -le "$_pager_max_lines" ]; then
-        printf '%s\n' "$_pager_buffer"
+        printf %s "${_pager_buffer%E}"
         return
     fi
 
-    { printf '%s\n' "$_pager_buffer"; cat; } \
+    { printf %s "${_pager_buffer%E}"; cat; } \
         | run_with_options "$tool_options_less" true less
 }
 
