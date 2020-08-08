@@ -2,8 +2,9 @@
 # shellcheck disable=SC2039
 set -e -u
 
-# TODO: avoid temporary files (or at least storing data)
-# TODO: check modes for missing depedencies
+# TODO: measure performance
+# TODO: check dependencies for POSIX compliance, including flags
+# TODO: check modes for missing dependencies
 # TODO: file://
 # TODO: http://
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
@@ -12,7 +13,7 @@ set -e -u
 # TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
-# TODO: tests: functional, performance
+# TODO: tests
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
 arg_separator="$(printf '\036')"
@@ -180,21 +181,21 @@ mode_has_pager() {
 }
 
 mode_run_pager() {
-    _pager_buffer="$(mktemp)"
     _pager_max_cols="$(tput cols)"
     _pager_max_lines=$(($(tput lines) / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
+    _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null)"
 
-    dd bs=1 "count=$_pager_max_bytes" "of=$_pager_buffer" 2>/dev/null
-    _pager_lines="$(fold -b -w "$_pager_max_cols" "$_pager_buffer" | wc -l)"
+    _pager_lines="$(echo "$_pager_buffer" \
+        | fold -b -w "$_pager_max_cols" \
+        | wc -l)"
 
     if [ "$_pager_lines" -le "$_pager_max_lines" ]; then
-        cat "$_pager_buffer"
-        rm "$_pager_buffer"
+        echo "$_pager_buffer"
         return
     fi
 
-    { cat "$_pager_buffer"; rm "$_pager_buffer"; cat; } \
+    { echo "$_pager_buffer"; cat; } \
         | run_with_options "$tool_options_less" true less
 }
 
