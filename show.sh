@@ -2,7 +2,7 @@
 # shellcheck disable=SC2039
 set -e -u
 
-# TODO: avoid temporary files
+# TODO: avoid temporary files (or at least storing data)
 # TODO: check modes for missing depedencies
 # TODO: file://
 # TODO: http://
@@ -194,8 +194,8 @@ mode_run_pager() {
         return
     fi
 
-    cat "$_pager_buffer" - | run_with_options "$tool_options_less" true less
-    rm "$_pager_buffer"
+    { cat "$_pager_buffer"; rm "$_pager_buffer"; cat; } \
+        | run_with_options "$tool_options_less" true less
 }
 
 mode_can_stdin() {
@@ -306,21 +306,21 @@ add_global_tool_option() {
 }
 
 run_with_options() {
-    _run_opts="$1"
+    _run_local_opts="$1"
     _run_uses_stdin="$2"
     shift 2
 
-    _run_all_opts="$global_tool_options${global_tool_options:+$arg_separator}$_run_opts"
+    _run_opts="$global_tool_options${global_tool_options:+$arg_separator}$_run_local_opts"
 
-    if [ -z "$_run_all_opts" ]; then
+    if [ -z "$_run_opts" ]; then
         "$@"
     elif [ "$_run_uses_stdin" = false ]; then
-        printf %s "$_run_all_opts" | xargs -d "$arg_separator" -- "$@"
+        printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
     else
-        _run_args_file="$(mktemp)"
-        printf %s "$_run_all_opts" >"$_run_args_file"
-        xargs -a "$_run_args_file" -d "$arg_separator" -- "$@"
-        rm "$_run_args_file"
+        _run_opts_pipe="$(mktemp -u)"
+        mkfifo "$_run_opts_pipe"
+        { printf %s "$_run_opts" >"$_run_opts_pipe"; rm "$_run_opts_pipe"; } &
+        xargs -a "$_run_opts_pipe" -d "$arg_separator" -- "$@"
     fi
 }
 
