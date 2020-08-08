@@ -1,5 +1,4 @@
 #!/bin/sh
-# shellcheck disable=SC2039
 set -e -u
 
 # TODO: measure performance
@@ -26,6 +25,14 @@ disable_depth_opt=a
 
 global_tool_options=
 is_depth_enabled=true
+
+mode_is_disabled_bin=false
+mode_is_disabled_color=false
+mode_is_disabled_dir=false
+mode_is_disabled_pager=false
+mode_is_disabled_stdin=false
+mode_is_disabled_text=false
+mode_is_disabled_vcs=false
 
 tool_options_lesspipe=
 tool_options_highlight=
@@ -100,7 +107,8 @@ tool_has_tree() {
 }
 
 mode_can_bin() {
-    test -e "$1" && test ! -d "$1" && is_file_binary "$1"
+    test "$mode_is_disabled_bin" = false -a -e "$1" -a ! -d "$1" \
+        && is_file_binary "$1"
 }
 
 mode_has_bin() {
@@ -119,7 +127,7 @@ mode_run_bin() {
 }
 
 mode_can_color() {
-    test "$is_tty_out" = true
+    test "$mode_is_disabled_color" = false -a "$is_tty_out" = true
 }
 
 mode_has_color() {
@@ -132,7 +140,7 @@ mode_run_color() {
 }
 
 mode_can_dir() {
-    test -d "$1"
+    test "$mode_is_disabled_dir" = false -a -d "$1"
 }
 
 mode_has_dir() {
@@ -154,7 +162,8 @@ mode_run_dir() {
 }
 
 mode_can_text() {
-    test -e "$1" && test ! -d "$1" && ! is_file_binary "$1"
+    test "$mode_is_disabled_text" = false -a -e "$1" -a ! -d "$1" \
+        && ! is_file_binary "$1"
 }
 
 mode_has_text() {
@@ -171,7 +180,7 @@ mode_run_text() {
 }
 
 mode_can_pager() {
-    test "$is_tty_out" = true
+    test "$mode_is_disabled_pager" = false -a "$is_tty_out" = true
 }
 
 mode_has_pager() {
@@ -201,7 +210,7 @@ mode_run_pager() {
 }
 
 mode_can_stdin() {
-    test ! -t 0
+    test "$mode_is_disabled_stdin" = false -a ! -t 0
 }
 
 mode_has_stdin() {
@@ -217,7 +226,8 @@ mode_run_stdin() {
 }
 
 mode_can_vcs() {
-    git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null
+    test "$mode_is_disabled_vcs" = false \
+        && git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null
 }
 
 mode_has_vcs() {
@@ -262,6 +272,7 @@ resolve_symlink() {
 }
 
 assert_function_exists() {
+    # shellcheck disable=SC2039
     if ! type "$1" >/dev/null 2>&1; then
         echo "$2" >&2
         return 1
@@ -272,9 +283,7 @@ assert_function_exists() {
 
 disable_mode() {
     assert_function_exists "mode_has_$1" "$1: no such mode"
-    eval "mode_can_$1() { return 1; }"
-    eval "mode_has_$1() { return 1; }"
-    eval "mode_run_$1() { return 1; }"
+    eval "mode_is_disabled_$1=true"
 }
 
 add_tool_option() {
