@@ -27,6 +27,14 @@ disable_depth_opt=a
 global_tool_options=
 is_depth_enabled=true
 
+tool_options_lesspipe=
+tool_options_highlight=
+tool_options_ls=
+tool_options_tree=
+tool_options_cat=
+tool_options_less=
+tool_options_git=
+
 # shellcheck disable=SC2034,SC2016
 mode_help_bin='read binary file, via "lesspipe"'
 # shellcheck disable=SC2034,SC2016
@@ -34,7 +42,7 @@ mode_help_color='syntax highlighting, via "highlight"'
 # shellcheck disable=SC2034,SC2016
 mode_help_dir='list directory, via "ls" or "tree" when depth is disabled'
 # shellcheck disable=SC2034,SC2016
-mode_help_pager='page output as needed, via "less"'
+mode_help_pager='page output as needed, via "less" and "tput"'
 # shellcheck disable=SC2034,SC2016
 mode_help_stdin='read standard input, via "cat"'
 # shellcheck disable=SC2034,SC2016
@@ -56,14 +64,6 @@ tool_help_cat='POSIX `cat`'
 tool_help_less='https://www.gnu.org/software/less/'
 # shellcheck disable=SC2034
 tool_help_git='https://git-scm.com'
-
-tool_options_lesspipe=
-tool_options_highlight=
-tool_options_ls=
-tool_options_tree=
-tool_options_cat=
-tool_options_less=
-tool_options_git=
 
 if [ -t 1 ]; then
     is_tty_out=true
@@ -110,10 +110,8 @@ mode_has_bin() {
 mode_run_bin() {
     if command -v lesspipe >/dev/null; then
         _bin_exec=lesspipe
-    elif command -v lesspipe.sh >/dev/null; then
-        _bin_exec=lesspipe.sh
     else
-        return 1
+        _bin_exec=lesspipe.sh
     fi
 
     # shellcheck disable=SC2037
@@ -177,13 +175,16 @@ mode_can_pager() {
 }
 
 mode_has_pager() {
-    tool_has_less
+    # Check for these tput operands since they're not POSIX compliant.
+    tool_has_less && tput cols 2>/dev/null >&2 && tput lines 2>/dev/null >&2
 }
 
 mode_run_pager() {
     _pager_max_cols="$(tput cols)"
     _pager_max_lines=$(($(tput lines) / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
+
+    # Add a trailing character to avoid newline removal.
     _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null; printf E)"
 
     _pager_lines="$(printf %s "${_pager_buffer%E}" \
@@ -260,18 +261,9 @@ resolve_symlink() {
     fi
 }
 
-assert_mode_exists() {
-    if ! type "mode_has_$1" >/dev/null 2>&1; then
-        echo "$1: no such mode" >&2
-        return 1
-    else
-        return 0
-    fi
-}
-
-assert_tool_exists() {
-    if ! type "tool_has_$1" >/dev/null 2>&1; then
-        echo "$1: no such tool" >&2
+assert_function_exists() {
+    if ! type "$1" >/dev/null 2>&1; then
+        echo "$2" >&2
         return 1
     else
         return 0
@@ -279,7 +271,7 @@ assert_tool_exists() {
 }
 
 disable_mode() {
-    assert_mode_exists "$1"
+    assert_function_exists "mode_has_$1" "$1: no such mode"
     eval "mode_can_$1() { return 1; }"
     eval "mode_has_$1() { return 1; }"
     eval "mode_run_$1() { return 1; }"
@@ -293,12 +285,13 @@ add_tool_option() {
         return 1
     fi
 
-    assert_tool_exists "$_add_opt_name"
+    assert_function_exists \
+        "tool_has_$_add_opt_name" "$_add_opt_name: no such tool"
 
     _add_opt_option="${1#?*=}"
     _add_p_opt_current="$(var "tool_options_$_add_opt_name")"
 
-    export "tool_options_$_add_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_opt_option"
+    eval "tool_options_$_add_opt_name=$_add_p_opt_current${_add_p_opt_current:+$arg_separator}$_add_opt_option"
     return 0
 }
 
