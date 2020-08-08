@@ -89,7 +89,7 @@ fi
 
 if have show.sh; then
     # shellcheck disable=SC2139
-    alias s="$NAME -p ls=-Fh -p ls=--group-directories-first -p ls=--dereference-command-line-symlink-to-dir"
+    alias s="$NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
     export PAGER="$NAME" GIT_PAGER="$NAME"
 fi
 

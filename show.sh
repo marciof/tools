@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e -u
 
-# TODO: global options are passed to `less`, and not passed to `tput`
+# TODO: measure performance (eg. pager is slow)
 # TODO: check modes for missing dependencies
 # TODO: file://
 # TODO: http://
@@ -15,19 +15,18 @@ set -e -u
 # TODO: avoid `eval` to be POSIX compliant
 # TODO: avoid `mktemp` to be POSIX compliant
 # TODO: tests
-# TODO: measure performance
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
 arg_separator="$(printf '\036')"
 
-disable_mode_opt=d
+disable_mode_opt=m
 help_opt=h
-tool_option_opt=p
-global_tool_option_opt=i
-disable_depth_opt=a
+tool_option_opt=t
+disable_depth_opt=d
+show_all_opt=a
 
-global_tool_options=
 is_depth_enabled=true
+is_show_all_enabled=false
 
 mode_is_disabled_bin=false
 mode_is_disabled_color=false
@@ -158,6 +157,10 @@ mode_has_dir() {
 }
 
 mode_run_dir() {
+    if [ "$is_show_all_enabled" = true ]; then
+        set -- -a "$@"
+    fi
+
     if [ "$is_depth_enabled" = false ] && tool_has_tree; then
         if [ "$is_tty_out" = true ]; then
             set -- -C "$@"
@@ -202,23 +205,24 @@ mode_has_pager() {
 }
 
 mode_run_pager() {
-    _pager_max_cols="$(tput cols)"
-    _pager_max_lines=$(($(tput lines) / 2))
+    _pager_max_cols="$(run_with_options "$tool_options_tput" false tput cols)"
+    _pager_max_lines=$(($(run_with_options "$tool_options_tput" false tput lines) / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
 
     # Add a trailing character to avoid trailing newline removal.
     _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null; printf E)"
+    _pager_buffer="${_pager_buffer%E}"
 
-    _pager_lines="$(printf %s "${_pager_buffer%E}" \
+    _pager_lines="$(printf %s "$_pager_buffer" \
         | fold -b -w "$_pager_max_cols" \
         | wc -l)"
 
     if [ "$_pager_lines" -le "$_pager_max_lines" ]; then
-        printf %s "${_pager_buffer%E}"
+        printf %s "$_pager_buffer"
         return
     fi
 
-    { printf %s "${_pager_buffer%E}"; cat; } \
+    { printf %s "$_pager_buffer"; cat; } \
         | run_with_options "$tool_options_less" true less
 }
 
@@ -317,16 +321,10 @@ add_tool_option() {
     return 0
 }
 
-add_global_tool_option() {
-    global_tool_options="$global_tool_options${global_tool_options:+$arg_separator}$1"
-}
-
 run_with_options() {
-    _run_local_opts="$1"
+    _run_opts="$1"
     _run_uses_stdin="$2"
     shift 2
-
-    _run_opts="$global_tool_options${global_tool_options:+$arg_separator}$_run_local_opts"
 
     if [ -z "$_run_opts" ]; then
         "$@"
@@ -348,7 +346,7 @@ Options:
   -$help_opt           display this help and exit
   -$disable_mode_opt NAME      disable mode "NAME"
   -$tool_option_opt NAME=OPT  pass option "OPT" to tool "NAME"
-  -$global_tool_option_opt OPT       pass option "OPT" to all tools
+  -$show_all_opt           show all (mode dependent)
   -$disable_depth_opt           disable depth limitation (mode dependent)
 
 Modes:
@@ -381,7 +379,7 @@ USAGE
 }
 
 process_options() {
-    while getopts "$disable_mode_opt:$help_opt$tool_option_opt:$global_tool_option_opt:$disable_depth_opt" _getopt_opt "$@"; do
+    while getopts "$disable_mode_opt:$help_opt$tool_option_opt:$disable_depth_opt$show_all_opt" _getopt_opt "$@"; do
         case "$_getopt_opt" in
             "$disable_mode_opt")
                 disable_mode "$OPTARG"
@@ -393,11 +391,11 @@ process_options() {
             "$tool_option_opt")
                 add_tool_option "$OPTARG"
                 ;;
-            "$global_tool_option_opt")
-                add_global_tool_option "$OPTARG"
-                ;;
             "$disable_depth_opt")
                 is_depth_enabled=false
+                ;;
+            "$show_all_opt")
+                is_show_all_enabled=true
                 ;;
             ?)
                 echo "Try '-$help_opt' for more information." >&2
