@@ -379,7 +379,7 @@ USAGE
             _help_has=x
         fi
 
-        printf '%c %-13s%s%s\n' "$_help_has" "$_help_mode" \
+        printf '%c %-13s%s\n' "$_help_has" "$_help_mode" \
             "$(var "mode_help_$_help_mode")"
     done
 
@@ -392,7 +392,7 @@ USAGE
             _help_has=x
         fi
 
-        printf '%c %-13s%s%s\n' "$_help_has" "$_help_tool" \
+        printf '%c %-13s%s\n' "$_help_has" "$_help_tool" \
             "$(var "tool_help_$_help_tool")"
     done
 
