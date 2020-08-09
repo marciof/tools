@@ -147,7 +147,6 @@ mode_run_bin() {
         _bin_exec=lesspipe.sh
     fi
 
-    # shellcheck disable=SC2037
     PAGER='' run_with_options "$tool_options_lesspipe" false "$_bin_exec" "$1"
 }
 
