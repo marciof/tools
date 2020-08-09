@@ -148,7 +148,7 @@ mode_run_bin() {
     fi
 
     # shellcheck disable=SC2037
-    PAGER= run_with_options "$tool_options_lesspipe" false "$_bin_exec" "$1"
+    PAGER='' run_with_options "$tool_options_lesspipe" false "$_bin_exec" "$1"
 }
 
 mode_can_color() {
