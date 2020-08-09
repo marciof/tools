@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e -u
 
-# TODO: measure performance (eg. pager is slow)
-# TODO: check modes for missing dependencies
+# TODO: measure performance
+# TODO: add `file` and `dirname` as dependencies for "text" and "bin"
 # TODO: file://
 # TODO: http://
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
@@ -11,13 +11,16 @@ set -e -u
 # TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
-# TODO: make `xargs` call POSIX compliant
-# TODO: avoid `eval` to be POSIX compliant
-# TODO: avoid `mktemp` to be POSIX compliant
+# TODO: make `xargs` call POSIX compliant?
+# TODO: avoid `eval` to be POSIX compliant?
+# TODO: avoid `mktemp` to be POSIX compliant?
 # TODO: tests
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
 arg_separator="$(printf '\036')"
+
+newline='
+'
 
 disable_mode_opt=m
 help_opt=h
@@ -200,13 +203,15 @@ mode_has_pager() {
     # Check for these tput operands since they're not POSIX compliant.
     tool_has_less \
         && tool_has_tput \
-        && tput cols 2>/dev/null >&2 \
-        && tput lines 2>/dev/null >&2
+        && (printf 'cols\nlines\n' | tput -S 2>/dev/null >&2)
 }
 
 mode_run_pager() {
-    _pager_max_cols="$(run_with_options "$tool_options_tput" false tput cols)"
-    _pager_max_lines=$(($(run_with_options "$tool_options_tput" false tput lines) / 2))
+    _pager_size="$(printf 'cols\nlines\n' \
+        | run_with_options "$tool_options_tput" true tput -S)"
+
+    _pager_max_cols="${_pager_size%%$newline*}"
+    _pager_max_lines=$((${_pager_size#*$newline} / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
 
     # Add a trailing character to avoid trailing newline removal.
@@ -288,7 +293,7 @@ resolve_symlink() {
     fi
 }
 
-assert_function_exists() {
+assert_command_type_exists() {
     # shellcheck disable=SC2039
     if ! type "$1" >/dev/null 2>&1; then
         echo "$2" >&2
@@ -299,7 +304,7 @@ assert_function_exists() {
 }
 
 disable_mode() {
-    assert_function_exists "mode_has_$1" "$1: no such mode"
+    assert_command_type_exists "mode_has_$1" "$1: no such mode"
     export "mode_is_disabled_$1=true"
 }
 
@@ -311,7 +316,7 @@ add_tool_option() {
         return 1
     fi
 
-    assert_function_exists \
+    assert_command_type_exists \
         "tool_has_$_add_opt_name" "$_add_opt_name: no such tool"
 
     _add_opt_option="${1#?*=}"
