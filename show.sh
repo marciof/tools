@@ -2,7 +2,6 @@
 set -e -u
 
 # TODO: measure performance
-# TODO: add `file` and `dirname` as dependencies for "text" and "bin"
 # TODO: file://
 # TODO: http://
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
@@ -47,9 +46,11 @@ tool_options_cat=
 tool_options_less=
 tool_options_git=
 tool_options_tput=
+tool_options_file=
+tool_options_dirname=
 
 # shellcheck disable=SC2034,SC2016
-mode_help_bin='read binary file, via "lesspipe"'
+mode_help_bin='read binary file, via "lesspipe" and "file"/"dirname"'
 # shellcheck disable=SC2034,SC2016
 mode_help_color='syntax highlighting, via "highlight"'
 # shellcheck disable=SC2034,SC2016
@@ -59,7 +60,7 @@ mode_help_pager='page output as needed, via "less" and "tput"'
 # shellcheck disable=SC2034,SC2016
 mode_help_stdin='read standard input, via "cat"'
 # shellcheck disable=SC2034,SC2016
-mode_help_text='read plain text file, via "cat"'
+mode_help_text='read plain text file, via "cat" and "file"/"dirname"'
 # shellcheck disable=SC2034,SC2016
 mode_help_vcs='show VCS revision, via "git show"'
 
@@ -79,6 +80,10 @@ tool_help_less='https://www.gnu.org/software/less/'
 tool_help_git='https://git-scm.com'
 # shellcheck disable=SC2034,SC2016
 tool_help_tput='POSIX `tput`'
+# shellcheck disable=SC2034,SC2016
+tool_help_file='POSIX `file`'
+# shellcheck disable=SC2034,SC2016
+tool_help_dirname='POSIX `dirname`'
 
 if [ -t 1 ]; then
     is_tty_out=true
@@ -118,13 +123,21 @@ tool_has_tput() {
     command -v tput >/dev/null
 }
 
+tool_has_file() {
+    command -v file >/dev/null
+}
+
+tool_has_dirname() {
+    command -v dirname >/dev/null
+}
+
 mode_can_bin() {
     test "$mode_is_disabled_bin" = false -a -e "$1" -a ! -d "$1" \
         && is_file_binary "$1"
 }
 
 mode_has_bin() {
-    tool_has_lesspipe
+    tool_has_lesspipe && tool_has_file && tool_has_dirname
 }
 
 mode_run_bin() {
@@ -183,7 +196,7 @@ mode_can_text() {
 }
 
 mode_has_text() {
-    tool_has_cat
+    tool_has_cat && tool_has_file && tool_has_dirname
 }
 
 mode_run_text() {
@@ -271,7 +284,8 @@ is_file_binary() {
         _is_bin_path="$(resolve_symlink "$_is_bin_path")"
     fi
 
-    _is_bin_type="$(LC_MESSAGES=C file -i "$_is_bin_path")"
+    _is_bin_type="$(LC_MESSAGES=C \
+        run_with_options "$tool_options_file" false file -i "$_is_bin_path")"
     _is_bin_type="${_is_bin_type#"$_is_bin_path: "}"
 
     test "$_is_bin_type" = "${_is_bin_type#text/}"
@@ -279,11 +293,13 @@ is_file_binary() {
 
 resolve_symlink() {
     _symlink_src="$1"
-    _symlink_path="$(LC_MESSAGES=C file "$_symlink_src")"
+    _symlink_path="$(LC_MESSAGES=C \
+        run_with_options "$tool_options_file" false file "$_symlink_src")"
     _symlink_path="${_symlink_path#"$_symlink_src: symbolic link to "}"
 
     if [ ! -d "$_symlink_src" ]; then
-        _symlink_path="$(dirname "$_symlink_src")/$_symlink_path"
+        _symlink_path="$(run_with_options "$tool_options_dirname" false \
+            dirname "$_symlink_src")/$_symlink_path"
     fi
 
     if [ -L "$_symlink_path" ]; then
@@ -352,7 +368,7 @@ Options:
   -$disable_mode_opt NAME      disable mode "NAME"
   -$tool_option_opt NAME=OPT  pass option "OPT" to tool "NAME"
   -$show_all_opt           show all (mode dependent)
-  -$disable_depth_opt           disable depth limitation (mode dependent)
+  -$disable_depth_opt           no depth limit (mode dependent)
 
 Modes:
 USAGE
@@ -370,7 +386,7 @@ USAGE
 
     printf '\nTools:\n'
 
-    for _help_tool in cat git highlight less lesspipe ls tput tree; do
+    for _help_tool in cat dirname file git highlight less lesspipe ls tput tree; do
         if "tool_has_$_help_tool"; then
             _help_has=' '
         else
