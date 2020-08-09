@@ -11,7 +11,6 @@ set -e -u
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
 # TODO: make `xargs` call POSIX compliant?
-# TODO: avoid `eval` to be POSIX compliant?
 # TODO: avoid `mktemp` to be POSIX compliant?
 # TODO: tests
 
@@ -448,7 +447,9 @@ run_non_paging_modes() {
 }
 
 var() {
-    eval echo "\$$1"
+    # shellcheck disable=SC2163
+    export "$1"
+    sh -c "echo \"\$$1\""
 }
 
 process_options "$@"
