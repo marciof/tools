@@ -4,6 +4,7 @@
 # Standard:
 from collections import OrderedDict
 from functools import partial
+import html
 from http import HTTPStatus
 import io
 import logging
@@ -30,10 +31,6 @@ stream_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(stream_handler)
-
-
-def add_new_feed_entry_no_op(entry):
-    return (None, lambda url, type: None)
 
 
 def transform_url_attrib_element_url(element, transform_url):
@@ -245,8 +242,32 @@ def get_bool_request_qs_param(name):
 app = Flask(__name__)
 
 
+@app.route('/')
+def index():
+    """
+    Site map.
+    """
+
+    rules = []
+
+    for rule in sorted(app.url_map.iter_rules(), key = lambda rule: str(rule)):
+        view_function = app.view_functions[rule.endpoint]
+
+        rules.append('<dt><a href="%s">%s</a></dt><dd>%s</dd>' % (
+            html.escape(str(rule)),
+            html.escape(str(rule)),
+            html.escape(str(view_function.__doc__ or rule.endpoint))
+        ))
+
+    return '<dl>%s</dl>' % '\n'.join(rules)
+
+
 @app.route('/feed')
 def proxy_feed():
+    """
+    Modifies a feed to proxy enclosures.
+    """
+
     url = request.args.get('url')
     do_stream = get_bool_request_qs_param('stream')
     do_rss = get_bool_request_qs_param('rss')
@@ -257,6 +278,9 @@ def proxy_feed():
         return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
     if do_rss is None:
         return '`rss` query string parameter must have no value', HTTPStatus.BAD_REQUEST
+
+    def add_new_feed_entry_no_op(entry):
+        return (None, lambda url, type: None)
 
     feed_xml = download_feed(url)
     feed = feedparser.parse(feed_xml)
@@ -289,6 +313,10 @@ def proxy_feed():
 
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
+    """
+    Redirects an enclosure to its direct download URL, named "title".
+    """
+
     url = request.args.get('url')
     do_stream = get_bool_request_qs_param('stream')
     do_download = get_bool_request_qs_param('download')
@@ -333,6 +361,10 @@ def proxy_titled_enclosure(title):
 # TODO extract title from video where possible
 @app.route('/enclosure')
 def proxy_enclosure():
+    """
+    Redirects an enclosure to its direct download URL.
+    """
+
     return proxy_titled_enclosure('video')
 
 
