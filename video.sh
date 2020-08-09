@@ -1,5 +1,4 @@
 #!/bin/sh
-# shellcheck disable=SC2039
 set -e -u
 
 show_usage() {
