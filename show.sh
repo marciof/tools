@@ -11,7 +11,7 @@ set -e -u
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
 # TODO: make `xargs` call POSIX compliant?
-# TODO: avoid `mktemp` to be POSIX compliant?
+# TODO: avoid `mktemp` to be POSIX compliant? (m4 + mkstemp? exec?)
 # TODO: tests
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
