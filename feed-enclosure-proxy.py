@@ -12,7 +12,7 @@ import mimetypes
 import re
 from urllib.parse import urlencode, quote as urlquote
 import xml.etree.ElementTree as ElementTree
-# TODO use typing
+# TODO: use typing
 
 # External:
 import defusedxml.ElementTree as DefusedElementTree # v0.6.0
@@ -69,7 +69,7 @@ class YoutubeDlUrlInterceptingLogger:
         logger.error('youtube-dl error while intercepting URLs: %s', msg)
 
 
-# TODO higher-res IGN Daily Fix videos, <https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site>
+# TODO: higher-res IGN Daily Fix videos, <https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site>
 def extract_ign_daily_fix_video_url(url):
     if re.search(r'://assets\d*\.ign\.com/videos/', url):
         high_res_url = re.sub(
@@ -86,7 +86,7 @@ def extract_ign_daily_fix_video_url(url):
     return None
 
 
-# TODO merge high-res YouTube video+audio on the fly while streaming?
+# TODO: merge high-res YouTube video+audio on the fly while streaming?
 def extract_video_url(url):
     """
     https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
@@ -358,7 +358,7 @@ def proxy_titled_enclosure(title):
         headers = response_headers)
 
 
-# TODO extract title from video where possible
+# TODO: extract title from video where possible
 @app.route('/enclosure')
 def proxy_enclosure():
     """
@@ -368,7 +368,8 @@ def proxy_enclosure():
     return proxy_titled_enclosure('video')
 
 
-# TODO document
-# TODO tests
+# TODO: document
+# TODO: tests
+# TODO: performance?
 if __name__ == '__main__':
     app.run()
