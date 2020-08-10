@@ -7,6 +7,7 @@ show_usage() {
 }
 
 if ! command -v ffmpeg >/dev/null; then
+    # shellcheck disable=SC2016
     echo 'FFmpeg not in $PATH: https://www.ffmpeg.org' >&2
     exit 1
 fi

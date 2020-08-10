@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
+# Transforms RSS/Atom feeds to have downloadable enclosures.
 
 # Standard:
 from collections import OrderedDict

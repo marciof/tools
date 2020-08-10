@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e -u
+# Generic "viewer".
 
 # TODO: measure performance
 # TODO: file://
@@ -13,6 +13,8 @@ set -e -u
 # TODO: make `xargs` call POSIX compliant?
 # TODO: avoid `mktemp` to be POSIX compliant? (m4 + mkstemp? exec?)
 # TODO: tests
+
+set -e -u
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
 arg_separator="$(printf '\036')"
