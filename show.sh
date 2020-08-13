@@ -297,7 +297,8 @@ resolve_symlink() {
         run_with_options "$tool_options_file" false file "$_symlink_src")"
     _symlink_path="${_symlink_path#"$_symlink_src: symbolic link to "}"
 
-    if [ ! -d "$_symlink_src" ]; then
+    if [ ! -d "$_symlink_src" ] && [ "$_symlink_path" = "${_symlink_path#/}" ]
+    then
         _symlink_path="$(run_with_options "$tool_options_dirname" false \
             dirname "$_symlink_src")/$_symlink_path"
     fi
@@ -386,7 +387,8 @@ USAGE
 
     printf '\nTools:\n'
 
-    for _help_tool in cat dirname file git highlight less lesspipe ls tput tree; do
+    for _help_tool in cat dirname file git highlight less lesspipe ls tput tree
+    do
         if "tool_has_$_help_tool"; then
             _help_has=' '
         else
