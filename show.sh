@@ -1,18 +1,18 @@
 #!/bin/sh
-# Generic "viewer".
+# Generic viewer.
 
+# TODO: tests
 # TODO: measure performance
-# TODO: file://
-# TODO: http://
+# TODO: highlight output from `curl`
+# TODO: detect URLs without an explicit protocol? eg. "www."
+# TODO: make `xargs` call POSIX compliant?
+# TODO: avoid `mktemp` to be POSIX compliant? (m4 + mkstemp? exec?)
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
 # TODO: intra-line diff: https://github.com/git/git/tree/master/contrib/diff-highlight
 # TODO: fancier diff: https://github.com/so-fancy/diff-so-fancy
 # TODO: diff syntax highlighter: https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
 # TODO: images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO: fancier highlighting: https://github.com/willmcgugan/rich
-# TODO: make `xargs` call POSIX compliant?
-# TODO: avoid `mktemp` to be POSIX compliant? (m4 + mkstemp? exec?)
-# TODO: tests
 
 set -e -u
 
@@ -37,6 +37,7 @@ mode_is_disabled_dir=false
 mode_is_disabled_pager=false
 mode_is_disabled_stdin=false
 mode_is_disabled_text=false
+mode_is_disabled_uri=false
 mode_is_disabled_vcs=false
 
 tool_options_lesspipe=
@@ -49,20 +50,23 @@ tool_options_git=
 tool_options_tput=
 tool_options_file=
 tool_options_dirname=
+tool_options_curl=
 
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
 mode_help_bin='read binary file, via "lesspipe" and "file"/"dirname"'
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
 mode_help_color='syntax highlighting, via "highlight"'
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
 mode_help_dir='list directory, via "ls" or "tree" when depth is disabled'
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
 mode_help_pager='page output as needed, via "less" and "tput"'
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
 mode_help_stdin='read standard input, via "cat"'
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
 mode_help_text='read plain text file, via "cat" and "file"/"dirname"'
-# shellcheck disable=SC2034,SC2016
+# shellcheck disable=SC2034
+mode_help_uri='URI/URL protocols, via "curl"'
+# shellcheck disable=SC2034
 mode_help_vcs='show VCS revision, via "git show"'
 
 # shellcheck disable=SC2034,SC2016
@@ -85,6 +89,8 @@ tool_help_tput='POSIX `tput`'
 tool_help_file='POSIX `file`'
 # shellcheck disable=SC2034,SC2016
 tool_help_dirname='POSIX `dirname`'
+# shellcheck disable=SC2034
+tool_help_curl='https://curl.haxx.se'
 
 if [ -t 1 ]; then
     is_tty_out=true
@@ -130,6 +136,10 @@ tool_has_file() {
 
 tool_has_dirname() {
     command -v dirname >/dev/null
+}
+
+tool_has_curl() {
+    command -v curl >/dev/null
 }
 
 mode_can_bin() {
@@ -260,6 +270,22 @@ mode_run_stdin() {
     fi
 }
 
+mode_can_uri() {
+    test "$mode_is_disabled_uri" = false -a "$1" != "${1#*://}"
+}
+
+mode_has_uri() {
+    tool_has_curl
+}
+
+mode_run_uri() {
+    if mode_has_color && mode_can_color; then
+        run_with_options "$tool_options_curl" false curl "$1" | mode_run_color
+    else
+        run_with_options "$tool_options_curl" false curl "$1"
+    fi
+}
+
 mode_can_vcs() {
     test "$mode_is_disabled_vcs" = false \
         && git --no-pager rev-parse --quiet --verify "$1" 2>/dev/null
@@ -374,7 +400,7 @@ Options:
 Modes:
 USAGE
 
-    for _help_mode in bin color text dir pager stdin vcs; do
+    for _help_mode in bin color dir pager stdin text uri vcs; do
         if "mode_has_$_help_mode"; then
             _help_has=' '
         else
@@ -387,8 +413,7 @@ USAGE
 
     printf '\nTools:\n'
 
-    for _help_tool in cat dirname file git highlight less lesspipe ls tput tree
-    do
+    for _help_tool in cat curl dirname file git highlight less lesspipe ls tput tree; do
         if "tool_has_$_help_tool"; then
             _help_has=' '
         else
@@ -436,7 +461,7 @@ run_non_paging_modes() {
     fi
 
     for _run_all_input in "$@"; do
-        for _run_all_mode in bin text dir vcs; do
+        for _run_all_mode in bin text dir vcs uri; do
             if "mode_can_$_run_all_mode" "$_run_all_input" \
                     && "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
