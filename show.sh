@@ -2,11 +2,12 @@
 # Generic viewer.
 
 # TODO: tests
+# TODO: logging
 # TODO: measure performance
 # TODO: highlight output from `curl`
 # TODO: detect URLs without an explicit protocol? eg. "www."
+# TODO: use POSIX env vars `COLUMNS` and `LINES`?
 # TODO: make `xargs` call POSIX compliant?
-# TODO: avoid `mktemp` to be POSIX compliant? (m4 + mkstemp? exec?)
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
 # TODO: intra-line diff: https://github.com/git/git/tree/master/contrib/diff-highlight
 # TODO: fancier diff: https://github.com/so-fancy/diff-so-fancy
@@ -379,7 +380,9 @@ run_with_options() {
     elif [ "$_run_uses_stdin" = false ]; then
         printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
     else
-        _run_opts_pipe="$(mktemp -u)"
+        # shellcheck disable=SC2119
+        _run_opts_pipe="$(mktemp_posix)"
+        rm "$_run_opts_pipe"
         mkfifo "$_run_opts_pipe"
         { printf %s "$_run_opts" >"$_run_opts_pipe"; rm "$_run_opts_pipe"; } &
         xargs -a "$_run_opts_pipe" -d "$arg_separator" -- "$@"
@@ -473,6 +476,11 @@ run_non_paging_modes() {
     done
 
     return 0
+}
+
+# shellcheck disable=SC2120
+mktemp_posix() {
+    echo 'mkstemp(template)' | m4 -D "template=${TMPDIR:-/tmp}/${1:-}"
 }
 
 var() {
