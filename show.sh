@@ -380,7 +380,6 @@ run_with_options() {
     elif [ "$_run_uses_stdin" = false ]; then
         printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
     else
-        # shellcheck disable=SC2119
         _run_opts_pipe="$(mktemp_posix)"
         rm "$_run_opts_pipe"
         mkfifo "$_run_opts_pipe"
@@ -478,16 +477,21 @@ run_non_paging_modes() {
     return 0
 }
 
-# shellcheck disable=SC2120
-mktemp_posix() {
-    echo 'mkstemp(template)' | m4 -D "template=${TMPDIR:-/tmp}/${1:-}"
-}
-
 var() {
     # shellcheck disable=SC2163
     export "$1"
     sh -c "echo \"\$$1\""
 }
+
+if command -v mktemp >/dev/null; then
+    mktemp_posix() {
+        mktemp
+    }
+else
+    mktemp_posix() {
+        echo 'mkstemp(template)' | m4 -D "template=${TMPDIR:-/tmp}/"
+    }
+fi
 
 process_options "$@"
 shift $((OPTIND - 1))
