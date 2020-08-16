@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# TODO: split into separate scripts?
+# TODO: remove hardcoded audio output format?
+
 set -e -u
 
 show_usage() {
