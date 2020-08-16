@@ -1,0 +1,19 @@
+#!/bin/sh
+app="$(basename "$0")"
+
+{
+    # Turn off PC speaker.
+    echo 'PC speaker off'
+    xset -b
+
+    # Re-set mouse acceleration for Logitech devices.
+    accel_prop_name='libinput Accel Speed'
+    accel_prop_value=1
+
+    for id in $(xinput --list --short | grep Logitech | grep pointer | cut -f2 | cut -d= -f2); do
+        if xinput --list-props "$id" | grep -qF "$accel_prop_name ("; then
+            echo "mouse acceleration set: ID $id"
+            xinput set-prop "$id" "$accel_prop_name" "$accel_prop_value"
+        fi
+    done
+} 2>&1 | logger --stderr --tag "$app"

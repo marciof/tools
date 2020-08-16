@@ -104,7 +104,7 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
     xinput set-prop 'pointer:Logitech MX Vertical' 'libinput Accel Speed' 1
 
-Run `./dbus-xsessionrc.sh` at login.
+Re-apply it on session changes through D-Bus.
 
 ## Miscellaneous
 

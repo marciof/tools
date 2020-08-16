@@ -7,8 +7,9 @@ app="$(basename "$0")"
 path='path=/org/freedesktop/login1'
 interface='interface=org.freedesktop.login1.Manager'
 
+# shellcheck disable=SC2034
 dbus-monitor --system --profile "type=signal,$path,$interface" 2>/dev/null |
-    while read type timestamp serial sender dest path interface member; do
+    while read -r type timestamp serial sender dest path interface member; do
         case "$member" in
             Session*)
                 logger --stderr --tag "$app" "got $member: re-apply"
