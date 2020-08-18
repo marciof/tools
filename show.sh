@@ -6,6 +6,7 @@
 # TODO: measure performance
 # TODO: highlight output from `curl`
 # TODO: detect URLs without an explicit protocol? eg. "www."
+# TODO: piping (` | mode_run_color`) can remove error exit codes
 # TODO: use POSIX env vars `COLUMNS` and `LINES`?
 # TODO: make `xargs` call POSIX compliant?
 # TODO: intra-line diff: https://github.com/ymattw/ydiff
