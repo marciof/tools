@@ -39,6 +39,7 @@ logger.addHandler(stream_handler)
 
 def transform_url_attrib_element_url(element, transform_url):
     element.attrib['url'] = transform_url(element.attrib['url'])
+    element.attrib['type'] = ''
 
 
 def transform_url_text_element_url(element, transform_url):
@@ -173,13 +174,12 @@ def rebuild_parsed_feed_entry(feed_entry, new_feed):
         new_feed_entry.description(feed_entry.description)
 
     if ('content' in feed_entry) and (len(feed_entry.content) > 0):
-        first_content = feed_entry.content[0]
         new_feed_entry.content(
-            content = first_content['value'],
-            type = first_content['type'])
+            content = feed_entry.content[0]['value'],
+            type='')
 
-    return (new_feed_entry, lambda url, type:
-        new_feed_entry.enclosure(url = url, type = type))
+    return (new_feed_entry, lambda url:
+        new_feed_entry.enclosure(url = url, type = ''))
 
 
 def rebuild_parsed_feed(feed):
@@ -204,20 +204,18 @@ def rebuild_parsed_feed(feed):
 
 
 def list_parsed_feed_entry_enclosures(feed_entry):
-    enclosure_type_by_url = OrderedDict()
+    urls = []
 
     if 'feedburner_origenclosurelink' in feed_entry:
-        url = feed_entry.feedburner_origenclosurelink
-        (content_type, encoding) = mimetypes.guess_type(url)
-        enclosure_type_by_url[url] = content_type
+        urls.append(feed_entry.feedburner_origenclosurelink)
 
     for enclosure in feed_entry.enclosures:
-        enclosure_type_by_url[enclosure['href']] = enclosure['type']
+        urls.append(enclosure['href'])
 
     for media in feed_entry.media_content:
-        enclosure_type_by_url[media['url']] = media['type']
+        urls.append(media['url'])
 
-    yield from enclosure_type_by_url.items()
+    yield from urls
 
 
 def make_enclosure_proxy_url(url, title = None, stream = False):
@@ -292,7 +290,7 @@ def proxy_feed():
         return make_error_response_from_view(app.view_functions[request.endpoint])
 
     def add_new_feed_entry_no_op(entry):
-        return (None, lambda url, type: None)
+        return (None, lambda url: None)
 
     feed_xml = download_feed(url)
     feed = feedparser.parse(feed_xml)
@@ -308,8 +306,8 @@ def proxy_feed():
 
         # Reverse from least to most preferred, since `feedgen` will only keep
         # the last one for RSS feeds.
-        for (enclosure_url, enclosure_type) in reversed(list(list_parsed_feed_entry_enclosures(entry))):
-            add_enclosure(enclosure_url, enclosure_type)
+        for enclosure_url in reversed(list(list_parsed_feed_entry_enclosures(entry))):
+            add_enclosure(enclosure_url)
             feed_entry_by_enclosure_url[enclosure_url] = entry
 
     if new_feed:
