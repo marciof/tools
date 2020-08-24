@@ -214,7 +214,7 @@ def list_parsed_feed_entry_enclosures(feed_entry):
     for media in feed_entry.media_content:
         urls.append(media['url'])
 
-    yield from urls
+    return urls
 
 
 def make_enclosure_proxy_url(url, title = None, stream = False):
@@ -305,7 +305,7 @@ def proxy_feed():
 
         # Reverse from least to most preferred, since `feedgen` will only keep
         # the last one for RSS feeds.
-        for enclosure_url in reversed(list(list_parsed_feed_entry_enclosures(entry))):
+        for enclosure_url in reversed(list_parsed_feed_entry_enclosures(entry)):
             add_enclosure(enclosure_url)
             feed_entry_by_enclosure_url[enclosure_url] = entry
 
