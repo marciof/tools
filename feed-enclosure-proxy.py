@@ -11,6 +11,7 @@ import io
 import logging
 import mimetypes
 import re
+import textwrap
 from urllib.parse import urlencode, quote as urlquote
 import xml.etree.ElementTree as ElementTree
 # TODO: use typing
@@ -25,11 +26,13 @@ from unidecode import unidecode # v1.1.1
 import youtube_dl # v2020.3.24
 
 
+app_name = 'Feed Enclosure Proxy'
+
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(app_name)
 logger.setLevel(logging.INFO)
 logger.addHandler(stream_handler)
 
@@ -229,6 +232,16 @@ def make_enclosure_proxy_url(url, title = None, stream = False):
     return request.host_url + 'enclosure' + title_path + query_string
 
 
+def prepare_doc_for_display(doc):
+    return textwrap.dedent(doc.strip('\n'))
+
+
+def make_error_response_from_view(view_fn):
+    return Response(prepare_doc_for_display(view_fn.__doc__),
+        status = HTTPStatus.BAD_REQUEST,
+        mimetype = 'text/plain')
+
+
 def get_bool_request_qs_param(name):
     value = request.args.get(name)
 
@@ -240,8 +253,7 @@ def get_bool_request_qs_param(name):
         return None
 
 
-app = Flask(__name__)
-
+app = Flask(app_name, static_folder = None)
 
 @app.route('/')
 def index():
@@ -254,31 +266,30 @@ def index():
     for rule in sorted(app.url_map.iter_rules(), key = lambda rule: str(rule)):
         view_function = app.view_functions[rule.endpoint]
 
-        rules.append('<dt><a href="%s">%s</a></dt><dd>%s</dd>' % (
+        rules.append('<dt><a href="%s">%s</a></dt><dd style="white-space: pre-wrap">%s</dd>' % (
             html.escape(str(rule)),
             html.escape(str(rule)),
-            html.escape(str(view_function.__doc__ or rule.endpoint))
+            html.escape(prepare_doc_for_display(view_function.__doc__))
         ))
 
-    return '<dl>%s</dl>' % '\n'.join(rules)
+    return '<title>%s</title><body><dl>%s</dl></body>' % (app_name, '\n'.join(rules))
 
 
 @app.route('/feed')
 def proxy_feed():
     """
     Modifies a feed to proxy enclosures.
+    - `url`: feed URL
+    - `stream`: if present, pass parameter as-is to each enclosure
+    - `rss`: if present, converts the feed to RSS
     """
 
     url = request.args.get('url')
     do_stream = get_bool_request_qs_param('stream')
     do_rss = get_bool_request_qs_param('rss')
 
-    if url is None:
-        return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
-    if do_stream is None:
-        return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
-    if do_rss is None:
-        return '`rss` query string parameter must have no value', HTTPStatus.BAD_REQUEST
+    if None in (url, do_stream, do_rss):
+        return make_error_response_from_view(app.view_functions[request.endpoint])
 
     def add_new_feed_entry_no_op(entry):
         return (None, lambda url, type: None)
@@ -316,23 +327,22 @@ def proxy_feed():
 def proxy_titled_enclosure(title):
     """
     Redirects an enclosure to its direct download URL, named "title".
+    - `url`: enclosure URL
+    - `stream`: if present, streams the enclosure instead of redirecting
+    - `download`: if present, downloads the enclosure instead of redirecting
     """
 
     url = request.args.get('url')
     do_stream = get_bool_request_qs_param('stream')
     do_download = get_bool_request_qs_param('download')
 
-    if url is None:
-        return 'Missing `url` query string parameter', HTTPStatus.BAD_REQUEST
-    if do_stream is None:
-        return '`stream` query string parameter must have no value', HTTPStatus.BAD_REQUEST
-    if do_download is None:
-        return '`download` query string parameter must have no value', HTTPStatus.BAD_REQUEST
+    if None in (url, do_stream, do_download):
+        return make_error_response_from_view(app.view_functions[request.endpoint])
 
     if (not do_stream) and (not do_download):
         return redirect(extract_video_url(url))
     elif do_stream and do_download:
-        return '`stream` and `download` query string parameters are mutually exclusive', HTTPStatus.BAD_REQUEST
+        return make_error_response_from_view(app.view_functions[request.endpoint])
 
     range_header = request.headers.get('Range')
 
@@ -364,6 +374,9 @@ def proxy_titled_enclosure(title):
 def proxy_enclosure():
     """
     Redirects an enclosure to its direct download URL.
+    - `url`: enclosure URL
+    - `stream`: if present, streams the enclosure instead of redirecting
+    - `download`: if present, downloads the enclosure instead of redirecting
     """
 
     return proxy_titled_enclosure('video')
