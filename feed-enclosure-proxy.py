@@ -321,6 +321,7 @@ def proxy_feed():
     return Response(proxied_feed_xml, mimetype = 'text/xml')
 
 
+# TODO: detect private and unavailable videos, to avoid uncaught exceptions?
 @app.route('/enclosure/<title>')
 def proxy_titled_enclosure(title):
     """
