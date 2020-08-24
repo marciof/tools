@@ -234,7 +234,7 @@ def prepare_doc_for_display(doc):
     return textwrap.dedent(doc.strip('\n'))
 
 
-def make_error_response_from_view(view_fn):
+def make_error_doc_response(view_fn):
     return Response(prepare_doc_for_display(view_fn.__doc__),
         status = HTTPStatus.BAD_REQUEST,
         mimetype = 'text/plain')
@@ -287,7 +287,7 @@ def proxy_feed():
     do_rss = get_bool_request_qs_param('rss')
 
     if None in (url, do_stream, do_rss):
-        return make_error_response_from_view(app.view_functions[request.endpoint])
+        return make_error_doc_response(app.view_functions[request.endpoint])
 
     def add_new_feed_entry_no_op(entry):
         return (None, lambda url: None)
@@ -336,12 +336,12 @@ def proxy_titled_enclosure(title):
     do_download = get_bool_request_qs_param('download')
 
     if None in (url, do_stream, do_download):
-        return make_error_response_from_view(app.view_functions[request.endpoint])
+        return make_error_doc_response(app.view_functions[request.endpoint])
 
     if (not do_stream) and (not do_download):
         return redirect(extract_video_url(url))
     elif do_stream and do_download:
-        return make_error_response_from_view(app.view_functions[request.endpoint])
+        return make_error_doc_response(app.view_functions[request.endpoint])
 
     range_header = request.headers.get('Range')
 
