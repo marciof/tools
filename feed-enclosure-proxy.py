@@ -3,7 +3,6 @@
 # Transforms RSS/Atom feeds to have downloadable enclosures.
 
 # Standard:
-from collections import OrderedDict
 from functools import partial
 import html
 from http import HTTPStatus
