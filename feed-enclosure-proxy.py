@@ -383,5 +383,9 @@ def proxy_enclosure():
 # TODO: document
 # TODO: tests
 # TODO: performance?
+# TODO: send OS notifications on errors?
+#       balloontip.py, https://gist.github.com/wontoncc/1808234
+#       https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
+#       https://stackoverflow.com/questions/27552026/create-custom-exception-handler-for-unhandled-exceptions-in-flask
 if __name__ == '__main__':
     app.run()
