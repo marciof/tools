@@ -22,6 +22,7 @@ import feedparser # v5.2.1
 from flask import Flask, Response, request, redirect # v1.1.2
 import requests # v2.12.4
 from unidecode import unidecode # v1.1.1
+# TODO: use youtube-dlc?
 import youtube_dl # v2020.7.28
 
 
