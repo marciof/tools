@@ -388,5 +388,8 @@ def proxy_enclosure():
 #       balloontip.py, https://gist.github.com/wontoncc/1808234
 #       https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
 #       https://stackoverflow.com/questions/27552026/create-custom-exception-handler-for-unhandled-exceptions-in-flask
+# TODO: indicate retry later?
+#       503, https://tools.ietf.org/html/rfc7231#section-6.6.4
+#       https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
 if __name__ == '__main__':
     app.run()
