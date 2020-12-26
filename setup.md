@@ -172,6 +172,7 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
 - `keepassxc`: Alt-K
 - `xfce4-popup-whiskermenu`: Alt-M
 - `xflock4`: Alt-L
+- `xscreensaver-command -activate`: Alt-S
 - ClipIt history: Alt-C
 
 ### Light Locker
