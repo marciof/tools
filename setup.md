@@ -15,6 +15,7 @@
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [Handbrake](https://handbrake.fr) video transcoder
+- [Redshift](https://github.com/jonls/redshift) screen color temperature
 - [Xournal](http://xournal.sourceforge.net) PDF editor
 - [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
