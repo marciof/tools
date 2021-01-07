@@ -107,6 +107,25 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 Re-apply it on session changes through D-Bus.
 
+## Keyboard
+
+## Keyboard compose key
+
+*Keyboard*:
+- *Layout* tab.
+- *Compose key* dropdown.
+
+## Keyboard shortcuts
+
+- `exo-open --launch FileManager`: Alt-E
+- `exo-open --launch TerminalEmulator`: Alt-T
+- `exo-open --launch WebBrowser`: Alt-W
+- `keepassxc`: Alt-K
+- `xfce4-popup-whiskermenu`: Alt-M
+- `xflock4`: Alt-L
+- `xscreensaver-command -activate`: Alt-S
+- ClipIt history: Alt-C
+
 ## Miscellaneous
 
 ### Firefox
@@ -164,17 +183,6 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
     gsettings list-recursively org.gnome.Evince
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
-
-### Keyboard shortcuts
-
-- `exo-open --launch FileManager`: Alt-E
-- `exo-open --launch TerminalEmulator`: Alt-T
-- `exo-open --launch WebBrowser`: Alt-W
-- `keepassxc`: Alt-K
-- `xfce4-popup-whiskermenu`: Alt-M
-- `xflock4`: Alt-L
-- `xscreensaver-command -activate`: Alt-S
-- ClipIt history: Alt-C
 
 ### Light Locker
 
