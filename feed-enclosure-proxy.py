@@ -75,6 +75,7 @@ class YoutubeDlUrlInterceptingLogger:
 
 
 # TODO: higher-res IGN Daily Fix videos, <https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site>
+# TODO: verify fix, <https://github.com/ytdl-org/youtube-dl/issues/24771>
 def extract_ign_daily_fix_video_url(url):
     if re.search(r'://assets\d*\.ign\.com/videos/', url):
         high_res_url = re.sub(
