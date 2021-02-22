@@ -392,5 +392,7 @@ def proxy_enclosure():
 # TODO: indicate retry later?
 #       503, https://tools.ietf.org/html/rfc7231#section-6.6.4
 #       https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+# TODO: iconify to tray on Windows? 
+# TODO: add requirements.txt?
 if __name__ == '__main__':
     app.run()
