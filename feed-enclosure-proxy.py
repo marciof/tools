@@ -18,7 +18,7 @@ import xml.etree.ElementTree as ElementTree
 # External:
 import defusedxml.ElementTree as DefusedElementTree # v0.6.0
 from feedgen.feed import FeedGenerator # v0.9.0
-import feedparser # v5.2.1
+import feedparser # v6.0.2
 from flask import Flask, Response, request, redirect # v1.1.2
 import requests # v2.12.4
 from unidecode import unidecode # v1.1.1
