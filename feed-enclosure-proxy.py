@@ -383,8 +383,10 @@ def proxy_enclosure():
 
 
 # TODO: document
-# TODO: tests
-# TODO: performance?
+# TODO: tests (refactor, simplify) 
+# TODO: requirements.txt
+# TODO: package
+# TODO: performance? avoid rebuilding twice for RSS? 
 # TODO: send OS notifications on errors?
 #       balloontip.py, https://gist.github.com/wontoncc/1808234
 #       https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
@@ -393,6 +395,5 @@ def proxy_enclosure():
 #       503, https://tools.ietf.org/html/rfc7231#section-6.6.4
 #       https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
 # TODO: iconify to tray on Windows? 
-# TODO: add requirements.txt?
 if __name__ == '__main__':
     app.run()

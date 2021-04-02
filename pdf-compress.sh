@@ -1,6 +1,8 @@
 #!/bin/sh
 # Compresses PDF files, without replacing the original.
 
+# TODO: warn before overwriting
+
 set -e -u
 
 if [ $# -eq 0 ]; then
