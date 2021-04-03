@@ -28,17 +28,29 @@
 - [Firmware](https://wiki.debian.org/Firmware)
 - [Wifi firmware package](https://packages.debian.org/buster/all/firmware-iwlwifi/download)
 
+(Surface Book 3: [Xubuntu >= 20.10](https://xubuntu.org/download/))
+
 ### Sudo rights
 
     su -
     adduser marcio sudo
     adduser marcio adm
 
+(Surface Book 3: not needed under Xubuntu (?))
+
 ## High DPI
 
-Appearance: Xfce + Numix (color style, icons, window style)
-
     apt install numix-gtk-theme numix-icon-theme
+
+Appearance:
+
+- Style: Adwaita-dark (Numix has light colors)
+- Icons: Numix
+- Settings: Window Scaling 2x
+
+Window Manager:
+
+- Style: Greybird-dark-accessibility (Numix crops the title bar)
 
 ### WM/DE
 
