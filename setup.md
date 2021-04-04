@@ -39,6 +39,7 @@ Surface Book 3:
   - Uninstall package `lsp-plugins-jack` as it litters the applications menu: `apt purge lsp-plugins-jack`
 - [Surface specific kernel and setup](https://github.com/linux-surface/linux-surface/wiki/Installation-and-Setup#debian--ubuntu).
 - [Surface Book 3 specific setup](https://github.com/linux-surface/linux-surface/wiki/Surface-Book-3).
+  - Fix reboot freeze: create `/etc/default/grub.d/00_surface.cfg`, with     `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=pci"`, and then do `update-grub`.
 
 ### Sudo rights
 
