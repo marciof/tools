@@ -91,9 +91,17 @@ Change font size:
 
     spotify --force-device-scale-factor=1.5
 
-### Mouse
+### Mouse and Touchpad
 
 Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
+
+Surface Book 3: to [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
+
+    synclient | grep VertScrollDelta
+
+`/etc/X11/Xsession.d/80synaptics`
+
+    synclient VertScrollDelta=-48
 
 ## Audio
 
