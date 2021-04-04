@@ -396,5 +396,6 @@ def proxy_enclosure():
 #       503, https://tools.ietf.org/html/rfc7231#section-6.6.4
 #       https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
 # TODO: iconify to tray on Windows? 
+# TODO: be an actual proxy? easier to export/import feed URLs w/o modifying
 if __name__ == '__main__':
     app.run()
