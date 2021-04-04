@@ -25,10 +25,17 @@
 ## Install
 
 - [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
-- [Firmware](https://wiki.debian.org/Firmware)
 - [Wifi firmware package](https://packages.debian.org/buster/all/firmware-iwlwifi/download)
+- [Firmware wiki](https://wiki.debian.org/Firmware)
 
-(Surface Book 3: [Xubuntu >= 20.10](https://xubuntu.org/download/))
+Surface Book 3:
+
+- [Xubuntu >= 20.10](https://xubuntu.org/download/) (Debian as of v10.9 has less support.)
+- Third-party drivers:
+  - Don't install [third-party drivers during OS installation as it can sometimes break](https://bugs.launchpad.net/ubuntu-cdimage/+bug/1871268).
+  - Install third-party drivers post OS installation: `sudo apt install ubuntu-restricted-extras`
+- [Surface specific kernel and setup](https://github.com/linux-surface/linux-surface/wiki/Installation-and-Setup#debian--ubuntu).
+- [Surface Book 3 specific setup](https://github.com/linux-surface/linux-surface/wiki/Surface-Book-3).
 
 ### Sudo rights
 
@@ -36,7 +43,7 @@
     adduser marcio sudo
     adduser marcio adm
 
-(Surface Book 3: not needed under Xubuntu (?))
+Surface Book 3: not needed under Xubuntu (?)
 
 ## High DPI
 
