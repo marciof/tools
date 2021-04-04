@@ -124,7 +124,7 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 
 `/etc/X11/Xsession.d/80synaptics`
 
-    synclient VertScrollDelta=-VALUE-FROM-ABOVE
+    synclient VertScrollDelta=-VALUE_FROM_ABOVE
 
 ## Audio
 
@@ -206,7 +206,7 @@ GUI for Gnome Keyring:
 `/etc/lightdm/lightdm-gtk-greeter.conf`
 
     [greeter]
-    background=COLOR-OR-PATH-TO-IMAGE-FILE
+    background=COLOR_OR_PATH_TO_IMAGE_FILE
 
 ### Profile image
 
