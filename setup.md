@@ -83,6 +83,17 @@ Change font size:
     apt install qt4-qtconfig
     qtconfig
 
+### Qt5
+
+https://doc.qt.io/qt-5/highdpi.html
+
+https://wiki.archlinux.org/index.php/HiDPI#Qt_5
+
+`~/.xsessionrc`
+
+    export QT_AUTO_SCREEN_SCALE_FACTOR=0
+    export QT_SCALE_FACTOR=2
+
 ### Gtk
 
     xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
@@ -234,3 +245,4 @@ dialog in a few seconds."](https://github.com/the-cavalry/light-locker/issues/12
    - *Advanced*, enable *Display Power Management*.
 
 Reboot and re-apply High DPI settings if needed.
+

@@ -1,19 +1,24 @@
 #!/bin/sh
+# NOTE: idempotent operations only
+
 app="$(basename "$0")"
 
-{
-    # Turn off PC speaker.
-    echo 'PC speaker off'
-    xset -b
+# https://doc.qt.io/qt-5/highdpi.html
+# https://wiki.archlinux.org/index.php/HiDPI#Qt_5
+logger --stderr --tag "$app" 'Qt5 high DPI settings'
+export QT_AUTO_SCREEN_SCALE_FACTOR=0
+export QT_SCALE_FACTOR=2
 
-    # Re-set mouse acceleration for Logitech devices.
-    accel_prop_name='libinput Accel Speed'
-    accel_prop_value=1
+logger --stderr --tag "$app" 'PC speaker off'
+xset -b
 
-    for id in $(xinput --list --short | grep Logitech | grep pointer | cut -f2 | cut -d= -f2); do
-        if xinput --list-props "$id" | grep -qF "$accel_prop_name ("; then
-            echo "mouse acceleration set: ID $id"
-            xinput set-prop "$id" "$accel_prop_name" "$accel_prop_value"
-        fi
-    done
-} 2>&1 | logger --stderr --tag "$app"
+accel_prop_name='libinput Accel Speed'
+accel_prop_value=1
+
+for id in $(xinput --list --short | grep Logitech | grep pointer | cut -f2 | cut -d= -f2); do
+    if xinput --list-props "$id" | grep -qF "$accel_prop_name ("; then
+        logger --stderr --tag "$app" "Logitech mouse acceleration set: ID $id"
+        xinput set-prop "$id" "$accel_prop_name" "$accel_prop_value"
+    fi
+done
+
