@@ -32,9 +32,10 @@
 Surface Book 3:
 
 - [Xubuntu >= 20.10](https://xubuntu.org/download/) (Debian as of v10.9 has less support.)
-- Third-party drivers:
-  - Don't install [third-party drivers during OS installation as it can sometimes break](https://bugs.launchpad.net/ubuntu-cdimage/+bug/1871268).
-  - Install third-party drivers post OS installation: `sudo apt install ubuntu-restricted-extras`
+  - Third-party drivers:
+    - Don't install [third-party drivers during OS installation as it can sometimes break](https://bugs.launchpad.net/ubuntu-cdimage/+bug/1871268).
+    - Install third-party drivers post OS installation: `apt install ubuntu-restricted-extras`
+  - Uninstall package `lsp-plugins-jack` as it litters the applications menu: `apt purge lsp-plugins-jack`
 - [Surface specific kernel and setup](https://github.com/linux-surface/linux-surface/wiki/Installation-and-Setup#debian--ubuntu).
 - [Surface Book 3 specific setup](https://github.com/linux-surface/linux-surface/wiki/Surface-Book-3).
 
