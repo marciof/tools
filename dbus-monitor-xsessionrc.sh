@@ -16,4 +16,3 @@ dbus-monitor --system --profile "type=signal,$path,$interface" 2>/dev/null |
                 (sh ~/.xsessionrc 2>&1 || true) | logger --stderr --tag "$app"
         esac
     done
-

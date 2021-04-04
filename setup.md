@@ -250,3 +250,8 @@ dialog in a few seconds."](https://github.com/the-cavalry/light-locker/issues/12
 
 Reboot and re-apply high DPI settings if needed.
 
+### Trailing newline
+
+[*Mousepad* may have a bug that hides the trailing newline](https://gitlab.xfce.org/apps/mousepad/-/issues/53). In that case [configure *Gedit* to disable adding trailing newlines](https://askubuntu.com/a/1013115/163034):
+
+    gsettings set org.gnome.gedit.preferences.editor ensure-trailing-newline false

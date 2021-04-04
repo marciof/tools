@@ -385,7 +385,8 @@ def proxy_enclosure():
 # TODO: document
 # TODO: tests (refactor, simplify) 
 # TODO: requirements.txt
-# TODO: package
+# TODO: package it
+# TODO: support/use venvs?
 # TODO: performance? avoid rebuilding twice for RSS? 
 # TODO: send OS notifications on errors?
 #       balloontip.py, https://gist.github.com/wontoncc/1808234

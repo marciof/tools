@@ -21,4 +21,3 @@ for id in $(xinput --list --short | grep Logitech | grep pointer | cut -f2 | cut
         xinput set-prop "$id" "$accel_prop_name" "$accel_prop_value"
     fi
 done
-
