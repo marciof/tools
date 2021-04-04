@@ -23,7 +23,7 @@ from flask import Flask, Response, request, redirect # v1.1.2
 import requests # v2.12.4
 from unidecode import unidecode # v1.1.1
 # TODO: use youtube-dlc?
-import youtube_dl # v2020.12.5
+import youtube_dl # v2021.4.1
 
 
 app_name = 'Feed Enclosure Proxy'
