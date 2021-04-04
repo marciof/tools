@@ -30,7 +30,7 @@
 - [Wifi firmware package](https://packages.debian.org/buster/all/firmware-iwlwifi/download)
 - [Firmware wiki](https://wiki.debian.org/Firmware)
 
-Surface Book 3:
+*Surface Book 3*:
 
 - [Xubuntu >= 20.10](https://xubuntu.org/download/) (Debian as of v10.9 has less support.)
   - Third-party drivers:
@@ -47,23 +47,25 @@ Surface Book 3:
     adduser marcio sudo
     adduser marcio adm
 
-Surface Book 3: not needed under Xubuntu (?)
+*Surface Book 3*: not needed under Xubuntu (?)
 
 ## High DPI
 
     apt install numix-gtk-theme numix-icon-theme
 
-Appearance:
+*Appearance*:
 
-- Style: Adwaita-dark (Numix has light colors)
-- Icons: Numix
-- Settings: Window Scaling 2x
+- *Style*: Adwaita-dark (Numix has light colors)
+- *Icons*: Numix
+- *Settings*: Window Scaling 2x
 
-Window Manager:
+*Window Manager*:
 
-- Style: Greybird-dark-accessibility (Numix crops the title bar)
+- *Style*: Greybird-dark-accessibility (Numix crops the title bar)
 
 ### WM/DE
+
+*Note*: not needed with window scaling set to 2x.
 
 `/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
 
@@ -100,11 +102,13 @@ https://wiki.archlinux.org/index.php/HiDPI#Qt_5
 
 ### Xfce
 
+*Note*: not needed with window scaling set to 2x.
+
     xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
 
 ### Spotify
 
-    spotify --force-device-scale-factor=1.5
+    spotify --force-device-scale-factor=2
 
 ### Mouse
 
@@ -114,13 +118,13 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
 
 Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.2s`.
 
-Surface Book 3: to [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
+To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
 
     synclient | grep VertScrollDelta
 
 `/etc/X11/Xsession.d/80synaptics`
 
-    synclient VertScrollDelta=-48
+    synclient VertScrollDelta=-VALUE-FROM-ABOVE
 
 ## Audio
 
@@ -244,5 +248,5 @@ dialog in a few seconds."](https://github.com/the-cavalry/light-locker/issues/12
    - *Display Modes*, enable *Lock Screen After* 0 minutes.
    - *Advanced*, enable *Display Power Management*.
 
-Reboot and re-apply High DPI settings if needed.
+Reboot and re-apply high DPI settings if needed.
 
