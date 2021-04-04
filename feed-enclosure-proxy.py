@@ -382,6 +382,8 @@ def proxy_enclosure():
     return proxy_titled_enclosure('video')
 
 
+# TODO: add file extension? useful for Linux?
+# TODO: add postprocessing filter option for Liferea? https://lzone.de/liferea/scraping.htm
 # TODO: document
 # TODO: tests (refactor, simplify) 
 # TODO: requirements.txt
