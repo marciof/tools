@@ -8,10 +8,11 @@
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
+- [Authy](https://authy.com) two-factor authentication
 - [ClipIt](https://github.com/CristianHenzel/ClipIt) clipboard manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
-- [Signal](https://www.signal.org/) instant messaging
+- [Signal](https://www.signal.org) instant messaging
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [Handbrake](https://handbrake.fr) video transcoder
