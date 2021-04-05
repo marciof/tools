@@ -3,6 +3,12 @@
 
 """
 Automatically sets feed subscriptions to have their enclosures downloaded.
+
+Development/Testing:
+
+- Tutorial: https://lzone.de/liferea/blog/Writing-Liferea-Plugins-Tutorial-Part-1
+- Plugins: https://github.com/lwindolf/liferea/tree/master/plugins
+- Symlink this folder to `~/.local/share/liferea/plugins/`.
 """
 
 # external
