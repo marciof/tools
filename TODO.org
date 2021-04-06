@@ -1,15 +1,5 @@
 * TODO license
 
-- project
-- Liferea plugin, copyright, author
-
-* TODO documentation
-
-- Liferea plugin, website, help
-- explain how to develop/test Liferea plugins
-
 * TODO tests
 
-- Liferea plugin
-- CD/CI
 - linting
