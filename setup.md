@@ -106,6 +106,10 @@ https://wiki.archlinux.org/index.php/HiDPI#Qt_5
 
     xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
 
+### Gnome
+
+Using `dconf-editor` change `/org/gnome/desktop/interface/scaling-factor` to `2`.
+
 ### Spotify
 
     spotify --force-device-scale-factor=2
@@ -113,18 +117,6 @@ https://wiki.archlinux.org/index.php/HiDPI#Qt_5
 ### Mouse
 
 Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
-
-### Touchpad
-
-Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.2s`.
-
-To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
-
-    synclient | grep VertScrollDelta
-
-`/etc/X11/Xsession.d/80synaptics`
-
-    synclient VertScrollDelta=-VALUE_FROM_ABOVE
 
 ## Audio
 
@@ -157,6 +149,17 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 
 Re-apply it on session changes through D-Bus.
 
+### Touchpad
+
+Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.2s`.
+
+To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
+
+    synclient | grep VertScrollDelta
+
+`/etc/X11/Xsession.d/80synaptics`
+
+    synclient VertScrollDelta=-VALUE_FROM_ABOVE
 ## Keyboard
 
 ## Keyboard compose key
