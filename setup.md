@@ -36,7 +36,6 @@
   - Third-party drivers:
     - Don't install [third-party drivers during OS installation as it can sometimes break](https://bugs.launchpad.net/ubuntu-cdimage/+bug/1871268).
     - Install third-party drivers post OS installation: `apt install ubuntu-restricted-extras`
-  - Uninstall package `lsp-plugins-jack` as it litters the applications menu: `apt purge lsp-plugins-jack`
 - [Surface specific kernel and setup](https://github.com/linux-surface/linux-surface/wiki/Installation-and-Setup#debian--ubuntu).
 - [Surface Book 3 specific setup](https://github.com/linux-surface/linux-surface/wiki/Surface-Book-3).
   - Fix reboot freeze: create `/etc/default/grub.d/00_surface.cfg`, with     `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=pci"`, and then do `update-grub`.
@@ -119,6 +118,12 @@ Using `dconf-editor` change `/org/gnome/desktop/interface/scaling-factor` to `2`
 Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
 
 ## Audio
+
+*Surface Book 3*: use PulseEffects for less *"scratchy"* sound:
+
+- Enable `Equalizer`: `apt install lsp-plugins`
+- Lower *7.5hKz* and raise *15.0kHz*.
+- Enable *Start Service at Login*.
 
 ### PC speaker off
 
