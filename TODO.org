@@ -2,7 +2,9 @@
 
 * TODO tests
 
-- linting
+- linting (Python, shellcheck)
+- automated
+- CD/CI
 
 * TODO packaging
 
