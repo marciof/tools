@@ -382,14 +382,15 @@ def proxy_enclosure():
     return proxy_titled_enclosure('video')
 
 
+# TODO: how to add a proper modified date? media players (eg. VLC)?
 # TODO: add file extension? useful for Linux?
 # TODO: add postprocessing filter option for Liferea? https://lzone.de/liferea/scraping.htm
 # TODO: document
-# TODO: tests (refactor, simplify) 
+# TODO: tests (refactor, simplify)
 # TODO: requirements.txt
 # TODO: package it
 # TODO: support/use venvs?
-# TODO: performance? avoid rebuilding twice for RSS? 
+# TODO: performance? avoid rebuilding twice for RSS?
 # TODO: send OS notifications on errors?
 #       balloontip.py, https://gist.github.com/wontoncc/1808234
 #       https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
@@ -397,7 +398,7 @@ def proxy_enclosure():
 # TODO: indicate retry later?
 #       503, https://tools.ietf.org/html/rfc7231#section-6.6.4
 #       https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-# TODO: iconify to tray on Windows? 
+# TODO: iconify to tray on Windows?
 # TODO: be an actual proxy? easier to export/import feed URLs w/o modifying
 if __name__ == '__main__':
     app.run()
