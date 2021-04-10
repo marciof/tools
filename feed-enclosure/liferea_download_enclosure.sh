@@ -2,6 +2,7 @@
 
 # Download handler for Liferea's feed enclosures.
 #
+# Arguments: URL path
 # Input: none
 # Output: download progress
 #
@@ -31,6 +32,33 @@ prepare_ign_daily_fix_url() {
         | sed -r "s#/$ign_width(/$ign_hash-)$ign_bitrate-#/1920\\13906000-#"
 }
 
+extract_nice_filename_from_url() {
+    if echo "$1" | grep -q -F '#'; then
+        # Also convert percent-encoded spaces since Liferea seems to add those
+        # even when the URL doesn't have them.
+        echo "$1" | sed -r 's/^[^#]+#//' | sed -r 's/%20/ /g'
+    fi
+}
+
+download_via_uget() {
+    uget_url="$1"
+    uget_path="$2"
+    uget_filename="$(extract_nice_filename_from_url "$uget_url")"
+
+    if [ -n "$uget_filename" ]; then
+        set -- "--filename=$uget_filename"
+        # Remove the URL fragment since uGet seems to break when given it
+        # in the command line.
+        uget_url="$(echo "$uget_url" | sed -r 's/#.+$//')"
+    else
+        set --
+    fi
+
+    # Make the folder path absolute since uGet doesn't seem to interpret it
+    # correctly when invoked in the command line.
+    "$UGET_BIN" --quiet "--folder=$(readlink -e "$uget_path")" "$@" "$uget_url"
+}
+
 main() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
         echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
@@ -38,7 +66,10 @@ main() {
     fi
 
     if [ $# -ne 2 ]; then
-        echo 'Arguments: url path' >&2
+        cat <<'EOT' >&2
+Arguments: url path
+Note: if the URL has a URL fragment then it's an optional filename
+EOT
         return 1
     fi
 
@@ -47,8 +78,7 @@ main() {
     shift 2
 
     if is_ign_daily_fix_url "$url"; then
-        prepare_ign_daily_fix_url "$url" \
-            | xargs "$UGET_BIN" --quiet "--folder=$(readlink -e "$path")"
+        download_via_uget "$(prepare_ign_daily_fix_url "$url")" "$path"
     else
         (
             # Navigate to where the file should be downloaded to since

@@ -3,6 +3,8 @@
 
 """
 Rebuilds RSS/Atom feeds into RSS so that the "best" enclosures are chosen.
+Enclosure URLs will also have their associated feed entry title saved in the
+URL fragment part as a filename, so downloaders can use it if/when needed.
 
 Input: stdin in XML feed format
 Output: stdout in RSS feed format
@@ -10,8 +12,10 @@ Output: stdout in RSS feed format
 
 # stdlib
 import logging
+from os.path import splitext
 import sys
 from typing import List, TextIO, Union
+from urllib.parse import urldefrag, urlparse
 
 # external
 from feedgen import feed as feedgen
@@ -47,6 +51,19 @@ def list_parsed_feed_entry_enclosure_urls(
 
     logger.debug('Enclosure URLs in "%s": %s', feed_entry.title, urls)
     return urls
+
+
+def add_title_filename_to_url(url: str, title: str) -> str:
+    """
+    Adds a title for downloaders to use when the original URL filename
+    isn't human readable.
+    """
+
+    (defrag_url, fragment) = urldefrag(url)
+    path = urlparse(defrag_url).path
+    (file_root, file_ext) = splitext(path)
+
+    return defrag_url + '#' + title + file_ext
 
 
 def rebuild_parsed_feed_entry(
@@ -113,7 +130,7 @@ def rebuild_feed(feed_xml: Union[str, TextIO], logger: logging.Logger) -> str:
         urls = list_parsed_feed_entry_enclosure_urls(feed_entry, logger)
 
         if len(urls) > 0:
-            url = urls[0]
+            url = add_title_filename_to_url(urls[0], feed_entry.title)
             logger.info('Enclosure URL for "%s": %s', feed_entry.title, url)
             new_feed_entry.enclosure(url = url, type = '')
         else:

@@ -13,9 +13,8 @@
 
 * TODO youtube-dl external downloader?
 
-- IGN Daily Fix videos don't have a name
-  - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
-  - https://github.com/ytdl-org/youtube-dl/issues/24771
-- user notification of download start and end?
 - use UGet for better UI/GUI?
+- user notification of download start and end?
 - https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/downloader/external.py
+- https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
+- https://github.com/ytdl-org/youtube-dl/issues/24771
