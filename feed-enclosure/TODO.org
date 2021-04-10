@@ -13,6 +13,9 @@
 
 * TODO youtube-dl external downloader?
 
+- calling youtube-dl directly creates as many instances as there are calls to it
+  this can lead to degraded system performance, as well as download speed
+  Liferea doesn't batch, so using eg. uGet would fix this
 - missing metadata for IGN Daily Fix videos
 - Liferea is still percent encoding some characters, "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
 - use UGet for better UI/GUI?
