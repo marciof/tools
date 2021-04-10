@@ -63,7 +63,7 @@ class UgetFD (ExternalFD):
 
         if expected_size is None:
             self.report_warning(
-                '[%s] Unknown expected file size, will track file block size only.'
+                '[%s] Unknown file size, will track file block size only.'
                 % self.get_basename())
 
         with Inotify() as inotify:

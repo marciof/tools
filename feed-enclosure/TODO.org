@@ -15,23 +15,18 @@
 
 * TODO license?
 
-* TODO youtube-dl external downloader?
+* TODO youtube-dl external downloader
 
-- handle unavailability of st_blocks
-- handle unavailability of inotify
+- improve inotify performance (watch target file only?)
+- handle unavailability of st_blocks or at least fail-fast
+- handle unavailability of inotify or at least fail-fast
   https://stackoverflow.com/questions/22406309/how-to-get-a-file-close-event-in-python
-- calling youtube-dl directly creates as many instances as there are calls to it
-  this can lead to degraded system performance, as well as download speed
-  Liferea doesn't batch, so using eg. uGet would fix this
 - missing metadata for IGN Daily Fix videos
+  - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
+  - https://github.com/ytdl-org/youtube-dl/issues/24771
 - Liferea is still percent encoding some characters, "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
-- use UGet for better UI/GUI?
-- user notification of download start and end?
+- user notification of download wrapper errors?
+  - include ffmpeg muxing done too?
   - balloontip.py, https://gist.github.com/wontoncc/1808234
   - https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
   - https://stackoverflow.com/questions/27552026/create-custom-exception-handler-for-unhandled-exceptions-in-flask
-- https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/downloader/external.py
-- https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
-- https://github.com/ytdl-org/youtube-dl/issues/24771
-- https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
-- improve inotify performance (watch target file only?)
