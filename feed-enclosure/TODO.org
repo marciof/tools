@@ -1,8 +1,7 @@
-* TODO better UX
+* TODO log to system when run by Liferea
 
-- add option/separate script to use the default OPML file?
-
-* TODO license
+- https://docs.python.org/3/library/logging.handlers.html#logging.handlers.SysLogHandler
+- need wrapper for Python? try/except?
 
 * TODO tests
 
@@ -10,8 +9,4 @@
 - automated
 - CD/CI
 
-* TODO packaging
-
-- "How to make a Python package in 2021"
-  - https://news.ycombinator.com/item?id=26733423
-  - https://antonz.org/python-packaging/
+* TODO license?

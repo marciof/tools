@@ -5,6 +5,9 @@
 #
 # Input: none
 # Output: path to Liferea's file
+#
+# Test dependencies:
+#   apt install shellcheck # Version: 0.7.1-1build1
 
 set -e -u
 
