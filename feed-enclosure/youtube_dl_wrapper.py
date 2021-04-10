@@ -55,11 +55,16 @@ class UgetFD (ExternalFD):
         return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
     async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:
-        expected_size = info_dict['filesize']
+        expected_size = info_dict.get('filesize')
         (folder, filename) = os.path.split(tmpfilename)
 
         if folder == '':
             folder = os.getcwd()
+
+        if expected_size is None:
+            self.report_warning(
+                '[%s] Unknown expected file size, will track file block size only.'
+                % self.get_basename())
 
         with Inotify() as inotify:
             inotify.add_watch(folder, Mask.CLOSE)
@@ -75,9 +80,15 @@ class UgetFD (ExternalFD):
 
                 self.to_screen(
                     '[%s] Downloaded %s block bytes (target %s bytes)'
-                    % (self.get_basename(), block_size, expected_size))
+                    % (self.get_basename(), block_size, expected_size or '?'))
 
-                if (block_size > size) and (size == expected_size):
+                is_downloaded = (
+                    (block_size >= size)
+                    and (
+                        expected_size is None
+                        or size == expected_size))
+
+                if is_downloaded:
                     return return_code
 
 

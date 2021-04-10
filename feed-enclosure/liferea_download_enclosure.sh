@@ -87,7 +87,7 @@ EOT
             "$YOUTUBE_DL_BIN" \
                 --external-downloader uget \
                 --add-metadata \
-                --format 'best' "$url"
+                --format 'bestvideo+bestaudio' "$url"
         )
     fi
 }
