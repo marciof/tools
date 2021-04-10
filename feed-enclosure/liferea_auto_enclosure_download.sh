@@ -15,15 +15,9 @@
 
 set -e -u
 
-XML_STARLET_BIN="${XML_STARLET_BIN:-xmlstarlet}"
-ENC_AUTO_DOWN_ATTR=encAutoDownload
-ENC_AUTO_DOWN_XPATH="//outline[@type=\"rss\"]/@$ENC_AUTO_DOWN_ATTR"
-NO_ENC_AUTO_DOWN_XPATH="//outline[@type=\"rss\"][not(@$ENC_AUTO_DOWN_ATTR)]"
-
-if ! command -v "$XML_STARLET_BIN" >/dev/null; then
-    echo "Error: $XML_STARLET_BIN not found (override \$XML_STARLET_BIN)" >&2
-    exit 1
-fi
+XML_SET_ATTR_VALUE_BIN="${XML_SET_ATTR_VALUE_BIN:-$(dirname "$0")/xml_set_attr_value.sh}"
+FEED_REBUILD_ENCLOSURES_BIN="${FEED_REBUILD_ENCLOSURES_BIN:-$(dirname "$(readlink -e "$0")")/feed_rebuild_enclosures.py}"
+entry_xpath='//outline[@type="rss"]'
 
 if [ -t 0 ]; then
     cat <<'EOT' >&2
@@ -34,6 +28,5 @@ your Liferea's OPML file to feed this script with.
 EOT
 fi
 
-"$XML_STARLET_BIN" edit -P --update "$ENC_AUTO_DOWN_XPATH" --value true \
-    | "$XML_STARLET_BIN" edit -P --insert "$NO_ENC_AUTO_DOWN_XPATH" \
-        --type attr -n "$ENC_AUTO_DOWN_ATTR" --value true
+"$XML_SET_ATTR_VALUE_BIN" "$entry_xpath" encAutoDownload true \
+    | "$XML_SET_ATTR_VALUE_BIN" "$entry_xpath" filtercmd "$FEED_REBUILD_ENCLOSURES_BIN"
