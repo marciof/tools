@@ -13,6 +13,8 @@
 
 * TODO youtube-dl external downloader?
 
+- handle unavailability of st_blocks
+- handle unavailability of inotify
 - calling youtube-dl directly creates as many instances as there are calls to it
   this can lead to degraded system performance, as well as download speed
   Liferea doesn't batch, so using eg. uGet would fix this
@@ -27,3 +29,4 @@
 - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
 - https://github.com/ytdl-org/youtube-dl/issues/24771
 - https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
+- improve inotify performance (watch target file only?)
