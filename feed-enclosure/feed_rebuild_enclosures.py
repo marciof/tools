@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Rebuilds RSS/Atom feeds into RSS so that the "best" enclosures are chosen.
+
+Input: stdin in XML feed format
+Output: stdout in RSS feed format
+"""
+
 # stdlib
 import logging
 import sys
