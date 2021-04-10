@@ -26,10 +26,10 @@ if ! command -v "$XML_STARLET_BIN" >/dev/null; then
 fi
 
 if [ -t 0 ]; then
-    cat <<EOT >&2
-Warning: stdin is connected to terminal/keyboard' >&2
+    cat <<'EOT' >&2
+Warning: stdin is connected to terminal/keyboard
 
-See <https://lzone.de/liferea/faq.htm#how-to-copy-remote> for where to find
+See companion script `liferea_find_opml.sh` for where to find
 your Liferea's OPML file to feed this script with.
 EOT
 fi
