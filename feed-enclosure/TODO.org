@@ -13,6 +13,7 @@
 
 * TODO youtube-dl external downloader?
 
+- Liferea is still percent encoding some characters, "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
 - use UGet for better UI/GUI?
 - user notification of download start and end?
 - https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/downloader/external.py
