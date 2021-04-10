@@ -13,9 +13,14 @@
 
 * TODO youtube-dl external downloader?
 
+- missing metadata for IGN Daily Fix videos
 - Liferea is still percent encoding some characters, "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
 - use UGet for better UI/GUI?
 - user notification of download start and end?
+  - balloontip.py, https://gist.github.com/wontoncc/1808234
+  - https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
+  - https://stackoverflow.com/questions/27552026/create-custom-exception-handler-for-unhandled-exceptions-in-flask
 - https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/downloader/external.py
 - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
 - https://github.com/ytdl-org/youtube-dl/issues/24771
+- https://github.com/ytdl-org/youtube-dl/tree/master#embedding-youtube-dl
