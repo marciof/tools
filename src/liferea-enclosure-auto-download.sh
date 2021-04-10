@@ -16,9 +16,12 @@
 set -e -u
 
 XML_STARLET_BIN="${XML_STARLET_BIN:-xmlstarlet}"
+ENC_AUTO_DOWN_ATTR=encAutoDownload
+ENC_AUTO_DOWN_XPATH="//outline[@type=\"rss\"]/@$ENC_AUTO_DOWN_ATTR"
+NO_ENC_AUTO_DOWN_XPATH="//outline[@type=\"rss\"][not(@$ENC_AUTO_DOWN_ATTR)]"
 
 if ! command -v "$XML_STARLET_BIN" >/dev/null; then
-    echo "Error: command $XML_STARLET_BIN not found (override \$XML_STARLET_BIN)" >&2
+    echo "Error: $XML_STARLET_BIN not found (override \$XML_STARLET_BIN)" >&2
     exit 1
 fi
 
@@ -31,5 +34,6 @@ your Liferea's OPML file to feed this script with.
 EOT
 fi
 
-"$XML_STARLET_BIN" edit -P --update '//outline[@type="rss"]/@encAutoDownload' --value true \
-    | "$XML_STARLET_BIN" edit -P --insert '//outline[@type="rss"][not(@encAutoDownload)]' --type attr -n encAutoDownload --value true
+"$XML_STARLET_BIN" edit -P --update "$ENC_AUTO_DOWN_XPATH" --value true \
+    | "$XML_STARLET_BIN" edit -P --insert "$NO_ENC_AUTO_DOWN_XPATH" \
+        --type attr -n "$ENC_AUTO_DOWN_ATTR" --value true
