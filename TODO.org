@@ -1,0 +1,17 @@
+* TODO better UX
+
+- add option/separate script to use the default OPML file?
+
+* TODO license
+
+* TODO tests
+
+- linting (Python, shellcheck)
+- automated
+- CD/CI
+
+* TODO packaging
+
+- "How to make a Python package in 2021"
+  - https://news.ycombinator.com/item?id=26733423
+  - https://antonz.org/python-packaging/
