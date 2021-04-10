@@ -42,5 +42,8 @@ if [ -t 0 ]; then
 else
     # Tailor output with logging for when run under Liferea.
     app="$(basename "$0")"
-    main "$@" 2>&1 | logger --stderr --tag "$app"
+    {
+        echo "$@"
+        main "$@"
+    } 2>&1 | logger --stderr --tag "$app"
 fi
