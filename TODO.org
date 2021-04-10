@@ -1,3 +1,7 @@
+* TODO better UX
+
+- add option/separate script to use the default OPML file?
+
 * TODO license
 
 * TODO tests
