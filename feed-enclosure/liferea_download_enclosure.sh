@@ -7,7 +7,7 @@
 # Output: download progress
 #
 # Runtime dependencies:
-#   python3 -m pip install youtube_dl # download Youtube videos
+#   ./youtube_dl_wrapper.py
 #   apt install uget # Version: 2.2.3-2 # download non-YouTube URLs
 #   apt install ffmpeg # Version: 7:4.3.1-4ubuntu1 # merge video/audio
 #
@@ -16,7 +16,7 @@
 
 set -e -u
 
-YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-youtube-dl}"
+YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 is_ign_daily_fix_url() {
@@ -84,7 +84,10 @@ EOT
             # Navigate to where the file should be downloaded to since
             # youtube-dl doesn't have an option for the output directory.
             cd "$path"
-            "$YOUTUBE_DL_BIN" --add-metadata -f 'bestvideo+bestaudio' "$url"
+            "$YOUTUBE_DL_BIN" \
+                --external-downloader uget \
+                --add-metadata \
+                --format 'best' "$url"
         )
     fi
 }

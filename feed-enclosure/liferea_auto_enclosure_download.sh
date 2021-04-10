@@ -8,7 +8,7 @@
 # Output: stdout in Liferea's OPML format
 #
 # Runtime dependencies:
-#   xml_set_attr_value.sh
+#   ./xml_set_attr_value.sh
 #
 # Test dependencies:
 #   apt install shellcheck # Version: 0.7.1-1build1

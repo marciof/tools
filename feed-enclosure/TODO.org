@@ -9,12 +9,17 @@
 - automated
 - CD/CI
 
+* TODO documentation
+
+- add README?
+
 * TODO license?
 
 * TODO youtube-dl external downloader?
 
 - handle unavailability of st_blocks
 - handle unavailability of inotify
+  https://stackoverflow.com/questions/22406309/how-to-get-a-file-close-event-in-python
 - calling youtube-dl directly creates as many instances as there are calls to it
   this can lead to degraded system performance, as well as download speed
   Liferea doesn't batch, so using eg. uGet would fix this
