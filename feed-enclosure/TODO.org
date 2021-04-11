@@ -14,9 +14,10 @@
 
 * TODO youtube-dl external downloader
 
+- need a better way to debug youtube-dl when merging
+- resumable downloads if youtube-dl hasn't merged them yet?
 - modify Liferea to have global option for auto-download, and filter cmd?
 - submit draft Uget for youtube-dl?
-- resumable downloads if youtube-dl hasn't merged them yet?
 - improve inotify performance (watch target file only?)
 - handle unavailability of st_blocks or at least fail-fast
 - handle unavailability of inotify or at least fail-fast

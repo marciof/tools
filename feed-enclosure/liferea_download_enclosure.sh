@@ -85,6 +85,7 @@ EOT
             # youtube-dl doesn't have an option for the output directory.
             cd "$path"
             "$YOUTUBE_DL_BIN" \
+                --verbose \
                 --external-downloader uget \
                 --add-metadata \
                 --format 'bestvideo+bestaudio' "$url"
