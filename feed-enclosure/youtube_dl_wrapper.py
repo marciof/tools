@@ -9,7 +9,7 @@ Wraps youtube-dl to add support for uGet as an external downloader.
 import asyncio
 import os
 import os.path
-from typing import List, Type
+from typing import List, Tuple, Type
 from urllib.parse import urldefrag
 
 # external
@@ -18,13 +18,27 @@ import youtube_dl
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD
 
 
+def split_folder_filename(path: str) -> Tuple[str, str]:
+    (folder, filename) = os.path.split(path)
+
+    if folder == '':
+        folder = os.getcwd()
+
+    return (folder, filename)
+
+
+def get_size_on_disk(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
+    stat = os.stat(path)
+    block_size = stat.st_blocks * block_size_bytes
+    return (stat.st_size, block_size)
+
+
 class UgetFD (ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
     """
 
     AVAILABLE_OPT = '--version'
-    BLOCK_SIZE_BYTES = 512
 
     @classmethod
     def get_basename(cls) -> str:
@@ -35,11 +49,7 @@ class UgetFD (ExternalFD):
         # in the command line.
         (defrag_url, fragment) = urldefrag(info_dict['url'])
 
-        # Split filename into folder and name for uGet command line arguments.
-        (folder, filename) = os.path.split(tmpfilename)
-
-        if folder == '':
-            folder = os.getcwd()
+        (folder, filename) = split_folder_filename(tmpfilename)
 
         cmd = [
             self.get_basename(),
@@ -55,11 +65,8 @@ class UgetFD (ExternalFD):
         return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
     async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:
+        (folder, filename) = split_folder_filename(tmpfilename)
         expected_size = info_dict.get('filesize')
-        (folder, filename) = os.path.split(tmpfilename)
-
-        if folder == '':
-            folder = os.getcwd()
 
         if expected_size is None:
             self.report_warning(
@@ -78,13 +85,17 @@ class UgetFD (ExternalFD):
                 # space on disk, then its apparent size will already be the
                 # final size. In that case rely on the disk block size to get
                 # an idea for when it's fully downloaded.
-                stat = os.stat(tmpfilename)
-                block_size = stat.st_blocks * self.BLOCK_SIZE_BYTES
-                size = stat.st_size
+                (size, block_size) = get_size_on_disk(tmpfilename)
+
+                if (expected_size is None) or (expected_size <= 0):
+                    percent = '?'
+                else:
+                    percent = int(block_size / expected_size * 100)
 
                 self.to_screen(
-                    '[%s] Downloaded %s block bytes (target %s bytes)'
-                    % (self.get_basename(), block_size, expected_size or '?'))
+                    '[%s] Downloaded %s block bytes (~%s%%, target %s bytes)' %
+                    (self.get_basename(), block_size, percent,
+                     expected_size or '?'))
 
                 is_downloaded = (
                     (block_size >= size)
