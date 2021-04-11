@@ -220,6 +220,12 @@ GUI for Gnome Keyring:
 
     apt install accountsservice mugshot
 
+### File manager video thumbnails
+
+https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumbnails-in-xubuntu-18-04
+
+    apt install tumbler tumbler-plugins-extra ffmpegthumbnailer
+
 ### Printer
 
 [Add printer from network.](http://localhost:631)
