@@ -4,8 +4,9 @@
 # automatically download enclosures.
 # https://lzone.de/liferea/help110/preferences_en.html#enclosures
 #
-# Input: stdin in Liferea's OPML format
-# Output: stdout in Liferea's OPML format
+# Arguments: none
+# Stdin: Liferea's OPML format
+# Stdout: updated Liferea's OPML format
 #
 # Runtime dependencies:
 #   ./xml_set_attr_value.sh

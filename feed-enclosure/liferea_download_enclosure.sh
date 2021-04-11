@@ -3,8 +3,8 @@
 # Download handler for Liferea's feed enclosures.
 #
 # Arguments: URL path
-# Input: none
-# Output: download progress
+# Stdin: none
+# Stdout: download progress
 #
 # Runtime dependencies:
 #   ./youtube_dl_wrapper.py

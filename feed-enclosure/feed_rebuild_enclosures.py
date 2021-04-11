@@ -6,8 +6,9 @@ Rebuilds RSS/Atom feeds into RSS so that the "best" enclosures are chosen.
 Enclosure URLs will also have their associated feed entry title saved in the
 URL fragment part as a filename, so downloaders can use it if/when needed.
 
-Input: stdin in XML feed format
-Output: stdout in RSS feed format
+Arguments: none
+Stdin: XML feed
+Stdout: updated RSS feed
 """
 
 # stdlib

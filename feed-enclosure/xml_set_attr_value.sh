@@ -1,11 +1,10 @@
 #!/bin/sh
 
-# Transforms a Liferea's OPML file so that each feed is configured to
-# automatically download enclosures.
-# https://lzone.de/liferea/help110/preferences_en.html#enclosures
+# Sets an XML attribute value at an XPath location.
 #
-# Input: stdin in Liferea's OPML format
-# Output: stdout in Liferea's OPML format
+# Arguments: locator name value
+# Stdin: XML
+# Stdout: updated XML
 #
 # Runtime dependencies:
 #   apt install xmlstarlet # Version: 1.6.1-2.1

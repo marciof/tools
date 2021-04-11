@@ -3,8 +3,9 @@
 # Prints the path to Liferea's OPML file (may not exist).
 # https://lzone.de/liferea/faq.htm#how-to-copy-remote
 #
-# Input: none
-# Output: path to Liferea's file
+# Arguments: none
+# Stdin: none
+# Stdout: path to Liferea's OPML file
 #
 # Test dependencies:
 #   apt install shellcheck # Version: 0.7.1-1build1

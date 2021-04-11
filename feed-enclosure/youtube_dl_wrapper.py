@@ -19,6 +19,10 @@ from youtube_dl.downloader.external import _BY_NAME, ExternalFD
 
 
 class UgetFD (ExternalFD):
+    """
+    https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
+    """
+
     AVAILABLE_OPT = '--version'
     BLOCK_SIZE_BYTES = 512
 
@@ -27,10 +31,6 @@ class UgetFD (ExternalFD):
         return 'uget-gtk'
 
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
-        """
-        https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
-        """
-
         # Remove the URL fragment since uGet seems to break when given it
         # in the command line.
         (defrag_url, fragment) = urldefrag(info_dict['url'])
