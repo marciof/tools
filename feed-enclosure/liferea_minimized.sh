@@ -17,13 +17,19 @@
 set -e -u
 
 LIFEREA_BIN="${LIFEREA_BIN:-liferea}"
+XDOTOOL_BIN="${XDOTOOL_BIN:-xdotool}"
 
 if ! command -v "$LIFEREA_BIN" >/dev/null; then
     echo "Error: $LIFEREA_BIN not found (override \$LIFEREA_BIN)" >&2
     exit 1
 fi
 
-liferea "$@" &
+if ! command -v "$XDOTOOL_BIN" >/dev/null; then
+    echo "Error: $XDOTOOL_BIN not found (override \$XDOTOOL_BIN)" >&2
+    exit 1
+fi
+
+"$LIFEREA_BIN" "$@" &
 exit_status=$?
-xdotool search --onlyvisible --classname --sync Liferea windowminimize
+"$XDOTOOL_BIN" search --onlyvisible --classname --sync Liferea windowminimize
 exit $exit_status
