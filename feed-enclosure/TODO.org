@@ -1,7 +1,6 @@
 * TODO log to system when run by Liferea?
 
 - https://docs.python.org/3/library/logging.handlers.html#logging.handlers.SysLogHandler
-- need wrapper for Python? try/except?
 
 * TODO tests
 

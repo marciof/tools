@@ -141,13 +141,24 @@ def rebuild_feed(feed_xml: Union[str, TextIO], logger: logging.Logger) -> str:
         else:
             logger.warning('No enclosure URLs found in "%s".', feed_entry.title)
 
+    logger.info('Rebuilt feed: %s', new_feed.title())
     return new_feed.rss_str(pretty = True).decode()
 
 
 def rebuild_feed_from_stdin_to_stdout() -> None:
-    # `feedparser` for some reason breaks on encoding stdin unless it's
-    # passed already as a string.
-    print(rebuild_feed(sys.stdin.read(), logger = create_logger()))
+    logger = None
+
+    try:
+        logger = create_logger()
+
+        # `feedparser` for some reason breaks on encoding stdin unless it's
+        # passed already as a string.
+        print(rebuild_feed(sys.stdin.read(), logger))
+    except BaseException as error:
+        if logger is not None:
+            logger.error('Failed to rebuild feed', exc_info = error)
+
+        raise
 
 
 if __name__ == '__main__':
