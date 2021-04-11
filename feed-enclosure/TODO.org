@@ -6,6 +6,7 @@
 * TODO tests
 
 - linting (Python, shellcheck)
+- type checking
 - automated
 - CD/CI
 
@@ -17,6 +18,7 @@
 
 * TODO youtube-dl external downloader
 
+- submit draft Uget for youtube-dl?
 - resumable downloads if youtube-dl hasn't merged them yet?
 - improve inotify performance (watch target file only?)
 - handle unavailability of st_blocks or at least fail-fast

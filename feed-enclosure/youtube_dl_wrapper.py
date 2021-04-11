@@ -9,7 +9,7 @@ Wraps youtube-dl to add support for uGet as an external downloader.
 import asyncio
 import os
 import os.path
-from typing import List
+from typing import List, Type
 from urllib.parse import urldefrag
 
 # external
@@ -27,7 +27,7 @@ class UgetFD (ExternalFD):
     BLOCK_SIZE_BYTES = 512
 
     @classmethod
-    def get_basename(cls):
+    def get_basename(cls) -> str:
         return 'uget-gtk'
 
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
@@ -74,6 +74,10 @@ class UgetFD (ExternalFD):
                 if event.path.name != tmpfilename:
                     continue
 
+                # If the file to be downloaded has been already reserved
+                # space on disk, then its apparent size will already be the
+                # final size. In that case rely on the disk block size to get
+                # an idea for when it's fully downloaded.
                 stat = os.stat(tmpfilename)
                 block_size = stat.st_blocks * self.BLOCK_SIZE_BYTES
                 size = stat.st_size
@@ -92,8 +96,14 @@ class UgetFD (ExternalFD):
                     return return_code
 
 
-_BY_NAME['uget'] = UgetFD
+def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
+    _BY_NAME[name] = klass
+
+
+def register_uget_external_downloader() -> None:
+    register_external_downloader('uget', UgetFD)
 
 
 if __name__ == '__main__':
+    register_uget_external_downloader()
     youtube_dl.main()
