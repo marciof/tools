@@ -13,7 +13,8 @@ Stdout: updated RSS feed
 
 # stdlib
 import logging
-from os.path import splitext
+from logging.handlers import SysLogHandler
+import os.path
 import sys
 from typing import List, Optional, TextIO, Union
 from urllib.parse import urldefrag, urlparse
@@ -23,14 +24,23 @@ from feedgen import feed as feedgen
 import feedparser
 
 
-def create_logger(name: Optional[str] = None) -> logging.Logger:
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
+def create_logger(
+        name: Optional[str] = None,
+        syslog_address: str = '/dev/log') -> logging.Logger:
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(logging.Formatter(
+        '%(asctime)s [%(levelname)s] %(message)s'))
     logger.addHandler(stream_handler)
+
+    if os.path.exists(syslog_address):
+        syslog_handler = SysLogHandler(syslog_address)
+        syslog_handler.setFormatter(logging.Formatter(
+            '%(name)s [%(levelname)s] %(message)s'))
+        logger.addHandler(syslog_handler)
 
     return logger
 
@@ -66,7 +76,7 @@ def add_title_filename_to_url(url: str, title: str) -> str:
 
     (defrag_url, fragment) = urldefrag(url)
     path = urlparse(defrag_url).path
-    (file_root, file_ext) = splitext(path)
+    (file_root, file_ext) = os.path.splitext(path)
 
     return defrag_url + '#' + title + file_ext
 
@@ -149,7 +159,7 @@ def rebuild_feed_from_stdin_to_stdout() -> None:
     logger = None
 
     try:
-        logger = create_logger()
+        logger = create_logger(os.path.basename(sys.argv[0]))
 
         # `feedparser` for some reason breaks on encoding stdin unless it's
         # passed already as a string.

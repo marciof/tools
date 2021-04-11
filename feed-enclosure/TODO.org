@@ -1,6 +1,6 @@
-* TODO log to system when run by Liferea?
+* TODO clean up title as filename when rebuilding feeds
 
-- https://docs.python.org/3/library/logging.handlers.html#logging.handlers.SysLogHandler
+- eg. | : *
 
 * TODO tests
 
@@ -24,7 +24,6 @@
 - missing metadata for IGN Daily Fix videos
   - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
   - https://github.com/ytdl-org/youtube-dl/issues/24771
-- clean up title for filename? eg. delete |, etc
 - Liferea is still percent encoding some characters, "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
 - user notification of download wrapper errors?
   - include ffmpeg muxing done too?
