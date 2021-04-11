@@ -15,7 +15,7 @@ Stdout: updated RSS feed
 import logging
 from os.path import splitext
 import sys
-from typing import List, TextIO, Union
+from typing import List, Optional, TextIO, Union
 from urllib.parse import urldefrag, urlparse
 
 # external
@@ -23,7 +23,7 @@ from feedgen import feed as feedgen
 import feedparser
 
 
-def create_logger(name: str = None) -> logging.Logger:
+def create_logger(name: Optional[str] = None) -> logging.Logger:
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
@@ -38,6 +38,10 @@ def create_logger(name: str = None) -> logging.Logger:
 def list_parsed_feed_entry_enclosure_urls(
         feed_entry: feedparser.FeedParserDict,
         logger: logging.Logger) -> List[str]:
+
+    """
+    Lists all feed entry enclosures found, ordered from "best" to "worst".
+    """
 
     urls = []
 
@@ -92,7 +96,7 @@ def rebuild_parsed_feed_entry(
     if ('content' in feed_entry) and (len(feed_entry.content) > 0):
         new_feed_entry.content(
             content = feed_entry.content[0]['value'],
-            type='')
+            type = '')
 
     return new_feed_entry
 
@@ -140,7 +144,11 @@ def rebuild_feed(feed_xml: Union[str, TextIO], logger: logging.Logger) -> str:
     return new_feed.rss_str(pretty = True).decode()
 
 
-if __name__ == '__main__':
+def rebuild_feed_from_stdin_to_stdout() -> None:
     # `feedparser` for some reason breaks on encoding stdin unless it's
     # passed already as a string.
     print(rebuild_feed(sys.stdin.read(), logger = create_logger()))
+
+
+if __name__ == '__main__':
+    rebuild_feed_from_stdin_to_stdout()

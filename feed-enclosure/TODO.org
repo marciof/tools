@@ -10,10 +10,6 @@
 - automated
 - CD/CI
 
-* TODO documentation
-
-- add README?
-
 * TODO license?
 
 * TODO youtube-dl external downloader
