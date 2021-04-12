@@ -17,6 +17,7 @@
 
 * TODO youtube-dl external downloader
 
+- timeout uGet downloader async code, in case inotify fails for some reason?
 - stopping youtube-dl won't stop uGet download (check D-Bus?)
 - need a better way to debug youtube-dl when merging?
 - option to control video quality?

@@ -72,7 +72,7 @@ class UgetFD (ExternalFD):
                     "[%s] Unknown expected file size, assuming it's complete."
                     % self.get_basename())
             elif expected_size != os.path.getsize(tmpfilename):
-                self.report_warning(
+                self.report_error(
                     "[%s] File size doesn't match expected size: %s bytes"
                     % (self.get_basename(), expected_size))
                 self.report_unable_to_resume()
