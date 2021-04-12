@@ -2,11 +2,14 @@
 
 - eg. | : *
 
+* TODO dependency updates
+
+- notify Python package updates
+
 * TODO tests
 
 - linting (Python, shellcheck)
 - type checking
-- automated
 - CD/CI
 
 * TODO license?
