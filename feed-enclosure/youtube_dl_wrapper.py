@@ -29,10 +29,12 @@ def split_folder_filename(path: str) -> Tuple[str, str]:
 
 def get_size_on_disk(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
     stat = os.stat(path)
+    # TODO: detect availability of `st_blocks`
     block_size = stat.st_blocks * block_size_bytes
     return (stat.st_size, block_size)
 
 
+# TODO: refactor out to its own module, separate from this wrapper script
 class UgetFD (ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
@@ -51,11 +53,13 @@ class UgetFD (ExternalFD):
 
         (folder, filename) = split_folder_filename(tmpfilename)
 
+        # TODO: support proxy option
         cmd = [
             self.get_basename(),
             '--quiet',
             '--filename=' + filename,
             '--folder=' + folder,
+            '--',
             defrag_url,
         ]
 
@@ -63,7 +67,8 @@ class UgetFD (ExternalFD):
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
         # uGet won't overwrite the file if it already exists.
-        if os.path.exists(tmpfilename):
+        try:
+            actual_size = os.path.getsize(tmpfilename)
             self.report_file_already_downloaded(tmpfilename)
             expected_size = info_dict.get('filesize')
 
@@ -71,7 +76,7 @@ class UgetFD (ExternalFD):
                 self.report_warning(
                     "[%s] Unknown expected file size, assuming it's complete."
                     % self.get_basename())
-            elif expected_size != os.path.getsize(tmpfilename):
+            elif expected_size != actual_size:
                 self.report_error(
                     "[%s] File size doesn't match expected size: %s bytes"
                     % (self.get_basename(), expected_size))
@@ -79,6 +84,8 @@ class UgetFD (ExternalFD):
                 return 1
 
             return 0
+        except OSError:
+            pass
 
         return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
@@ -91,7 +98,9 @@ class UgetFD (ExternalFD):
                 '[%s] Unknown file size, will track file block size only.'
                 % self.get_basename())
 
+        # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
+            # TODO: watch target file only for performance (measure first)
             inotify.add_watch(folder, Mask.CLOSE)
             return_code = super()._call_downloader(tmpfilename, info_dict)
 

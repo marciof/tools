@@ -1,6 +1,8 @@
 * TODO clean up title as filename when rebuilding feeds
 
-- eg. | : *
+- Liferea is still percent encoding some characters
+  eg. "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
+- eg. | :
 
 * TODO dependency updates
 
@@ -17,20 +19,12 @@
 
 * TODO youtube-dl external downloader
 
-- timeout uGet downloader async code, in case inotify fails for some reason?
-- stopping youtube-dl won't stop uGet download (check D-Bus?)
 - need a better way to debug youtube-dl when merging?
 - option to control video quality?
 - modify Liferea to have global option for auto-download, and filter cmd?
-- submit draft Uget for youtube-dl?
-- improve inotify performance (watch target file only?)
-- handle unavailability of st_blocks or at least fail-fast
-- handle unavailability of inotify or at least fail-fast
-  https://stackoverflow.com/questions/22406309/how-to-get-a-file-close-event-in-python
 - missing metadata for IGN Daily Fix videos
   - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
   - https://github.com/ytdl-org/youtube-dl/issues/24771
-- Liferea is still percent encoding some characters, "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
 - user notification of download wrapper errors?
   - include ffmpeg muxing done too?
   - balloontip.py, https://gist.github.com/wontoncc/1808234
