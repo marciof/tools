@@ -22,6 +22,7 @@ from urllib.parse import urldefrag, urlparse
 # external
 from feedgen import feed as feedgen
 import feedparser
+from pathvalidate import sanitize_filename
 
 
 def create_logger(
@@ -78,7 +79,7 @@ def add_title_filename_to_url(url: str, title: str) -> str:
     path = urlparse(defrag_url).path
     (file_root, file_ext) = os.path.splitext(path)
 
-    return defrag_url + '#' + title + file_ext
+    return defrag_url + '#' + sanitize_filename(title + file_ext)
 
 
 def rebuild_parsed_feed_entry(

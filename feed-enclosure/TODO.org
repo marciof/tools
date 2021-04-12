@@ -2,7 +2,6 @@
 
 - Liferea is still percent encoding some characters
   eg. "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
-- eg. | :
 
 * TODO dependency updates
 
