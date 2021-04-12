@@ -62,6 +62,24 @@ class UgetFD (ExternalFD):
         return cmd
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
+        # uGet won't overwrite the file if it already exists.
+        if os.path.exists(tmpfilename):
+            self.report_file_already_downloaded(tmpfilename)
+            expected_size = info_dict.get('filesize')
+
+            if expected_size is None:
+                self.report_warning(
+                    "[%s] Unknown expected file size, assuming it's complete."
+                    % self.get_basename())
+            elif expected_size != os.path.getsize(tmpfilename):
+                self.report_warning(
+                    "[%s] File size doesn't match expected size: %s bytes"
+                    % (self.get_basename(), expected_size))
+                self.report_unable_to_resume()
+                return 1
+
+            return 0
+
         return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
     async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:

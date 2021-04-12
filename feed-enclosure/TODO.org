@@ -17,8 +17,9 @@
 
 * TODO youtube-dl external downloader
 
-- resumable downloads if youtube-dl hasn't merged them yet?
-- need a better way to debug youtube-dl when merging
+- stopping youtube-dl won't stop uGet download (check D-Bus?)
+- need a better way to debug youtube-dl when merging?
+- option to control video quality?
 - modify Liferea to have global option for auto-download, and filter cmd?
 - submit draft Uget for youtube-dl?
 - improve inotify performance (watch target file only?)
