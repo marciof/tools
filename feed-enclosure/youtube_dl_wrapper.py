@@ -70,9 +70,13 @@ class UgetFD (ExternalFD):
         return cmd + ['--', defrag_url]
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
-        # uGet won't overwrite the file if it already exists.
         try:
             actual_size = os.path.getsize(tmpfilename)
+        except OSError:
+            actual_size = None
+
+        # uGet won't overwrite the file if it already exists.
+        if actual_size is not None:
             self.report_file_already_downloaded(tmpfilename)
 
             # TODO: use `filesize_approx` as well?
@@ -90,8 +94,6 @@ class UgetFD (ExternalFD):
                 return 1
 
             return 0
-        except OSError:
-            pass
 
         return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
