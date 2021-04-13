@@ -384,9 +384,9 @@ run_with_options() {
         printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
     else
         _run_opts_pipe="$(mktemp_posix)"
-        rm "$_run_opts_pipe"
+        rm -- "$_run_opts_pipe"
         mkfifo "$_run_opts_pipe"
-        { printf %s "$_run_opts" >"$_run_opts_pipe"; rm "$_run_opts_pipe"; } &
+        { printf %s "$_run_opts" >"$_run_opts_pipe"; rm -- "$_run_opts_pipe"; } &
         xargs -a "$_run_opts_pipe" -d "$arg_separator" -- "$@"
     fi
 }
