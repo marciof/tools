@@ -58,7 +58,6 @@ download_via_uget() {
     # correctly when invoked in the command line.
     "$UGET_BIN" \
         --quiet \
-        "--http-user-agent=$("$YOUTUBE_DL_BIN" --dump-user-agent)" \
         "--folder=$(readlink -e "$uget_path")" \
         "$@" \
         -- \

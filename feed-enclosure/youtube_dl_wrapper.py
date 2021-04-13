@@ -54,23 +54,28 @@ class UgetFD (ExternalFD):
         (folder, filename) = split_folder_filename(tmpfilename)
 
         # TODO: use youtube-dl's proxy option/value
-        # TODO: use youtube-dl's user agent option/value
+        # TODO: use `external_downloader_args`
         cmd = [
             self.get_basename(),
             '--quiet',
             '--filename=' + filename,
             '--folder=' + folder,
-            '--',
-            defrag_url,
         ]
 
-        return cmd
+        user_agent = info_dict.get('http_headers', {}).get('User-Agent')
+
+        if user_agent is not None:
+            cmd += ['--http-user-agent=' + user_agent]
+
+        return cmd + ['--', defrag_url]
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
         # uGet won't overwrite the file if it already exists.
         try:
             actual_size = os.path.getsize(tmpfilename)
             self.report_file_already_downloaded(tmpfilename)
+
+            # TODO: use `filesize_approx` as well?
             expected_size = info_dict.get('filesize')
 
             if expected_size is None:
@@ -92,6 +97,8 @@ class UgetFD (ExternalFD):
 
     async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:
         (folder, filename) = split_folder_filename(tmpfilename)
+
+        # TODO: use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
 
         if expected_size is None:
