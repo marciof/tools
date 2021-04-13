@@ -53,7 +53,8 @@ class UgetFD (ExternalFD):
 
         (folder, filename) = split_folder_filename(tmpfilename)
 
-        # TODO: support proxy option
+        # TODO: use youtube-dl's proxy option/value
+        # TODO: use youtube-dl's user agent option/value
         cmd = [
             self.get_basename(),
             '--quiet',

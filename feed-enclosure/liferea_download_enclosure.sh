@@ -56,7 +56,13 @@ download_via_uget() {
 
     # Make the folder path absolute since uGet doesn't seem to interpret it
     # correctly when invoked in the command line.
-    "$UGET_BIN" --quiet "--folder=$(readlink -e "$uget_path")" "$@" "$uget_url"
+    "$UGET_BIN" \
+        --quiet \
+        "--http-user-agent=$("$YOUTUBE_DL_BIN" --dump-user-agent)" \
+        "--folder=$(readlink -e "$uget_path")" \
+        "$@" \
+        -- \
+        "$uget_url"
 }
 
 main() {
@@ -88,7 +94,9 @@ EOT
                 --verbose \
                 --external-downloader uget \
                 --add-metadata \
-                --format 'bestvideo+bestaudio' "$url"
+                --format 'bestvideo+bestaudio' \
+                -- \
+                "$url"
         )
     fi
 }
