@@ -18,6 +18,8 @@
 
 * TODO youtube-dl external downloader
 
+- how to resume or debug when only the video part has been downloaded?
+  - need a better way to debug youtube-dl when merging?
 - switch to kGet?
   - hard to find documentation on uGet
   - it crashed once and lost all the settings and download history
@@ -28,7 +30,6 @@
   - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
   - https://github.com/ytdl-org/youtube-dl/issues/24771
 - user notification of download wrapper errors?
-  - need a better way to debug youtube-dl when merging?
   - include ffmpeg muxing done too?
   - balloontip.py, https://gist.github.com/wontoncc/1808234
   - https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
