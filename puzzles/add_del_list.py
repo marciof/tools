@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+from typing import List, Optional
 import unittest
 
+
 class Node:
-    def __init__(self, value, next = None):
+    def __init__(self, value, next: 'Node' = None):
         self.value = value
         self.next = next
 
-    def to_array(self):
+    def to_array(self) -> List:
         node = self
         values = []
 
@@ -18,7 +20,8 @@ class Node:
 
         return values
 
-def insert(l, position, value):
+
+def insert(node: Node, position: int, value) -> Optional[Node]:
     """
     Insert in linked-list.
 
@@ -30,7 +33,7 @@ def insert(l, position, value):
         return None
 
     previous = None
-    current = l
+    current = node
     i = 0
 
     while (i < position) and (current is not None):
@@ -42,12 +45,13 @@ def insert(l, position, value):
         return None
 
     if previous is None:
-        return Node(value, next = l)
+        return Node(value, next = node)
 
     previous.next = Node(value, next = current)
-    return l
+    return node
 
-def delete(l, position):
+
+def delete(node: Node, position: int) -> Optional[Node]:
     """
     Delete from linked-list.
 
@@ -59,7 +63,7 @@ def delete(l, position):
         return None
 
     previous = None
-    current = l
+    current = node
     i = 0
 
     while (i < position) and (current is not None):
@@ -74,7 +78,8 @@ def delete(l, position):
         return current.next
 
     previous.next = current.next
-    return l
+    return node
+
 
 class Test (unittest.TestCase):
     def test_insert_start(self):
@@ -100,6 +105,7 @@ class Test (unittest.TestCase):
     def test_delete_middle(self):
         l = delete(Node(1, Node(2, Node(3))), 1)
         self.assertListEqual(l.to_array(), [1, 3])
+
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
