@@ -93,7 +93,7 @@ EOT
                 --verbose \
                 --external-downloader uget \
                 --add-metadata \
-                --format 'bestvideo+bestaudio' \
+                --format bestvideo+bestaudio \
                 -- \
                 "$url"
         )

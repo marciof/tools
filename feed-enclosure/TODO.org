@@ -19,7 +19,9 @@
 * TODO youtube-dl external downloader
 
 - how to resume or debug when only the video part has been downloaded?
+  - download bestvideo and bestaudio separately? then merge? also faster?
   - need a better way to debug youtube-dl when merging?
+  - show tray icon? with console output?
 - switch to kGet?
   - hard to find documentation on uGet
   - it crashed once and lost all the settings and download history
