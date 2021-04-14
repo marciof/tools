@@ -111,11 +111,18 @@ class UgetFD (ExternalFD):
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
             # TODO: watch target file only for performance (measure first)
-            inotify.add_watch(folder, Mask.CLOSE)
+            inotify.add_watch(
+                folder, Mask.CLOSE | Mask.CREATE | Mask.MODIFY | Mask.MOVED_TO)
+
             return_code = super()._call_downloader(tmpfilename, info_dict)
+            event_count = 0
+            event_skipped_count = 0
 
             async for event in inotify:
+                event_count += 1
+
                 if event.path.name != tmpfilename:
+                    event_skipped_count += 1
                     continue
 
                 # If the file to be downloaded has been already reserved
@@ -141,7 +148,12 @@ class UgetFD (ExternalFD):
                         or size == expected_size))
 
                 if is_downloaded:
-                    return return_code
+                    break
+
+            self.to_screen(
+                '[%s] inotify events: %s skipped / %s total' %
+                (self.get_basename(), event_skipped_count, event_count))
+            return return_code
 
 
 def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
