@@ -1,8 +1,3 @@
-* TODO clean up title as filename when rebuilding feeds
-
-- Liferea is still percent encoding some characters
-  eg. "No%2C Kojima Isn't Making The PS5 Exclusive Abandoned - IGN Daily Fix.mp4"
-
 * TODO dependency updates
 
 - notify Python package updates

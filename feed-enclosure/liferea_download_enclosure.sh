@@ -20,7 +20,7 @@ YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wr
 UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 is_ign_daily_fix_url() {
-    echo "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
+    printf %s "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
 }
 
 prepare_ign_daily_fix_url() {
@@ -28,15 +28,19 @@ prepare_ign_daily_fix_url() {
     ign_hash='[[:xdigit:]]+'
     ign_bitrate='[[:digit:]]+'
 
-    echo "$1" \
+    printf %s "$1" \
         | sed -r "s#/$ign_width(/$ign_hash-)$ign_bitrate-#/1920\\13906000-#"
 }
 
+percent_decode() {
+    sed -r 's/%([[:xdigit:]]{2})/\\x\1/g' | xargs -0 printf %b
+}
+
 extract_nice_filename_from_url() {
-    if echo "$1" | grep -q -F '#'; then
-        # Also convert percent-encoded spaces since Liferea seems to add those
+    if printf %s "$1" | grep -q -F '#'; then
+        # Decode percent-encoded characters since Liferea seems to add those
         # even when the URL doesn't have them.
-        echo "$1" | sed -r 's/^[^#]+#//' | sed -r 's/%20/ /g'
+        printf %s "$1" | sed -r 's/^[^#]+#//' | percent_decode
     fi
 }
 
@@ -49,7 +53,7 @@ download_via_uget() {
         set -- "--filename=$uget_filename"
         # Remove the URL fragment since uGet seems to break when given it
         # in the command line.
-        uget_url="$(echo "$uget_url" | sed -r 's/#.+$//')"
+        uget_url="$(printf %s "$uget_url" | sed -r 's/#.+$//')"
     else
         set --
     fi
