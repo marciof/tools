@@ -8,7 +8,7 @@ right to left, and so on, and return them as a 1D array.
 Time: O(n)
 """
 
-from typing import List
+from typing import Iterator, List
 import unittest
 
 
@@ -23,15 +23,11 @@ def transform_simple(matrix: List[List]) -> List:
     return array
 
 
-def transform_iter(matrix: List[List]) -> List:
+def transform_iter(matrix: List[List]) -> Iterator:
     is_reversed = False
 
     for row in matrix:
-        if is_reversed:
-            yield from reversed(row)
-        else:
-            yield from row
-
+        yield from reversed(row) if is_reversed else row
         is_reversed = not is_reversed
 
 
@@ -60,11 +56,11 @@ def transform_manual(matrix: List[List]) -> List:
 class Test (unittest.TestCase):
     transform_iter_list = lambda matrix: list(transform_iter(matrix))
 
-    transform_impls = (
+    transform_impls = {
         transform_simple,
         transform_manual,
         transform_iter_list,
-    )
+    }
 
     def test_square_matrix(self):
         for transform in self.transform_impls:
