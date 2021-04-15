@@ -6,7 +6,7 @@
 * TODO tests
 
 - linting (Python, shellcheck)
-- type checking
+- type checking (Mypy)
 - CD/CI
 
 * TODO license?

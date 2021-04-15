@@ -29,8 +29,10 @@ def split_folder_filename(path: str) -> Tuple[str, str]:
 
 def get_size_on_disk(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
     stat = os.stat(path)
+
     # TODO: detect availability of `st_blocks`
     block_size = stat.st_blocks * block_size_bytes
+
     return (stat.st_size, block_size)
 
 
@@ -47,8 +49,8 @@ class UgetFD (ExternalFD):
         return 'uget-gtk'
 
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
-        # Remove the URL fragment since uGet seems to break when given it
-        # in the command line.
+        # TODO: uGet seems to break when given a URL in the command line with
+        #       a URL fragment (remove it as a workaround)
         (defrag_url, fragment) = urldefrag(info_dict['url'])
 
         (folder, filename) = split_folder_filename(tmpfilename)
@@ -75,7 +77,7 @@ class UgetFD (ExternalFD):
         except OSError:
             actual_size = None
 
-        # uGet won't overwrite the file if it already exists.
+        # TODO use youtube-dl's continue/restart option
         if actual_size is not None:
             self.report_file_already_downloaded(tmpfilename)
 
@@ -111,8 +113,8 @@ class UgetFD (ExternalFD):
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
             # TODO: watch target file only for performance (measure first)
-            inotify.add_watch(
-                folder, Mask.CLOSE | Mask.CREATE | Mask.MODIFY | Mask.MOVED_TO)
+            inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
+                | Mask.MODIFY | Mask.MOVED_TO)
 
             return_code = super()._call_downloader(tmpfilename, info_dict)
             event_count = 0
@@ -127,8 +129,8 @@ class UgetFD (ExternalFD):
 
                 # If the file to be downloaded has been already reserved
                 # space on disk, then its apparent size will already be the
-                # final size. In that case rely on the disk block size to get
-                # an idea for when it's fully downloaded.
+                # final size. In that case use the disk block size to get
+                # an idea for when its download is complete.
                 (size, block_size) = get_size_on_disk(tmpfilename)
 
                 if (expected_size is None) or (expected_size <= 0):

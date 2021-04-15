@@ -16,7 +16,7 @@ import logging
 from logging.handlers import SysLogHandler
 import os.path
 import sys
-from typing import List, Optional, TextIO, Union
+from typing import List, Optional
 from urllib.parse import urldefrag, urlparse
 
 # external
@@ -71,8 +71,9 @@ def list_parsed_feed_entry_enclosure_urls(
 
 def add_title_filename_to_url(url: str, title: str) -> str:
     """
-    Adds a title for downloaders to use when the original URL filename
-    isn't human readable.
+    Adds a title in the URL fragment part for downloaders to use when the
+    original URL filename isn't human readable (URL fragments are client-side
+    only so safe to remove).
     """
 
     (defrag_url, fragment) = urldefrag(url)
@@ -130,14 +131,15 @@ def rebuild_parsed_feed(
     if 'description' in feed.feed:
         new_feed.description(feed.feed.description)
     else:
-        # `feedgen` requires a non-empty feed description.
+        # Description is mandatory for RSS feeds.
+        # https://www.rssboard.org/rss-specification
         logger.warning('No feed description found, setting it anyway.')
         new_feed.description('-')
 
     return new_feed
 
 
-def rebuild_feed(feed_xml: Union[str, TextIO], logger: logging.Logger) -> str:
+def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
     parsed_feed = feedparser.parse(feed_xml)
     new_feed = rebuild_parsed_feed(parsed_feed, logger)
 
@@ -162,8 +164,11 @@ def rebuild_feed_from_stdin_to_stdout() -> None:
     try:
         logger = create_logger(os.path.basename(sys.argv[0]))
 
-        # `feedparser` for some reason breaks on encoding stdin unless it's
-        # passed already as a string.
+        # TODO: `feedparser` breaks on detecting the encoding of the input data
+        #       when given a file object (eg `sys.stdin`) that when `read`
+        #       gives a string-like object, since the regex is a bytes pattern
+        #       (see `feedparser.encodings.RE_XML_PI_ENCODING`). As a
+        #       workaround read `sys.stdin` to yield a string.
         print(rebuild_feed(sys.stdin.read(), logger))
     except BaseException as error:
         if logger is not None:

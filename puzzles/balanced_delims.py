@@ -8,7 +8,8 @@ Check if a `string` contains only balanced delimiters.
 import unittest
 import sys
 
-def is_balanced(string):
+
+def is_balanced(string: str) -> bool:
     """
     Time: O(n)
     Space: O(n), worst-case it consists of open delimiters only
@@ -32,6 +33,7 @@ def is_balanced(string):
 
     return len(expected) == 0
 
+
 class Test (unittest.TestCase):
     def test_balanced(self):
         cases = [
@@ -54,6 +56,7 @@ class Test (unittest.TestCase):
 
         for case in cases:
             self.assertFalse(is_balanced(case))
+
 
 if __name__ == '__main__':
     if sys.stdin.isatty():
