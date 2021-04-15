@@ -3,11 +3,30 @@
 
 """
 Check if two words are an anagram of each other.
+
+From Wikipedia: "An anagram is a word or phrase formed by rearranging the
+letters of a different word or phrase, typically using all the original
+letters exactly once."
 """
 
 import unittest
 
-def is_anagram(word_1, word_2):
+
+def is_anagram(word1: str, word2: str) -> bool:
+    if len(word1) != len(word2):
+        return False
+
+    word2_letters = set(word2)
+
+    for word1_letter in word1:
+        if word1_letter not in word2_letters:
+            return False
+        word2_letters.remove(word1_letter)
+
+    return len(word2_letters) == 0
+
+
+def is_anagram_manual(word_1: str, word_2: str) -> bool:
     """
     Time: O(k+l), where k=len(word_1), l=ken(word_2)
     Space: O(k), worst-case every character is unique in word_1
@@ -31,24 +50,43 @@ def is_anagram(word_1, word_2):
 
     return len(char_count_1) == 0
 
+
 class Test (unittest.TestCase):
+    is_anagram_impls = {
+        is_anagram,
+        is_anagram_manual,
+    }
+
     def test_empty(self):
-        self.assertTrue(is_anagram('', ''))
+        for is_anagram_impl in self.is_anagram_impls:
+            with self.subTest(is_anagram_impl):
+                self.assertTrue(is_anagram_impl('', ''))
 
     def test_match(self):
-        self.assertTrue(is_anagram('cat', 'act'))
+        for is_anagram_impl in self.is_anagram_impls:
+            with self.subTest(is_anagram_impl):
+                self.assertTrue(is_anagram_impl('cat', 'act'))
 
     def test_same(self):
-        self.assertTrue(is_anagram('cat', 'cat'))
+        for is_anagram_impl in self.is_anagram_impls:
+            with self.subTest(is_anagram_impl):
+                self.assertTrue(is_anagram_impl('cat', 'cat'))
 
     def test_count_mismatch(self):
-        self.assertFalse(is_anagram('cart', 'cataract'))
+        for is_anagram_impl in self.is_anagram_impls:
+            with self.subTest(is_anagram_impl):
+                self.assertFalse(is_anagram_impl('cart', 'cataract'))
 
     def test_superset(self):
-        self.assertFalse(is_anagram('cart', 'cat'))
+        for is_anagram_impl in self.is_anagram_impls:
+            with self.subTest(is_anagram_impl):
+                self.assertFalse(is_anagram_impl('cart', 'cat'))
 
     def test_subset(self):
-        self.assertFalse(is_anagram('cat', 'cart'))
+        for is_anagram_impl in self.is_anagram_impls:
+            with self.subTest(is_anagram_impl):
+                self.assertFalse(is_anagram_impl('cat', 'cart'))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
