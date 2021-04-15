@@ -1,7 +1,7 @@
 * TODO dependency updates
 
 - notify Python package updates
-- check if workarounds aren't needed anymore (add TODOs?)
+- check if workarounds aren't needed anymore (add TODOs? report issues?)
 
 * TODO tests
 

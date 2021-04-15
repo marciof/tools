@@ -10,7 +10,6 @@ import asyncio
 import os
 import os.path
 from typing import List, Tuple, Type
-from urllib.parse import urldefrag
 
 # external
 from asyncinotify import Inotify, Mask
@@ -18,6 +17,8 @@ import youtube_dl
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD
 
 
+# TODO: ensure the folder path is absolute since uGet doesn't seem to interpret
+#       it correctly when invoked in the command line
 def split_folder_filename(path: str) -> Tuple[str, str]:
     (folder, filename) = os.path.split(path)
 
@@ -49,10 +50,6 @@ class UgetFD (ExternalFD):
         return 'uget-gtk'
 
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
-        # TODO: uGet seems to break when given a URL in the command line with
-        #       a URL fragment (remove it as a workaround)
-        (defrag_url, fragment) = urldefrag(info_dict['url'])
-
         (folder, filename) = split_folder_filename(tmpfilename)
 
         # TODO: use youtube-dl's proxy option/value
@@ -69,7 +66,7 @@ class UgetFD (ExternalFD):
         if user_agent is not None:
             cmd += ['--http-user-agent=' + user_agent]
 
-        return cmd + ['--', defrag_url]
+        return cmd + ['--', info_dict['url']]
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
         try:

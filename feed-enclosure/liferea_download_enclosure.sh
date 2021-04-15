@@ -38,8 +38,8 @@ percent_decode() {
 
 extract_nice_filename_from_url() {
     if printf %s "$1" | grep -q -F '#'; then
-        # Decode percent-encoded characters since Liferea seems to add those
-        # even when the URL doesn't have them.
+        # TODO: decode percent-encoded characters since Liferea seems to
+        #       those even when the URL fragment doesn't have them
         printf %s "$1" | sed -r 's/^[^#]+#//' | percent_decode
     fi
 }
@@ -51,15 +51,12 @@ download_via_uget() {
 
     if [ -n "$uget_filename" ]; then
         set -- "--filename=$uget_filename"
-        # Remove the URL fragment since uGet seems to break when given it
-        # in the command line.
-        uget_url="$(printf %s "$uget_url" | sed -r 's/#.+$//')"
     else
         set --
     fi
 
-    # Make the folder path absolute since uGet doesn't seem to interpret it
-    # correctly when invoked in the command line.
+    # TODO: make the folder path absolute since uGet doesn't seem to interpret
+    #       it correctly when invoked in the command line
     "$UGET_BIN" \
         --quiet \
         "--folder=$(readlink -e "$uget_path")" \
@@ -90,8 +87,8 @@ EOT
         download_via_uget "$(prepare_ign_daily_fix_url "$url")" "$path"
     else
         (
-            # Navigate to where the file should be downloaded to since
-            # youtube-dl doesn't have an option for the output directory.
+            # TODO: Navigate to where the file should be downloaded to since
+            #       youtube-dl doesn't have an option for the output directory.
             cd "$path"
             "$YOUTUBE_DL_BIN" \
                 --verbose \
