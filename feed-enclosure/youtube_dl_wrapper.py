@@ -107,6 +107,9 @@ class UgetFD (ExternalFD):
                 '[%s] Unknown file size, will track file block size only.'
                 % self.get_basename())
 
+        self.to_screen('[%s] Starting inotify watch on folder: %s' %
+            (self.get_basename(), folder))
+
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
             # TODO: watch target file only for performance (measure first)
