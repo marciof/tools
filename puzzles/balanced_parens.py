@@ -7,6 +7,7 @@ List all possible balanced parenthesis combinations up to `total` pairs.
 
 import unittest
 
+
 def permutate(total, num_open = 0, num_closed = 0):
     """
     Time: O(2^n), two branches of recursive calls for each call
@@ -27,6 +28,7 @@ def permutate(total, num_open = 0, num_closed = 0):
                 combinations.append(')')
 
     return combinations
+
 
 class Test (unittest.TestCase):
     def test_count_0(self):
@@ -53,6 +55,7 @@ class Test (unittest.TestCase):
                 '(())()',
                 '()(())',
             ])
+
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
