@@ -24,7 +24,7 @@ def is_balanced(string: str) -> bool:
             if depth < 0:
                 return False
         else:
-            return False
+            raise Exception('Invalid string')
 
     return depth == 0
 

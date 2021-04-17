@@ -27,7 +27,12 @@ fi
 for pdf_file; do
     compressed_pdf_file="$pdf_file.compressed"
 
-    gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -sOutputFile="$compressed_pdf_file" "$pdf_file" >&2
+    gs -dNOPAUSE -dBATCH \
+        -sDEVICE=pdfwrite \
+        -dCompatibilityLevel=1.4 \
+        -dPDFSETTINGS=/screen \
+        -sOutputFile="$compressed_pdf_file" \
+        "$pdf_file" >&2
 
     original_size="$(stat -c %s "$pdf_file")"
     compressed_size="$(stat -c %s "$compressed_pdf_file")"

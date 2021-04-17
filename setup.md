@@ -145,16 +145,6 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
 
     apt install solaar
 
-### Pointer speed
-
-    apt install xinput
-
-`~/.xsessionrc`
-
-    xinput set-prop 'pointer:Logitech MX Vertical' 'libinput Accel Speed' 1
-
-Re-apply it on session changes through D-Bus.
-
 ### Touchpad
 
 Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.2s`.
