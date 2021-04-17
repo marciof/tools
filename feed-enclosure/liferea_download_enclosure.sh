@@ -71,6 +71,11 @@ main() {
         return 1
     fi
 
+    if ! command -v "$UGET_BIN" >/dev/null; then
+        echo "Error: $UGET_BIN not found (override \$UGET_BIN)" >&2
+        return 1
+    fi
+
     if [ $# -ne 2 ]; then
         cat <<'EOT' >&2
 Arguments: url path
