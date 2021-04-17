@@ -39,7 +39,7 @@ percent_decode() {
 extract_nice_filename_from_url() {
     if printf %s "$1" | grep -q -F '#'; then
         # TODO: decode percent-encoded characters since Liferea seems to
-        #       those even when the URL fragment doesn't have them
+        #       add those even when the URL fragment doesn't have them
         printf %s "$1" | sed -r 's/^[^#]+#//' | percent_decode
     fi
 }
