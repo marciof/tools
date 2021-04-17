@@ -15,6 +15,7 @@
 - [Signal](https://www.signal.org) instant messaging
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
+- [DroidCam](https://www.dev47apps.com) phone webcam
 - [Handbrake](https://handbrake.fr) video transcoder
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
 - [Redshift](https://github.com/jonls/redshift) screen color temperature

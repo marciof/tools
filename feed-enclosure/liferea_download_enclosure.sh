@@ -95,6 +95,7 @@ EOT
             # TODO: Navigate to where the file should be downloaded to since
             #       youtube-dl doesn't have an option for the output directory.
             cd "$path"
+
             "$YOUTUBE_DL_BIN" \
                 --verbose \
                 --external-downloader uget \
@@ -109,7 +110,7 @@ EOT
 if [ -t 0 ]; then
     main "$@"
 else
-    # Tailor output with logging for when run under Liferea.
+    # Format output with logging for when run by Liferea.
     {
         echo "Command line arguments: $0 $*"
         main "$@"
