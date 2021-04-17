@@ -13,6 +13,11 @@ import unittest
 
 
 def is_anagram(word1: str, word2: str) -> bool:
+    """
+    Time: O(k+l), where k=length of word_1, l=length of word_2
+    Space: O(l), worst-case every character is unique in word_2
+    """
+
     if len(word1) != len(word2):
         return False
 
@@ -28,7 +33,7 @@ def is_anagram(word1: str, word2: str) -> bool:
 
 def is_anagram_manual(word_1: str, word_2: str) -> bool:
     """
-    Time: O(k+l), where k=len(word_1), l=ken(word_2)
+    Time: O(k+l), where k=length of word_1, l=length of word_2
     Space: O(k), worst-case every character is unique in word_1
     """
 

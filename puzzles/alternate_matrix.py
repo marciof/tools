@@ -4,8 +4,6 @@
 """
 Read the rows of a matrix (as a 2D array) alternatively from left to right,
 right to left, and so on, and return them as a 1D array.
-
-Time: O(n)
 """
 
 from typing import Iterator, List
@@ -13,6 +11,11 @@ import unittest
 
 
 def transform_simple(matrix: List[List]) -> List:
+    """
+    Time: O(r * c), where r=number of rows, c=number of columns
+    Space: ditto
+    """
+
     array = []
     is_reversed = False
 
@@ -24,6 +27,11 @@ def transform_simple(matrix: List[List]) -> List:
 
 
 def transform_iter(matrix: List[List]) -> Iterator:
+    """
+    Time: O(r * c), where r=number of rows, c=number of columns
+    Space: O(1)
+    """
+
     is_reversed = False
 
     for row in matrix:
@@ -32,6 +40,11 @@ def transform_iter(matrix: List[List]) -> Iterator:
 
 
 def transform_manual(matrix: List[List]) -> List:
+    """
+    Time: O(r * c), where r=number of rows, c=number of columns
+    Space: ditto
+    """
+
     is_reversed = False
     array = []
 
