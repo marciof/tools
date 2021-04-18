@@ -96,6 +96,7 @@ class UgetFD (ExternalFD):
 
         return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
+    # TODO: too long, refactor
     async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:
         (folder, filename) = split_folder_filename(tmpfilename)
 
@@ -107,8 +108,11 @@ class UgetFD (ExternalFD):
                 '[%s] Unknown file size, will track file block size only.'
                 % self.get_basename())
 
-        self.to_screen('[%s] Starting inotify watch on folder: %s' %
-            (self.get_basename(), folder))
+        self.to_screen(
+            '[%s] Starting inotify watch on folder: %s (%s bytes expected)' % (
+                self.get_basename(),
+                folder,
+                '?' if expected_size is None else expected_size))
 
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
@@ -117,6 +121,9 @@ class UgetFD (ExternalFD):
                 | Mask.MODIFY | Mask.MOVED_TO)
 
             return_code = super()._call_downloader(tmpfilename, info_dict)
+            self.to_screen('[%s] Return code: %s'
+                % (self.get_basename(), return_code))
+
             event_count = 0
             event_skipped_count = 0
 
