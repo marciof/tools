@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 """
-Check if a `string` contains only balanced delimiters.
+Check if a string contains only balanced delimiters (eg. (), [], {}).
 """
 
 import unittest
@@ -21,17 +21,17 @@ def is_balanced(string: str) -> bool:
         '{': '}',
     }
 
-    expected = []
+    expected_close = []
 
     for char in string:
         if char in open_to_close:
-            expected.append(open_to_close[char])
-        elif (len(expected) > 0) and (expected[-1] == char):
-            expected.pop()
+            expected_close.append(open_to_close[char])
+        elif (len(expected_close) > 0) and (expected_close[-1] == char):
+            expected_close.pop()
         else:
             return False
 
-    return len(expected) == 0
+    return len(expected_close) == 0
 
 
 class Test (unittest.TestCase):
@@ -41,6 +41,7 @@ class Test (unittest.TestCase):
             '()[]{}',
             '([]{})',
             '([{}])',
+            '(()[{}])',
         ]
 
         for case in cases:
