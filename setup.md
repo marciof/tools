@@ -39,7 +39,7 @@
     - Install third-party drivers post OS installation: `apt install ubuntu-restricted-extras`
 - [Surface specific kernel and setup](https://github.com/linux-surface/linux-surface/wiki/Installation-and-Setup#debian--ubuntu).
 - [Surface Book 3 specific setup](https://github.com/linux-surface/linux-surface/wiki/Surface-Book-3).
-  - Fix reboot freeze: create `/etc/default/grub.d/00_surface.cfg`, with     `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash reboot=pci"`, and then do `update-grub`.
+  - Fix reboot freeze: create `/etc/default/grub.d/00_surface.cfg`, with     `GRUB_CMDLINE_LINUX_DEFAULT='quiet splash reboot=pci'`, and then do `update-grub`.
 
 ### Sudo rights
 
@@ -62,6 +62,16 @@
 *Window Manager*:
 
 - *Style*: Greybird-dark-accessibility (Numix crops the title bar)
+
+### GRUB
+
+Decrease resolution to increase font size:
+
+`/etc/default/grub.d/10_high_dpi.cfg`
+
+    GRUB_GFXMODE=640x480
+
+And then do `update-grub`.
 
 ### WM/DE
 
