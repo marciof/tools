@@ -47,7 +47,7 @@
     adduser marcio sudo
     adduser marcio adm
 
-*Surface Book 3*: not needed under Xubuntu (?)
+*Surface Book 3*: not needed under Xubuntu (?).
 
 ## High DPI
 
@@ -98,6 +98,8 @@ https://wiki.archlinux.org/index.php/HiDPI#Qt_5
 
 ### Gtk
 
+*Note*: not needed with window scaling set to 2x.
+
     xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
 
 ### Xfce
@@ -123,14 +125,8 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
 *Surface Book 3*: use PulseEffects for less *"scratchy"* sound:
 
 - Enable `Equalizer`: `apt install lsp-plugins`
-- Lower *7.5hKz* and raise *15.0kHz*.
+- Lower *7.5hKz* a bit and raise *15.0kHz*.
 - Enable *Start Service at Login*.
-
-### PC speaker off
-
-`~/.xsessionrc`
-
-    xset -b
 
 ### Bluetooth Audio Sink
 
@@ -138,6 +134,8 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
 
     apt-get install pulseaudio-module-bluetooth
     pactl load-module module-bluetooth-discover
+
+*Surface Book 3*: not needed under Xubuntu (?).
 
 ## Mouse
 
@@ -151,11 +149,13 @@ Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and s
 
 To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
 
-    synclient | grep VertScrollDelta
+    synclient | grep ScrollDelta
 
 `/etc/X11/Xsession.d/80synaptics`
 
+    synclient HorizScrollDelta=-VALUE_FROM_ABOVE
     synclient VertScrollDelta=-VALUE_FROM_ABOVE
+
 ## Keyboard
 
 ## Keyboard compose key
@@ -176,10 +176,6 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 - ClipIt history: Alt-C
 
 ## Miscellaneous
-
-### Firefox
-
-For faster scrolling disable *smooth scrooling* in *Preferences*.
 
 ### Passwords and keys
 
