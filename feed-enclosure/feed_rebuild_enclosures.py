@@ -164,11 +164,11 @@ def rebuild_feed_from_stdin_to_stdout() -> None:
     try:
         logger = create_logger(os.path.basename(sys.argv[0]))
 
-        # TODO: `feedparser` breaks on detecting the encoding of the input data
-        #       when given a file object (eg `sys.stdin`) that when `read`
-        #       gives a string-like object, since the regex is a bytes pattern
-        #       (see `feedparser.encodings.RE_XML_PI_ENCODING`). As a
-        #       workaround read `sys.stdin` to yield a string.
+        # FIXME: `feedparser` breaks on detecting the encoding of the input
+        #        data when given a file object (eg `sys.stdin`) that when
+        #        `read` gives a string-like object, since the regex is a bytes
+        #        pattern (see `feedparser.encodings.RE_XML_PI_ENCODING`). As a
+        #        workaround read `sys.stdin` to yield a string.
         print(rebuild_feed(sys.stdin.read(), logger))
     except BaseException as error:
         if logger is not None:

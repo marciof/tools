@@ -21,7 +21,6 @@
   - hard to find documentation on uGet
   - it crashed once and lost all the settings and download history
   - not a lot of options for programmatic control?
-- option to control video quality?
 - modify Liferea to have global option for auto-download, and filter cmd?
 - missing metadata for IGN Daily Fix videos
   - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site

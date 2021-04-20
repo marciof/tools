@@ -31,5 +31,6 @@ fi
 
 "$LIFEREA_BIN" "$@" &
 exit_status=$?
+
 "$XDOTOOL_BIN" search --onlyvisible --classname --sync Liferea windowminimize
 exit $exit_status

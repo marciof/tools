@@ -38,8 +38,8 @@ percent_decode() {
 
 extract_nice_filename_from_url() {
     if printf %s "$1" | grep -q -F '#'; then
-        # TODO: decode percent-encoded characters since Liferea seems to
-        #       add those even when the URL fragment doesn't have them
+        # FIXME: Liferea seems to percent-encode characters even when the URL
+        #        fragment doesn't, so as a workaround decode them
         printf %s "$1" | sed -r 's/^[^#]+#//' | percent_decode
     fi
 }
@@ -55,8 +55,8 @@ download_via_uget() {
         set --
     fi
 
-    # TODO: make the folder path absolute since uGet doesn't seem to interpret
-    #       it correctly when invoked in the command line
+    # FIXME: uGet doesn't seem to interpret relative folder paths correctly,
+    #        so as a workaround make it absolute
     "$UGET_BIN" \
         --quiet \
         "--folder=$(readlink -e "$uget_path")" \
@@ -65,6 +65,7 @@ download_via_uget() {
         "$uget_url"
 }
 
+# TODO: getopt option for download path
 main() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
         echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
@@ -92,10 +93,11 @@ EOT
         download_via_uget "$(prepare_ign_daily_fix_url "$url")" "$path"
     else
         (
-            # TODO: Navigate to where the file should be downloaded to since
-            #       youtube-dl doesn't have an option for the output directory.
+            # FIXME: youtube-dl doesn't have an option for the output directory,
+            #        so as a workaround go to where it should be downloaded
             cd "$path"
 
+            # TODO: getopt option to control video quality
             "$YOUTUBE_DL_BIN" \
                 --verbose \
                 --external-downloader uget \

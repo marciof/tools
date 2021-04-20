@@ -18,4 +18,4 @@
 #   apt install shellcheck # Version: 0.7.1-1build1
 
 set -e -u
-grep -m1 URL= <"$1" | sed -e 's/^URL\s*=\s*//' | xargs xdg-open
+grep -m1 URL= "$1" | sed -e 's/^URL\s*=\s*//' | xargs xdg-open

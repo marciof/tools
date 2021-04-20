@@ -9,6 +9,7 @@ Wraps youtube-dl to add support for uGet as an external downloader.
 import asyncio
 import os
 import os.path
+import subprocess
 from typing import List, Tuple, Type
 
 # external
@@ -17,8 +18,8 @@ import youtube_dl
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD
 
 
-# TODO: ensure the folder path is absolute since uGet doesn't seem to interpret
-#       it correctly when invoked in the command line
+# FIXME: uGet doesn't seem to interpret relative folder paths correctly,
+#        so as a workaround make it absolute
 def split_folder_filename(path: str) -> Tuple[str, str]:
     (folder, filename) = os.path.split(path)
 
@@ -28,10 +29,10 @@ def split_folder_filename(path: str) -> Tuple[str, str]:
     return (folder, filename)
 
 
-def get_size_on_disk(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
+def get_disk_sizes(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
     stat = os.stat(path)
 
-    # TODO: detect availability of `st_blocks`
+    # TODO: detect availability of `st_blocks` (it's Unix specific)
     block_size = stat.st_blocks * block_size_bytes
 
     return (stat.st_size, block_size)
@@ -48,6 +49,27 @@ class UgetFD (ExternalFD):
     @classmethod
     def get_basename(cls) -> str:
         return 'uget-gtk'
+
+    @classmethod
+    def ensure_running(cls) -> None:
+        """
+        If uGet isn't already running, then starting it up will block execution
+        until it exits. To avoid that, ensure it's always running already in
+        the background.
+        """
+
+        # TODO: detect availability of `start_new_session` (it's POSIX specific)
+        subprocess.Popen([cls.get_basename(), '--quiet'],
+            start_new_session = True)
+
+    def error(self, message: str, *args) -> None:
+        self.report_error(('[%s] ' + message) % (self.get_basename(), *args))
+
+    def info(self, message: str, *args) -> None:
+        self.to_screen(('[%s] ' + message) % (self.get_basename(), *args))
+
+    def warn(self, message: str, *args) -> None:
+        self.report_warning(('[%s] ' + message) % (self.get_basename(), *args))
 
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
         (folder, filename) = split_folder_filename(tmpfilename)
@@ -69,6 +91,8 @@ class UgetFD (ExternalFD):
         return cmd + ['--', info_dict['url']]
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
+        self.ensure_running()
+
         try:
             actual_size = os.path.getsize(tmpfilename)
         except OSError:
@@ -82,13 +106,11 @@ class UgetFD (ExternalFD):
             expected_size = info_dict.get('filesize')
 
             if expected_size is None:
-                self.report_warning(
-                    "[%s] Unknown expected file size, assuming it's complete."
-                    % self.get_basename())
+                self.warn("Unknown expected file size, assuming it's complete.")
             elif expected_size != actual_size:
-                self.report_error(
-                    "[%s] File size doesn't match expected size: %s bytes"
-                    % (self.get_basename(), expected_size))
+                self.error(
+                    "File size (%s bytes) doesn't match expected: %s bytes",
+                    actual_size, expected_size)
                 self.report_unable_to_resume()
                 return 1
 
@@ -104,15 +126,10 @@ class UgetFD (ExternalFD):
         expected_size = info_dict.get('filesize')
 
         if expected_size is None:
-            self.report_warning(
-                '[%s] Unknown file size, will track file block size only.'
-                % self.get_basename())
+            self.warn('Unknown file size, will track file block size only.')
 
-        self.to_screen(
-            '[%s] Starting inotify watch on folder: %s (%s bytes expected)' % (
-                self.get_basename(),
-                folder,
-                '?' if expected_size is None else expected_size))
+        self.info('Starting inotify watch on folder: %s (%s bytes expected)',
+            folder, '?' if expected_size is None else expected_size)
 
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
@@ -120,11 +137,8 @@ class UgetFD (ExternalFD):
             inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
                 | Mask.MODIFY | Mask.MOVED_TO)
 
-            # TODO: the call below may not always return immediately
             return_code = super()._call_downloader(tmpfilename, info_dict)
-
-            self.to_screen('[%s] Return code: %s'
-                % (self.get_basename(), return_code))
+            self.info('Return code: %s', return_code)
 
             event_count = 0
             event_skipped_count = 0
@@ -140,30 +154,25 @@ class UgetFD (ExternalFD):
                 # space on disk, then its apparent size will already be the
                 # final size. In that case use the disk block size to get
                 # an idea for when its download is complete.
-                (size, block_size) = get_size_on_disk(tmpfilename)
+                (size, block_size) = get_disk_sizes(tmpfilename)
 
                 if (expected_size is None) or (expected_size <= 0):
                     percent = '?'
                 else:
                     percent = int(block_size / expected_size * 100)
 
-                self.to_screen(
-                    '[%s] Downloaded %s block bytes (~%s%%, target %s bytes)' %
-                    (self.get_basename(), block_size, percent,
-                     expected_size or '?'))
+                self.info('Downloaded %s block bytes (~%s%%, target %s bytes)',
+                    block_size, percent, expected_size or '?')
 
                 is_downloaded = (
                     (block_size >= size)
-                    and (
-                        expected_size is None
-                        or size == expected_size))
+                    and (expected_size is None or size == expected_size))
 
                 if is_downloaded:
                     break
 
-            self.to_screen(
-                '[%s] inotify events: %s skipped / %s total' %
-                (self.get_basename(), event_skipped_count, event_count))
+            self.info('inotify events: %s skipped / %s total',
+                event_skipped_count, event_count)
             return return_code
 
 
