@@ -120,7 +120,9 @@ class UgetFD (ExternalFD):
             inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
                 | Mask.MODIFY | Mask.MOVED_TO)
 
+            # TODO: the call below may not always return immediately
             return_code = super()._call_downloader(tmpfilename, info_dict)
+
             self.to_screen('[%s] Return code: %s'
                 % (self.get_basename(), return_code))
 
