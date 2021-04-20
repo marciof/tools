@@ -53,7 +53,7 @@ def find_celebrity_memory(
         knows: KnowsFunction) -> Optional[int]:
 
     """
-    Time: O(2 * n^2)
+    Time: O(n^2)
     Space: O(1)
     """
 
