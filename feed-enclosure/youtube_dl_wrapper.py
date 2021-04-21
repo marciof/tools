@@ -10,7 +10,7 @@ import asyncio
 import os
 import os.path
 import subprocess
-from typing import List, Tuple, Type
+from typing import List, Optional, Tuple, Type
 
 # external
 from asyncinotify import Inotify, Mask
@@ -36,6 +36,15 @@ def get_disk_sizes(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
     block_size = stat.st_blocks * block_size_bytes
 
     return (stat.st_size, block_size)
+
+
+def calc_percent_progress(current: int, expected: Optional[int]) -> str:
+    if (expected is None) or (expected <= 0):
+        percent = '?'
+    else:
+        percent = int(current / expected * 100)
+
+    return '~%s%%' % percent
 
 
 # TODO: refactor out to its own module, separate from this wrapper script
@@ -91,34 +100,34 @@ class UgetFD (ExternalFD):
         return cmd + ['--', info_dict['url']]
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
+        if info_dict.get('filesize') == 0:
+            self.error('Expected file size is 0 (zero) bytes, stopping.')
+            return 1
+
         self.ensure_running()
 
         try:
             actual_size = os.path.getsize(tmpfilename)
         except OSError:
-            actual_size = None
+            return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
 
         # TODO use youtube-dl's continue/restart option
-        if actual_size is not None:
-            self.report_file_already_downloaded(tmpfilename)
+        self.report_file_already_downloaded(tmpfilename)
 
-            # TODO: use `filesize_approx` as well?
-            expected_size = info_dict.get('filesize')
+        # TODO: use `filesize_approx` as well?
+        expected_size = info_dict.get('filesize')
 
-            if expected_size is None:
-                self.warn("Unknown expected file size, assuming it's complete.")
-            elif expected_size != actual_size:
-                self.error(
-                    "File size (%s bytes) doesn't match expected: %s bytes",
-                    actual_size, expected_size)
-                self.report_unable_to_resume()
-                return 1
+        if expected_size is None:
+            self.warn("Unknown expected file size, assuming it's complete.")
+        elif expected_size != actual_size:
+            self.error(
+                "File size (%s bytes) doesn't match expected: %s bytes",
+                actual_size, expected_size)
+            self.report_unable_to_resume()
+            return 1
 
-            return 0
+        return 0
 
-        return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
-
-    # TODO: too long, refactor
     async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:
         (folder, filename) = split_folder_filename(tmpfilename)
 
@@ -129,7 +138,7 @@ class UgetFD (ExternalFD):
             self.warn('Unknown file size, will track file block size only.')
 
         self.info('Starting inotify watch on folder: %s (%s bytes expected)',
-            folder, '?' if expected_size is None else expected_size)
+            folder, expected_size or '?')
 
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
@@ -156,17 +165,13 @@ class UgetFD (ExternalFD):
                 # an idea for when its download is complete.
                 (size, block_size) = get_disk_sizes(tmpfilename)
 
-                if (expected_size is None) or (expected_size <= 0):
-                    percent = '?'
-                else:
-                    percent = int(block_size / expected_size * 100)
+                self.info('Downloaded %s block bytes (%s, target %s bytes)',
+                    block_size,
+                    calc_percent_progress(block_size, expected_size),
+                    expected_size or '?')
 
-                self.info('Downloaded %s block bytes (~%s%%, target %s bytes)',
-                    block_size, percent, expected_size or '?')
-
-                is_downloaded = (
-                    (block_size >= size)
-                    and (expected_size is None or size == expected_size))
+                is_downloaded = ((block_size >= size)
+                    and ((expected_size is None) or (size == expected_size)))
 
                 if is_downloaded:
                     break
