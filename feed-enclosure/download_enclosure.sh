@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Download handler for Liferea's feed enclosures.
+# Glue script to download enclosures, that can be used with Liferea.
 #
 # Arguments: URL path
 # Stdin: none
@@ -118,7 +118,7 @@ EOT
 if [ -t 0 ]; then
     main "$@"
 else
-    # Format output with logging for when run by Liferea.
+    # Format output with logging for when run outside the terminal.
     {
         echo "Command line arguments: $0 $*"
         main "$@"

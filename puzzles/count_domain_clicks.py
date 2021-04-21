@@ -29,7 +29,7 @@ def enumerate_domains(domain: str) -> Iterator[str]:
 def count_clicks(count_domain_csv_lines: Iterable[str]) -> Dict[str, int]:
     """
     Time: O(n * m), where n=number of CSV lines, m=number of domain parts
-    Space: O(n * m), where n=number of CSV lines, m=number of domain parts
+    Space: ditto
     """
 
     count_per_domain = defaultdict(lambda: 0)

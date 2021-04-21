@@ -14,7 +14,7 @@ Only [Xubuntu](https://xubuntu.org/) 20.10 on x86-64 is supported/tested at the 
 
 In Liferea's [enclosure settings](https://lzone.de/liferea/help110/preferences_en.html#enclosures) change the download tool to the included script. For example:
 
-    /home/user/feed-enclosure/liferea_download_enclosure.sh %s /home/user/Videos/Feeds/
+    /home/user/feed-enclosure/download_enclosure.sh %s /home/user/Videos/Feeds/
 
 ## Enable automatic enclosure download 
 
