@@ -107,11 +107,6 @@ process_options() {
         esac
     done
 
-    if [ $# -ne 1 ]; then
-        print_usage
-        return 1
-    fi
-
     if [ -z "$folder" ]; then
         folder=.
     fi
@@ -124,6 +119,11 @@ main() {
 
     process_options "$@"
     shift $((OPTIND - 1))
+
+    if [ $# -ne 1 ]; then
+        print_usage
+        return 1
+    fi
 
     url="$1"
     shift
