@@ -1,24 +1,12 @@
+* TODO license?
+
 * TODO dependency updates
 
-- notify Python package updates
-- check if workarounds aren't needed anymore (add TODOs? report issues?)
+- notify Python package updates? non-Python dependencies?
+- check if workarounds aren't needed anymore (report issues?)
 
 * TODO tests
 
 - linting (Python, shellcheck)
 - type checking (Mypy)
 - CD/CI
-
-* TODO license?
-
-* TODO youtube-dl external downloader
-
-- how to resume or debug when only the video part has been downloaded?
-  - resuming works fine, just missing some GUI notification?
-  - need a better way to debug youtube-dl when merging?
-  - show tray icon? with console output? potentially too many?
-- switch to kGet?
-  - hard to find documentation on uGet
-  - it crashed once and lost all the settings and download history
-  - not a lot of options for programmatic control?
-- modify Liferea to have global option for auto-download, and filter cmd?

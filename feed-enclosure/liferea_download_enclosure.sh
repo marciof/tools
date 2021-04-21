@@ -23,7 +23,7 @@ is_ign_daily_fix_url() {
     printf %s "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
 }
 
-prepare_ign_daily_fix_url() {
+upgrade_ign_daily_fix_url_res() {
     ign_width='[[:digit:]]+'
     ign_hash='[[:xdigit:]]+'
     ign_bitrate='[[:digit:]]+'
@@ -67,7 +67,7 @@ download_via_uget() {
 
 # TODO: getopt option for download path?
 # TODO: GUI notification of download errors or significant events?
-#       eg. ffmpeg muxing start/end, attempting to "download" livestreams, etc
+#       eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
 main() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
         echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
@@ -96,7 +96,7 @@ EOT
         # TODO: add IGN Daily Fix support to youtube-dl?
         #       https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
         #       https://github.com/ytdl-org/youtube-dl/issues/24771
-        download_via_uget "$(prepare_ign_daily_fix_url "$url")" "$path"
+        download_via_uget "$(upgrade_ign_daily_fix_url_res "$url")" "$path"
     else
         (
             # FIXME: youtube-dl doesn't have an option for the output directory,
