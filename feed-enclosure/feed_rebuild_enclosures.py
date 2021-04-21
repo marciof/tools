@@ -25,6 +25,7 @@ import feedparser
 from pathvalidate import sanitize_filename
 
 
+# TODO: detect availability of `/dev/log` (it's Linux specific)
 def create_logger(
         name: Optional[str] = None,
         syslog_address: str = '/dev/log') -> logging.Logger:
