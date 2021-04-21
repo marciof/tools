@@ -3,6 +3,8 @@
 
 """
 Rebuilds RSS/Atom feeds into RSS so that the "best" enclosures are chosen.
+Accepts whatever kinds of feed that feedparser supports.
+
 Enclosure URLs will also have their associated feed entry title saved in the
 URL fragment part as a filename, so downloaders can use it if/when needed.
 

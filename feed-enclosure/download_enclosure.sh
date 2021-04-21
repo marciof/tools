@@ -1,10 +1,7 @@
 #!/bin/sh
 
-# Glue script to download enclosures, that can be used with Liferea.
-#
-# Arguments: URL path
-# Stdin: none
-# Stdout: download progress
+# Wrapper script to download enclosures, that can be used with Liferea.
+# Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
 # Runtime dependencies:
 #   ./youtube_dl_wrapper.py
