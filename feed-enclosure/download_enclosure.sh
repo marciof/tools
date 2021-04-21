@@ -19,6 +19,22 @@ set -e -u
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
 
+help_opt=h
+folder_opt=f
+folder=
+
+check_dependencies() {
+    if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
+        echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
+        return 1
+    fi
+
+    if ! command -v "$UGET_BIN" >/dev/null; then
+        echo "Error: $UGET_BIN not found (override \$UGET_BIN)" >&2
+        return 1
+    fi
+}
+
 is_ign_daily_fix_url() {
     printf %s "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
 }
@@ -65,43 +81,67 @@ download_via_uget() {
         "$uget_url"
 }
 
-# TODO: getopt option for download path?
+print_usage() {
+    cat <<EOT >&2
+Usage: $(basename "$0") [OPTION]... URL
+
+Note: if the URL has a URL fragment then it's an optional filename hint
+
+Options:
+  -$help_opt           display this help and exit
+  -$folder_opt PATH      download save location to "PATH"
+EOT
+}
+
+process_options() {
+    while getopts "$folder_opt:$help_opt" process_opt "$@"; do
+        case "$process_opt" in
+            "$folder_opt")
+                folder="$OPTARG"
+                ;;
+            "$help_opt")
+                print_usage
+                return 1
+                ;;
+            ?)
+                echo "Try '-$help_opt' for more information." >&2
+                return 1
+                ;;
+        esac
+    done
+
+    if [ $# -ne 1 ]; then
+        print_usage
+        return 1
+    fi
+
+    if [ -z "$folder" ]; then
+        folder=.
+    fi
+}
+
 # TODO: GUI notification of download errors or significant events?
 #       eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
 main() {
-    if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
-        echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
-        return 1
-    fi
+    check_dependencies
 
-    if ! command -v "$UGET_BIN" >/dev/null; then
-        echo "Error: $UGET_BIN not found (override \$UGET_BIN)" >&2
-        return 1
-    fi
-
-    if [ $# -ne 2 ]; then
-        cat <<'EOT' >&2
-Arguments: url path
-Note: if the URL has a URL fragment then it's an optional filename
-EOT
-        return 1
-    fi
+    process_options "$@"
+    shift $((OPTIND - 1))
 
     url="$1"
-    path="$2"
-    shift 2
+    shift
 
     if is_ign_daily_fix_url "$url"; then
         # TODO: missing metadata for IGN Daily Fix videos (maybe not needed?)
         # TODO: add IGN Daily Fix support to youtube-dl?
         #       https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
         #       https://github.com/ytdl-org/youtube-dl/issues/24771
-        download_via_uget "$(upgrade_ign_daily_fix_url_res "$url")" "$path"
+        download_via_uget "$(upgrade_ign_daily_fix_url_res "$url")" "$folder"
     else
         (
             # FIXME: youtube-dl doesn't have an option for the output directory,
             #        so as a workaround go to where it should be downloaded
-            cd -- "$path"
+            cd -- "$folder"
 
             # TODO: getopt option to control video quality?
             "$YOUTUBE_DL_BIN" \
