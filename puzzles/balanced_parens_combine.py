@@ -5,10 +5,11 @@
 List all possible balanced parenthesis combinations up to `total` pairs.
 """
 
+from typing import List
 import unittest
 
 
-def permutate(total, num_open = 0, num_closed = 0):
+def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
     """
     Time: O(2^n), two branches of recursive calls for each call
     Space: O(2^n)

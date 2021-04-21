@@ -14,7 +14,7 @@
 * TODO youtube-dl external downloader
 
 - how to resume or debug when only the video part has been downloaded?
-  - download bestvideo and bestaudio separately? then merge? also faster?
+  - resuming works fine, just missing some GUI notification?
   - need a better way to debug youtube-dl when merging?
   - show tray icon? with console output? potentially too many?
 - switch to kGet?
@@ -22,11 +22,3 @@
   - it crashed once and lost all the settings and download history
   - not a lot of options for programmatic control?
 - modify Liferea to have global option for auto-download, and filter cmd?
-- missing metadata for IGN Daily Fix videos
-  - https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
-  - https://github.com/ytdl-org/youtube-dl/issues/24771
-- user notification of download wrapper errors?
-  - include ffmpeg muxing done too?
-  - balloontip.py, https://gist.github.com/wontoncc/1808234
-  - https://stackoverflow.com/questions/31772192/toastnotifications-sent-from-powershell-disappear-from-action-center
-  - https://stackoverflow.com/questions/27552026/create-custom-exception-handler-for-unhandled-exceptions-in-flask

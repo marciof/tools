@@ -59,13 +59,15 @@ download_via_uget() {
     #        so as a workaround make it absolute
     "$UGET_BIN" \
         --quiet \
-        "--folder=$(readlink -e "$uget_path")" \
+        "--folder=$(readlink -e -- "$uget_path")" \
         "$@" \
         -- \
         "$uget_url"
 }
 
-# TODO: getopt option for download path
+# TODO: getopt option for download path?
+# TODO: GUI notification of download errors or significant events?
+#       eg. ffmpeg muxing start/end, attempting to "download" livestreams, etc
 main() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
         echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
@@ -90,14 +92,18 @@ EOT
     shift 2
 
     if is_ign_daily_fix_url "$url"; then
+        # TODO: missing metadata for IGN Daily Fix videos (maybe not needed?)
+        # TODO: add IGN Daily Fix support to youtube-dl?
+        #       https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
+        #       https://github.com/ytdl-org/youtube-dl/issues/24771
         download_via_uget "$(prepare_ign_daily_fix_url "$url")" "$path"
     else
         (
             # FIXME: youtube-dl doesn't have an option for the output directory,
             #        so as a workaround go to where it should be downloaded
-            cd "$path"
+            cd -- "$path"
 
-            # TODO: getopt option to control video quality
+            # TODO: getopt option to control video quality?
             "$YOUTUBE_DL_BIN" \
                 --verbose \
                 --external-downloader uget \
