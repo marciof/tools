@@ -1,11 +1,12 @@
 #!/bin/sh
 # Generic viewer.
 
+# TODO: add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
 # TODO: tests
 # TODO: logging
 # TODO: measure performance
 # TODO: highlight output from `curl`
-# TODO: add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
+# TODO: support `wget` as an alternative to `curl`
 # TODO: detect URLs without an explicit protocol? eg. "www."
 # TODO: piping (` | mode_run_color`) can remove error exit codes
 # TODO: use POSIX env vars `COLUMNS` and `LINES`?
@@ -57,21 +58,21 @@ tool_options_dirname=
 tool_options_curl=
 
 # shellcheck disable=SC2034
-mode_help_bin='read binary file, via "lesspipe" and "file"/"dirname"'
+mode_help_bin='read binary file, via `lesspipe` and `file`/`dirname`'
 # shellcheck disable=SC2034
-mode_help_color='syntax highlighting, via "highlight"'
+mode_help_color='syntax highlighting, via `highlight`'
 # shellcheck disable=SC2034
-mode_help_dir='list directory, via "ls" or "tree" when depth is disabled'
+mode_help_dir='list directory, via `ls` or `tree` when depth is disabled'
 # shellcheck disable=SC2034
-mode_help_pager='page output as needed, via "less" and "tput"'
+mode_help_pager='page output as needed, via `less` and `tput`'
 # shellcheck disable=SC2034
-mode_help_stdin='read standard input, via "cat"'
+mode_help_stdin='read standard input, via `cat`'
 # shellcheck disable=SC2034
-mode_help_text='read plain text file, via "cat" and "file"/"dirname"'
+mode_help_text='read plain text file, via `cat` and `file`/`dirname`'
 # shellcheck disable=SC2034
-mode_help_uri='URI/URL protocols, via "curl"'
+mode_help_uri='URI/URL protocols, via `curl`'
 # shellcheck disable=SC2034
-mode_help_vcs='show VCS revision, via "git show"'
+mode_help_vcs='show VCS revision, via `git show`'
 
 # shellcheck disable=SC2034,SC2016
 tool_help_lesspipe='`lesspipe` or `lesspipe.sh`, https://www.gnu.org/software/less/'
