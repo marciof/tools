@@ -39,7 +39,6 @@ done
 
 shopt -s autocd dirspell histappend
 alias -- -='cd -'
-alias ..='cd ..'
 
 DESC=' <https://github.com/sharkdp/fd>' have fd
 have dircolors && eval "$("$NAME" -b)"

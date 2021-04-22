@@ -2,6 +2,7 @@
 # Generic viewer.
 
 # TODO: add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
+# TODO: detect `colordiff` for colored diffs? eg. outside Git
 # TODO: tests
 # TODO: logging
 # TODO: measure performance
