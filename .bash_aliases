@@ -160,7 +160,7 @@ if have git; then
         esac
 
         git config --global pager.status true
-        > "$git_cache_file"
+        : >"$git_cache_file"
     fi
 
     export GIT_PS1_SHOWSTASHSTATE=x
