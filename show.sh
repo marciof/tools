@@ -1,7 +1,7 @@
 #!/bin/sh
 # Generic viewer.
 
-# TODO: support Python's `pydoc`? eg. `python3 -m pydoc`
+# TODO: don't discard pydoc's formatting when disabling pager (and other tools?)
 # TODO: document functions and parameters/return
 # TODO: add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
 # TODO: detect `colordiff` for colored diffs? eg. outside Git
@@ -42,63 +42,69 @@ is_show_all_enabled=false
 mode_is_disabled_bin=false
 mode_is_disabled_color=false
 mode_is_disabled_dir=false
+mode_is_disabled_doc=false
 mode_is_disabled_pager=false
 mode_is_disabled_stdin=false
 mode_is_disabled_text=false
 mode_is_disabled_uri=false
 mode_is_disabled_vcs=false
 
-tool_options_lesspipe=
-tool_options_highlight=
-tool_options_ls=
-tool_options_tree=
 tool_options_cat=
-tool_options_less=
-tool_options_git=
-tool_options_tput=
-tool_options_file=
-tool_options_dirname=
 tool_options_curl=
+tool_options_dirname=
+tool_options_file=
+tool_options_git=
+tool_options_highlight=
+tool_options_less=
+tool_options_lesspipe=
+tool_options_ls=
+tool_options_python3=
+tool_options_tput=
+tool_options_tree=
 
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
 mode_help_bin='read binary file, via `lesspipe` and `file`/`dirname`'
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
 mode_help_color='syntax highlighting, via `highlight`'
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
 mode_help_dir='list directory, via `ls` or `tree` when depth is disabled'
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
+mode_help_doc='documentation, via `python3` and pydoc'
+# shellcheck disable=SC2034,SC2016
 mode_help_pager='page output as needed, via `less` and `tput`'
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
 mode_help_stdin='read standard input, via `cat`'
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
 mode_help_text='read plain text file, via `cat` and `file`/`dirname`'
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2016
 mode_help_uri='URI/URL protocols, via `curl`'
-# shellcheck disable=SC2034
-mode_help_vcs='show VCS revision, via `git show`'
+# shellcheck disable=SC2034,SC2016
+mode_help_vcs='VCS revision, via `git show`'
 
-# shellcheck disable=SC2034,SC2016
-tool_help_lesspipe='`lesspipe` or `lesspipe.sh`, https://www.gnu.org/software/less/'
-# shellcheck disable=SC2034
-tool_help_highlight='http://www.andre-simon.de/doku/highlight/en/highlight.php'
-# shellcheck disable=SC2034,SC2016
-tool_help_ls='POSIX `ls`'
-# shellcheck disable=SC2034
-tool_help_tree='http://mama.indstate.edu/users/ice/tree/'
 # shellcheck disable=SC2034,SC2016
 tool_help_cat='POSIX `cat`'
 # shellcheck disable=SC2034
-tool_help_less='https://www.gnu.org/software/less/'
-# shellcheck disable=SC2034
-tool_help_git='https://git-scm.com'
-# shellcheck disable=SC2034,SC2016
-tool_help_tput='POSIX `tput`'
-# shellcheck disable=SC2034,SC2016
-tool_help_file='POSIX `file`'
+tool_help_curl='https://curl.haxx.se'
 # shellcheck disable=SC2034,SC2016
 tool_help_dirname='POSIX `dirname`'
+# shellcheck disable=SC2034,SC2016
+tool_help_file='POSIX `file`'
 # shellcheck disable=SC2034
-tool_help_curl='https://curl.haxx.se'
+tool_help_git='https://git-scm.com'
+# shellcheck disable=SC2034
+tool_help_highlight='http://www.andre-simon.de/doku/highlight/en/highlight.php'
+# shellcheck disable=SC2034
+tool_help_less='https://www.gnu.org/software/less/'
+# shellcheck disable=SC2034,SC2016
+tool_help_lesspipe='`lesspipe` or `lesspipe.sh`, https://www.gnu.org/software/less/'
+# shellcheck disable=SC2034,SC2016
+tool_help_ls='POSIX `ls`'
+# shellcheck disable=SC2034,SC2016
+tool_help_python3='https://www.python.org'
+# shellcheck disable=SC2034,SC2016
+tool_help_tput='POSIX `tput`'
+# shellcheck disable=SC2034
+tool_help_tree='http://mama.indstate.edu/users/ice/tree/'
 
 if [ -t 1 ]; then
     is_tty_out=true
@@ -148,6 +154,10 @@ tool_has_dirname() {
 
 tool_has_curl() {
     command -v curl >/dev/null
+}
+
+tool_has_python3() {
+    command -v python3 >/dev/null
 }
 
 mode_can_bin() {
@@ -206,6 +216,24 @@ mode_run_dir() {
         fi
         run_with_options "$tool_options_ls" false ls "$@"
     fi
+}
+
+mode_can_doc() {
+    # Check for errors in the output since pydoc doesn't exit with an error
+    # status code when no documentation is found.
+    test "$mode_is_disabled_doc" = false \
+        && python3 -m pydoc "$1" \
+            | head -n 1 \
+            | grep -qvF 'No Python documentation found'
+}
+
+mode_has_doc() {
+    tool_has_python3
+}
+
+mode_run_doc() {
+    PAGER='' run_with_options "$tool_options_python3" false \
+        python3 -m pydoc "$1"
 }
 
 mode_can_text() {
@@ -409,7 +437,7 @@ Options:
 Modes:
 USAGE
 
-    for _help_mode in bin color dir pager stdin text uri vcs; do
+    for _help_mode in bin color dir doc pager stdin text uri vcs; do
         if "mode_has_$_help_mode"; then
             _help_has=' '
         else
@@ -422,7 +450,7 @@ USAGE
 
     printf '\nTools:\n'
 
-    for _help_tool in cat curl dirname file git highlight less lesspipe ls tput tree; do
+    for _help_tool in cat curl dirname file git highlight less lesspipe ls python3 tput tree; do
         if "tool_has_$_help_tool"; then
             _help_has=' '
         else
@@ -470,7 +498,7 @@ run_non_paging_modes() {
     fi
 
     for _run_all_input in "$@"; do
-        for _run_all_mode in bin text dir vcs uri; do
+        for _run_all_mode in bin text dir vcs doc uri; do
             if "mode_can_$_run_all_mode" "$_run_all_input" \
                     && "mode_run_$_run_all_mode" "$_run_all_input"; then
                 continue 2
