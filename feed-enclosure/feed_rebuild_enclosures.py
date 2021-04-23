@@ -54,7 +54,7 @@ def list_parsed_feed_entry_enclosure_urls(
         logger: logging.Logger) -> List[str]:
 
     """
-    Lists all feed entry enclosures found, ordered from "best" to "worst".
+    List all feed entry enclosures found, ordered from "best" to "worst".
     """
 
     urls = []
@@ -74,9 +74,9 @@ def list_parsed_feed_entry_enclosure_urls(
 
 def add_title_filename_to_url(url: str, title: str) -> str:
     """
-    Adds a title in the URL fragment part for downloaders to use when the
+    Add a title in the URL fragment part for downloaders to use when the
     original URL filename isn't human readable (URL fragments are client-side
-    only so safe to remove).
+    only, so safe to remove).
     """
 
     (defrag_url, fragment) = urldefrag(url)

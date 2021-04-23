@@ -19,6 +19,12 @@ set -e -u
 LIFEREA_BIN="${LIFEREA_BIN:-liferea}"
 XDOTOOL_BIN="${XDOTOOL_BIN:-xdotool}"
 
+# Search for a visible window by class name.
+#
+# Globals: XDOTOOL_BIN
+# Arguments: (pass-through)
+# Stdin: none
+# Stdout: search results
 xdotool_search() {
     "$XDOTOOL_BIN" search --onlyvisible --classname "$@"
 }

@@ -30,6 +30,10 @@ def split_folder_filename(path: str) -> Tuple[str, str]:
 
 
 def get_disk_sizes(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
+    """
+    Get the reported file size, as well as the actual total block size on disk.
+    """
+
     stat = os.stat(path)
 
     # TODO: detect availability of `st_blocks` (it's Unix specific)

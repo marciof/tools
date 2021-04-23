@@ -10,5 +10,3 @@
 - linting (Python, shellcheck)
 - type checking (Mypy)
 - CD/CI
-
-* TODO document functions and parameters/return

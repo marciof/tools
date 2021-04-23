@@ -21,6 +21,12 @@ set -e -u
 XML_STARLET_BIN="${XML_STARLET_BIN:-xmlstarlet}"
 FEED_REBUILD_ENCLOSURES_BIN="${FEED_REBUILD_ENCLOSURES_BIN:-$(dirname "$(readlink -e "$0")")/feed_rebuild_enclosures.py}"
 
+# Set a value for an XML attribute in an XPath location.
+#
+# Globals: XML_STARLET_BIN
+# Arguments: XPath locator, attribute name, attribute value
+# Stdin: XML
+# Stdout: updated XML
 xml_set_attr_value() {
     xml_locator="$1"
     xml_name="$2"
@@ -47,12 +53,7 @@ if ! command -v "$FEED_REBUILD_ENCLOSURES_BIN" >/dev/null; then
 fi
 
 if [ -t 0 ]; then
-    cat <<'EOT' >&2
-Warning: stdin is connected to terminal/keyboard
-
-See companion script `liferea_find_opml.sh` for where to find
-your Liferea's OPML file to feed this script with.
-EOT
+    echo 'Warning: stdin is connected to terminal/keyboard' >&2
 fi
 
 entry_xpath='//outline[@type="rss"]'

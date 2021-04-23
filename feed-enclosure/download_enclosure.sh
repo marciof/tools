@@ -35,10 +35,20 @@ check_dependencies() {
     fi
 }
 
+# Check if a URL is for an IGN Daily Fix video.
+#
+# Arguments: URL
+# Exit status: 0 when true
 is_ign_daily_fix_url() {
     printf %s "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
 }
 
+# Modify a URL for an IGN Daily Fix video to have the highest resolution
+# possible.
+#
+# Arguments: URL
+# Stdin: none
+# Stdout: modified URL
 upgrade_ign_daily_fix_url_video_res() {
     ign_width='[[:digit:]]+'
     ign_hash='[[:xdigit:]]+'
@@ -48,10 +58,22 @@ upgrade_ign_daily_fix_url_video_res() {
         | sed -r "s#/$ign_width(/$ign_hash-)$ign_bitrate-#/1920\\13906000-#"
 }
 
+# Decode a percent-encoded string.
+# https://en.wikipedia.org/wiki/Percent-encoding
+#
+# Arguments: none
+# Stdin: percent-encoded string
+# Stdout: percent-decoded string
 percent_decode() {
     sed -r 's/%([[:xdigit:]]{2})/\\x\1/g' | xargs -0 printf %b
 }
 
+# Extract an optional filename hint (for downloaders) from the URL fragment,
+# if available.
+#
+# Arguments: URL
+# Stdin: none
+# Stdout: filename if available, otherwise no output
 extract_nice_filename_from_url() {
     if printf %s "$1" | grep -q -F '#'; then
         # FIXME: Liferea seems to percent-encode characters even when the URL
@@ -60,6 +82,12 @@ extract_nice_filename_from_url() {
     fi
 }
 
+# Download a URL using uGet in the background.
+#
+# Globals: UGET_BIN
+# Arguments: URL, folder path
+# Stdin: none
+# Stdout: log filename where uGet stdout and stderr are logged to
 download_via_uget() {
     uget_url="$1"
     uget_path="$2"
@@ -71,14 +99,17 @@ download_via_uget() {
         set --
     fi
 
+    uget_log="$(mktemp)"
+    echo "uGet log file: $uget_log"
+
     # FIXME: uGet doesn't seem to interpret relative folder paths correctly,
     #        so as a workaround make it absolute
-    "$UGET_BIN" \
+    nohup "$UGET_BIN" \
         --quiet \
         "--folder=$(readlink -e -- "$uget_path")" \
         "$@" \
         -- \
-        "$uget_url"
+        "$uget_url" </dev/null >"$uget_log" &
 }
 
 print_usage() {
