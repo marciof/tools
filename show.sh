@@ -1,7 +1,7 @@
 #!/bin/sh
 # Generic viewer.
 
-# TODO: support `pydoc`?
+# TODO: support Python's `pydoc`? eg. `python3 -m pydoc`
 # TODO: document functions and parameters/return
 # TODO: add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
 # TODO: detect `colordiff` for colored diffs? eg. outside Git
