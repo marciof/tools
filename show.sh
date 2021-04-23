@@ -1,6 +1,7 @@
 #!/bin/sh
 # Generic viewer.
 
+# TODO: check which tools are missing a `--` to separate options from arguments
 # TODO: don't discard pydoc's formatting when disabling pager (and other tools?)
 # TODO: document functions and parameters/return
 # TODO: add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
@@ -222,7 +223,7 @@ mode_can_doc() {
     # Check for errors in the output since pydoc doesn't exit with an error
     # status code when no documentation is found.
     test "$mode_is_disabled_doc" = false \
-        && python3 -m pydoc "$1" \
+        && python3 -m pydoc -- "$1" \
             | head -n 1 \
             | grep -qvF 'No Python documentation found'
 }
@@ -233,7 +234,7 @@ mode_has_doc() {
 
 mode_run_doc() {
     PAGER='' run_with_options "$tool_options_python3" false \
-        python3 -m pydoc "$1"
+        python3 -m pydoc -- "$1"
 }
 
 mode_can_text() {
