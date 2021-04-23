@@ -5,6 +5,7 @@
 - [Fira Code](https://github.com/tonsky/FiraCode) font
 - [Firefox](https://www.firefox.com) browser ([extensions](https://addons.mozilla.org/en-US/firefox/collections/13173821/essentials/))
 - [Tor](https://www.torproject.org) browser
+- [Thunderbird](https://www.thunderbird.net) email/calendar
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
