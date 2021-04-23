@@ -43,10 +43,9 @@ classname=Liferea
 
 # TODO: possible race-condition
 if ! xdotool_search "$classname" windowminimize >/dev/null; then
-    # TODO: output from Liferea, including these scripts will litter tty/stdout
-    "$LIFEREA_BIN" "$@" &
-    exit_status=$?
+    log_file="$(mktemp)"
+    echo "Liferea log file: $log_file"
 
+    nohup "$LIFEREA_BIN" "$@" </dev/null >"$log_file" &
     xdotool_search --sync "$classname" windowminimize
-    exit $exit_status
 fi

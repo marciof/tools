@@ -99,8 +99,8 @@ download_via_uget() {
         set --
     fi
 
-    uget_log="$(mktemp)"
-    echo "uGet log file: $uget_log"
+    uget_log_file="$(mktemp)"
+    echo "uGet log file: $uget_log_file"
 
     # FIXME: uGet doesn't seem to interpret relative folder paths correctly,
     #        so as a workaround make it absolute
@@ -109,7 +109,7 @@ download_via_uget() {
         "--folder=$(readlink -e -- "$uget_path")" \
         "$@" \
         -- \
-        "$uget_url" </dev/null >"$uget_log" &
+        "$uget_url" </dev/null >"$uget_log_file" &
 }
 
 print_usage() {
