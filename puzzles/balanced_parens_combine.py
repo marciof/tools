@@ -15,8 +15,8 @@ def permutate_iter(max_num_pairs: int, parens: str = '()') -> Iterator[str]:
     elif max_num_pairs == 1:
         yield parens
     else:
-        yield from permutate_iter(max_num_pairs - 1, '()' + parens)
         yield from permutate_iter(max_num_pairs - 1, parens + '()')
+        yield from permutate_iter(max_num_pairs - 1, '()' + parens)
         yield from permutate_iter(max_num_pairs - 1, '(' + parens + ')')
 
 
@@ -43,6 +43,12 @@ def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
 
 
 class Test (unittest.TestCase):
+    """
+    Each test case uses `sorted` so that comparison works irrespective of
+    the generated order, while at the same time catching errors if duplicate
+    elements are generated.
+    """
+
     permutate_impls = {
         permutate_iter,
         permutate,
@@ -51,32 +57,32 @@ class Test (unittest.TestCase):
     def test_count_0(self):
         for permutate_impl in self.permutate_impls:
             with self.subTest(permutate_impl):
-                self.assertEqual(set(permutate_impl(0)), set())
+                self.assertEqual(list(sorted(permutate_impl(0))), [])
 
     def test_count_1(self):
         for permutate_impl in self.permutate_impls:
             with self.subTest(permutate_impl):
-                self.assertEqual(set(permutate(1)), {'()'})
+                self.assertEqual(list(sorted(permutate_impl(1))), ['()'])
 
     def test_count_2(self):
         for permutate_impl in self.permutate_impls:
             with self.subTest(permutate_impl):
                 self.assertEqual(
-                    set(permutate(2)),
-                    {'()()', '(())'})
+                    list(sorted(permutate_impl(2))),
+                    sorted(['()()', '(())']))
 
     def test_count_3(self):
         for permutate_impl in self.permutate_impls:
             with self.subTest(permutate_impl):
                 self.assertEqual(
-                    set(permutate(3)),
-                    {
+                    list(sorted(permutate_impl(3))),
+                    sorted([
                         '()()()',
                         '((()))',
                         '(()())',
                         '(())()',
                         '()(())',
-                    })
+                    ]))
 
 
 if __name__ == '__main__':
