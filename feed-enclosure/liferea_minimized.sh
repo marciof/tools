@@ -12,7 +12,7 @@
 #   apt install xdotool # Version: 1:3.20160805.1-4
 #
 # Test dependencies:
-#   apt install shellcheck # Version: 0.7.1-1build1
+#   ./lint_shell.sh
 
 set -e -u
 

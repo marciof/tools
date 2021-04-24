@@ -22,8 +22,9 @@ from typing import List, Optional
 from urllib.parse import urldefrag, urlparse
 
 # external
-from feedgen import feed as feedgen
-import feedparser
+# FIXME: missing type stubs for some external libraries
+from feedgen import feed as feedgen # type: ignore
+import feedparser # type: ignore
 from pathvalidate import sanitize_filename
 
 

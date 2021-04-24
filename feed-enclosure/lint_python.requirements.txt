@@ -1,5 +1,3 @@
 # runtime
 # TODO: Python package updates? notify of dependency changes? needs testing
-feedgen==0.9.0
-feedparser==6.0.2
-pathvalidate==2.4.1
+mypy==0.812

@@ -1,3 +1,4 @@
 # runtime
+# TODO: Python package updates? notify of dependency changes? needs testing
 asyncinotify==2.0.2
 youtube-dl==2021.4.1

@@ -8,7 +8,7 @@
 # Stdout: path to Liferea's OPML file
 #
 # Test dependencies:
-#   apt install shellcheck # Version: 0.7.1-1build1
+#   ./lint_shell.sh
 
 set -e -u
 

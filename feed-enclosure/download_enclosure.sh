@@ -9,7 +9,7 @@
 #   apt install ffmpeg # Version: 7:4.3.1-4ubuntu1 # merge video/audio
 #
 # Test dependencies:
-#   apt install shellcheck # Version: 0.7.1-1build1
+#   ./lint_shell.sh
 
 set -e -u
 

@@ -13,9 +13,10 @@ import subprocess
 from typing import List, Optional, Tuple, Type
 
 # external
-from asyncinotify import Inotify, Mask
-import youtube_dl
-from youtube_dl.downloader.external import _BY_NAME, ExternalFD
+# FIXME: missing type stubs for some external libraries
+from asyncinotify import Inotify, Mask # type: ignore
+import youtube_dl # type: ignore
+from youtube_dl.downloader.external import _BY_NAME, ExternalFD # type: ignore
 
 
 # FIXME: uGet doesn't seem to interpret relative folder paths correctly,
@@ -46,7 +47,7 @@ def calc_percent_progress(current: int, expected: Optional[int]) -> str:
     if (expected is None) or (expected <= 0):
         percent = '?'
     else:
-        percent = int(current / expected * 100)
+        percent = str(int(current / expected * 100))
 
     return '~%s%%' % percent
 
