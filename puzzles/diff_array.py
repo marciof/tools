@@ -5,7 +5,7 @@
 Subtract one array from another, including all occurrences of each item.
 """
 
-from typing import Iterator, List
+from typing import Any, Dict, Iterator, List
 import unittest
 
 
@@ -27,7 +27,7 @@ def diff_array_naive(x: List, y: List) -> List:
 
 
 def diff_array_iter(x: List, y: List) -> Iterator:
-    elem_to_found = dict()
+    elem_to_found: Dict[Any, bool] = dict()
 
     for x_elem in x:
         was_found = elem_to_found.get(x_elem)

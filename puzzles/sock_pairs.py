@@ -8,13 +8,13 @@ Sock colors are represented as integers.
 Time: O(n)
 """
 
-from typing import List
+from typing import List, Set
 import unittest
 
 
 def count_sock_pairs(sock_colors: List[int]) -> int:
     num_pairs = 0
-    colors_seen = set()
+    colors_seen: Set[int] = set()
 
     for color in sock_colors:
         if color in colors_seen:

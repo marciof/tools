@@ -16,7 +16,7 @@ def transform_simple(matrix: List[List]) -> List:
     Space: ditto
     """
 
-    array = []
+    array: List = []
     is_reversed = False
 
     for row in matrix:

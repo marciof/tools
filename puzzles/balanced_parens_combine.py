@@ -5,8 +5,19 @@
 List all possible balanced parenthesis combinations up to `total` pairs.
 """
 
-from typing import List
+from typing import Iterator, List
 import unittest
+
+
+def permutate_iter(max_num_pairs: int, parens: str = '()') -> Iterator[str]:
+    if max_num_pairs == 0:
+        return
+    elif max_num_pairs == 1:
+        yield parens
+    else:
+        yield from permutate_iter(max_num_pairs - 1, '()' + parens)
+        yield from permutate_iter(max_num_pairs - 1, parens + '()')
+        yield from permutate_iter(max_num_pairs - 1, '(' + parens + ')')
 
 
 def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
@@ -32,30 +43,40 @@ def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
 
 
 class Test (unittest.TestCase):
+    permutate_impls = {
+        permutate_iter,
+        permutate,
+    }
+
     def test_count_0(self):
-        self.assertCountEqual(permutate(0), [])
+        for permutate_impl in self.permutate_impls:
+            with self.subTest(permutate_impl):
+                self.assertEqual(set(permutate_impl(0)), set())
 
     def test_count_1(self):
-        self.assertCountEqual(permutate(1), ['()'])
+        for permutate_impl in self.permutate_impls:
+            with self.subTest(permutate_impl):
+                self.assertEqual(set(permutate(1)), {'()'})
 
     def test_count_2(self):
-        self.assertCountEqual(
-            permutate(2),
-            [
-                '()()',
-                '(())',
-            ])
+        for permutate_impl in self.permutate_impls:
+            with self.subTest(permutate_impl):
+                self.assertEqual(
+                    set(permutate(2)),
+                    {'()()', '(())'})
 
     def test_count_3(self):
-        self.assertCountEqual(
-            permutate(3),
-            [
-                '()()()',
-                '((()))',
-                '(()())',
-                '(())()',
-                '()(())',
-            ])
+        for permutate_impl in self.permutate_impls:
+            with self.subTest(permutate_impl):
+                self.assertEqual(
+                    set(permutate(3)),
+                    {
+                        '()()()',
+                        '((()))',
+                        '(()())',
+                        '(())()',
+                        '()(())',
+                    })
 
 
 if __name__ == '__main__':

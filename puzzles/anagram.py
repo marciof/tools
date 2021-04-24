@@ -9,6 +9,7 @@ letters of a different word or phrase, typically using all the original
 letters exactly once."
 """
 
+from typing import Dict
 import unittest
 
 
@@ -39,7 +40,7 @@ def is_anagram_manual(word_1: str, word_2: str) -> bool:
 
     # Optimization: if of different lengths, return false.
 
-    char_count_1 = {}
+    char_count_1: Dict[str, int] = {}
 
     for char in word_1:
         char_count_1[char] = char_count_1.get(char, 0) + 1
