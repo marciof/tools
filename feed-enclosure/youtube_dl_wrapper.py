@@ -14,9 +14,9 @@ from typing import List, Optional, Tuple, Type
 
 # external
 # FIXME: missing type stubs for some external libraries
-from asyncinotify import Inotify, Mask # type: ignore
-import youtube_dl # type: ignore
-from youtube_dl.downloader.external import _BY_NAME, ExternalFD # type: ignore
+from asyncinotify import Inotify, Mask  # type: ignore
+import youtube_dl  # type: ignore
+from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 
 # FIXME: uGet doesn't seem to interpret relative folder paths correctly,
@@ -72,9 +72,9 @@ class UgetFD (ExternalFD):
         the background.
         """
 
-        # TODO: detect availability of `start_new_session` (it's POSIX specific)
+        # TODO: detect existence of `start_new_session` (it's POSIX specific)
         subprocess.Popen([cls.get_basename(), '--quiet'],
-            start_new_session = True)
+                         start_new_session=True)
 
     def error(self, message: str, *args) -> None:
         self.report_error(('[%s] ' + message) % (self.get_basename(), *args))
@@ -133,7 +133,11 @@ class UgetFD (ExternalFD):
 
         return 0
 
-    async def wait_for_download(self, tmpfilename: str, info_dict: dict) -> int:
+    async def wait_for_download(
+            self,
+            tmpfilename: str,
+            info_dict: dict) -> int:
+
         (folder, filename) = split_folder_filename(tmpfilename)
 
         # TODO: use `filesize_approx` as well?
@@ -143,13 +147,13 @@ class UgetFD (ExternalFD):
             self.warn('Unknown file size, will track file block size only.')
 
         self.info('Starting inotify watch on folder: %s (%s bytes expected)',
-            folder, expected_size or '?')
+                  folder, expected_size or '?')
 
         # TODO: use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
             # TODO: watch target file only for performance (measure first)
             inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
-                | Mask.MODIFY | Mask.MOVED_TO)
+                              | Mask.MODIFY | Mask.MOVED_TO)
 
             return_code = super()._call_downloader(tmpfilename, info_dict)
             self.info('Return code: %s', return_code)
@@ -171,18 +175,19 @@ class UgetFD (ExternalFD):
                 (size, block_size) = get_disk_sizes(tmpfilename)
 
                 self.info('Downloaded %s block bytes (%s, target %s bytes)',
-                    block_size,
-                    calc_percent_progress(block_size, expected_size),
-                    expected_size or '?')
+                          block_size,
+                          calc_percent_progress(block_size, expected_size),
+                          expected_size or '?')
 
                 is_downloaded = ((block_size >= size)
-                    and ((expected_size is None) or (size == expected_size)))
+                                 and ((expected_size is None)
+                                      or (size == expected_size)))
 
                 if is_downloaded:
                     break
 
             self.info('inotify events: %s skipped / %s total',
-                event_skipped_count, event_count)
+                      event_skipped_count, event_count)
             return return_code
 
 

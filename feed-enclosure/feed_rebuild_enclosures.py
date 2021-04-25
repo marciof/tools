@@ -23,8 +23,8 @@ from urllib.parse import urldefrag, urlparse
 
 # external
 # FIXME: missing type stubs for some external libraries
-from feedgen import feed as feedgen # type: ignore
-import feedparser # type: ignore
+from feedgen import feed as feedgen  # type: ignore
+import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 
@@ -111,8 +111,8 @@ def rebuild_parsed_feed_entry(
 
     if ('content' in feed_entry) and (len(feed_entry.content) > 0):
         new_feed_entry.content(
-            content = feed_entry.content[0]['value'],
-            type = '')
+            content=feed_entry.content[0]['value'],
+            type='')
 
     return new_feed_entry
 
@@ -147,19 +147,20 @@ def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
     parsed_feed = feedparser.parse(feed_xml)
     new_feed = rebuild_parsed_feed(parsed_feed, logger)
 
-    for feed_entry in parsed_feed.entries:
-        new_feed_entry = rebuild_parsed_feed_entry(feed_entry, new_feed, logger)
-        urls = list_parsed_feed_entry_enclosure_urls(feed_entry, logger)
+    for entry in parsed_feed.entries:
+        new_entry = rebuild_parsed_feed_entry(entry, new_feed, logger)
+        urls = list_parsed_feed_entry_enclosure_urls(entry, logger)
 
         if len(urls) > 0:
-            url = add_title_filename_to_url(urls[0], feed_entry.title)
-            logger.info('Enclosure URL for "%s": %s', feed_entry.title, url)
-            new_feed_entry.enclosure(url = url, type = '')
+            url = add_title_filename_to_url(urls[0], entry.title)
+            logger.info('Enclosure URL for "%s": %s', entry.title, url)
+            new_entry.enclosure(url=url, type='')
         else:
-            logger.warning('No enclosure URLs found in "%s".', feed_entry.title)
+            logger.warning(
+                'No enclosure URLs found in "%s".', entry.title)
 
     logger.info('Rebuilt feed: %s', new_feed.title())
-    return new_feed.rss_str(pretty = True).decode()
+    return new_feed.rss_str(pretty=True).decode()
 
 
 def rebuild_feed_from_stdin_to_stdout() -> None:
@@ -176,7 +177,7 @@ def rebuild_feed_from_stdin_to_stdout() -> None:
         print(rebuild_feed(sys.stdin.read(), logger))
     except BaseException as error:
         if logger is not None:
-            logger.error('Failed to rebuild feed', exc_info = error)
+            logger.error('Failed to rebuild feed', exc_info=error)
 
         raise
 
