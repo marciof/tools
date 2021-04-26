@@ -18,7 +18,7 @@ def find_contiguous_history(urls_a: List[str], urls_b: List[str]) -> List[str]:
     """
 
     url_b_to_index = {url_b: index for index, url_b in enumerate(urls_b)}
-    longest_common_seq = []
+    longest_common_seq: List[str] = []
 
     for index_a, url_a in enumerate(urls_a):
         index_b = url_b_to_index.get(url_a)

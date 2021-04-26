@@ -9,15 +9,23 @@ from typing import Iterator, List
 import unittest
 
 
-def permutate_iter(max_num_pairs: int, parens: str = '()') -> Iterator[str]:
-    if max_num_pairs == 0:
+def permutate_iter(
+        max_num_pairs: int,
+        parens: str = '()',
+        has_nesting: bool = False) -> Iterator[str]:
+
+    if max_num_pairs <= 0:
         return
     elif max_num_pairs == 1:
         yield parens
     else:
-        yield from permutate_iter(max_num_pairs - 1, parens + '()')
-        yield from permutate_iter(max_num_pairs - 1, '()' + parens)
-        yield from permutate_iter(max_num_pairs - 1, '(' + parens + ')')
+        max_num_pairs -= 1
+
+        if has_nesting:
+            yield from permutate_iter(max_num_pairs, '()' + parens, True)
+
+        yield from permutate_iter(max_num_pairs, parens + '()', False)
+        yield from permutate_iter(max_num_pairs, '(' + parens + ')', True)
 
 
 def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
