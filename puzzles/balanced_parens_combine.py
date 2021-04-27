@@ -9,7 +9,7 @@ from typing import Iterator, List
 import unittest
 
 
-def permutate_iter(
+def permutate_recur(
         max_num_pairs: int,
         parens: str = '()',
         has_nesting: bool = False) -> Iterator[str]:
@@ -19,13 +19,10 @@ def permutate_iter(
     elif max_num_pairs == 1:
         yield parens
     else:
-        max_num_pairs -= 1
-
+        yield from permutate_recur(max_num_pairs - 1, '(' + parens + ')', True)
+        yield from permutate_recur(max_num_pairs - 1, '()' + parens, False)
         if has_nesting:
-            yield from permutate_iter(max_num_pairs, '()' + parens, True)
-
-        yield from permutate_iter(max_num_pairs, parens + '()', False)
-        yield from permutate_iter(max_num_pairs, '(' + parens + ')', True)
+            yield from permutate_recur(max_num_pairs - 1, parens + '()', True)
 
 
 def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
@@ -58,7 +55,7 @@ class Test (unittest.TestCase):
     """
 
     permutate_impls = {
-        permutate_iter,
+        permutate_recur,
         permutate,
     }
 
