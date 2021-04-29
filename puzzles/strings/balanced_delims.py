@@ -11,7 +11,7 @@ import sys
 
 def is_balanced(string: str) -> bool:
     """
-    Time: O(n)
+    Time: O(n), where n=string length
     Space: O(n), worst-case it consists of open delimiters only
     """
 

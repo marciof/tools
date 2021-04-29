@@ -32,15 +32,16 @@ def rotate_matrix(matrix: List[List]) -> List[List]:
     return new_matrix
 
 
+# TODO
 def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
     pass
 
 
 class Test (unittest.TestCase):
-    rotate_impls = (
+    rotate_impls = {
         rotate_matrix,
         rotate_matrix_in_place,
-    )
+    }
 
     def test_empty_matrix(self):
         for rotate in self.rotate_impls:

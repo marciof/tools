@@ -13,6 +13,10 @@ def permutate_recur(
         max_num_pairs: int,
         parens: str = '()',
         has_nesting: bool = False) -> Iterator[str]:
+    """
+    Time: O(2^n), two branches (+/- 1) branches of recursive calls for each call
+    Space: O(2^n)
+    """
 
     if max_num_pairs <= 0:
         return
@@ -49,9 +53,9 @@ def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
 
 class Test (unittest.TestCase):
     """
-    Each test case uses `sorted` so that comparison works irrespective of
+    Each test case sorts the result so that comparison works irrespective of
     the generated order, while at the same time catching errors if duplicate
-    elements are generated.
+    elements are given.
     """
 
     permutate_impls = {

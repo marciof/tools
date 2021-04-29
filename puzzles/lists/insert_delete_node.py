@@ -27,7 +27,7 @@ class Node:
 
 def insert(node: Node, position: int, value) -> Optional[Node]:
     """
-    Time: O(n)
+    Time: O(n), where n=number of nodes
     Space: O(1)
     """
 
@@ -55,7 +55,7 @@ def insert(node: Node, position: int, value) -> Optional[Node]:
 
 def delete(node: Node, position: int) -> Optional[Node]:
     """
-    Time: O(n)
+    Time: O(n), where n=number of nodes
     Space: O(1)
     """
 

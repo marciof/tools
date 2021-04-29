@@ -10,7 +10,7 @@ import unittest
 
 def is_balanced(string: str) -> bool:
     """
-    Time: O(n)
+    Time: O(n), where n=string length
     Space: O(1)
     """
 
