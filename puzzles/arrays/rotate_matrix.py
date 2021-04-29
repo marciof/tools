@@ -11,8 +11,8 @@ import unittest
 
 def rotate_matrix(matrix: List[List]) -> List[List]:
     """
-    Time: O(n^2), where n=matrix side length
-    Space: O(n^2), ditto
+    Time: O(n), where n=number of elements in matrix
+    Space: O(n), ditto
     """
 
     if len(matrix) <= 1:
@@ -32,9 +32,16 @@ def rotate_matrix(matrix: List[List]) -> List[List]:
     return new_matrix
 
 
-# TODO
 def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
-    pass
+    """
+    Time: O(n), where n=number of elements in matrix
+    Space: O(1)
+    """
+
+    if len(matrix) <= 1:
+        return matrix
+
+    return []
 
 
 class Test (unittest.TestCase):

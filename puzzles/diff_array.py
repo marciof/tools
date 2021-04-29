@@ -10,6 +10,11 @@ import unittest
 
 
 def diff_array_naive(x: List, y: List) -> List:
+    """
+    Time: O(n*m), where n=length of array x, m=length of array y
+    Space: O(n), worst case no elements are removed from array x
+    """
+
     result = []
 
     for x_elem in x:
@@ -27,6 +32,11 @@ def diff_array_naive(x: List, y: List) -> List:
 
 
 def diff_array_iter(x: List, y: List) -> Iterator:
+    """
+    Time: O(n*m), where n=length of array x, m=length of array y
+    Space: O(m), where m=length of array y
+    """
+
     elem_to_found: Dict[Any, bool] = dict()
 
     for x_elem in x:
