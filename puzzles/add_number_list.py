@@ -33,15 +33,17 @@ def as_list(num: int) -> Numeral:
         result_digit.next = next_digit
         result_digit = next_digit
 
+    assert result_head.next is not None
     return result_head.next
 
 
 def as_number(num: Numeral) -> int:
-    digit = num
+    digit: Optional[Numeral] = num
     result = 0
     magnitude = 1
 
     while digit is not None:
+        assert digit.value is not None
         result += digit.value * magnitude
         magnitude *= 10
         digit = digit.next
@@ -66,6 +68,9 @@ def add(num_1: Numeral, num_2: Numeral) -> Numeral:
     result_digit = result_head
 
     while (carry > 0) or (digit_1 is not no_op) or (digit_2 is not no_op):
+        assert digit_1.value is not None
+        assert digit_2.value is not None
+
         value = digit_1.value + digit_2.value + carry
 
         if value >= 10:
@@ -78,14 +83,10 @@ def add(num_1: Numeral, num_2: Numeral) -> Numeral:
         result_digit.next = next_digit
         result_digit = next_digit
 
-        digit_1 = digit_1.next
-        digit_2 = digit_2.next
+        digit_1 = digit_1.next or no_op
+        digit_2 = digit_2.next or no_op
 
-        if digit_1 is None:
-            digit_1 = no_op
-        if digit_2 is None:
-            digit_2 = no_op
-
+    assert result_head.next is not None
     return result_head.next
 
 

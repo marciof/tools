@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Insert and delete a node from a linked list.
+"""
+
 from typing import List, Optional
 import unittest
 
 
 class Node:
-    def __init__(self, value, next: 'Node' = None):
+    def __init__(self, value, next: Optional['Node'] = None):
         self.value = value
         self.next = next
 
     def to_array(self) -> List:
-        node = self
+        node: Optional[Node] = self
         values = []
 
         while node is not None:
@@ -23,8 +27,6 @@ class Node:
 
 def insert(node: Node, position: int, value) -> Optional[Node]:
     """
-    Insert in linked-list.
-
     Time: O(n)
     Space: O(1)
     """
@@ -32,8 +34,8 @@ def insert(node: Node, position: int, value) -> Optional[Node]:
     if position < 0:
         return None
 
-    previous = None
-    current = node
+    previous: Optional[Node] = None
+    current: Optional[Node] = node
     i = 0
 
     while (i < position) and (current is not None):
@@ -53,8 +55,6 @@ def insert(node: Node, position: int, value) -> Optional[Node]:
 
 def delete(node: Node, position: int) -> Optional[Node]:
     """
-    Delete from linked-list.
-
     Time: O(n)
     Space: O(1)
     """
@@ -62,8 +62,8 @@ def delete(node: Node, position: int) -> Optional[Node]:
     if position < 0:
         return None
 
-    previous = None
-    current = node
+    previous: Optional[Node] = None
+    current: Optional[Node] = node
     i = 0
 
     while (i < position) and (current is not None):
