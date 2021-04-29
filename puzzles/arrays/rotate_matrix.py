@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 """
-Rotate a square matrix.
+Rotate a square matrix 90 degrees clockwise.
 """
 
 from typing import List
@@ -11,8 +11,8 @@ import unittest
 
 def rotate_matrix(matrix: List[List]) -> List[List]:
     """
-    Time: O()
-    Space: O()
+    Time: O(n^2), where n=matrix side length
+    Space: O(n^2), ditto
     """
 
     if len(matrix) <= 1:

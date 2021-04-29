@@ -14,7 +14,7 @@ def permutate_recur(
         parens: str = '()',
         has_nesting: bool = False) -> Iterator[str]:
     """
-    Time: O(2^n), two branches (+/- 1) branches of recursive calls for each call
+    Time: O(2^n), two branches (+/- 1) of recursive calls for each call
     Space: O(2^n)
     """
 
