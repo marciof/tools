@@ -61,7 +61,7 @@ class Test (unittest.TestCase):
 
 if __name__ == '__main__':
     if sys.stdin.isatty():
-        unittest.main(verbosity = 2)
+        unittest.main(verbosity=2)
     else:
         for line in sys.stdin:
             if line[0] in '(){}[]':

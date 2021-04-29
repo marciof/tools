@@ -19,9 +19,9 @@ class Numeral:
 
 def as_list(num: int) -> Numeral:
     if num == 0:
-        return Numeral(value = 0)
+        return Numeral(value=0)
 
-    result_head = Numeral(value = None)
+    result_head = Numeral(value=None)
     result_digit = result_head
 
     while num > 0:
@@ -29,7 +29,7 @@ def as_list(num: int) -> Numeral:
         value = num - (rem_num * 10)
         num = rem_num
 
-        next_digit = Numeral(value = value)
+        next_digit = Numeral(value=value)
         result_digit.next = next_digit
         result_digit = next_digit
 
@@ -57,14 +57,14 @@ def add(num_1: Numeral, num_2: Numeral) -> Numeral:
     Space: O(max(n, m)), where n=length of number 1, m=length of number 2
     """
 
-    no_op = Numeral(value = 0)
+    no_op = Numeral(value=0)
     no_op.next = no_op
 
     carry = 0
     digit_1 = num_1
     digit_2 = num_2
 
-    result_head = Numeral(value = None)
+    result_head = Numeral(value=None)
     result_digit = result_head
 
     while (carry > 0) or (digit_1 is not no_op) or (digit_2 is not no_op):
@@ -79,7 +79,7 @@ def add(num_1: Numeral, num_2: Numeral) -> Numeral:
         else:
             carry = 0
 
-        next_digit = Numeral(value = value)
+        next_digit = Numeral(value=value)
         result_digit.next = next_digit
         result_digit = next_digit
 
@@ -95,7 +95,7 @@ class Test (unittest.TestCase):
         self.assertEqual(
             as_number(add(as_list(0), as_list(0))),
             0)
-    
+
     def test_add_with_carry(self):
         self.assertEqual(
             as_number(add(as_list(999), as_list(99))),
@@ -126,4 +126,4 @@ class Test (unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity = 2)
+    unittest.main(verbosity=2)

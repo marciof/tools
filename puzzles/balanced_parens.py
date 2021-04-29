@@ -42,7 +42,7 @@ class Test (unittest.TestCase):
 
         for case in cases:
             self.assertTrue(is_balanced(case),
-                'Balanced parenthesis: %s' % case)
+                            'Balanced parenthesis: %s' % case)
 
     def test_unbalanced(self):
         cases = [
@@ -56,8 +56,8 @@ class Test (unittest.TestCase):
 
         for case in cases:
             self.assertFalse(is_balanced(case),
-                'Non-balanced parenthesis: %s' % case)
+                             'Non-balanced parenthesis: %s' % case)
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity = 2)
+    unittest.main(verbosity=2)

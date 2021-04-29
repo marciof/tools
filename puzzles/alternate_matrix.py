@@ -39,6 +39,10 @@ def transform_iter(matrix: List[List]) -> Iterator:
         is_reversed = not is_reversed
 
 
+def transform_iter_list(matrix):
+    return list(transform_iter(matrix))
+
+
 def transform_manual(matrix: List[List]) -> List:
     """
     Time: O(r * c), where r=number of rows, c=number of columns
@@ -67,8 +71,6 @@ def transform_manual(matrix: List[List]) -> List:
 
 
 class Test (unittest.TestCase):
-    transform_iter_list = lambda matrix: list(transform_iter(matrix))
-
     transform_impls = {
         transform_simple,
         transform_manual,
@@ -110,4 +112,4 @@ class Test (unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity = 2)
+    unittest.main(verbosity=2)

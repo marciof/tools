@@ -47,9 +47,9 @@ def insert(node: Node, position: int, value) -> Optional[Node]:
         return None
 
     if previous is None:
-        return Node(value, next = node)
+        return Node(value, next=node)
 
-    previous.next = Node(value, next = current)
+    previous.next = Node(value, next=current)
     return node
 
 
@@ -83,29 +83,29 @@ def delete(node: Node, position: int) -> Optional[Node]:
 
 class Test (unittest.TestCase):
     def test_insert_start(self):
-        l = insert(Node(1, Node(2, Node(3))), 0, 4)
-        self.assertListEqual(l.to_array(), [4, 1, 2, 3])
+        lst = insert(Node(1, Node(2, Node(3))), 0, 4)
+        self.assertListEqual(lst.to_array(), [4, 1, 2, 3])
 
     def test_insert_middle(self):
-        l = insert(Node(1, Node(2, Node(3))), 1, 4)
-        self.assertListEqual(l.to_array(), [1, 4, 2, 3])
+        lst = insert(Node(1, Node(2, Node(3))), 1, 4)
+        self.assertListEqual(lst.to_array(), [1, 4, 2, 3])
 
     def test_insert_end(self):
-        l = insert(Node(1, Node(2, Node(3))), 3, 4)
-        self.assertListEqual(l.to_array(), [1, 2, 3, 4])
+        lst = insert(Node(1, Node(2, Node(3))), 3, 4)
+        self.assertListEqual(lst.to_array(), [1, 2, 3, 4])
 
     def test_delete_start(self):
-        l = delete(Node(1, Node(2, Node(3))), 0)
-        self.assertListEqual(l.to_array(), [2, 3])
+        lst = delete(Node(1, Node(2, Node(3))), 0)
+        self.assertListEqual(lst.to_array(), [2, 3])
 
     def test_delete_end(self):
-        l = delete(Node(1, Node(2, Node(3))), 2)
-        self.assertListEqual(l.to_array(), [1, 2])
+        lst = delete(Node(1, Node(2, Node(3))), 2)
+        self.assertListEqual(lst.to_array(), [1, 2])
 
     def test_delete_middle(self):
-        l = delete(Node(1, Node(2, Node(3))), 1)
-        self.assertListEqual(l.to_array(), [1, 3])
+        lst = delete(Node(1, Node(2, Node(3))), 1)
+        self.assertListEqual(lst.to_array(), [1, 3])
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity = 2)
+    unittest.main(verbosity=2)
