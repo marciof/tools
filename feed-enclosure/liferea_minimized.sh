@@ -41,7 +41,7 @@ fi
 
 classname=Liferea
 
-# TODO: possible race-condition
+# TODO possible race-condition
 if ! xdotool_search "$classname" windowminimize >/dev/null; then
     log_file="$(mktemp)"
     echo "Liferea log file: $log_file"

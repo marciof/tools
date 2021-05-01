@@ -35,7 +35,7 @@ def count_clicks(count_domain_csv_lines: Iterable[str]) -> Dict[str, int]:
     count_per_domain: Dict[str, int] = defaultdict(lambda: 0)
 
     for count_domain_csv_live in count_domain_csv_lines:
-        # TODO: use the `csv` module for parsing CSV lines
+        # TODO use the `csv` module for parsing CSV lines
         (count_str, orig_domain) = count_domain_csv_live.split(',')
         count = int(count_str)
 

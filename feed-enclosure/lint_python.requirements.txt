@@ -1,4 +1,4 @@
 # runtime
-# TODO: Python package updates? notify of dependency changes? needs testing
+# TODO Python package updates? notify of dependency changes? needs testing
 mypy==0.812
 pycodestyle==2.7.0

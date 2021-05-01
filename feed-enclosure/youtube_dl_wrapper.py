@@ -13,14 +13,14 @@ import subprocess
 from typing import List, Optional, Tuple, Type
 
 # external
-# FIXME: missing type stubs for some external libraries
+# FIXME missing type stubs for some external libraries
 from asyncinotify import Inotify, Mask  # type: ignore
 import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 
-# FIXME: uGet doesn't seem to interpret relative folder paths correctly,
-#        so as a workaround make it absolute
+# FIXME uGet doesn't seem to interpret relative folder paths correctly,
+#       so as a workaround make it absolute
 def split_folder_filename(path: str) -> Tuple[str, str]:
     (folder, filename) = os.path.split(path)
 
@@ -37,7 +37,7 @@ def get_disk_sizes(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
 
     stat = os.stat(path)
 
-    # TODO: detect availability of `st_blocks` (it's Unix specific)
+    # TODO detect availability of `st_blocks` (it's Unix specific)
     block_size = stat.st_blocks * block_size_bytes
 
     return (stat.st_size, block_size)
@@ -52,7 +52,7 @@ def calc_percent_progress(current: int, expected: Optional[int]) -> str:
     return '~%s%%' % percent
 
 
-# TODO: refactor out to its own module, separate from this wrapper script
+# TODO refactor out to its own module, separate from this wrapper script
 class UgetFD (ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
@@ -72,7 +72,7 @@ class UgetFD (ExternalFD):
         the background.
         """
 
-        # TODO: detect existence of `start_new_session` (it's POSIX specific)
+        # TODO detect existence of `start_new_session` (it's POSIX specific)
         subprocess.Popen([cls.get_basename(), '--quiet'],
                          start_new_session=True)
 
@@ -88,8 +88,8 @@ class UgetFD (ExternalFD):
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
         (folder, filename) = split_folder_filename(tmpfilename)
 
-        # TODO: use youtube-dl's proxy option/value
-        # TODO: use `external_downloader_args`
+        # TODO use youtube-dl's proxy option/value
+        # TODO use `external_downloader_args`
         cmd = [
             self.get_basename(),
             '--quiet',
@@ -119,7 +119,7 @@ class UgetFD (ExternalFD):
         # TODO use youtube-dl's continue/restart option
         self.report_file_already_downloaded(tmpfilename)
 
-        # TODO: use `filesize_approx` as well?
+        # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
 
         if expected_size is None:
@@ -140,7 +140,7 @@ class UgetFD (ExternalFD):
 
         (folder, filename) = split_folder_filename(tmpfilename)
 
-        # TODO: use `filesize_approx` as well?
+        # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
 
         if expected_size is None:
@@ -149,9 +149,9 @@ class UgetFD (ExternalFD):
         self.info('Starting inotify watch on folder: %s (%s bytes expected)',
                   folder, expected_size or '?')
 
-        # TODO: use the `watchdog` package to be platform agnostic
+        # TODO use the `watchdog` package to be platform agnostic
         with Inotify() as inotify:
-            # TODO: watch target file only for performance (measure first)
+            # TODO watch target file only for performance (measure first)
             inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
                               | Mask.MODIFY | Mask.MOVED_TO)
 

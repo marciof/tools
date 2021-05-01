@@ -76,8 +76,8 @@ percent_decode() {
 # Stdout: filename if available, otherwise no output
 extract_nice_filename_from_url() {
     if printf %s "$1" | grep -q -F '#'; then
-        # FIXME: Liferea seems to percent-encode characters even when the URL
-        #        fragment doesn't, so as a workaround decode them
+        # FIXME Liferea seems to percent-encode characters even when the URL
+        #       fragment doesn't, so as a workaround decode them
         printf %s "$1" | sed -r 's/^[^#]+#//' | percent_decode
     fi
 }
@@ -102,8 +102,8 @@ download_via_uget() {
     uget_log_file="$(mktemp)"
     echo "uGet log file: $uget_log_file"
 
-    # FIXME: uGet doesn't seem to interpret relative folder paths correctly,
-    #        so as a workaround make it absolute
+    # FIXME uGet doesn't seem to interpret relative folder paths correctly,
+    #       so as a workaround make it absolute
     nohup "$UGET_BIN" \
         --quiet \
         "--folder=$(readlink -e -- "$uget_path")" \
@@ -146,8 +146,8 @@ process_options() {
     done
 }
 
-# TODO: GUI notification of download errors or significant events?
-#       eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
+# TODO GUI notification of download errors or significant events?
+#      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
 main() {
     check_dependencies
     process_options "$@"
@@ -162,19 +162,20 @@ main() {
     shift
 
     if is_ign_daily_fix_url "$url"; then
-        # TODO: missing metadata for IGN Daily Fix videos (maybe not needed?)
-        # TODO: add IGN Daily Fix support to youtube-dl?
-        #       https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
-        #       https://github.com/ytdl-org/youtube-dl/issues/24771
+        # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
+        # TODO add IGN Daily Fix support to youtube-dl?
+        #      https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
+        #      https://github.com/ytdl-org/youtube-dl/issues/24771
         download_via_uget \
             "$(upgrade_ign_daily_fix_url_video_res "$url")" \
             "$download_folder"
     else
         (
-            # FIXME: youtube-dl doesn't have an option for the output directory,
-            #        so as a workaround go to where it should be downloaded
+            # FIXME youtube-dl doesn't have an option for the output directory,
+            #       so as a workaround go to where it should be downloaded
             cd -- "$download_folder"
 
+            # TODO some downloads are still not resuming, investigate
             "$YOUTUBE_DL_BIN" \
                 --verbose \
                 --external-downloader uget \

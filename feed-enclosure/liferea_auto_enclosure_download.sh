@@ -14,7 +14,7 @@
 # Test dependencies:
 #   apt install shellcheck # Version: 0.7.1-1build1
 
-# TODO: add a global option for auto-download and filter cmd to Liferea?
+# TODO add a global option for auto-download and filter cmd to Liferea?
 
 set -e -u
 
