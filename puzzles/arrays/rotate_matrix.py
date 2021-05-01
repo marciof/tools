@@ -98,8 +98,7 @@ def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
     # is less than 2, then it's fully rotated.
     while side_len >= 2:
 
-        # Rotate values starting from the first row and every column,
-        # but the last one.
+        # Rotate values starting from the first row and every column.
         for col in range(row_col_offset, row_col_offset + side_len - 1):
             row = row_col_offset
             direction = CW_RIGHT_DIR
