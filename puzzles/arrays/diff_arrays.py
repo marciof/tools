@@ -49,8 +49,11 @@ def diff_array_iter(x: List, y: List) -> Iterator:
             yield x_elem
 
 
+def diff_array_iter_list(x: List, y: List) -> List:
+    return list(diff_array_iter(x, y))
+
+
 class Test (unittest.TestCase):
-    diff_array_iter_list = lambda x, y: list(diff_array_iter(x, y))
 
     diff_array_impls = {
         diff_array_naive,
@@ -100,4 +103,4 @@ class Test (unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity = 2)
+    unittest.main(verbosity=2)

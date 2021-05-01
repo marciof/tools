@@ -43,15 +43,16 @@ UP_DIR = Direction(row=-1, col=0)
 CLOCKWISE_DIRS = (RIGHT_DIR, DOWN_DIR, LEFT_DIR, UP_DIR)
 
 
-def rotate_clockwise(row: int, col: int, dir: Direction, side_len: int) -> Tuple[int, int]:
-    max_idx = side_len - 1
+def rotate_clockwise(
+        row: int, col: int, dir: Direction, side_len: int) -> Tuple[int, int]:
 
-    to_row = row + max_idx * dir.row
-    to_col = col + max_idx * dir.col
+    steps = side_len - 1
+    to_row = row + steps * dir.row
+    to_col = col + steps * dir.col
 
-    if (to_row > max_idx) or (to_row < 0) or (to_col > max_idx) or (to_col < 0):
-        excess_row = abs(to_row) % max_idx
-        excess_col = abs(to_col) % max_idx
+    if (to_row > steps) or (to_row < 0) or (to_col > steps) or (to_col < 0):
+        excess_row = abs(to_row) % steps
+        excess_col = abs(to_col) % steps
         excess = max(excess_row, excess_col)
 
         dir_idx = CLOCKWISE_DIRS.index(dir)
