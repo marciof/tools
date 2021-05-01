@@ -37,11 +37,11 @@ class Direction:
 
 
 # Clockwise directions.
-UP_DIR = Direction(row=-1, col=0, next=None)
-LEFT_DIR = Direction(row=0, col=-1, next=UP_DIR)
-DOWN_DIR = Direction(row=+1, col=0, next=LEFT_DIR)
-RIGHT_DIR = Direction(row=0, col=+1, next=DOWN_DIR)
-UP_DIR.next = RIGHT_DIR
+CW_UP_DIR = Direction(row=-1, col=0, next=None)
+CW_LEFT_DIR = Direction(row=0, col=-1, next=CW_UP_DIR)
+CW_DOWN_DIR = Direction(row=+1, col=0, next=CW_LEFT_DIR)
+CW_RIGHT_DIR = Direction(row=0, col=+1, next=CW_DOWN_DIR)
+CW_UP_DIR.next = CW_RIGHT_DIR
 
 
 def rotate_clockwise(
@@ -93,15 +93,20 @@ def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
     side_len = len(matrix)
     row_col_offset = 0
 
-    # Rotate matrix in "layers", starting from the outside rows and columns.
-    # When the matrix side length is less than 2, then it's fully rotated.
+    # Rotate matrix in "layers", starting from the outside rows and columns
+    # in increasingly smaller "inner" matrices. When the matrix side length
+    # is less than 2, then it's fully rotated.
     while side_len >= 2:
 
+        # Rotate values starting from the first row and every column,
+        # but the last one.
         for col in range(row_col_offset, row_col_offset + side_len - 1):
             row = row_col_offset
-            direction = RIGHT_DIR
+            direction = CW_RIGHT_DIR
             previous_value = matrix[row][col]
 
+            # Rotate 4 sides at-a-time only, so that no extra space is needed
+            # to keep track of values to be carried over.
             for step in range(4):
                 (next_row, next_col) = rotate_clockwise(
                     row, col, direction, side_len)
