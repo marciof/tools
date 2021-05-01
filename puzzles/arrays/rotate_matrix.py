@@ -5,7 +5,8 @@
 Rotate a square matrix 90 degrees clockwise.
 """
 
-from typing import List
+from collections import namedtuple
+from typing import List, Tuple
 import unittest
 
 
@@ -32,80 +33,67 @@ def rotate_matrix(matrix: List[List]) -> List[List]:
     return new_matrix
 
 
-ROW_KIND = 0
-COL_KIND = 1
+Direction = namedtuple('Direction', ['row', 'col'])
 
-RIGHT_DIR = [0, +1]
-LEFT_DIR = [0, -1]
-DOWN_DIR = [+1, 0]
-UP_DIR = [-1, 0]
+RIGHT_DIR = Direction(row=0, col=+1)
+LEFT_DIR = Direction(row=0, col=-1)
+DOWN_DIR = Direction(row=+1, col=0)
+UP_DIR = Direction(row=-1, col=0)
+
+CLOCKWISE_DIRS = (RIGHT_DIR, DOWN_DIR, LEFT_DIR, UP_DIR)
 
 
-def should_change_direction(row_idx, col_idx, side_length) -> bool:
-    max_idx = side_length - 1
+def rotate_clockwise(row: int, col: int, dir: Direction, side_len: int) -> Tuple[int, int]:
+    max_idx = side_len - 1
 
-    if (row_idx == 0) and (col_idx == max_idx):
-        return True
+    to_row = row + max_idx * dir.row
+    to_col = col + max_idx * dir.col
 
-    if (row_idx == max_idx) and (col_idx == max_idx):
-        return True
+    if (to_row > max_idx) or (to_row < 0) or (to_col > max_idx) or (to_col < 0):
+        excess_row = abs(to_row) % max_idx
+        excess_col = abs(to_col) % max_idx
+        excess = max(excess_row, excess_col)
 
-    if (row_idx == max_idx) and (col_idx == 0):
-        return True
+        dir_idx = CLOCKWISE_DIRS.index(dir)
+        to_dir: Direction = CLOCKWISE_DIRS[(dir_idx + 1) % len(CLOCKWISE_DIRS)]
 
-    if (row_idx == 0) and (col_idx == 0):
-        return True
+        row_sign = -1 if to_row < 0 else +1
+        col_sign = -1 if to_col < 0 else +1
 
-    return False
+        to_row += -(row_sign * excess_row) + (excess * to_dir.row)
+        to_col += -(col_sign * excess_col) + (excess * to_dir.col)
+
+    return (to_row, to_col)
 
 
 def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
-    """
-    Time: O(n), where n=number of elements in matrix
-    Space: O(1)
-    """
-
     side_length = len(matrix)
+    offset = 0
 
-    if side_length <= 1:
-        return matrix
+    while side_length >= 2:
+        for col in range(offset, offset + side_length - 1):
+            row = offset
+            dir = RIGHT_DIR
+            dir_idx = CLOCKWISE_DIRS.index(dir)
 
-    directions = [RIGHT_DIR, DOWN_DIR, LEFT_DIR, UP_DIR]
+            print('---')
 
-    src_dir_idx = directions.index(RIGHT_DIR)
-    src_row_idx = 0
-    src_col_idx = 0
+            for step in range(4):
+                print(row, col, matrix[row][col])
+                (row, col) = rotate_clockwise(row, col, dir, side_length)
+                dir = CLOCKWISE_DIRS[(dir_idx + 1) % len(CLOCKWISE_DIRS)]
+                dir_idx += 1
 
-    dest_dir_idx = directions.index(DOWN_DIR)
-    dest_row_idx = 0
-    dest_col_idx = side_length - 1
+        side_length -= 2
+        offset += 1
 
-    for step in range(2 * side_length + 2 * (side_length - 2)):
-        src_value = matrix[src_row_idx][src_col_idx]
-        dest_value = matrix[dest_row_idx][dest_col_idx]
-
-        print(src_value, dest_value)
-
-        src_dir = directions[src_dir_idx]
-        src_row_idx += src_dir[ROW_KIND]
-        src_col_idx += src_dir[COL_KIND]
-
-        dest_dir = directions[dest_dir_idx]
-        dest_row_idx += dest_dir[ROW_KIND]
-        dest_col_idx += dest_dir[COL_KIND]
-
-        if should_change_direction(src_row_idx, src_col_idx, side_length):
-            src_dir_idx = (src_dir_idx + 1) % len(directions)
-        if should_change_direction(dest_row_idx, dest_col_idx, side_length):
-            dest_dir_idx = (dest_dir_idx + 1) % len(directions)
-
-    return []
+    return matrix
 
 
 class Test (unittest.TestCase):
     rotate_impls = {
         rotate_matrix,
-        # rotate_matrix_in_place,
+        rotate_matrix_in_place,
     }
 
     def test_empty_matrix(self):
@@ -149,8 +137,20 @@ class Test (unittest.TestCase):
 
 if __name__ == '__main__':
     # unittest.main(verbosity=2)
+    # rotate_matrix_in_place([
+    #     [1, 2],
+    #     [3, 4],
+    # ])
+
+    # rotate_matrix_in_place([
+    #     [1, 2, 3],
+    #     [4, 5, 6],
+    #     [7, 8, 9],
+    # ])
+
     rotate_matrix_in_place([
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9],
+        [1, 2, 3, 4],
+        [5, 6, 7, 8],
+        [9, 10, 11, 12],
+        [13, 14, 15, 16],
     ])
