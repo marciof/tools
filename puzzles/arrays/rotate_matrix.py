@@ -68,6 +68,11 @@ def rotate_clockwise(
 
 
 def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
+    """
+    Time: O(n), where n=number of elements in matrix
+    Space: O(1)
+    """
+
     side_length = len(matrix)
     offset = 0
 
@@ -76,14 +81,19 @@ def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
             row = offset
             dir = RIGHT_DIR
             dir_idx = CLOCKWISE_DIRS.index(dir)
-
-            print('---')
+            previous_value = matrix[row][col]
 
             for step in range(4):
-                print(row, col, matrix[row][col])
-                (row, col) = rotate_clockwise(row, col, dir, side_length)
+                (to_row, to_col) = rotate_clockwise(row, col, dir, side_length)
                 dir = CLOCKWISE_DIRS[(dir_idx + 1) % len(CLOCKWISE_DIRS)]
                 dir_idx += 1
+
+                next_value = matrix[to_row][to_col]
+                matrix[to_row][to_col] = previous_value
+                previous_value = next_value
+
+                row = to_row
+                col = to_col
 
         side_length -= 2
         offset += 1
@@ -135,23 +145,23 @@ class Test (unittest.TestCase):
                         [9, 6, 3],
                     ])
 
+    def test_length_4_matrix(self):
+        for rotate in self.rotate_impls:
+            with self.subTest(rotate):
+                self.assertEqual(
+                    rotate([
+                        [1, 2, 3, 4],
+                        [5, 6, 7, 8],
+                        [9, 10, 11, 12],
+                        [13, 14, 15, 16],
+                    ]),
+                    [
+                        [13, 9, 5, 1],
+                        [14, 10, 6, 2],
+                        [15, 11, 7, 3],
+                        [16, 12, 8, 4],
+                    ])
+
 
 if __name__ == '__main__':
-    # unittest.main(verbosity=2)
-    # rotate_matrix_in_place([
-    #     [1, 2],
-    #     [3, 4],
-    # ])
-
-    # rotate_matrix_in_place([
-    #     [1, 2, 3],
-    #     [4, 5, 6],
-    #     [7, 8, 9],
-    # ])
-
-    rotate_matrix_in_place([
-        [1, 2, 3, 4],
-        [5, 6, 7, 8],
-        [9, 10, 11, 12],
-        [13, 14, 15, 16],
-    ])
+    unittest.main(verbosity=2)
