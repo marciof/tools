@@ -5,7 +5,7 @@
 Rotate a square matrix 90 degrees clockwise.
 """
 
-from collections import namedtuple
+from dataclasses import dataclass
 from typing import List, Tuple
 import unittest
 
@@ -16,16 +16,12 @@ def rotate_matrix(matrix: List[List]) -> List[List]:
     Space: O(n), ditto
     """
 
-    if len(matrix) <= 1:
-        return matrix
-
     new_matrix = []
-    size = len(matrix)
 
-    for column_idx in range(size):
+    for column_idx in range(len(matrix)):
         row = []
 
-        for row_idx in reversed(range(size)):
+        for row_idx in reversed(range(len(matrix))):
             row.append(matrix[row_idx][column_idx])
 
         new_matrix.append(row)
@@ -33,36 +29,57 @@ def rotate_matrix(matrix: List[List]) -> List[List]:
     return new_matrix
 
 
-Direction = namedtuple('Direction', ['row', 'col'])
+@dataclass
+class Direction:
+    row: int
+    col: int
+    next: 'Direction'
 
-RIGHT_DIR = Direction(row=0, col=+1)
-LEFT_DIR = Direction(row=0, col=-1)
-DOWN_DIR = Direction(row=+1, col=0)
-UP_DIR = Direction(row=-1, col=0)
 
-CLOCKWISE_DIRS = (RIGHT_DIR, DOWN_DIR, LEFT_DIR, UP_DIR)
+# Clockwise directions.
+UP_DIR = Direction(row=-1, col=0, next=None)
+LEFT_DIR = Direction(row=0, col=-1, next=UP_DIR)
+DOWN_DIR = Direction(row=+1, col=0, next=LEFT_DIR)
+RIGHT_DIR = Direction(row=0, col=+1, next=DOWN_DIR)
+UP_DIR.next = RIGHT_DIR
 
 
 def rotate_clockwise(
         row: int, col: int, dir: Direction, side_len: int) -> Tuple[int, int]:
 
+    """
+    Rotate a row/column position 90 degrees clockwise, in a square matrix.
+    """
+
     steps = side_len - 1
     to_row = row + steps * dir.row
     to_col = col + steps * dir.col
 
+    # If the destination row or column are out of bounds, then that means
+    # the direction must change.
     if (to_row > steps) or (to_row < 0) or (to_col > steps) or (to_col < 0):
-        excess_row = abs(to_row) % steps
-        excess_col = abs(to_col) % steps
-        excess = max(excess_row, excess_col)
 
-        dir_idx = CLOCKWISE_DIRS.index(dir)
-        to_dir: Direction = CLOCKWISE_DIRS[(dir_idx + 1) % len(CLOCKWISE_DIRS)]
+        # How much out of bounds the destination row and column are indicates
+        # how many steps there are left to be taken in the next clockwise
+        # direction.
+        excess_rows = abs(to_row) % steps
+        excess_cols = abs(to_col) % steps
 
+        # Only one axis at-a-time will ever be out of bounds (row or column).
+        # Since each one of the 4-way directions always has a "null" (zero)
+        # step, then whichever source (row or column) the excess steps come
+        # from will then be used to step in the right direction, while
+        # "zeroing" the other one.
+        excess_steps = max(excess_rows, excess_cols)
+
+        # When going left/up and out of bounds, then the row/column can get
+        # negative. Get its sign to turn it non-negative.
         row_sign = -1 if to_row < 0 else +1
         col_sign = -1 if to_col < 0 else +1
 
-        to_row += -(row_sign * excess_row) + (excess * to_dir.row)
-        to_col += -(col_sign * excess_col) + (excess * to_dir.col)
+        next_dir = dir.next
+        to_row += -(row_sign * excess_rows) + (excess_steps * next_dir.row)
+        to_col += -(col_sign * excess_cols) + (excess_steps * next_dir.col)
 
     return (to_row, to_col)
 
@@ -73,30 +90,34 @@ def rotate_matrix_in_place(matrix: List[List]) -> List[List]:
     Space: O(1)
     """
 
-    side_length = len(matrix)
-    offset = 0
+    side_len = len(matrix)
+    row_col_offset = 0
 
-    while side_length >= 2:
-        for col in range(offset, offset + side_length - 1):
-            row = offset
-            dir = RIGHT_DIR
-            dir_idx = CLOCKWISE_DIRS.index(dir)
+    # Rotate matrix in "layers", starting from the outside rows and columns.
+    # When the matrix side length is less than 2, then it's fully rotated.
+    while side_len >= 2:
+
+        for col in range(row_col_offset, row_col_offset + side_len - 1):
+            row = row_col_offset
+            direction = RIGHT_DIR
             previous_value = matrix[row][col]
 
             for step in range(4):
-                (to_row, to_col) = rotate_clockwise(row, col, dir, side_length)
-                dir = CLOCKWISE_DIRS[(dir_idx + 1) % len(CLOCKWISE_DIRS)]
-                dir_idx += 1
+                (next_row, next_col) = rotate_clockwise(
+                    row, col, direction, side_len)
 
-                next_value = matrix[to_row][to_col]
-                matrix[to_row][to_col] = previous_value
+                next_value = matrix[next_row][next_col]
+                matrix[next_row][next_col] = previous_value
                 previous_value = next_value
 
-                row = to_row
-                col = to_col
+                row = next_row
+                col = next_col
+                direction = direction.next
 
-        side_length -= 2
-        offset += 1
+        # Go to the next smaller inner matrix. Decrease side length by two,
+        # since both outside rows and columns have already been rotated above.
+        side_len -= 2
+        row_col_offset += 1
 
     return matrix
 
