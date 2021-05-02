@@ -164,6 +164,9 @@ class UgetFD (ExternalFD):
             async for event in inotify:
                 event_count += 1
 
+                # TODO unicode filenames (coming from youtube-dl in
+                #      `tmpfilename`) are getting mangled in uGet, eg.
+                #      Games that took us FOREVER to Finish! 😳-hnwLUsUJOwc.mp4
                 if event.path.name != tmpfilename:
                     event_skipped_count += 1
                     continue
