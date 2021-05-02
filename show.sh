@@ -17,8 +17,11 @@
 # TODO make `xargs` call POSIX compliant?
 # TODO intra-line diff, https://github.com/ymattw/ydiff
 # TODO intra-line diff, https://github.com/git/git/tree/master/contrib/diff-highlight
+# TODO intra-line diff, https://github.com/mookid/diffr
 # TODO fancier diff, https://github.com/so-fancy/diff-so-fancy
-# TODO diff syntax highlighter, https://github.com/dandavison/delta; https://news.ycombinator.com/item?id=22996374
+# TODO diff syntax highlighter, https://github.com/dandavison/delta
+# TODO improved colored diff, https://github.com/jeffkaufman/icdiff
+# TODO colored diff wrapper, https://www.colordiff.org/
 # TODO images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO fancier highlighting, https://github.com/willmcgugan/rich
 # TODO semantic diff, https://github.com/trailofbits/graphtage
