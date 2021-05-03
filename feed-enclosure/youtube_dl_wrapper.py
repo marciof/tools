@@ -167,6 +167,9 @@ class UgetFD (ExternalFD):
                 # TODO unicode filenames (coming from youtube-dl in
                 #      `tmpfilename`) are getting mangled in uGet, eg.
                 #      Games that took us FOREVER to Finish! 😳-hnwLUsUJOwc.mp4
+                #      Add an optional check, if after starting uGet
+                #      there's no inotify event at all for the target
+                #      filename then it's suspicious and flag it?
                 if event.path.name != tmpfilename:
                     event_skipped_count += 1
                     continue
