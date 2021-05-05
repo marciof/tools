@@ -163,6 +163,7 @@ main() {
 
     if is_ign_daily_fix_url "$url"; then
         # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
+        # TODO missing youtube-dl's workaround for uGet Unicode filenames
         # TODO add IGN Daily Fix support to youtube-dl?
         #      https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
         #      https://github.com/ytdl-org/youtube-dl/issues/24771

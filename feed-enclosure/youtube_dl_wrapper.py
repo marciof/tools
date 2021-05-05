@@ -15,6 +15,7 @@ from typing import List, Optional, Tuple, Type
 # external
 # FIXME missing type stubs for some external libraries
 from asyncinotify import Inotify, Mask  # type: ignore
+from unidecode import unidecode
 import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
@@ -85,6 +86,21 @@ class UgetFD (ExternalFD):
     def warn(self, message: str, *args) -> None:
         self.report_warning(('[%s] ' + message) % (self.get_basename(), *args))
 
+    def temp_name(self, filename: str) -> str:
+        """
+        Ensure the temporary filename doesn't contain Unicode characters,
+        since uGet doesn't seem to handle them properly when invoked via
+        command line.
+        """
+
+        non_unicode_filename = unidecode(filename)
+
+        if non_unicode_filename != filename:
+            self.warn('Filename contains Unicode, cleaning up: %s',
+                      non_unicode_filename)
+
+        return super().temp_name(non_unicode_filename)
+
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
         (folder, filename) = split_folder_filename(tmpfilename)
 
@@ -134,9 +150,7 @@ class UgetFD (ExternalFD):
         return 0
 
     async def wait_for_download(
-            self,
-            tmpfilename: str,
-            info_dict: dict) -> int:
+            self, tmpfilename: str, info_dict: dict) -> int:
 
         (folder, filename) = split_folder_filename(tmpfilename)
 
@@ -164,12 +178,9 @@ class UgetFD (ExternalFD):
             async for event in inotify:
                 event_count += 1
 
-                # TODO unicode filenames (coming from youtube-dl in
-                #      `tmpfilename`) are getting mangled in uGet, eg.
-                #      Games that took us FOREVER to Finish! 😳-hnwLUsUJOwc.mp4
-                #      Add an optional check, if after starting uGet
-                #      there's no inotify event at all for the target
-                #      filename then it's suspicious and flag it?
+                # TODO add an optional check, if after starting uGet there's no
+                #      inotify event for the target filename then it's
+                #      suspicious and flag it?
                 if event.path.name != tmpfilename:
                     event_skipped_count += 1
                     continue
