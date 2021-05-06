@@ -20,39 +20,6 @@ import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 
-# FIXME uGet doesn't seem to interpret relative folder paths correctly,
-#       so as a workaround make it absolute
-def split_folder_filename(path: str) -> Tuple[str, str]:
-    (folder, filename) = os.path.split(path)
-
-    if folder == '':
-        folder = os.getcwd()
-
-    return (folder, filename)
-
-
-def get_disk_sizes(path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
-    """
-    Get the reported file size, as well as the actual total block size on disk.
-    """
-
-    stat = os.stat(path)
-
-    # TODO detect availability of `st_blocks` (it's Unix specific)
-    block_size = stat.st_blocks * block_size_bytes
-
-    return (stat.st_size, block_size)
-
-
-def calc_percent_progress(current: int, expected: Optional[int]) -> str:
-    if (expected is None) or (expected <= 0):
-        percent = '?'
-    else:
-        percent = str(int(current / expected * 100))
-
-    return '~%s%%' % percent
-
-
 # TODO refactor out to its own module, separate from this wrapper script
 class UgetFD (ExternalFD):
     """
@@ -86,6 +53,39 @@ class UgetFD (ExternalFD):
     def warn(self, message: str, *args) -> None:
         self.report_warning(('[%s] ' + message) % (self.get_basename(), *args))
 
+    # FIXME uGet doesn't seem to interpret relative folder paths correctly,
+    #       so as a workaround make it absolute
+    # TODO avoid being called twice for the temporary filename
+    def split_folder_filename(self, path: str) -> Tuple[str, str]:
+        (folder, filename) = os.path.split(path)
+
+        if folder == '':
+            folder = os.getcwd()
+
+        return (folder, filename)
+
+    def get_disk_sizes(
+            self, path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
+        """
+        Get the reported file size, as well as the actual total block size
+        on disk.
+        """
+
+        stat = os.stat(path)
+
+        # TODO detect availability of `st_blocks` (it's Unix specific)
+        block_size = stat.st_blocks * block_size_bytes
+
+        return (stat.st_size, block_size)
+
+    def calc_percent_progress(
+            self, current: int, expected: Optional[int]) -> str:
+
+        if (expected is None) or (expected <= 0):
+            return '[?]%'
+        else:
+            return '~%s%%' % int(current / expected * 100)
+
     def temp_name(self, filename: str) -> str:
         """
         Ensure the temporary filename doesn't contain Unicode characters,
@@ -102,7 +102,7 @@ class UgetFD (ExternalFD):
         return super().temp_name(non_unicode_filename)
 
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
-        (folder, filename) = split_folder_filename(tmpfilename)
+        (folder, filename) = self.split_folder_filename(tmpfilename)
 
         # TODO use youtube-dl's proxy option/value
         # TODO use `external_downloader_args`
@@ -152,7 +152,7 @@ class UgetFD (ExternalFD):
     async def wait_for_download(
             self, tmpfilename: str, info_dict: dict) -> int:
 
-        (folder, filename) = split_folder_filename(tmpfilename)
+        (folder, filename) = self.split_folder_filename(tmpfilename)
 
         # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
@@ -189,11 +189,12 @@ class UgetFD (ExternalFD):
                 # space on disk, then its apparent size will already be the
                 # final size. In that case use the disk block size to get
                 # an idea for when its download is complete.
-                (size, block_size) = get_disk_sizes(tmpfilename)
+                (size, block_size) = self.get_disk_sizes(tmpfilename)
 
                 self.info('Downloaded %s block bytes (%s, target %s bytes)',
                           block_size,
-                          calc_percent_progress(block_size, expected_size),
+                          self.calc_percent_progress(
+                              block_size, expected_size),
                           expected_size or '?')
 
                 is_downloaded = ((block_size >= size)
