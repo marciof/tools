@@ -177,6 +177,7 @@ main() {
             cd -- "$download_folder"
 
             # TODO some downloads are still not resuming, investigate
+            # TODO what happens when internet is out
             # TODO YouTube download URLs may expire, eg. downloader queues them
             "$YOUTUBE_DL_BIN" \
                 --verbose \
