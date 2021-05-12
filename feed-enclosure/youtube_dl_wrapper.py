@@ -55,16 +55,10 @@ class UgetFD (ExternalFD):
     def warn(self, message: str, *args) -> None:
         self.report_warning(('[%s] ' + message) % (self.get_basename(), *args))
 
-    # FIXME uGet doesn't seem to interpret relative folder paths correctly,
-    #       so as a workaround make it absolute
-    # TODO avoid being called twice for the temporary filename
+    # FIXME uGet misinterprets relative folder paths, so make it absolute
     def split_folder_filename(self, path: str) -> Tuple[str, str]:
         (folder, filename) = os.path.split(path)
-
-        if folder == '':
-            folder = os.getcwd()
-
-        return (folder, filename)
+        return (folder or os.getcwd(), filename)
 
     def get_disk_sizes(
             self, path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
@@ -80,13 +74,8 @@ class UgetFD (ExternalFD):
 
         return (stat.st_size, block_size)
 
+    # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
     def temp_name(self, filename: str) -> str:
-        """
-        Ensure the temporary filename doesn't contain Unicode characters,
-        since uGet doesn't seem to handle them properly when invoked via the
-        command line.
-        """
-
         non_unicode_filename = unidecode(filename)
 
         if non_unicode_filename != filename:
@@ -95,11 +84,35 @@ class UgetFD (ExternalFD):
 
         return super().temp_name(non_unicode_filename)
 
+    def check_is_downloaded(
+            self, tmpfilename: str, info_dict: dict) -> bool:
+
+        # TODO use `filesize_approx` as well?
+        expected_size = info_dict.get('filesize')
+
+        # If the file to be downloaded has been already reserved
+        # space on disk, then its apparent size will already be the
+        # final size. In that case use the disk block size to get
+        # an idea for when its download is complete.
+        (size, block_size) = self.get_disk_sizes(tmpfilename)
+
+        # TODO debounce/throttle?
+        self.info('%s - Downloaded %s block bytes',
+                  self.format_percent(
+                      self.calc_percent(block_size, expected_size)),
+                  block_size)
+
+        is_downloaded = ((block_size >= size)
+                         and ((expected_size is None)
+                              or (size == expected_size)))
+
+        return is_downloaded
+
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
         (folder, filename) = self.split_folder_filename(tmpfilename)
 
-        # TODO use youtube-dl's proxy option/value
-        # TODO use `external_downloader_args`
+        # TODO honor youtube-dl's proxy option/value
+        # TODO honor `external_downloader_args`
         cmd = [
             self.get_basename(),
             '--quiet',
@@ -120,51 +133,37 @@ class UgetFD (ExternalFD):
 
         if expected_size is None:
             self.warn('Unknown expected file size, using block size only.')
+        else:
+            self.info('Expected file size: %d bytes', expected_size)
 
         try:
-            (size, block_size) = self.get_disk_sizes(tmpfilename)
+            is_downloaded = self.check_is_downloaded(tmpfilename, info_dict)
             return_code: Optional[int] = 0
-            # TODO refactor duplicate check
-            is_downloaded = ((block_size >= size)
-                             and ((expected_size is None)
-                                  or (size == expected_size)))
         except FileNotFoundError:
-            return_code = None
             is_downloaded = False
+            return_code = None
 
-        if not is_downloaded:
-            if return_code is None:
-                self.ensure_running()
-                return_code = super()._call_downloader(tmpfilename, info_dict)
-                self.info('Return code: %s', return_code)
-            else:
-                self.info('File already exists, waiting for download.')
+        # TODO honor youtube-dl's continue/restart option
+        if is_downloaded:
+            self.report_file_already_downloaded(tmpfilename)
+            return 0
 
-            asyncio.run(self.wait_for_download(tmpfilename, info_dict))
-            return return_code
+        if return_code is None:
+            self.ensure_running()
+            return_code = super()._call_downloader(tmpfilename, info_dict)
+            self.info('Return code: %s', return_code)
+        else:
+            self.info('File already exists, waiting for download.')
 
-        # TODO use youtube-dl's continue/restart option
-        self.report_file_already_downloaded(tmpfilename)
+        asyncio.run(self.wait_for_download(tmpfilename, info_dict))
+        return return_code
 
-        if expected_size != size:
-            self.error(
-                "File size (%s bytes) doesn't match expected: %s bytes",
-                size, expected_size)
-            self.report_unable_to_resume()
-            return 1
-
-        return 0
 
     async def wait_for_download(self, tmpfilename: str, info_dict: dict):
         (folder, filename) = self.split_folder_filename(tmpfilename)
+        self.info('Starting inotify watch on folder: %s', folder)
 
-        # TODO use `filesize_approx` as well?
-        expected_size = info_dict.get('filesize')
-
-        self.info('Starting inotify watch on folder: %s (%s bytes expected)',
-                  folder, expected_size or '?')
-
-        # TODO use the `watchdog` package to be platform agnostic
+        # TODO use the `watchdog` package to be platform agnostic?
         with Inotify() as inotify:
             # TODO watch target file only for performance (measure first)
             inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
@@ -173,34 +172,15 @@ class UgetFD (ExternalFD):
             event_count = 0
             event_skipped_count = 0
 
+            # TODO add an optional check, if after starting uGet there's no
+            #      inotify event for the target filename then it's
+            #      suspicious and flag it?
             async for event in inotify:
                 event_count += 1
 
-                # TODO add an optional check, if after starting uGet there's no
-                #      inotify event for the target filename then it's
-                #      suspicious and flag it?
                 if event.path.name != tmpfilename:
                     event_skipped_count += 1
-                    continue
-
-                # If the file to be downloaded has been already reserved
-                # space on disk, then its apparent size will already be the
-                # final size. In that case use the disk block size to get
-                # an idea for when its download is complete.
-                (size, block_size) = self.get_disk_sizes(tmpfilename)
-
-                # TODO debounce/throttle?
-                self.info('[%s] Downloaded %s block bytes',
-                          self.format_percent(
-                              self.calc_percent(block_size, expected_size)),
-                          block_size)
-
-                # TODO refactor duplicate check
-                is_downloaded = ((block_size >= size)
-                                 and ((expected_size is None)
-                                      or (size == expected_size)))
-
-                if is_downloaded:
+                elif self.check_is_downloaded(tmpfilename, info_dict):
                     break
 
             self.info('inotify events: %s skipped / %s total',
