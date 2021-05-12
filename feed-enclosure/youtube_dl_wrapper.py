@@ -42,7 +42,9 @@ class UgetFD (ExternalFD):
 
         # TODO detect existence of `start_new_session` (it's POSIX specific)
         subprocess.Popen([cls.get_basename(), '--quiet'],
-                         start_new_session=True)
+                         start_new_session=True,
+                         stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL)
 
     def error(self, message: str, *args) -> None:
         self.report_error(('[%s] ' + message) % (self.get_basename(), *args))
