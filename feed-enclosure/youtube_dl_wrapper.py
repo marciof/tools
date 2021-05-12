@@ -10,6 +10,7 @@ import asyncio
 import os
 import os.path
 import subprocess
+from time import time
 from typing import List, Optional, Tuple, Type
 
 # external
@@ -21,12 +22,13 @@ from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 
 # TODO refactor out to its own module, separate from this wrapper script
-class UgetFD (ExternalFD):
+class UgetFD(ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
     """
 
     AVAILABLE_OPT = '--version'
+    DOWNLOAD_PROGRESS_THROTTLE_INTERVAL_SEC = 0.5
 
     @classmethod
     def get_basename(cls) -> str:
@@ -84,8 +86,14 @@ class UgetFD (ExternalFD):
 
         return super().temp_name(non_unicode_filename)
 
-    def check_is_downloaded(
-            self, tmpfilename: str, info_dict: dict) -> bool:
+    def calc_format_percent(self, count: int, total: Optional[int]) -> str:
+        return self.format_percent(self.calc_percent(count, total)).strip()
+
+    def is_downloaded(
+            self,
+            tmpfilename: str,
+            info_dict: dict,
+            should_log_progress: bool = True) -> bool:
 
         # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
@@ -96,11 +104,10 @@ class UgetFD (ExternalFD):
         # an idea for when its download is complete.
         (size, block_size) = self.get_disk_sizes(tmpfilename)
 
-        # TODO debounce/throttle?
-        self.info('%s - Downloaded %s block bytes',
-                  self.format_percent(
-                      self.calc_percent(block_size, expected_size)),
-                  block_size)
+        if should_log_progress:
+            self.info('Downloaded %s block bytes (%s)',
+                      block_size,
+                      self.calc_format_percent(block_size, expected_size))
 
         is_downloaded = ((block_size >= size)
                          and ((expected_size is None)
@@ -137,7 +144,8 @@ class UgetFD (ExternalFD):
             self.info('Expected file size: %d bytes', expected_size)
 
         try:
-            is_downloaded = self.check_is_downloaded(tmpfilename, info_dict)
+            is_downloaded = self.is_downloaded(
+                tmpfilename, info_dict, should_log_progress=False)
             return_code: Optional[int] = 0
         except FileNotFoundError:
             is_downloaded = False
@@ -158,7 +166,6 @@ class UgetFD (ExternalFD):
         asyncio.run(self.wait_for_download(tmpfilename, info_dict))
         return return_code
 
-
     async def wait_for_download(self, tmpfilename: str, info_dict: dict):
         (folder, filename) = self.split_folder_filename(tmpfilename)
         self.info('Starting inotify watch on folder: %s', folder)
@@ -171,6 +178,7 @@ class UgetFD (ExternalFD):
 
             event_count = 0
             event_skipped_count = 0
+            last_timestamp = time()
 
             # TODO add an optional check, if after starting uGet there's no
             #      inotify event for the target filename then it's
@@ -180,11 +188,21 @@ class UgetFD (ExternalFD):
 
                 if event.path.name != tmpfilename:
                     event_skipped_count += 1
-                elif self.check_is_downloaded(tmpfilename, info_dict):
-                    break
+                    continue
 
-            self.info('inotify events: %s skipped / %s total',
-                      event_skipped_count, event_count)
+                timestamp = time()
+                should_log = ((timestamp - last_timestamp)
+                              >= self.DOWNLOAD_PROGRESS_THROTTLE_INTERVAL_SEC)
+
+                if self.is_downloaded(tmpfilename, info_dict, should_log):
+                    break
+                if should_log:
+                    last_timestamp = timestamp
+
+            self.info('inotify events: %s skipped / %s total (%s)',
+                      event_skipped_count, event_count,
+                      self.calc_format_percent(
+                          event_skipped_count, event_count))
 
 
 def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
