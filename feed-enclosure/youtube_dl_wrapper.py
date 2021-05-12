@@ -80,19 +80,10 @@ class UgetFD (ExternalFD):
 
         return (stat.st_size, block_size)
 
-    # TODO reuse `format_percent` and `calc_percent`?
-    def calc_percent_progress(
-            self, current: int, expected: Optional[int]) -> str:
-
-        if (expected is None) or (expected <= 0):
-            return '[?]%'
-        else:
-            return '~%s%%' % int(current / expected * 100)
-
     def temp_name(self, filename: str) -> str:
         """
         Ensure the temporary filename doesn't contain Unicode characters,
-        since uGet doesn't seem to handle them properly when invoked via
+        since uGet doesn't seem to handle them properly when invoked via the
         command line.
         """
 
@@ -199,11 +190,10 @@ class UgetFD (ExternalFD):
                 (size, block_size) = self.get_disk_sizes(tmpfilename)
 
                 # TODO debounce/throttle?
-                self.info('Downloaded %s block bytes (%s, target %s bytes)',
-                          block_size,
-                          self.calc_percent_progress(
-                              block_size, expected_size),
-                          expected_size or '?')
+                self.info('[%s] Downloaded %s block bytes',
+                          self.format_percent(
+                              self.calc_percent(block_size, expected_size)),
+                          block_size)
 
                 # TODO refactor duplicate check
                 is_downloaded = ((block_size >= size)
@@ -213,10 +203,8 @@ class UgetFD (ExternalFD):
                 if is_downloaded:
                     break
 
-            self.info('inotify events: %s skipped / %s total (%s)',
-                      event_skipped_count, event_count,
-                      self.calc_percent_progress(
-                          event_skipped_count, event_count))
+            self.info('inotify events: %s skipped / %s total',
+                      event_skipped_count, event_count)
 
 
 def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
