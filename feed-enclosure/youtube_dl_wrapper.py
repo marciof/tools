@@ -78,6 +78,7 @@ class UgetFD (ExternalFD):
 
         return (stat.st_size, block_size)
 
+    # TODO reuse `format_percent` and `calc_percent`?
     def calc_percent_progress(
             self, current: int, expected: Optional[int]) -> str:
 
@@ -121,44 +122,51 @@ class UgetFD (ExternalFD):
         return cmd + ['--', info_dict['url']]
 
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
-        if info_dict.get('filesize') == 0:
-            self.error('Expected file size is 0 (zero) bytes, stopping.')
-            return 1
-
-        self.ensure_running()
-
-        try:
-            actual_size = os.path.getsize(tmpfilename)
-        except OSError:
-            return asyncio.run(self.wait_for_download(tmpfilename, info_dict))
-
-        # TODO use youtube-dl's continue/restart option
-        self.report_file_already_downloaded(tmpfilename)
-
         # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
 
         if expected_size is None:
-            self.warn("Unknown expected file size, assuming it's complete.")
-        elif expected_size != actual_size:
+            self.warn('Unknown expected file size, using block size only.')
+
+        try:
+            (size, block_size) = self.get_disk_sizes(tmpfilename)
+            return_code: Optional[int] = 0
+            # TODO refactor duplicate check
+            is_downloaded = ((block_size >= size)
+                             and ((expected_size is None)
+                                  or (size == expected_size)))
+        except FileNotFoundError:
+            return_code = None
+            is_downloaded = False
+
+        if not is_downloaded:
+            if return_code is None:
+                self.ensure_running()
+                return_code = super()._call_downloader(tmpfilename, info_dict)
+                self.info('Return code: %s', return_code)
+            else:
+                self.info('File already exists, waiting for download.')
+
+            asyncio.run(self.wait_for_download(tmpfilename, info_dict))
+            return return_code
+
+        # TODO use youtube-dl's continue/restart option
+        self.report_file_already_downloaded(tmpfilename)
+
+        if expected_size != size:
             self.error(
                 "File size (%s bytes) doesn't match expected: %s bytes",
-                actual_size, expected_size)
+                size, expected_size)
             self.report_unable_to_resume()
             return 1
 
         return 0
 
-    async def wait_for_download(
-            self, tmpfilename: str, info_dict: dict) -> int:
-
+    async def wait_for_download(self, tmpfilename: str, info_dict: dict):
         (folder, filename) = self.split_folder_filename(tmpfilename)
 
         # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
-
-        if expected_size is None:
-            self.warn('Unknown file size, will track file block size only.')
 
         self.info('Starting inotify watch on folder: %s (%s bytes expected)',
                   folder, expected_size or '?')
@@ -168,9 +176,6 @@ class UgetFD (ExternalFD):
             # TODO watch target file only for performance (measure first)
             inotify.add_watch(folder, Mask.ONLYDIR | Mask.CLOSE | Mask.CREATE
                               | Mask.MODIFY | Mask.MOVED_TO)
-
-            return_code = super()._call_downloader(tmpfilename, info_dict)
-            self.info('Return code: %s', return_code)
 
             event_count = 0
             event_skipped_count = 0
@@ -191,12 +196,14 @@ class UgetFD (ExternalFD):
                 # an idea for when its download is complete.
                 (size, block_size) = self.get_disk_sizes(tmpfilename)
 
+                # TODO debounce/throttle?
                 self.info('Downloaded %s block bytes (%s, target %s bytes)',
                           block_size,
                           self.calc_percent_progress(
                               block_size, expected_size),
                           expected_size or '?')
 
+                # TODO refactor duplicate check
                 is_downloaded = ((block_size >= size)
                                  and ((expected_size is None)
                                       or (size == expected_size)))
@@ -204,9 +211,10 @@ class UgetFD (ExternalFD):
                 if is_downloaded:
                     break
 
-            self.info('inotify events: %s skipped / %s total',
-                      event_skipped_count, event_count)
-            return return_code
+            self.info('inotify events: %s skipped / %s total (%s)',
+                      event_skipped_count, event_count,
+                      self.calc_percent_progress(
+                          event_skipped_count, event_count))
 
 
 def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:

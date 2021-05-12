@@ -176,7 +176,8 @@ main() {
             #       so as a workaround go to where it should be downloaded
             cd -- "$download_folder"
 
-            # TODO some downloads are still not resuming, investigate
+            # TODO test resuming downloads of separate audio and video files
+            # TODO resume downloads if process is never restarted
             # TODO what happens when internet is out
             # TODO YouTube download URLs may expire, eg. downloader queues them
             "$YOUTUBE_DL_BIN" \
