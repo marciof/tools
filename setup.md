@@ -171,9 +171,13 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 
 ## Keyboard compose key
 
-*Keyboard*:
+*Keyboard* settings:
 - *Layout* tab.
 - *Compose key* dropdown.
+
+Or alternatively in `~/.xsessionrc`:
+
+    setxkbmap -option compose:caps
 
 ## Keyboard shortcuts
 
