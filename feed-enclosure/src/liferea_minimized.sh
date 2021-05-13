@@ -12,7 +12,7 @@
 #   apt install xdotool # Version: 1:3.20160805.1-4
 #
 # Test dependencies:
-#   ./lint_shell.sh
+#   ../tst/lint_shell.sh
 
 set -e -u
 

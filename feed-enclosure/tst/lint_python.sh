@@ -30,11 +30,11 @@ fi
 pwd="$(dirname "$(readlink -e "$0")")"
 (
     cd "$pwd"
-    echo ./*.py
+    echo ../src/*.py
 
     printf '\n--- Mypy ---\n'
-    "$MYPY_BIN" -- *.py
+    "$MYPY_BIN" -- ../src/*.py
 
     printf '\n--- pycodestyle ---\n'
-    "$PYCODESTYLE_BIN" -v -- *.py
+    "$PYCODESTYLE_BIN" -v -- ../src/*.py
 )

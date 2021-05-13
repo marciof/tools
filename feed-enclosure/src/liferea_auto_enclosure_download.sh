@@ -12,7 +12,7 @@
 #   apt install xmlstarlet # Version: 1.6.1-2.1 # parse/modify XML
 #
 # Test dependencies:
-#   apt install shellcheck # Version: 0.7.1-1build1
+#   ../tst/lint_shell.sh
 
 # TODO add a global option for auto-download and filter cmd to Liferea?
 

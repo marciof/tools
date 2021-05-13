@@ -8,7 +8,7 @@
 # Stdout: path to Liferea's OPML file
 #
 # Test dependencies:
-#   ./lint_shell.sh
+#   ../tst/lint_shell.sh
 
 set -e -u
 

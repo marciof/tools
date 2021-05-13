@@ -24,6 +24,6 @@ fi
 pwd="$(dirname "$(readlink -e "$0")")"
 (
     cd "$pwd"
-    echo ./*.sh
-    "$SHELLCHECK_BIN" -- *.sh
+    echo ./*.sh ../src/*.sh
+    "$SHELLCHECK_BIN" -- *.sh ../src/*.sh
 )
