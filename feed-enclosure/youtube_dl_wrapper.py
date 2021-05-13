@@ -93,7 +93,7 @@ class UgetFD(ExternalFD):
             self,
             tmpfilename: str,
             info_dict: dict,
-            should_log_progress: bool = True) -> bool:
+            should_log_progress: bool = False) -> bool:
 
         # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
@@ -144,8 +144,7 @@ class UgetFD(ExternalFD):
             self.info('Expected file size: %d bytes', expected_size)
 
         try:
-            is_downloaded = self.is_downloaded(
-                tmpfilename, info_dict, should_log_progress=False)
+            is_downloaded = self.is_downloaded(tmpfilename, info_dict)
             return_code: Optional[int] = 0
         except FileNotFoundError:
             is_downloaded = False

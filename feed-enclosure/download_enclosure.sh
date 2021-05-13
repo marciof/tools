@@ -172,11 +172,9 @@ main() {
             "$download_folder"
     else
         (
-            # FIXME youtube-dl doesn't have an option for the output directory,
-            #       so as a workaround go to where it should be downloaded
+            # FIXME youtube-dl doesn't have an option for the output directory
             cd -- "$download_folder"
 
-            # TODO test resuming downloads of separate audio and video files
             # TODO resume downloads if process is never restarted
             # TODO what happens when internet is out
             # TODO YouTube download URLs may expire, eg. downloader queues them
