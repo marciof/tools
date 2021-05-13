@@ -176,8 +176,8 @@ main() {
             cd -- "$download_folder"
 
             # TODO resume downloads if process is never restarted
-            # TODO what happens when internet is out
-            # TODO YouTube download URLs may expire, eg. downloader queues them
+            # TODO what happens when offline?
+            # TODO YouTube download URLs may expire, eg. queued in downloader
             "$YOUTUBE_DL_BIN" \
                 --verbose \
                 --external-downloader uget \

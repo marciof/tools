@@ -7,7 +7,7 @@
 # Stdout: lint results
 #
 # Runtime dependencies:
-#   (See requirements.txt file.)
+#   (See associated requirements.txt file.)
 #
 # Test dependencies:
 #   ./lint_shell.sh
