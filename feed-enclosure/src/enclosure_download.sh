@@ -15,13 +15,56 @@ set -e -u
 
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
+# TODO add bin variables for recutils
+# TODO update dependencies list on recutils
+
+USER_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}"
+FEED_ENCLOSURE_CONFIG_PATH="$USER_CONFIG_PATH/feed-enclosure"
+JOB_DB_PATH="$FEED_ENCLOSURE_CONFIG_PATH/download-jobs.rec"
 
 help_opt=h
+# TODO optional separate folder per show/feed/YouTube channel?
 download_folder_opt=f
+# TODO make the video format option generic and not tied to youtube-dl?
 ytdl_video_format_opt=y
 
 download_folder=.
 ytdl_video_format=bestvideo+bestaudio
+
+# TODO document
+record_job() {
+    job_db="$1"
+    job_url="$2"
+    job_format="$3"
+    job_folder="$4"
+
+    mkdir -p "$(dirname "$job_db")"
+    touch "$job_db"
+
+    recins \
+        -f URL -v "$job_url" \
+        -f Format -v "$job_format" \
+        -f Folder -v "$job_folder" \
+        "$job_db"
+}
+
+# TODO document
+encode_rec_string() {
+    printf "'"
+    printf %s "$1" | sed -r "s/'/' \& \"'\" \& '/g"
+    printf "'"
+}
+
+# TODO document
+complete_job() {
+    job_db="$1"
+    job_url="$(encode_rec_string "$2")"
+    job_format="$(encode_rec_string "$3")"
+    job_folder="$(encode_rec_string "$4")"
+
+    recdel -e "URL = $job_url && Format = $job_format && Folder = $job_folder" \
+        "$job_db"
+}
 
 check_dependencies() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
@@ -161,6 +204,8 @@ main() {
     url="$1"
     shift
 
+    record_job "$JOB_DB_PATH" "$url" "$ytdl_video_format" "$download_folder"
+
     if is_ign_daily_fix_url "$url"; then
         # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
         # TODO missing youtube-dl's workaround for uGet Unicode filenames
@@ -187,6 +232,8 @@ main() {
                 "$url"
         )
     fi
+
+    complete_job "$JOB_DB_PATH" "$url" "$ytdl_video_format" "$download_folder"
 }
 
 if [ -t 0 ]; then
