@@ -220,6 +220,7 @@ main() {
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi
 
+    # TODO doesn't wait for `download_via_uget` to finish the download
     if [ -n "$dl_end_script" ]; then
       "$dl_end_script" "$url" "$ytdl_video_format" "$download_folder"
     fi
