@@ -74,28 +74,6 @@ Decrease resolution to increase font size:
 
 And then do `update-grub`.
 
-### WM/DE
-
-*Note*: not needed with window scaling set to 2x.
-
-`/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
-
-    [Seat:*]
-    xserver-command=X -core -dpi 145
-    greeter-hide-users=false
-
-`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_hidpi.conf`
-
-    [greeter]
-    xft-dpi=145
-
-### Qt4
-
-Change font size:
-
-    apt install qt4-qtconfig
-    qtconfig
-
 ### Qt5
 
 https://doc.qt.io/qt-5/highdpi.html
@@ -106,18 +84,6 @@ https://wiki.archlinux.org/index.php/HiDPI#Qt_5
 
     export QT_AUTO_SCREEN_SCALE_FACTOR=0
     export QT_SCALE_FACTOR=2
-
-### Gtk
-
-*Note*: not needed with window scaling set to 2x.
-
-    xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
-
-### Xfce
-
-*Note*: not needed with window scaling set to 2x.
-
-    xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 145
 
 ### Gnome
 
@@ -179,17 +145,6 @@ Or alternatively in `~/.xsessionrc`:
 
     setxkbmap -option compose:caps
 
-## Keyboard shortcuts
-
-- `exo-open --launch FileManager`: Alt-E
-- `exo-open --launch TerminalEmulator`: Alt-T
-- `exo-open --launch WebBrowser`: Alt-W
-- `keepassxc`: Alt-K
-- `xfce4-popup-whiskermenu`: Alt-M
-- `xflock4`: Alt-L
-- `xscreensaver-command -activate`: Alt-S
-- ClipIt history: Alt-C
-
 ## Miscellaneous
 
 ### Passwords and keys
@@ -218,10 +173,6 @@ GUI for Gnome Keyring:
     [greeter]
     background=COLOR_OR_PATH_TO_IMAGE_FILE
 
-### Profile image
-
-    apt install accountsservice mugshot
-
 ### File manager video thumbnails
 
 https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumbnails-in-xubuntu-18-04
@@ -249,22 +200,6 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
     gsettings list-recursively org.gnome.Evince
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
-
-### Light Locker
-
-Workaround for bug ["This session is locked, you'll be redirected to the unlock
-dialog in a few seconds."](https://github.com/the-cavalry/light-locker/issues/126):
-
-1. [Disable Light Locker](https://askubuntu.com/questions/544818/how-do-i-disable-automatic-screen-locking-in-xubuntu#544824) (not removing since it seems to be part of Xfce4?)
-   - In *Session and Startup*, *Application Autostart*, disable *Screen Locker*.
-   - `killall light-locker`
-2. `apt install xscreensaver`
-3. In *Power Manager*, *Display*, disable *Handle display power management*.
-4. In *Screensaver*:
-   - *Display Modes*, enable *Lock Screen After* 0 minutes.
-   - *Advanced*, enable *Display Power Management*.
-
-Reboot and re-apply high DPI settings if needed.
 
 ### Trailing newline
 
