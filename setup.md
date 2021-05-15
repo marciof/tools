@@ -158,7 +158,13 @@ GUI for Gnome Keyring:
 - Add *SSH Key Agent* to *Application Autostart*.
 - Enable *Launch GNOME services on startup*.
 
-### Digital clock format
+### Date/Time
+
+Automatic timezone:
+
+    apt install ntp
+
+Digital clock format:
 
     %-l:%M%P %a %-m/%-e
 
