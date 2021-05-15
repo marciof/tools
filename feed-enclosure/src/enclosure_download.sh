@@ -15,7 +15,9 @@ set -e -u
 
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
-# TODO add bin variables for recutils
+RECINS_BIN="${RECINS_BIN:-recins}"
+RECDEL_BIN="${RECDEL_BIN:-recdel}"
+RECSEL_BIN="${RECSEL_BIN:-recsel}"
 # TODO update dependencies list on recutils
 
 USER_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -41,7 +43,7 @@ record_job() {
     mkdir -p "$(dirname "$job_db")"
     touch "$job_db"
 
-    recins \
+    "$RECINS_BIN" \
         -f URL -v "$job_url" \
         -f Format -v "$job_format" \
         -f Folder -v "$job_folder" \
@@ -62,7 +64,8 @@ complete_job() {
     job_format="$(encode_rec_string "$3")"
     job_folder="$(encode_rec_string "$4")"
 
-    recdel -e "URL = $job_url && Format = $job_format && Folder = $job_folder" \
+    "$RECDEL_BIN" \
+        -e "URL = $job_url && Format = $job_format && Folder = $job_folder" \
         "$job_db"
 }
 
@@ -133,7 +136,7 @@ extract_nice_filename_from_url() {
 # Stdout: log filename where uGet stdout and stderr are logged to
 download_via_uget() {
     uget_url="$1"
-    uget_path="$2"
+    uget_folder="$2"
     uget_filename="$(extract_nice_filename_from_url "$uget_url")"
 
     if [ -n "$uget_filename" ]; then
@@ -149,17 +152,42 @@ download_via_uget() {
     #       so as a workaround make it absolute
     nohup "$UGET_BIN" \
         --quiet \
-        "--folder=$(readlink -e -- "$uget_path")" \
+        "--folder=$(readlink -e -- "$uget_folder")" \
         "$@" \
         -- \
         "$uget_url" </dev/null >"$uget_log_file" &
 }
 
+# TODO document
+download_via_ytdl() {
+    ytdl_url="$1"
+    ytdl_format="$2"
+    ytdl_folder="$2"
+
+    (
+        # FIXME youtube-dl doesn't have an option for the output directory
+        cd -- "$ytdl_folder"
+
+        # TODO resume downloads if process is never restarted
+        # TODO what happens when offline?
+        # TODO YouTube download URLs may expire, eg. queued in downloader
+        "$YOUTUBE_DL_BIN" \
+            --verbose \
+            --external-downloader uget \
+            --add-metadata \
+            --format "$ytdl_format" \
+            -- \
+            "$ytdl_url"
+    )
+}
+
 print_usage() {
     cat <<EOT >&2
-Usage: $(basename "$0") [OPTION]... URL
+Usage: $(basename "$0") [OPTION]... [URL]
 
-Note: if the URL contains a fragment part then it's an optional filename hint
+Note:
+  If the URL contains a fragment part, then it's an optional filename hint.
+  If no URL is given, then it resumes downloads that didn't finish.
 
 Options:
   -$help_opt           display this help and exit
@@ -196,13 +224,16 @@ main() {
     process_options "$@"
     shift $((OPTIND - 1))
 
-    if [ $# -ne 1 ]; then
+    if [ $# -eq 0 ]; then
+        "$RECSEL_BIN" "$JOB_DB_PATH"
+        return 0
+    elif [ $# -eq 1 ]; then
+        url="$1"
+        shift
+    else
         print_usage
         return 1
     fi
-
-    url="$1"
-    shift
 
     record_job "$JOB_DB_PATH" "$url" "$ytdl_video_format" "$download_folder"
 
@@ -216,21 +247,7 @@ main() {
             "$(upgrade_ign_daily_fix_url_video_res "$url")" \
             "$download_folder"
     else
-        (
-            # FIXME youtube-dl doesn't have an option for the output directory
-            cd -- "$download_folder"
-
-            # TODO resume downloads if process is never restarted
-            # TODO what happens when offline?
-            # TODO YouTube download URLs may expire, eg. queued in downloader
-            "$YOUTUBE_DL_BIN" \
-                --verbose \
-                --external-downloader uget \
-                --add-metadata \
-                --format "$ytdl_video_format" \
-                -- \
-                "$url"
-        )
+        download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi
 
     complete_job "$JOB_DB_PATH" "$url" "$ytdl_video_format" "$download_folder"
