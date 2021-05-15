@@ -15,8 +15,6 @@
 set -e -u
 
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
-JOB_CREATE_BIN="${JOB_CREATE_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_create.sh}"
-JOB_DELETE_BIN="${JOB_DELETE_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_delete.sh}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 help_opt=h
@@ -24,9 +22,13 @@ help_opt=h
 download_folder_opt=f
 # TODO make the video format option generic and not tied to youtube-dl?
 ytdl_video_format_opt=y
+dl_begin_script_opt=b
+dl_end_script_opt=e
 
 download_folder=.
 ytdl_video_format=bestvideo+bestaudio
+dl_begin_script=
+dl_end_script=
 
 # TODO check dependencies
 check_dependencies() {
@@ -145,23 +147,33 @@ print_usage() {
     cat <<EOT >&2
 Usage: $(basename "$0") [OPTION]... URL
 
-Note: If the URL contains a fragment part, then it's an optional filename hint.
-
 Options:
   -$help_opt           display this help and exit
   -$download_folder_opt PATH      download save location to "PATH", defaults to "$download_folder"
   -$ytdl_video_format_opt FORMAT    set youtube-dl video "FORMAT", defaults to "$ytdl_video_format"
+  -$dl_begin_script_opt SCRIPT    script to run when beginning a download
+  -$dl_end_script_opt SCRIPT    script to run when ending a download
+
+Notes:
+  If the URL contains a fragment part, then it's an optional filename hint.
+  Script hooks are passed the following arguments: URL FORMAT FOLDER
 EOT
 }
 
 process_options() {
-    while getopts "$download_folder_opt:$ytdl_video_format_opt:$help_opt" process_opt "$@"; do
+    while getopts "$download_folder_opt:$ytdl_video_format_opt:$help_opt$dl_begin_script_opt:$dl_end_script_opt:" process_opt "$@"; do
         case "$process_opt" in
             "$download_folder_opt")
                 download_folder="$OPTARG"
                 ;;
             "$ytdl_video_format_opt")
                 ytdl_video_format="$OPTARG"
+                ;;
+            "$dl_begin_script_opt")
+                dl_begin_script="$OPTARG"
+                ;;
+            "$dl_end_script_opt")
+                dl_end_script="$OPTARG"
                 ;;
             "$help_opt")
                 print_usage
@@ -191,7 +203,9 @@ main() {
     url="$1"
     shift
 
-    "$JOB_CREATE_BIN" "$url" "$ytdl_video_format" "$download_folder"
+    if [ -n "$dl_begin_script" ]; then
+      "$dl_begin_script" "$url" "$ytdl_video_format" "$download_folder"
+    fi
 
     if is_ign_daily_fix_url "$url"; then
         # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
@@ -206,7 +220,9 @@ main() {
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi
 
-    "$JOB_DELETE_BIN" "$url" "$ytdl_video_format" "$download_folder"
+    if [ -n "$dl_end_script" ]; then
+      "$dl_end_script" "$url" "$ytdl_video_format" "$download_folder"
+    fi
 }
 
 if [ -t 0 ]; then

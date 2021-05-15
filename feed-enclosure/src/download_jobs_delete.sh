@@ -27,6 +27,7 @@ format="$(encode_rec_string "$2")"
 folder="$(encode_rec_string "$3")"
 shift 3
 
+# TODO use optional ID/hash for easier deletion?
 "$RECDEL_BIN" \
     -e "URL = $url && Format = $format && Folder = $folder" \
     "$jobs_db"

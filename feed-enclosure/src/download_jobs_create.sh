@@ -24,6 +24,7 @@ mkdir -p "$(dirname "$jobs_db")"
 touch "$jobs_db"
 
 # TODO detect duplicates?
+# TODO add ID/hash for easier deletion?
 "$RECINS_BIN" \
     -f URL -v "$url" \
     -f Format -v "$format" \
