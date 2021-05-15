@@ -156,7 +156,7 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 48.
 
 ### Touchpad
 
-Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.2s`.
+Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.1s`.
 
 To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
 
