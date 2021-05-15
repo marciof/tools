@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# TODO update dependencies list
 # Wrapper script to download enclosures, that can be used with Liferea.
 # Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
@@ -14,15 +15,9 @@
 set -e -u
 
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
+JOB_CREATE_BIN="${JOB_CREATE_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_create.sh}"
+JOB_DELETE_BIN="${JOB_DELETE_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_delete.sh}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
-RECINS_BIN="${RECINS_BIN:-recins}"
-RECDEL_BIN="${RECDEL_BIN:-recdel}"
-RECSEL_BIN="${RECSEL_BIN:-recsel}"
-# TODO update dependencies list on recutils
-
-USER_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}"
-FEED_ENCLOSURE_CONFIG_PATH="$USER_CONFIG_PATH/feed-enclosure"
-JOB_DB_PATH="$FEED_ENCLOSURE_CONFIG_PATH/download-jobs.rec"
 
 help_opt=h
 # TODO optional separate folder per show/feed/YouTube channel?
@@ -33,44 +28,7 @@ ytdl_video_format_opt=y
 download_folder=.
 ytdl_video_format=bestvideo+bestaudio
 
-# TODO document
-# TODO detect duplicates?
-# TODO use hooks to avoid polluting this script? easier to download one-offs?
-record_job() {
-    job_db="$1"
-    job_url="$2"
-    job_format="$3"
-    job_folder="$4"
-
-    mkdir -p "$(dirname "$job_db")"
-    touch "$job_db"
-
-    "$RECINS_BIN" \
-        -f URL -v "$job_url" \
-        -f Format -v "$job_format" \
-        -f Folder -v "$job_folder" \
-        "$job_db"
-}
-
-# TODO document
-encode_rec_string() {
-    printf "'"
-    printf %s "$1" | sed -r "s/'/' \& \"'\" \& '/g"
-    printf "'"
-}
-
-# TODO document
-complete_job() {
-    job_db="$1"
-    job_url="$(encode_rec_string "$2")"
-    job_format="$(encode_rec_string "$3")"
-    job_folder="$(encode_rec_string "$4")"
-
-    "$RECDEL_BIN" \
-        -e "URL = $job_url && Format = $job_format && Folder = $job_folder" \
-        "$job_db"
-}
-
+# TODO check dependencies
 check_dependencies() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
         echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
@@ -185,11 +143,9 @@ download_via_ytdl() {
 
 print_usage() {
     cat <<EOT >&2
-Usage: $(basename "$0") [OPTION]... [URL]
+Usage: $(basename "$0") [OPTION]... URL
 
-Note:
-  If the URL contains a fragment part, then it's an optional filename hint.
-  If no URL is given, then it resumes downloads that didn't finish.
+Note: If the URL contains a fragment part, then it's an optional filename hint.
 
 Options:
   -$help_opt           display this help and exit
@@ -221,23 +177,21 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
+# TODO add hooks and flags for job create/delete
 main() {
     check_dependencies
     process_options "$@"
     shift $((OPTIND - 1))
 
-    if [ $# -eq 0 ]; then
-        "$RECSEL_BIN" "$JOB_DB_PATH"
-        return 0
-    elif [ $# -eq 1 ]; then
-        url="$1"
-        shift
-    else
+    if [ $# -ne 1 ]; then
         print_usage
         return 1
     fi
 
-    record_job "$JOB_DB_PATH" "$url" "$ytdl_video_format" "$download_folder"
+    url="$1"
+    shift
+
+    "$JOB_CREATE_BIN" "$url" "$ytdl_video_format" "$download_folder"
 
     if is_ign_daily_fix_url "$url"; then
         # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
@@ -252,7 +206,7 @@ main() {
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi
 
-    complete_job "$JOB_DB_PATH" "$url" "$ytdl_video_format" "$download_folder"
+    "$JOB_DELETE_BIN" "$url" "$ytdl_video_format" "$download_folder"
 }
 
 if [ -t 0 ]; then
