@@ -34,6 +34,8 @@ download_folder=.
 ytdl_video_format=bestvideo+bestaudio
 
 # TODO document
+# TODO detect duplicates?
+# TODO use hooks to avoid polluting this script? easier to download one-offs?
 record_job() {
     job_db="$1"
     job_url="$2"
@@ -162,7 +164,7 @@ download_via_uget() {
 download_via_ytdl() {
     ytdl_url="$1"
     ytdl_format="$2"
-    ytdl_folder="$2"
+    ytdl_folder="$3"
 
     (
         # FIXME youtube-dl doesn't have an option for the output directory
