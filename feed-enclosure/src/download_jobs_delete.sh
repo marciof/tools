@@ -20,14 +20,11 @@ encode_rec_string() {
     printf "'"
 }
 
-jobs_db="$("$FIND_DB_BIN")"
-
 url="$(encode_rec_string "$1")"
 format="$(encode_rec_string "$2")"
 folder="$(encode_rec_string "$3")"
 shift 3
 
 # TODO use optional ID/hash for easier deletion?
-"$RECDEL_BIN" \
-    -e "URL = $url && Format = $format && Folder = $folder" \
-    "$jobs_db"
+"$FIND_DB_BIN" | xargs "$RECDEL_BIN" \
+    -e "URL = $url && Format = $format && Folder = $folder"

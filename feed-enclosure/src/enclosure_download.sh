@@ -20,6 +20,7 @@ UGET_BIN="${UGET_BIN:-uget-gtk}"
 help_opt=h
 # TODO optional separate folder per show/feed/YouTube channel?
 download_folder_opt=f
+# TODO provide a generic download format option
 ytdl_video_format_opt=y
 dl_begin_script_opt=b
 dl_end_script_opt=e
