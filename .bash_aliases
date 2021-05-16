@@ -5,8 +5,9 @@ if ! echo "$-" | grep -q i; then
 fi
 
 have() {
-    for NAME; do
-        if command -v "$NAME" >/dev/null; then
+    for HAVE_NAME; do
+        HAVE_PATH="$(command -v "$HAVE_NAME")"
+        if [ -n "$HAVE_PATH" ]; then
             return 0
         fi
     done
@@ -41,8 +42,8 @@ shopt -s autocd dirspell histappend
 alias -- -='cd -'
 
 DESC=' <https://github.com/sharkdp/fd>' have fd
-have dircolors && eval "$("$NAME" -b)"
-have lesspipe lesspipe.sh && eval "$("$NAME")"
+have dircolors && eval "$("$HAVE_NAME" -b)"
+have lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
 
 export HISTCONTROL=ignoredups
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
@@ -83,22 +84,22 @@ fi
 
 if have nano; then
     alias nano='nano -Sw'
-    export EDITOR="$NAME" GIT_EDITOR="$NAME"
+    export EDITOR="$HAVE_NAME" GIT_EDITOR="$HAVE_NAME"
 fi
 
 if have show.sh; then
     # shellcheck disable=SC2139
-    alias s="$NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
-    export PAGER="$NAME" GIT_PAGER="$NAME"
+    alias s="$HAVE_NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
+    export PAGER="$HAVE_PATH" GIT_PAGER="$HAVE_PATH"
 fi
 
 if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
-        alias f="$NAME --follow --pager \"$PAGER\""
+        alias f="$HAVE_NAME --follow --pager \"$PAGER\""
     else
         # shellcheck disable=SC2139
-        alias f="$NAME --follow"
+        alias f="$HAVE_NAME --follow"
     fi
 fi
 
