@@ -5,7 +5,7 @@
 set -e -u
 
 # TODO check dependencies
-FIND_DB_BIN="${FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
+DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
 RECDEL_BIN="${RECDEL_BIN:-recdel}"
 
 if [ $# -ne 3 ]; then
@@ -26,5 +26,5 @@ folder="$(encode_rec_string "$3")"
 shift 3
 
 # TODO use optional ID/hash for easier deletion?
-"$FIND_DB_BIN" | xargs "$RECDEL_BIN" \
+"$DL_JOB_FIND_DB_BIN" | xargs "$RECDEL_BIN" \
     -e "URL = $url && Format = $format && Folder = $folder"

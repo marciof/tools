@@ -5,7 +5,7 @@
 set -e -u
 
 # TODO check dependencies
-FIND_DB_BIN="${FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
+DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
 RECINS_BIN="${RECINS_BIN:-recins}"
 
 if [ $# -ne 3 ]; then
@@ -13,7 +13,7 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
-jobs_db="$("$FIND_DB_BIN")"
+jobs_db="$("$DL_JOB_FIND_DB_BIN")"
 
 url="$1"
 format="$2"
