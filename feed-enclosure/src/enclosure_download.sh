@@ -19,9 +19,7 @@ UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 help_opt=h
 # TODO optional separate folder per show/feed/YouTube channel?
-# TODO fix inconsistent use of "path" vs "folder"
 download_folder_opt=f
-# TODO make the video format option generic and not tied to youtube-dl?
 ytdl_video_format_opt=y
 dl_begin_script_opt=b
 dl_end_script_opt=e
@@ -150,7 +148,7 @@ Usage: $(basename "$0") [OPTION]... URL
 
 Options:
   -$help_opt           display this help and exit
-  -$download_folder_opt PATH      download save location to "PATH", defaults to "$download_folder"
+  -$download_folder_opt FOLDER    download save location to "FOLDER", defaults to "$download_folder"
   -$ytdl_video_format_opt FORMAT    set youtube-dl video "FORMAT", defaults to "$ytdl_video_format"
   -$dl_begin_script_opt SCRIPT    script to run when beginning a download
   -$dl_end_script_opt SCRIPT    script to run when ending a download
@@ -190,7 +188,6 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
-# TODO add hooks and flags for job create/delete
 main() {
     check_dependencies
     process_options "$@"
@@ -221,7 +218,7 @@ main() {
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi
 
-    # TODO doesn't wait for `download_via_uget` to finish the download
+    # TODO wait for `download_via_uget` to finish the download
     if [ -n "$dl_end_script" ]; then
       "$dl_end_script" "$url" "$ytdl_video_format" "$download_folder"
     fi
