@@ -33,6 +33,7 @@ while [ "$job_num" -lt "$num_jobs" ]; do
         "$DL_OB_DELETE_BIN" "$url" "$format" "$folder"
     }&
 
+    # TODO option to limit number of concurrent jobs?
     job_num="$((job_num + 1))"
     # TODO option for sleep duration?
     sleep 1
