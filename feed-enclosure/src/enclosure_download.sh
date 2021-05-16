@@ -19,6 +19,7 @@ UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 help_opt=h
 # TODO optional separate folder per show/feed/YouTube channel?
+# TODO fix inconsistent use of "path" vs "folder"
 download_folder_opt=f
 # TODO make the video format option generic and not tied to youtube-dl?
 ytdl_video_format_opt=y
