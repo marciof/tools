@@ -30,7 +30,6 @@ ytdl_video_format=bestvideo+bestaudio
 dl_begin_script=
 dl_end_script=
 
-# TODO check dependencies
 check_dependencies() {
     if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
         echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
