@@ -17,31 +17,13 @@
 
 set -e -u
 
-DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
-DL_JOB_DELETE_BIN="${DL_JOB_DELETE_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_delete.sh}"
-ENCLOSURE_DL_BIN="${ENCLOSURE_DL_BIN:-$(dirname "$(readlink -e "$0")")/enclosure_download.sh}"
+pwd="$(dirname "$(readlink -e "$0")")"
+DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$pwd/download_jobs_find_db.sh}"
+DL_JOB_DELETE_BIN="${DL_JOB_DELETE_BIN:-$pwd/download_jobs_delete.sh}"
+ENCLOSURE_DL_BIN="${ENCLOSURE_DL_BIN:-$pwd/enclosure_download.sh}"
 RECSEL_BIN="${RECSEL_BIN:-recsel}"
 
-if ! command -v "$DL_JOB_FIND_DB_BIN" >/dev/null; then
-    echo "Error: $DL_JOB_FIND_DB_BIN not found (override \$DL_JOB_FIND_DB_BIN)" >&2
-    exit 1
-fi
-
-if ! command -v "$DL_JOB_DELETE_BIN" >/dev/null; then
-    echo "Error: $DL_JOB_DELETE_BIN not found (override \$DL_JOB_DELETE_BIN)" >&2
-    exit 1
-fi
-
-if ! command -v "$ENCLOSURE_DL_BIN" >/dev/null; then
-    echo "Error: $ENCLOSURE_DL_BIN not found (override \$ENCLOSURE_DL_BIN)" >&2
-    exit 1
-fi
-
-if ! command -v "$RECSEL_BIN" >/dev/null; then
-    echo "Error: $RECSEL_BIN not found (override \$RECSEL_BIN)" >&2
-    exit 1
-fi
-
+# TODO ideally, this would be decoupled from finding the DB
 jobs_db="$("$DL_JOB_FIND_DB_BIN")"
 num_jobs="$("$RECSEL_BIN" -c "$jobs_db")"
 job_num=0

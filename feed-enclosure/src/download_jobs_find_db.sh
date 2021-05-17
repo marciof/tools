@@ -13,6 +13,4 @@
 set -e -u
 
 USER_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}"
-FEED_ENCLOSURE_CONFIG_PATH="$USER_CONFIG_PATH/feed-enclosure"
-
-printf '%s\n' "$FEED_ENCLOSURE_CONFIG_PATH/download-jobs.rec"
+echo "$USER_CONFIG_PATH/feed-enclosure/download-jobs.rec"

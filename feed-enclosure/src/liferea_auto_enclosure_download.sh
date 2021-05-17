@@ -42,16 +42,6 @@ xml_set_attr_value() {
             --value "$xml_value"
 }
 
-if ! command -v "$XML_STARLET_BIN" >/dev/null; then
-    echo "Error: $XML_STARLET_BIN not found (override \$XML_STARLET_BIN)" >&2
-    exit 1
-fi
-
-if ! command -v "$FEED_REBUILD_ENCLOSURES_BIN" >/dev/null; then
-    echo "Error: $FEED_REBUILD_ENCLOSURES_BIN not found (override \$FEED_REBUILD_ENCLOSURES_BIN)" >&2
-    exit 1
-fi
-
 if [ -t 0 ]; then
     echo 'Warning: stdin is connected to terminal/keyboard' >&2
 fi

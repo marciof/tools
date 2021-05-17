@@ -29,16 +29,6 @@ xdotool_search() {
     "$XDOTOOL_BIN" search --onlyvisible --classname "$@"
 }
 
-if ! command -v "$LIFEREA_BIN" >/dev/null; then
-    echo "Error: $LIFEREA_BIN not found (override \$LIFEREA_BIN)" >&2
-    exit 1
-fi
-
-if ! command -v "$XDOTOOL_BIN" >/dev/null; then
-    echo "Error: $XDOTOOL_BIN not found (override \$XDOTOOL_BIN)" >&2
-    exit 1
-fi
-
 classname=Liferea
 
 # TODO possible race-condition

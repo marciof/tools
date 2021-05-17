@@ -13,6 +13,4 @@
 set -e -u
 
 USER_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}"
-LIFEREA_CONFIG_PATH="$USER_CONFIG_PATH/liferea"
-
-printf '%s\n' "$LIFEREA_CONFIG_PATH/feedlist.opml"
+echo "$USER_CONFIG_PATH/liferea/feedlist.opml"

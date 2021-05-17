@@ -11,6 +11,8 @@
 # Test dependencies:
 #   ../tst/lint_shell.sh
 
+# TODO too large, rewrite in Python?
+
 set -e -u
 
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
@@ -27,18 +29,6 @@ download_folder=.
 ytdl_video_format=bestvideo+bestaudio
 dl_begin_script=
 dl_end_script=
-
-check_dependencies() {
-    if ! command -v "$YOUTUBE_DL_BIN" >/dev/null; then
-        echo "Error: $YOUTUBE_DL_BIN not found (override \$YOUTUBE_DL_BIN)" >&2
-        return 1
-    fi
-
-    if ! command -v "$UGET_BIN" >/dev/null; then
-        echo "Error: $UGET_BIN not found (override \$UGET_BIN)" >&2
-        return 1
-    fi
-}
 
 # Check if a URL is for an IGN Daily Fix video.
 #
@@ -191,8 +181,8 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
+# TODO run the hook script options through the shell? more flexible?
 main() {
-    check_dependencies
     process_options "$@"
     shift $((OPTIND - 1))
 

@@ -14,16 +14,6 @@ set -e -u
 DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
 RECDEL_BIN="${RECDEL_BIN:-recdel}"
 
-if ! command -v "$DL_JOB_FIND_DB_BIN" >/dev/null; then
-    echo "Error: $DL_JOB_FIND_DB_BIN not found (override \$DL_JOB_FIND_DB_BIN)" >&2
-    exit 1
-fi
-
-if ! command -v "$RECDEL_BIN" >/dev/null; then
-    echo "Error: $RECDEL_BIN not found (override \$RECDEL_BIN)" >&2
-    exit 1
-fi
-
 if [ $# -ne 3 ]; then
     echo "Usage: $(basename "$0") URL FORMAT FOLDER" >&2
     exit 1
