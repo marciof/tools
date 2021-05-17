@@ -7,12 +7,9 @@
 # Stdin: none
 # Stdout: none
 #
-# Runtime dependencies:
+# Dependencies:
 #   apt install liferea # Version: 1.13.1-1
 #   apt install xdotool # Version: 1:3.20160805.1-4
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 set -e -u
 

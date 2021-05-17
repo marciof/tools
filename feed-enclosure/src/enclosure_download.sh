@@ -3,13 +3,10 @@
 # Wrapper script to download enclosures, that can be used with Liferea.
 # Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
-# Runtime dependencies:
+# Dependencies:
 #   ./youtube_dl_wrapper.py
 #   apt install uget # Version: 2.2.3-2 # downloader tool
 #   apt install ffmpeg # Version: 7:4.3.1-4ubuntu1 # merge video/audio
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 # TODO too large, rewrite in Python?
 

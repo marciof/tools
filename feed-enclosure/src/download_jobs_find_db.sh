@@ -2,13 +2,6 @@
 
 # Prints the path to the download jobs recfile database (may not exist).
 # https://www.gnu.org/software/recutils/
-#
-# Arguments: none
-# Stdin: none
-# Stdout: path to download jobs recfile
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 set -e -u
 

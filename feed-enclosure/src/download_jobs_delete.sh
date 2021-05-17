@@ -2,12 +2,9 @@
 
 # Removes a job from the download jobs recfile database.
 #
-# Runtime dependencies:
+# Dependencies:
 #   ./download_jobs_find_db.sh
 #   apt install recutils # Version: 1.8-1
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 set -e -u
 

@@ -6,14 +6,11 @@
 # Stdin: none
 # Stdout: download jobs being run
 #
-# Runtime dependencies:
+# Dependencies:
 #   ./download_jobs_delete.sh
 #   ./download_jobs_find_db.sh
 #   ./enclosure_download.sh
 #   apt install recutils # Version: 1.8-1
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 set -e -u
 
@@ -28,6 +25,7 @@ jobs_db="$("$DL_JOB_FIND_DB_BIN")"
 num_jobs="$("$RECSEL_BIN" -c "$jobs_db")"
 job_num=0
 
+# TODO run from a Liferea plugin on feed updates?
 while [ "$job_num" -lt "$num_jobs" ]; do
     # Most to least recent job, while also ensuring parallel jobs don't
     # interfere with each other when modifying the recfile database.

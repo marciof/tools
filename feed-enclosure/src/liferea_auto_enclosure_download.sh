@@ -8,11 +8,8 @@
 # Stdin: Liferea's OPML format
 # Stdout: updated Liferea's OPML format
 #
-# Runtime dependencies:
+# Dependencies:
 #   apt install xmlstarlet # Version: 1.6.1-2.1 # parse/modify XML
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 # TODO add a global option for auto-download and filter cmd to Liferea?
 

@@ -2,13 +2,6 @@
 
 # Prints the path to Liferea's OPML file (may not exist).
 # https://lzone.de/liferea/faq.htm#how-to-copy-remote
-#
-# Arguments: none
-# Stdin: none
-# Stdout: path to Liferea's OPML file
-#
-# Test dependencies:
-#   ../tst/lint_shell.sh
 
 set -e -u
 
