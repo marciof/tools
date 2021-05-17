@@ -29,9 +29,14 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
-# FIXME recdel is unable to find records with escaped quotes
+# Encode a string for use in a recutils selection expression.
+#
+# Arguments: string to encode
+# Stdin: none
+# Stdout: encoded and quoted string
 encode_rec_string() {
     printf "'"
+    # FIXME recdel is unable to find records with escaped quotes
     printf %s "$1" | sed -r "s/'/' \& \"'\" \& '/g"
     printf "'"
 }

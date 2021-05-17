@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# TODO update dependencies list
 # Wrapper script to download enclosures, that can be used with Liferea.
 # Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
@@ -18,7 +17,6 @@ YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wr
 UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 help_opt=h
-# TODO optional separate folder per show/feed/YouTube channel?
 download_folder_opt=f
 # TODO provide a generic download format option
 ytdl_video_format_opt=y
@@ -119,7 +117,12 @@ download_via_uget() {
         "$uget_url" </dev/null >"$uget_log_file" &
 }
 
-# TODO document
+# Download a URL using youtube-dl.
+#
+# Globals: YOUTUBE_DL_BIN
+# Arguments: URL, video format, folder path
+# Stdin: none
+# Stdout: download progress
 download_via_ytdl() {
     ytdl_url="$1"
     ytdl_format="$2"
