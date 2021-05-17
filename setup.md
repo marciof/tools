@@ -5,7 +5,8 @@
 - [Fira Code](https://github.com/tonsky/FiraCode) font
 - [Firefox](https://www.firefox.com) browser ([extensions](https://addons.mozilla.org/en-US/firefox/collections/13173821/essentials/))
 - [Tor](https://www.torproject.org) browser
-- [Thunderbird](https://www.thunderbird.net) email/calendar
+- [Thunderbird](https://www.thunderbird.net) email/calendar ([CardBook](https://addons.thunderbird.net/thunderbird/addon/cardbook/) extension)
+- [Liferea](https://lzone.de/liferea/) feed reader
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
@@ -19,9 +20,10 @@
 - [DroidCam](https://www.dev47apps.com) phone webcam
 - [Handbrake](https://handbrake.fr) video transcoder
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
+- [uGet](https://ugetdm.com/) download manager
 - [Redshift](https://github.com/jonls/redshift) screen color temperature
-- [Xournal](http://xournal.sourceforge.net) PDF editor
-- [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer
+- [LibreOffice](https://www.libreoffice.org) office suite and PDF editor
+- [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer and forms
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
 
 # Configuration
