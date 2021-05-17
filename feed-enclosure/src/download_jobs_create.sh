@@ -35,7 +35,6 @@ folder="$3"
 shift 3
 
 jobs_db="$("$DL_JOB_FIND_DB_BIN")"
-
 mkdir -p "$(dirname "$jobs_db")"
 touch "$jobs_db"
 
