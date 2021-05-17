@@ -58,7 +58,7 @@
 
 *Appearance*:
 
-- *Style*: Adwaita-dark (Numix has light colors)
+- *Style*: Numix
 - *Icons*: Numix
 - *Settings*: Window Scaling 2x
 
