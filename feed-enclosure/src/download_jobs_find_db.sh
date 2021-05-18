@@ -4,6 +4,4 @@
 # https://www.gnu.org/software/recutils/
 
 set -e -u
-
-USER_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}"
-echo "$USER_CONFIG_PATH/feed-enclosure/download-jobs.rec"
+echo "${XDG_CONFIG_HOME:-$HOME/.config}/feed-enclosure/download-jobs.rec"

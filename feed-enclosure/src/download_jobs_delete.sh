@@ -1,18 +1,16 @@
 #!/bin/sh
 
-# Removes a job from the download jobs recfile database.
+# Removes a job from a download jobs recfile database.
 #
 # Dependencies:
-#   ./download_jobs_find_db.sh
 #   apt install recutils # Version: 1.8-1
 
 set -e -u
 
-DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$(dirname "$(readlink -e "$0")")/download_jobs_find_db.sh}"
 RECDEL_BIN="${RECDEL_BIN:-recdel}"
 
-if [ $# -ne 3 ]; then
-    echo "Usage: $(basename "$0") URL FORMAT FOLDER" >&2
+if [ $# -ne 4 ]; then
+    echo "Usage: $(basename "$0") URL FORMAT FOLDER DATABASE" >&2
     exit 1
 fi
 
@@ -31,7 +29,9 @@ encode_rec_string() {
 url="$(encode_rec_string "$1")"
 format="$(encode_rec_string "$2")"
 folder="$(encode_rec_string "$3")"
-shift 3
+db="$4"
+shift 4
 
-"$DL_JOB_FIND_DB_BIN" | xargs "$RECDEL_BIN" \
-    -e "URL = $url && Format = $format && Folder = $folder"
+"$RECDEL_BIN" \
+    -e "URL = $url && Format = $format && Folder = $folder" \
+    "$db"

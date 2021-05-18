@@ -19,11 +19,14 @@ help_opt=h
 download_folder_opt=f
 # TODO provide a generic download format option
 ytdl_video_format_opt=y
+# TODO rename "script" to something more generic
+dl_script_arg_opt=a
 dl_begin_script_opt=b
 dl_end_script_opt=e
 
 download_folder=.
 ytdl_video_format=bestvideo+bestaudio
+dl_script_arg=
 dl_begin_script=
 dl_end_script=
 
@@ -119,7 +122,6 @@ download_via_ytdl() {
         # FIXME youtube-dl doesn't have an option for the output directory
         cd -- "$ytdl_folder"
 
-        # TODO resume downloads if process is never restarted
         # TODO what happens when offline?
         # TODO YouTube download URLs may expire, eg. queued in downloader
         "$YOUTUBE_DL_BIN" \
@@ -142,15 +144,16 @@ Options:
   -$ytdl_video_format_opt FORMAT    set youtube-dl video "FORMAT", defaults to "$ytdl_video_format"
   -$dl_begin_script_opt SCRIPT    script to run when beginning a download
   -$dl_end_script_opt SCRIPT    script to run when ending a download
+  -$dl_script_arg_opt ARG       additional argument for the begin/end scripts
 
 Notes:
   If the URL contains a fragment part, then it's an optional filename hint.
-  Script hooks are passed the following arguments: URL FORMAT FOLDER
+  Script hooks are passed the following arguments: URL FORMAT FOLDER ARG
 EOT
 }
 
 process_options() {
-    while getopts "$download_folder_opt:$ytdl_video_format_opt:$help_opt$dl_begin_script_opt:$dl_end_script_opt:" process_opt "$@"; do
+    while getopts "$download_folder_opt:$ytdl_video_format_opt:$help_opt$dl_begin_script_opt:$dl_end_script_opt:$dl_script_arg_opt:" process_opt "$@"; do
         case "$process_opt" in
             "$download_folder_opt")
                 download_folder="$OPTARG"
@@ -163,6 +166,9 @@ process_options() {
                 ;;
             "$dl_end_script_opt")
                 dl_end_script="$OPTARG"
+                ;;
+            "$dl_script_arg_opt")
+                dl_script_arg="$OPTARG"
                 ;;
             "$help_opt")
                 print_usage
@@ -178,7 +184,6 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
-# TODO run the hook script options through the shell? more flexible?
 main() {
     process_options "$@"
     shift $((OPTIND - 1))
@@ -192,10 +197,12 @@ main() {
     shift
 
     if [ -n "$dl_begin_script" ]; then
-      "$dl_begin_script" "$url" "$ytdl_video_format" "$download_folder"
+        "$dl_begin_script" \
+            "$url" "$ytdl_video_format" "$download_folder" "$dl_script_arg"
     fi
 
     if is_ign_daily_fix_url "$url"; then
+        # TODO wait for `download_via_uget` to finish the download
         # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
         # TODO missing youtube-dl's workaround for uGet Unicode filenames
         # TODO add IGN Daily Fix support to youtube-dl?
@@ -208,9 +215,9 @@ main() {
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi
 
-    # TODO wait for `download_via_uget` to finish the download
     if [ -n "$dl_end_script" ]; then
-      "$dl_end_script" "$url" "$ytdl_video_format" "$download_folder"
+        "$dl_end_script" \
+            "$url" "$ytdl_video_format" "$download_folder" "$dl_script_arg"
     fi
 }
 
