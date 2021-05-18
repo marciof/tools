@@ -31,7 +31,6 @@
 # TODO image, https://justine.lol/printimage.html
 # TODO fancier highlighting, https://github.com/willmcgugan/rich
 
-
 set -e -u
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
