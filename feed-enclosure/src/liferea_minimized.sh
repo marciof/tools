@@ -4,8 +4,6 @@
 # https://github.com/lwindolf/liferea/issues/447
 #
 # Arguments: passthrough to Liferea
-# Stdin: none
-# Stdout: none
 #
 # Dependencies:
 #   apt install liferea # Version: 1.13.1-1
@@ -19,8 +17,7 @@ XDOTOOL_BIN="${XDOTOOL_BIN:-xdotool}"
 # Search for a visible window by class name.
 #
 # Globals: XDOTOOL_BIN
-# Arguments: (pass-through)
-# Stdin: none
+# Arguments: passthrough
 # Stdout: search results
 xdotool_search() {
     "$XDOTOOL_BIN" search --onlyvisible --classname "$@"

@@ -8,8 +8,6 @@
 #   apt install uget # Version: 2.2.3-2 # downloader tool
 #   apt install ffmpeg # Version: 7:4.3.1-4ubuntu1 # merge video/audio
 
-# TODO too large, rewrite in Python?
-
 set -e -u
 
 YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
@@ -31,7 +29,7 @@ dl_end_hook=
 
 # Check if a URL is for an IGN Daily Fix video.
 #
-# Arguments: URL
+# Arguments: url
 # Exit status: 0 when true
 is_ign_daily_fix_url() {
     printf %s "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
@@ -40,14 +38,16 @@ is_ign_daily_fix_url() {
 # Modify a URL for an IGN Daily Fix video to have the highest resolution
 # possible.
 #
-# Arguments: URL
-# Stdin: none
+# Arguments: url
 # Stdout: modified URL
 upgrade_ign_daily_fix_url_video_res() {
     ign_width='[[:digit:]]+'
     ign_hash='[[:xdigit:]]+'
     ign_bitrate='[[:digit:]]+'
 
+    # TODO add IGN Daily Fix support to youtube-dl?
+    #      https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
+    #      https://github.com/ytdl-org/youtube-dl/issues/24771
     printf %s "$1" \
         | sed -r "s#/$ign_width(/$ign_hash-)$ign_bitrate-#/1920\\13906000-#"
 }
@@ -55,7 +55,6 @@ upgrade_ign_daily_fix_url_video_res() {
 # Decode a percent-encoded string.
 # https://en.wikipedia.org/wiki/Percent-encoding
 #
-# Arguments: none
 # Stdin: percent-encoded string
 # Stdout: percent-decoded string
 percent_decode() {
@@ -65,8 +64,7 @@ percent_decode() {
 # Extract an optional filename hint (for downloaders) from the URL fragment,
 # if available.
 #
-# Arguments: URL
-# Stdin: none
+# Arguments: url
 # Stdout: filename if available, otherwise no output
 extract_nice_filename_from_url() {
     if printf %s "$1" | grep -q -F '#'; then
@@ -79,16 +77,16 @@ extract_nice_filename_from_url() {
 # Download a URL using uGet in the background.
 #
 # Globals: UGET_BIN
-# Arguments: URL, folder path
-# Stdin: none
+# Arguments: url folder
 # Stdout: log filename where uGet stdout and stderr are logged to
 download_via_uget() {
-    uget_url="$1"
-    uget_folder="$2"
-    uget_filename="$(extract_nice_filename_from_url "$uget_url")"
+    dl_uget_url="$1"
+    dl_uget_folder="$2"
+    dl_uget_filename="$(extract_nice_filename_from_url "$dl_uget_url")"
 
-    if [ -n "$uget_filename" ]; then
-        set -- "--filename=$uget_filename"
+    # TODO missing workaround for uGet Unicode filenames
+    if [ -n "$dl_uget_filename" ]; then
+        set -- "--filename=$dl_uget_filename"
     else
         set --
     fi
@@ -96,30 +94,30 @@ download_via_uget() {
     uget_log_file="$(mktemp)"
     echo "uGet log file: $uget_log_file"
 
+    # TODO wait for download to finish
     # FIXME uGet doesn't seem to interpret relative folder paths correctly,
     #       so as a workaround make it absolute
     nohup "$UGET_BIN" \
         --quiet \
-        "--folder=$(readlink -e -- "$uget_folder")" \
+        "--folder=$(readlink -e -- "$dl_uget_folder")" \
         "$@" \
         -- \
-        "$uget_url" </dev/null >"$uget_log_file" &
+        "$dl_uget_url" </dev/null >"$uget_log_file" &
 }
 
 # Download a URL using youtube-dl.
 #
 # Globals: YOUTUBE_DL_BIN
-# Arguments: URL, video format, folder path
-# Stdin: none
+# Arguments: url format folder
 # Stdout: download progress
 download_via_ytdl() {
-    ytdl_url="$1"
-    ytdl_format="$2"
-    ytdl_folder="$3"
+    dl_ytdl_url="$1"
+    dl_ytdl_format="$2"
+    dl_ytdl_folder="$3"
 
     (
         # FIXME youtube-dl doesn't have an option for the output directory
-        cd -- "$ytdl_folder"
+        cd -- "$dl_ytdl_folder"
 
         # TODO what happens when offline?
         # TODO YouTube download URLs may expire, eg. queued in downloader
@@ -127,27 +125,27 @@ download_via_ytdl() {
             --verbose \
             --external-downloader uget \
             --add-metadata \
-            --format "$ytdl_format" \
+            --format "$dl_ytdl_format" \
             -- \
-            "$ytdl_url"
+            "$dl_ytdl_url"
     )
 }
 
 print_usage() {
     cat <<EOT >&2
-Usage: $(basename "$0") [OPTION]... URL
+Usage: [options] url
 
 Options:
   -$help_opt           display this help and exit
-  -$download_folder_opt FOLDER    download save location to "FOLDER", defaults to "$download_folder"
-  -$ytdl_video_format_opt FORMAT    set youtube-dl video "FORMAT", defaults to "$ytdl_video_format"
-  -$dl_begin_hook_opt COMMAND   command hook to run when beginning a download
-  -$dl_end_hook_opt COMMAND   command hook to run when ending a download
-  -$dl_hook_arg_opt ARG       additional argument for the download hooks
+  -$download_folder_opt folder    download save location to "folder", defaults to "$download_folder"
+  -$ytdl_video_format_opt format    set youtube-dl video "format", defaults to "$ytdl_video_format"
+  -$dl_begin_hook_opt command   "command" hook to run when beginning a download
+  -$dl_end_hook_opt command   "command" hook to run when ending a download
+  -$dl_hook_arg_opt argument  additional "argument" for the download hooks
 
 Notes:
   If the URL contains a fragment part, then it's an optional filename hint.
-  Download hooks are passed the following arguments: URL FORMAT FOLDER ARG
+  Download hooks are passed the following: url format folder argument
 EOT
 }
 
@@ -201,15 +199,8 @@ main() {
     fi
 
     if is_ign_daily_fix_url "$url"; then
-        # TODO wait for `download_via_uget` to finish the download
-        # TODO missing metadata for IGN Daily Fix videos (maybe not needed?)
-        # TODO missing youtube-dl's workaround for uGet Unicode filenames
-        # TODO add IGN Daily Fix support to youtube-dl?
-        #      https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
-        #      https://github.com/ytdl-org/youtube-dl/issues/24771
         download_via_uget \
-            "$(upgrade_ign_daily_fix_url_video_res "$url")" \
-            "$download_folder"
+            "$(upgrade_ign_daily_fix_url_video_res "$url")" "$download_folder"
     else
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi

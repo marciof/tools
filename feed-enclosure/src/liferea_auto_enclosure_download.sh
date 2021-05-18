@@ -4,7 +4,6 @@
 # automatically download enclosures.
 # https://lzone.de/liferea/help110/preferences_en.html#enclosures
 #
-# Arguments: none
 # Stdin: Liferea's OPML format
 # Stdout: updated Liferea's OPML format
 #
