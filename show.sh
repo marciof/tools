@@ -22,9 +22,15 @@
 # TODO diff syntax highlighter, https://github.com/dandavison/delta
 # TODO improved colored diff, https://github.com/jeffkaufman/icdiff
 # TODO colored diff wrapper, https://www.colordiff.org/
-# TODO images: libcaca, sixel, https://github.com/stefanhaustein/TerminalImageViewer
-# TODO fancier highlighting, https://github.com/willmcgugan/rich
 # TODO semantic diff, https://github.com/trailofbits/graphtage
+# TODO image support via sixels?
+# TODO pixel to ASCII art, http://caca.zoy.org/wiki/libcaca
+# TODO terminal image viewer, https://github.com/stefanhaustein/TerminalImageViewer
+# TODO image to text, https://github.com/jart/hiptext
+# TODO video, https://justine.lol/printvideo.html
+# TODO image, https://justine.lol/printimage.html
+# TODO fancier highlighting, https://github.com/willmcgugan/rich
+
 
 set -e -u
 
