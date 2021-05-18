@@ -15,8 +15,8 @@
 set -e -u
 
 pwd="$(dirname "$(readlink -e "$0")")"
-DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$pwd/download_jobs_find_db.sh}"
 DL_JOB_DELETE_BIN="${DL_JOB_DELETE_BIN:-$pwd/download_jobs_delete.sh}"
+DL_JOB_FIND_DB_BIN="${DL_JOB_FIND_DB_BIN:-$pwd/download_jobs_find_db.sh}"
 ENCLOSURE_DL_BIN="${ENCLOSURE_DL_BIN:-$pwd/enclosure_download.sh}"
 RECSEL_BIN="${RECSEL_BIN:-recsel}"
 
