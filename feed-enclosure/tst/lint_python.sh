@@ -2,8 +2,6 @@
 
 # Lints Python source code.
 #
-# Arguments: none
-# Stdin: none
 # Stdout: lint results
 #
 # Dependencies:

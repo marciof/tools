@@ -2,8 +2,6 @@
 
 # Lints shell scripts.
 #
-# Arguments: none
-# Stdin: none
 # Stdout: lint results
 #
 # Dependencies:
