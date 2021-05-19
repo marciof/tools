@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# TODO update dependencies
 # Wrapper script to download enclosures, that can be used with Liferea.
 # Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
@@ -10,8 +11,9 @@
 
 set -e -u
 
-YOUTUBE_DL_BIN="${YOUTUBE_DL_BIN:-$(dirname "$(readlink -e "$0")")/youtube_dl_wrapper.py}"
+PYTHON3="${PYTHON3:-python3}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
+PYTHONPATH="${PYTHONPATH:-}:$(dirname "$(readlink -e "$0")")"
 
 help_opt=h
 download_folder_opt=f
@@ -121,7 +123,7 @@ download_via_ytdl() {
 
         # TODO what happens when offline?
         # TODO YouTube download URLs may expire, eg. queued in downloader
-        "$YOUTUBE_DL_BIN" \
+        "$PYTHON3" -m feed_enclosure.youtube_dl \
             --verbose \
             --external-downloader uget \
             --add-metadata \
@@ -190,6 +192,7 @@ main() {
         return 1
     fi
 
+    export PYTHONPATH
     url="$1"
     shift
 
