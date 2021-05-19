@@ -9,6 +9,10 @@
 # TODO tests
 # TODO logging
 # TODO measure performance
+# TODO support CSV and Excel files? https://github.com/wireservice/csvkit
+# TODO support CSV and TSV files? https://github.com/johnkerl/miller
+# TODO use `lsvine` for more compact tree output? https://github.com/autofitcloud/lsvine
+# TODO use `exa` for tree output? https://github.com/ogham/exa
 # TODO highlight output from `curl`
 # TODO support `wget` as an alternative to `curl`
 # TODO detect URLs without an explicit protocol? eg. "www."

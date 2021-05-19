@@ -37,8 +37,6 @@ for pdf_file; do
     original_size="$(stat -c %s "$pdf_file")"
     compressed_size="$(stat -c %s "$compressed_pdf_file")"
 
-    # TODO write to temporary file first, then move
-    # TODO don't overwrite
     if [ "$compressed_size" -lt "$original_size" ]; then
         printf '%s\t%s\n' "$pdf_file" "$compressed_pdf_file"
     else
