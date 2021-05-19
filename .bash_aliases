@@ -93,6 +93,11 @@ if have show.sh; then
     export PAGER="$HAVE_PATH" GIT_PAGER="$HAVE_PATH"
 fi
 
+if have xclip; then
+    # shellcheck disable=SC2139
+    alias cb="$HAVE_NAME -selection clip-board"
+fi
+
 if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
