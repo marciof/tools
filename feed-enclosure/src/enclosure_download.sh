@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# TODO update dependencies
 # Wrapper script to download enclosures, that can be used with Liferea.
 # Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
@@ -9,11 +8,13 @@
 #   apt install uget # Version: 2.2.3-2 # downloader tool
 #   apt install ffmpeg # Version: 7:4.3.1-4ubuntu1 # merge video/audio
 
+# TODO update dependencies
+
 set -e -u
 
+PYTHONPATH="${PYTHONPATH:-}:$(dirname "$(readlink -e "$0")")"
 PYTHON3="${PYTHON3:-python3}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
-PYTHONPATH="${PYTHONPATH:-}:$(dirname "$(readlink -e "$0")")"
 
 help_opt=h
 download_folder_opt=f

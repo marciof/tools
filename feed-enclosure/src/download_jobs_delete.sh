@@ -30,6 +30,7 @@ folder="$(encode_rec_string "$3")"
 database="$4"
 shift 4
 
+# TODO allow a unique ID for easier deletion?
 "$RECDEL_BIN" \
     -e "URL = $url && Format = $format && Folder = $folder" \
     "$database"
