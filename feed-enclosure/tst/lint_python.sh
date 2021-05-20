@@ -13,6 +13,7 @@ MYPY_BIN="${MYPY_BIN:-mypy}"
 PYCODESTYLE_BIN="${PYCODESTYLE_BIN:-pycodestyle}"
 pwd="$(dirname "$(readlink -e "$0")")"
 
+# TODO fix finding Python sources
 (
     cd "$pwd"
     echo ../src/*.py

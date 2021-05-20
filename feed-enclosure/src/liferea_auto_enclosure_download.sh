@@ -10,12 +10,13 @@
 # Dependencies:
 #   apt install xmlstarlet # Version: 1.6.1-2.1 # parse/modify XML
 
+# TODO update dependencies
 # TODO add a global option for auto-download and filter cmd to Liferea?
 
 set -e -u
 
 XML_STARLET_BIN="${XML_STARLET_BIN:-xmlstarlet}"
-FEED_REBUILD_ENCLOSURES_BIN="${FEED_REBUILD_ENCLOSURES_BIN:-$(dirname "$(readlink -e "$0")")/feed_rebuild_enclosures.py}"
+REBUILD_FEED_BIN="${REBUILD_FEED_BIN:-$(dirname "$(readlink -e "$0")")/liferea_rebuild_feed_filtercmd.sh}"
 
 # Set a value for an XML attribute in an XPath location.
 #
@@ -45,4 +46,4 @@ fi
 entry_xpath='//outline[@type="rss"]'
 
 xml_set_attr_value "$entry_xpath" encAutoDownload true \
-    | xml_set_attr_value "$entry_xpath" filtercmd "$FEED_REBUILD_ENCLOSURES_BIN"
+    | xml_set_attr_value "$entry_xpath" filtercmd "$REBUILD_FEED_BIN"
