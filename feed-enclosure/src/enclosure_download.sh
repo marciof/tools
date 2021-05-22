@@ -94,18 +94,15 @@ download_via_uget() {
         set --
     fi
 
-    uget_log_file="$(mktemp)"
-    echo "uGet log file: $uget_log_file"
-
     # TODO wait for download to finish
     # FIXME uGet doesn't seem to interpret relative folder paths correctly,
     #       so as a workaround make it absolute
-    nohup "$UGET_BIN" \
+    "$PYTHON3" -m feed_enclosure.uget \
         --quiet \
         "--folder=$(readlink -e -- "$dl_uget_folder")" \
         "$@" \
         -- \
-        "$dl_uget_url" </dev/null >"$uget_log_file" &
+        "$dl_uget_url"
 }
 
 # Download a URL using youtube-dl.

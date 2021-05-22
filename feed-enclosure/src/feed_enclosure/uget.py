@@ -9,6 +9,7 @@ Wraps uGet to add additional functionality and workaround certain issues.
 import os
 import os.path
 import subprocess
+import sys
 from typing import Callable, List, Optional, Tuple
 
 # external
@@ -22,6 +23,12 @@ class Uget:
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
     def clean_file_name(self, file_name: str) -> str:
         return unidecode(file_name)
+
+    # TODO process uGet options and apply workarounds
+    def run(self, executable_name: str, *args) -> int:
+        self.ensure_running(executable_name)
+        command = self.build_command(executable_name, *args)
+        return subprocess.run(args=command).returncode
 
     def ensure_running(self, executable_name: str) -> None:
         """
@@ -68,14 +75,16 @@ class Uget:
         return ((block_size >= actual_size)
                 and ((file_size is None) or (actual_size == file_size)))
 
-    def make_command(
+    def build_command(
             self,
             executable_name: str,
-            url: str,
+            *args: str,
+            url: Optional[str] = None,
             file_name: Optional[str] = None,
-            http_user_agent: Optional[str] = None) -> List[str]:
+            http_user_agent: Optional[str] = None,
+            quiet: bool = True) -> List[str]:
 
-        command = [executable_name, '--quiet']
+        command = [executable_name] + (['--quiet'] if quiet else [])
 
         if file_name is not None:
             # TODO make folder path absolute for uGet
@@ -85,7 +94,7 @@ class Uget:
         if http_user_agent is not None:
             command += ['--http-user-agent=' + http_user_agent]
 
-        return command + ['--', url]
+        return command + list(*args) + (['--', url] if url else [])
 
     def split_folder_file_name(self, path: str) -> Tuple[str, str]:
         (folder, file_name) = os.path.split(path)
@@ -113,3 +122,8 @@ class Uget:
                     continue
                 if self.is_downloaded(file_name, file_size, progress_cb):
                     break
+
+
+if __name__ == '__main__':
+    # TODO refactor out executable name
+    sys.exit(Uget().run('uget-gtk', sys.argv[1:]))

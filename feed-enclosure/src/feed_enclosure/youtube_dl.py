@@ -78,9 +78,9 @@ class UgetFD(ExternalFD):
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
         # TODO honor youtube-dl's proxy option/value
         # TODO honor `external_downloader_args`
-        return self.uget.make_command(
+        return self.uget.build_command(
             self.get_basename(),
-            info_dict['url'],
+            url=info_dict['url'],
             file_name=tmpfilename,
             http_user_agent=info_dict.get('http_headers', {})
                 .get('User-Agent'))
