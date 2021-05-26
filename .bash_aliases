@@ -41,7 +41,6 @@ done
 shopt -s autocd dirspell histappend
 alias -- -='cd -'
 
-DESC=' <https://github.com/sharkdp/fd>' have fd
 have dircolors && eval "$("$HAVE_NAME" -b)"
 have lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
 
@@ -85,6 +84,11 @@ fi
 if have nano; then
     alias nano='nano -Sw'
     export EDITOR="$HAVE_NAME" GIT_EDITOR="$HAVE_NAME"
+fi
+
+if DESC=' <https://github.com/sharkdp/fd>' have fd fdfind; then
+    # shellcheck disable=SC2139
+    alias fd="$HAVE_NAME"
 fi
 
 if have show.sh; then
