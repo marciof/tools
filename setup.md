@@ -64,7 +64,7 @@
 
 *Window Manager*:
 
-- *Style*: Greybird-dark-accessibility (Numix crops the title bar)
+- *Style*: Numix
 
 ### GRUB
 
