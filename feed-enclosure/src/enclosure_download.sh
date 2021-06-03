@@ -17,8 +17,9 @@ PYTHON3="${PYTHON3:-python3}"
 UGET_BIN="${UGET_BIN:-uget-gtk}"
 
 help_opt=h
+# TODO option for folder per YouTube channel?
 download_folder_opt=f
-# TODO provide a generic download format option
+# TODO provide a generic download format option?
 ytdl_video_format_opt=y
 dl_hook_arg_opt=a
 dl_begin_hook_opt=b

@@ -3,7 +3,7 @@
 - [Debian](https://www.debian.org) OS
 - [Xfce](https://xfce.org) desktop environment
 - [Fira Code](https://github.com/tonsky/FiraCode) font
-- [Firefox](https://www.firefox.com) browser ([extensions](https://addons.mozilla.org/en-US/firefox/collections/13173821/essentials/))
+- [Firefox](https://www.firefox.com) browser ([extensions](https://addons.mozilla.org/firefox/collections/13173821/essentials/))
 - [Tor](https://www.torproject.org) browser
 - [Thunderbird](https://www.thunderbird.net) email/calendar ([CardBook](https://addons.thunderbird.net/thunderbird/addon/cardbook/) extension)
 - [Liferea](https://lzone.de/liferea/) feed reader
