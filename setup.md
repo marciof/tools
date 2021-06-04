@@ -6,6 +6,7 @@
 - [Firefox](https://www.firefox.com) browser ([extensions](https://addons.mozilla.org/firefox/collections/13173821/essentials/))
 - [Tor](https://www.torproject.org) browser
 - [Thunderbird](https://www.thunderbird.net) email/calendar ([CardBook](https://addons.thunderbird.net/thunderbird/addon/cardbook/) extension)
+- [Tilix](https://gnunn1.github.io/tilix-web/) tiling terminal
 - [Liferea](https://lzone.de/liferea/) feed reader
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
@@ -18,6 +19,7 @@
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [DroidCam](https://www.dev47apps.com) phone webcam
+- [KDE Connect](https://kdeconnect.kde.org) device pairing
 - [Handbrake](https://handbrake.fr) video transcoder
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
 - [uGet](https://ugetdm.com/) download manager
