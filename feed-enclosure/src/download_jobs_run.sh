@@ -44,6 +44,7 @@ while [ "$job_num" -lt "$num_jobs" ]; do
         # TODO use the generic option for the download format
         "$ENCLOSURE_DL_BIN" -y "$format" -f "$folder" -- "$url"
         # TODO is a recutils database concurrent?
+        # TODO don't delete job if Python fails (eg. module not found)
         "$DL_JOB_DELETE_BIN" "$url" "$format" "$folder" "$database"
     }&
 
