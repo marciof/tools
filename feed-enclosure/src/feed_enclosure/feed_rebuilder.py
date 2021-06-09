@@ -22,6 +22,7 @@ from typing import List, Optional
 from urllib.parse import urldefrag, urlparse
 
 # external
+# TODO consolidate requirements.txt files under /deps
 # FIXME missing type stubs for some external libraries
 from feedgen import feed as feedgen  # type: ignore
 import feedparser  # type: ignore

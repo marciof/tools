@@ -13,6 +13,7 @@ import sys
 from typing import Callable, List, Optional, Tuple
 
 # external
+# TODO consolidate requirements.txt files under /deps
 # FIXME missing type stubs for some external libraries
 from asyncinotify import Inotify, Mask  # type: ignore
 from unidecode import unidecode
