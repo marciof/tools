@@ -9,6 +9,7 @@
 # TODO tests
 # TODO logging
 # TODO measure performance
+# TODO support ELF files? https://github.com/ruslashev/elfcat
 # TODO support CSV and Excel files? https://github.com/wireservice/csvkit
 # TODO support CSV and TSV files? https://github.com/johnkerl/miller
 # TODO use `lsvine` for more compact tree output? https://github.com/autofitcloud/lsvine
