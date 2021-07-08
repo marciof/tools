@@ -27,6 +27,8 @@
 # TODO improved colored diff, https://github.com/jeffkaufman/icdiff
 # TODO colored diff wrapper, https://www.colordiff.org/
 # TODO semantic diff, https://github.com/trailofbits/graphtage
+# TODO structured syntax aware diff, https://github.com/wilfred/difftastic
+# TODO structured diff Clojure, https://github.com/ladderlife/autochrome
 # TODO in-depth comparison of files, archives, directories, https://diffoscope.org
 # TODO image support via sixels?
 # TODO pixel to ASCII art, http://caca.zoy.org/wiki/libcaca
