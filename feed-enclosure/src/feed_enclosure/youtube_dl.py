@@ -11,7 +11,6 @@ from time import time
 from typing import List, Optional, Type
 
 # external
-# TODO consolidate requirements.txt files under /deps
 # FIXME missing type stubs for some external libraries
 import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore

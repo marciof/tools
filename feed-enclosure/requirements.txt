@@ -1,5 +1,13 @@
-# runtime
 # TODO Python package updates? notify of dependency changes? needs testing
+
+# feed_rebuilder
+feedgen==0.9.0
+feedparser==6.0.2
+pathvalidate==2.4.1
+
+# uget
 asyncinotify==2.0.2
 Unidecode==1.2.0
+
+# youtube_dl
 youtube-dl==2021.4.1
