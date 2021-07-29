@@ -368,7 +368,10 @@ is_file_binary() {
         run_with_options "$tool_options_file" false file -i "$_is_bin_path")"
     _is_bin_type="${_is_bin_type#"$_is_bin_path: "}"
 
-    test "$_is_bin_type" = "${_is_bin_type#text/}"
+    # Some `file` implementations don't indicate "text/" as the MIME type
+    # for XML files, so handle those cases as well.
+    test "$_is_bin_type" = "${_is_bin_type#text/}" \
+        && test "$_is_bin_type" = "${_is_bin_type#application/xml}"
 }
 
 resolve_symlink() {
