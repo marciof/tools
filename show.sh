@@ -1,6 +1,8 @@
 #!/bin/sh
 # Generic viewer.
 
+# TODO add debug option? eg. does `set -x`
+# TODO piping (` | mode_run_color`) can remove error exit codes
 # TODO check which tools are missing a `--` to separate options from arguments
 # TODO don't discard pydoc's formatting when disabling pager (and other tools?)
 # TODO document functions and parameters/return
@@ -17,7 +19,6 @@
 # TODO highlight output from `curl`
 # TODO support `wget` as an alternative to `curl`
 # TODO detect URLs without an explicit protocol? eg. "www."
-# TODO piping (` | mode_run_color`) can remove error exit codes
 # TODO use POSIX env vars `COLUMNS` and `LINES`?
 # TODO make `xargs` call POSIX compliant?
 # TODO intra-line diff, https://github.com/ymattw/ydiff
