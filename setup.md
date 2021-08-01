@@ -2,6 +2,7 @@
 
 - [Debian](https://www.debian.org) OS
 - [Xfce](https://xfce.org) desktop environment
+- [Synapse](https://launchpad.net/synapse-project) semantic search
 - [Fira Code](https://github.com/tonsky/FiraCode) font
 - [Firefox](https://www.firefox.com) browser ([extensions](https://addons.mozilla.org/firefox/collections/13173821/essentials/))
 - [Tor](https://www.torproject.org) browser
