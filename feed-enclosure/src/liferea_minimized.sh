@@ -26,6 +26,7 @@ xdotool_search() {
 classname=Liferea
 
 # TODO possible race-condition
+# FIXME sometimes not minimized on startup
 if ! xdotool_search "$classname" windowminimize >/dev/null; then
     log_file="$(mktemp)"
     echo "Liferea log file: $log_file"

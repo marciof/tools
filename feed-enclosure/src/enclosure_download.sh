@@ -201,6 +201,7 @@ main() {
             "$url" "$ytdl_video_format" "$download_folder" "$dl_hook_arg"
     fi
 
+    # FIXME repeated downloads
     if is_ign_daily_fix_url "$url"; then
         download_via_uget \
             "$(upgrade_ign_daily_fix_url_video_res "$url")" "$download_folder"
