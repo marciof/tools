@@ -39,7 +39,7 @@
 
 *Surface Book 3*:
 
-- [Xubuntu >= 20.10](https://xubuntu.org/download/) (Debian as of v10.9 has less support.)
+- [Xubuntu >= 20.10](https://xubuntu.org/download/) (Debian v10.9 has less support.)
   - Third-party drivers:
     - Don't install [third-party drivers during OS installation as it can sometimes break](https://bugs.launchpad.net/ubuntu-cdimage/+bug/1871268).
     - Install third-party drivers post OS installation: `apt install ubuntu-restricted-extras`
@@ -231,3 +231,10 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
 [*Mousepad* may have a bug that hides the trailing newline](https://gitlab.xfce.org/apps/mousepad/-/issues/53). In that case [configure *Gedit* to disable adding trailing newlines](https://askubuntu.com/a/1013115/163034):
 
     gsettings set org.gnome.gedit.preferences.editor ensure-trailing-newline false
+
+### Redshift startup crashes
+
+1. Remove crash files in `/var/crash`.
+2. Disable `systemctl` service: `systemctl --user mask redshift.service redshift-gtk.service`
+   - If that doesn't work then rename the files themselves to `*.disabled`: `/usr/lib/systemd/user`
+3. Add `redshift-gtk` to *Session and Startup*, under *Application Autostart*.
