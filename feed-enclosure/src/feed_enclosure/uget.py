@@ -18,6 +18,9 @@ from asyncinotify import Inotify, Mask  # type: ignore
 from unidecode import unidecode
 
 
+MODULE_DOC = __doc__
+
+
 class Uget:
 
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
@@ -25,9 +28,9 @@ class Uget:
         return unidecode(file_name)
 
     # TODO process uGet options and apply workarounds
-    def run(self, executable_name: str, *args) -> int:
+    def run(self, executable_name: str, args: List[str]) -> int:
         self.ensure_running(executable_name)
-        command = self.build_command(executable_name, *args)
+        command = self.build_command(executable_name, args)
         return subprocess.run(args=command).returncode
 
     def ensure_running(self, executable_name: str) -> None:
@@ -78,7 +81,7 @@ class Uget:
     def build_command(
             self,
             executable_name: str,
-            *args: str,
+            args: List[str],
             url: Optional[str] = None,
             file_name: Optional[str] = None,
             http_user_agent: Optional[str] = None,
@@ -94,7 +97,7 @@ class Uget:
         if http_user_agent is not None:
             command += ['--http-user-agent=' + http_user_agent]
 
-        return command + list(*args) + (['--', url] if url else [])
+        return command + args + (['--', url] if url else [])
 
     def split_folder_file_name(self, path: str) -> Tuple[str, str]:
         (folder, file_name) = os.path.split(path)
@@ -125,5 +128,5 @@ class Uget:
 
 
 if __name__ == '__main__':
-    # TODO refactor out executable name
+    # TODO refactor executable name with the `youtube_dl` module
     sys.exit(Uget().run('uget-gtk', sys.argv[1:]))

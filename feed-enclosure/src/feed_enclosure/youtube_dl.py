@@ -38,6 +38,7 @@ class UgetFD(ExternalFD):
         self.download_progress_throttle_interval_sec = \
             download_progress_throttle_interval_sec
 
+    # TODO refactor executable name with the `uget` module
     @classmethod
     def get_basename(cls) -> str:
         return 'uget-gtk'

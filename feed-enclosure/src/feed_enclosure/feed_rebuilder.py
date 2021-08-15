@@ -175,20 +175,20 @@ def rebuild_feed_from_stdin_to_stdout(logger: logging.Logger) -> None:
     print(rebuild_feed(sys.stdin.read(), logger))
 
 
-def parse_args(logger: logging.Logger) -> None:
+def parse_args(args: Optional[List[str]], logger: logging.Logger) -> None:
     parser = argparse.ArgumentParser(description=MODULE_DOC)
-    parser.parse_args()
+    parser.parse_args(args)
 
     if sys.stdin.isatty():
         logger.warning('Stdin is a terminal (possibly connected to keyboard)')
 
 
-def main() -> None:
+def main(args: Optional[List[str]] = None) -> None:
     logger = None
 
     try:
         logger = create_logger()
-        parse_args(logger)
+        parse_args(args, logger)
         rebuild_feed_from_stdin_to_stdout(logger)
     except (SystemExit, KeyboardInterrupt):
         raise
