@@ -21,6 +21,7 @@
 # TODO detect URLs without an explicit protocol? eg. "www."
 # TODO use POSIX env vars `COLUMNS` and `LINES`?
 # TODO make `xargs` call POSIX compliant?
+# TODO pdf diff, https://gitlab.com/eang/diffpdf
 # TODO intra-line diff, https://github.com/ymattw/ydiff
 # TODO intra-line diff, https://github.com/git/git/tree/master/contrib/diff-highlight
 # TODO intra-line diff, https://github.com/mookid/diffr
