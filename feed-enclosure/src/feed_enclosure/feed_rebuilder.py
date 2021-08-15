@@ -2,18 +2,15 @@
 # -*- coding: UTF-8 -*-
 
 """
-Rebuilds RSS/Atom feeds into RSS so that the "best" enclosures are chosen.
-Accepts whatever kinds of feed that feedparser supports.
+Rebuilds RSS/Atom feeds (in stdin) into RSS (in stdout) so that the "best"
+enclosures are chosen. Accepts whatever kinds of feed `feedparser` supports.
 
 Enclosure URLs will also have their associated feed entry title saved in the
 URL fragment part as a filename, so downloaders can use it if/when needed.
-
-Arguments: none
-Stdin: XML feed
-Stdout: updated RSS feed
 """
 
 # stdlib
+import argparse
 import logging
 from logging.handlers import SysLogHandler
 import os.path
@@ -28,10 +25,15 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 
-# TODO detect availability of `/dev/log` (it's Linux specific)
+MODULE_DOC = __doc__
+
+
 def create_logger(
         name: Optional[str] = None,
         syslog_address: str = '/dev/log') -> logging.Logger:
+
+    if name is None:
+        name = os.path.basename(sys.argv[0])
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
@@ -73,6 +75,7 @@ def list_parsed_feed_entry_enclosure_urls(
     return urls
 
 
+# TODO figure out a more "proper" way to attach meta-data
 def add_title_filename_to_url(url: str, title: str) -> str:
     """
     Add a title in the URL fragment part for downloaders to use when the
@@ -163,24 +166,37 @@ def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
     return new_feed.rss_str(pretty=True).decode()
 
 
-def rebuild_feed_from_stdin_to_stdout() -> None:
+def rebuild_feed_from_stdin_to_stdout(logger: logging.Logger) -> None:
+    # FIXME `feedparser` breaks on detecting the encoding of the input
+    #       data when given a file object (eg `sys.stdin`) that when
+    #       `read` gives a string-like object, since the regex is a bytes
+    #       pattern (see `feedparser.encodings.RE_XML_PI_ENCODING`). As a
+    #       workaround read `sys.stdin` to yield a string.
+    print(rebuild_feed(sys.stdin.read(), logger))
+
+
+def parse_args(logger: logging.Logger) -> None:
+    parser = argparse.ArgumentParser(description=MODULE_DOC)
+    parser.parse_args()
+
+    if sys.stdin.isatty():
+        logger.warning('Stdin is a terminal (possibly connected to keyboard)')
+
+
+def main() -> None:
     logger = None
 
     try:
-        logger = create_logger(os.path.basename(sys.argv[0]))
-
-        # FIXME `feedparser` breaks on detecting the encoding of the input
-        #       data when given a file object (eg `sys.stdin`) that when
-        #       `read` gives a string-like object, since the regex is a bytes
-        #       pattern (see `feedparser.encodings.RE_XML_PI_ENCODING`). As a
-        #       workaround read `sys.stdin` to yield a string.
-        print(rebuild_feed(sys.stdin.read(), logger))
+        logger = create_logger()
+        parse_args(logger)
+        rebuild_feed_from_stdin_to_stdout(logger)
+    except (SystemExit, KeyboardInterrupt):
+        raise
     except BaseException as error:
         if logger is not None:
             logger.error('Failed to rebuild feed', exc_info=error)
-
         raise
 
 
 if __name__ == '__main__':
-    rebuild_feed_from_stdin_to_stdout()
+    main()
