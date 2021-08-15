@@ -11,6 +11,7 @@ from time import time
 from typing import List, Optional, Type
 
 # external
+from overrides import overrides
 # FIXME missing type stubs for some external libraries
 import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
@@ -40,6 +41,7 @@ class UgetFD(ExternalFD):
 
     # TODO refactor executable name with the `uget` module
     @classmethod
+    @overrides
     def get_basename(cls) -> str:
         return 'uget-gtk'
 
@@ -65,6 +67,7 @@ class UgetFD(ExternalFD):
                       current_size,
                       self.calc_format_percent(current_size, expected_size))
 
+    @overrides
     def temp_name(self, filename: str) -> str:
         clean_file_name = self.uget.clean_file_name(filename)
 
@@ -81,11 +84,13 @@ class UgetFD(ExternalFD):
         # TODO honor `external_downloader_args`
         return self.uget.build_command(
             self.get_basename(),
+            args=[],
             url=info_dict['url'],
             file_name=tmpfilename,
             http_user_agent=info_dict.get('http_headers', {})
                 .get('User-Agent'))
 
+    @overrides
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
         # TODO use `filesize_approx` as well?
         expected_size = info_dict.get('filesize')
