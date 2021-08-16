@@ -181,6 +181,7 @@ def parse_args(args: Optional[List[str]], logger: logging.Logger) -> None:
 
     if sys.stdin.isatty():
         logger.warning('Stdin is a terminal (possibly connected to keyboard)')
+        logger.warning(parser.format_usage().strip())
 
 
 def main(args: Optional[List[str]] = None) -> None:
