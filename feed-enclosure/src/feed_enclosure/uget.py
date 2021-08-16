@@ -21,19 +21,26 @@ from unidecode import unidecode
 MODULE_DOC = __doc__
 
 
+def find_executable_name() -> str:
+    return 'uget-gtk'
+
+
 class Uget:
+
+    def __init__(self):
+        self.executable_name = find_executable_name()
 
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
     def clean_file_name(self, file_name: str) -> str:
         return unidecode(file_name)
 
     # TODO process uGet options and apply workarounds
-    def run(self, executable_name: str, args: List[str]) -> int:
-        self.ensure_running(executable_name)
-        command = self.build_command(executable_name, args)
+    def run(self, args: List[str]) -> int:
+        self.ensure_running()
+        command = self.build_command(args)
         return subprocess.run(args=command).returncode
 
-    def ensure_running(self, executable_name: str) -> None:
+    def ensure_running(self) -> None:
         """
         If uGet isn't already running, then starting it up will block execution
         until it exits. To avoid that, ensure it's always running already in
@@ -41,7 +48,7 @@ class Uget:
         """
 
         # TODO detect existence of `start_new_session` (it's POSIX specific)
-        subprocess.Popen([executable_name, '--quiet'],
+        subprocess.Popen([self.executable_name, '--quiet'],
                          start_new_session=True,
                          stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL)
@@ -80,14 +87,13 @@ class Uget:
 
     def build_command(
             self,
-            executable_name: str,
             args: List[str],
             url: Optional[str] = None,
             file_name: Optional[str] = None,
             http_user_agent: Optional[str] = None,
             quiet: bool = True) -> List[str]:
 
-        command = [executable_name] + (['--quiet'] if quiet else [])
+        command = [self.executable_name] + (['--quiet'] if quiet else [])
 
         if file_name is not None:
             # TODO make folder path absolute for uGet
@@ -128,5 +134,4 @@ class Uget:
 
 
 if __name__ == '__main__':
-    # TODO refactor executable name with the `youtube_dl` module
-    sys.exit(Uget().run('uget-gtk', sys.argv[1:]))
+    sys.exit(Uget().run(sys.argv[1:]))

@@ -39,11 +39,10 @@ class UgetFD(ExternalFD):
         self.download_progress_throttle_interval_sec = \
             download_progress_throttle_interval_sec
 
-    # TODO refactor executable name with the `uget` module
     @classmethod
     @overrides
     def get_basename(cls) -> str:
-        return 'uget-gtk'
+        return uget.find_executable_name()
 
     def error(self, message: str, *args) -> None:
         self.report_error(('[%s] ' + message) % (self.get_basename(), *args))
@@ -83,12 +82,11 @@ class UgetFD(ExternalFD):
         # TODO honor youtube-dl's proxy option/value
         # TODO honor `external_downloader_args`
         return self.uget.build_command(
-            self.get_basename(),
             args=[],
             url=info_dict['url'],
             file_name=tmpfilename,
             http_user_agent=info_dict.get('http_headers', {})
-                .get('User-Agent'))
+                                     .get('User-Agent'))
 
     @overrides
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:
@@ -113,7 +111,7 @@ class UgetFD(ExternalFD):
             return 0
 
         if return_code is None:
-            self.uget.ensure_running(self.get_basename())
+            self.uget.ensure_running()
             return_code = super()._call_downloader(tmpfilename, info_dict)
             self.info('Return code: %s', return_code)
         else:
