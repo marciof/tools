@@ -98,8 +98,13 @@ if have show.sh; then
 fi
 
 if have xclip; then
-    # shellcheck disable=SC2139
-    alias cb="$HAVE_NAME -selection clip-board"
+    cb() {
+        if [ $# -gt 0 ]; then
+            printf %s "$*" | xclip -selection clip-board
+        else
+            xclip -selection clip-board
+        fi
+    }
 fi
 
 if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
