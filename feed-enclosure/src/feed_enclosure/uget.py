@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+# TODO list the additional functionality and workarounds
+
 """
 Wraps uGet to add additional functionality and workaround certain issues.
 """
