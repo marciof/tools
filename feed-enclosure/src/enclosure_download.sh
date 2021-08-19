@@ -183,6 +183,8 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
+# FIXME Liferea doesn't download the feed sometimes, while `curl` does?
+#       add command line option to `feed_rebuilder` to download?
 main() {
     process_options "$@"
     shift $((OPTIND - 1))
@@ -201,7 +203,6 @@ main() {
             "$url" "$ytdl_video_format" "$download_folder" "$dl_hook_arg"
     fi
 
-    # FIXME Liferea is repeating previous downloads
     if is_ign_daily_fix_url "$url"; then
         download_via_uget \
             "$(upgrade_ign_daily_fix_url_video_res "$url")" "$download_folder"

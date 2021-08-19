@@ -147,14 +147,18 @@ def rebuild_parsed_feed(
 
 
 def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
-    logger.debug('Feed XML: %s', feed_xml)
-    parsed_feed = feedparser.parse(feed_xml)
+    logger.info('Feed XML: %s', feed_xml)
 
+    if feed_xml.strip() == '':
+        raise Exception('Feed XML is an empty string')
+
+    parsed_feed = feedparser.parse(feed_xml)
     is_bozo = parsed_feed.get('bozo', False)
+    bozo_exception = parsed_feed.get('bozo_exception')
     logger.info('Feed bozo? %s', is_bozo)
 
     if is_bozo:
-        logger.warning('Feed bozo exception:', parsed_feed.bozo_exception)
+        logger.warning('Feed bozo exception:', bozo_exception)
 
     new_feed = rebuild_parsed_feed(parsed_feed, logger)
 
