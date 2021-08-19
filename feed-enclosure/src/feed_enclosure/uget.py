@@ -133,5 +133,9 @@ class Uget:
                     break
 
 
+def main(args: List[str]) -> None:
+    sys.exit(Uget().run(args))
+
+
 if __name__ == '__main__':
-    sys.exit(Uget().run(sys.argv[1:]))
+    main(sys.argv[1:])
