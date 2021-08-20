@@ -40,7 +40,7 @@ class Uget:
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
-        # TODO add URL argument
+        # TODO add URL and HTTP user agent arguments
         self.arg_parser.add_argument('--filename', dest='file_name')
         self.arg_parser.add_argument('--folder')
         self.arg_parser.add_argument('-?', '-h', '--help', action='store_true')
@@ -50,7 +50,7 @@ class Uget:
     def clean_file_name(self, file_name: str) -> str:
         return unidecode(file_name)
 
-    def run(self, args: List[str]) -> int:
+    def run(self, args: Optional[List[str]] = None) -> int:
         (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
 
         if parsed_args.help:
@@ -168,9 +168,9 @@ class Uget:
                     break
 
 
-def main(args: List[str]) -> None:
+def main(args: Optional[List[str]] = None) -> None:
     sys.exit(Uget().run(args))
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

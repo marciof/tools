@@ -142,6 +142,10 @@ def register_uget_external_downloader() -> None:
     register_external_downloader('uget', UgetFD)
 
 
-if __name__ == '__main__':
+def main(args: Optional[List[str]] = None) -> None:
     register_uget_external_downloader()
-    youtube_dl.main()
+    youtube_dl.main(args)
+
+
+if __name__ == '__main__':
+    main()
