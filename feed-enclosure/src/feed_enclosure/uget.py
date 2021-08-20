@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# TODO list the additional functionality and workarounds
-
 """
 Wraps uGet to add additional functionality and workaround certain issues.
+
+It transliterates Unicode characters in filenames to ASCII; ensures
+multiple consecutive calls to uGet don't block by making it run in the
+background; can watch a download for completion; and ensures relative folder
+paths are made absolute.
 """
 
 # stdlib
