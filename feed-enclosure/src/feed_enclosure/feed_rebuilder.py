@@ -25,7 +25,7 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 
-MODULE_DOC = __doc__
+MODULE_DOC = __doc__.strip()
 
 
 def create_logger(

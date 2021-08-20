@@ -11,6 +11,7 @@ paths are made absolute.
 """
 
 # stdlib
+import argparse
 import os
 import os.path
 import subprocess
@@ -23,26 +24,40 @@ from asyncinotify import Inotify, Mask  # type: ignore
 from unidecode import unidecode
 
 
-MODULE_DOC = __doc__
+MODULE_DOC = __doc__.strip()
 
 
 def find_executable_name() -> str:
     return 'uget-gtk'
 
 
+# TODO logging
 class Uget:
 
     def __init__(self):
         self.executable_name = find_executable_name()
 
+        self.arg_parser = argparse.ArgumentParser(
+            description=MODULE_DOC, add_help=False, allow_abbrev=False)
+
+        # TODO add URL argument
+        self.arg_parser.add_argument('--filename', dest='file_name')
+        self.arg_parser.add_argument('--folder')
+        self.arg_parser.add_argument('-?', '-h', '--help', action='store_true')
+        self.arg_parser.add_argument('--quiet', action='store_true')
+
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
     def clean_file_name(self, file_name: str) -> str:
         return unidecode(file_name)
 
-    # TODO process uGet options and apply workarounds
     def run(self, args: List[str]) -> int:
+        (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
+
+        if parsed_args.help:
+            print(self.arg_parser.description)
+
         self.ensure_running()
-        command = self.build_command(args)
+        command = self.make_command(args=rest_args, **vars(parsed_args))
         return subprocess.run(args=command).returncode
 
     def ensure_running(self) -> None:
@@ -59,13 +74,15 @@ class Uget:
                          stderr=subprocess.DEVNULL)
 
     def get_file_disk_sizes(
-            self, path: str, block_size_bytes: int = 512) -> Tuple[int, int]:
+            self, file_path: str, block_size_bytes: int = 512) \
+            -> Tuple[int, int]:
+
         """
         Get the reported file size, as well as the actual total block size
         on disk.
         """
 
-        stat = os.stat(path)
+        stat = os.stat(file_path)
 
         # TODO detect availability of `st_blocks` (it's Unix specific)
         block_size = stat.st_blocks * block_size_bytes
@@ -74,7 +91,7 @@ class Uget:
 
     def is_downloaded(
             self,
-            file_name: str,
+            file_path: str,
             file_size: Optional[int],
             progress_cb: Optional[Callable[[int], None]] = None) -> bool:
 
@@ -82,7 +99,7 @@ class Uget:
         # space on disk, then its apparent size will already be the
         # final size. In that case use the disk block size to get
         # an idea for when its download is complete.
-        (actual_size, block_size) = self.get_file_disk_sizes(file_name)
+        (actual_size, block_size) = self.get_file_disk_sizes(file_path)
 
         if progress_cb is not None:
             progress_cb(block_size)
@@ -90,37 +107,50 @@ class Uget:
         return ((block_size >= actual_size)
                 and ((file_size is None) or (actual_size == file_size)))
 
-    def build_command(
+    def make_command(
             self,
-            args: List[str],
+            args: Optional[List[str]] = None,
             url: Optional[str] = None,
             file_name: Optional[str] = None,
+            folder: Optional[str] = None,
             http_user_agent: Optional[str] = None,
-            quiet: bool = True) -> List[str]:
+            help: bool = False,
+            quiet: bool = False) -> List[str]:
 
-        command = [self.executable_name] + (['--quiet'] if quiet else [])
+        command = [self.executable_name]
+
+        if help:
+            command += ['--help']
+
+        if quiet:
+            command += ['--quiet']
 
         if file_name is not None:
-            # TODO make folder path absolute for uGet
-            (folder, filename) = self.split_folder_file_name(file_name)
-            command += ['--filename=' + filename, '--folder=' + folder]
+            command += ['--filename=' + self.clean_file_name(file_name)]
+
+        # FIXME uGet doesn't seem to interpret relative folder paths correctly,
+        #       so as a workaround make it absolute
+        if folder is not None:
+            command += ['--folder=' + os.path.abspath(folder)]
 
         if http_user_agent is not None:
             command += ['--http-user-agent=' + http_user_agent]
 
-        return command + args + (['--', url] if url else [])
+        if args is not None:
+            command += args
 
-    def split_folder_file_name(self, path: str) -> Tuple[str, str]:
-        (folder, file_name) = os.path.split(path)
-        return (folder or os.getcwd(), file_name)
+        return command + (['--', url] if url else [])
 
     async def wait_for_download(
             self,
-            file_name: str,
+            file_path: str,
             file_size: Optional[int],
             progress_cb: Optional[Callable[[int], None]] = None) -> None:
 
-        (folder, filename) = self.split_folder_file_name(file_name)
+        (folder, file_name) = os.path.split(file_path)
+
+        if folder == '':
+            folder = os.getcwd()
 
         # TODO use the `watchdog` package to be platform agnostic?
         with Inotify() as inotify:
@@ -134,7 +164,7 @@ class Uget:
             async for event in inotify:
                 if event.path.name != file_name:
                     continue
-                if self.is_downloaded(file_name, file_size, progress_cb):
+                if self.is_downloaded(file_path, file_size, progress_cb):
                     break
 
 

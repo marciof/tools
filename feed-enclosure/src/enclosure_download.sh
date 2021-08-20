@@ -88,7 +88,6 @@ download_via_uget() {
     dl_uget_folder="$2"
     dl_uget_filename="$(extract_nice_filename_from_url "$dl_uget_url")"
 
-    # TODO missing workaround for uGet Unicode filenames
     if [ -n "$dl_uget_filename" ]; then
         set -- "--filename=$dl_uget_filename"
     else
@@ -96,13 +95,10 @@ download_via_uget() {
     fi
 
     # TODO wait for download to finish
-    # FIXME uGet doesn't seem to interpret relative folder paths correctly,
-    #       so as a workaround make it absolute
     "$PYTHON3" -m feed_enclosure.uget \
         --quiet \
-        "--folder=$(readlink -e -- "$dl_uget_folder")" \
+        "--folder=$dl_uget_folder" \
         "$@" \
-        -- \
         "$dl_uget_url"
 }
 

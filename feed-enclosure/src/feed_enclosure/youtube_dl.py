@@ -7,6 +7,7 @@ Wraps youtube-dl to add support for uGet as an external downloader.
 
 # stdlib
 import asyncio
+import os.path
 from time import time
 from typing import List, Optional, Type
 
@@ -78,13 +79,16 @@ class UgetFD(ExternalFD):
     def calc_format_percent(self, count: int, total: Optional[int]) -> str:
         return self.format_percent(self.calc_percent(count, total)).strip()
 
+    # TODO honor youtube-dl's proxy option/value
+    # TODO honor `external_downloader_args`
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
-        # TODO honor youtube-dl's proxy option/value
-        # TODO honor `external_downloader_args`
-        return self.uget.build_command(
-            args=[],
+        (folder, file_name_only) = os.path.split(tmpfilename)
+
+        return self.uget.make_command(
             url=info_dict['url'],
-            file_name=tmpfilename,
+            file_name=file_name_only,
+            folder=folder,
+            quiet=True,
             http_user_agent=info_dict.get('http_headers', {})
                                      .get('User-Agent'))
 
