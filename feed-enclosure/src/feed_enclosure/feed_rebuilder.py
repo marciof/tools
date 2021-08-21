@@ -147,7 +147,7 @@ def rebuild_parsed_feed(
 
 
 def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
-    logger.info('Feed XML: %s', feed_xml)
+    logger.debug('Feed XML: %s', feed_xml)
 
     if feed_xml.strip() == '':
         raise Exception('Feed XML is an empty string')

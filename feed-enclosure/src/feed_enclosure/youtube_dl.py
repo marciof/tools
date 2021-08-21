@@ -21,7 +21,7 @@ from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 from . import uget
 
 
-class UgetFD(ExternalFD):
+class UgetFD (ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
     """
