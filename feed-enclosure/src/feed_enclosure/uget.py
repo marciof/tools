@@ -3,10 +3,10 @@
 """
 Wraps uGet to add additional functionality and workaround certain issues.
 
-It transliterates Unicode characters in filenames to ASCII; ensures
-multiple consecutive calls to uGet don't block by making it run in the
-background; can wait on a download for completion; and ensures relative folder
-paths are made absolute.
+Changes: (1) transliterates Unicode characters in filenames to ASCII;
+(2) ensures multiple consecutive calls to uGet don't block by making it run
+in the background; (3) can optionally wait on a download for completion;
+(4) ensures relative folder paths are made absolute.
 """
 
 # stdlib
@@ -38,9 +38,7 @@ class Uget:
 
     def __init__(self):
         self.executable_name = find_executable_name()
-
-        self.logger = logging.create_logger(
-            'uget', enable_stream_handler=False)
+        self.logger = logging.create_logger('uget')
 
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
@@ -74,8 +72,8 @@ class Uget:
 
     def run(self, args: Optional[List[str]] = None) -> int:
         (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
-        self.logger.info('Parsed arguments: %s', parsed_args)
-        self.logger.info('Remaining arguments: %s', rest_args)
+        self.logger.debug('Parsed arguments: %s', parsed_args)
+        self.logger.debug('Remaining arguments: %s', rest_args)
 
         kwargs = vars(parsed_args)
         wait_for_download = kwargs.pop(self.arg_wait_for_download.dest)
@@ -100,8 +98,8 @@ class Uget:
         self.logger.info('Running command: %s', command)
         return_code = subprocess.run(args=command).returncode
 
-        # TODO log progress and refactor with `.youtube_dl`
         if wait_for_download and file_path is not None:
+            self.logger.info('Waiting for download to finish')
             asyncio.run(self.wait_for_download(file_path))
 
         return return_code
