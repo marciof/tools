@@ -31,14 +31,14 @@ class UgetFD (ExternalFD):
     def __init__(
             self,
             *args,
-            download_progress_throttle_interval_sec: float = 0.5,
+            download_progress_throttle_interval_secs: float = 1,
             **kwargs):
 
         super().__init__(*args, **kwargs)
         self.uget = uget.Uget()
-        self.last_timestamp = time()
-        self.download_progress_throttle_interval_sec = \
-            download_progress_throttle_interval_sec
+        self.last_timestamp_secs = time()
+        self.download_progress_throttle_interval_secs = \
+            download_progress_throttle_interval_secs
 
     @classmethod
     @overrides
@@ -57,12 +57,12 @@ class UgetFD (ExternalFD):
     def log_progress_throttled(
             self, current_size: int, expected_size: Optional[int]):
 
-        timestamp = time()
-        should_log = ((timestamp - self.last_timestamp)
-                      >= self.download_progress_throttle_interval_sec)
+        timestamp_secs = time()
+        should_log = ((timestamp_secs - self.last_timestamp_secs)
+                      >= self.download_progress_throttle_interval_secs)
 
         if should_log:
-            self.last_timestamp = timestamp
+            self.last_timestamp_secs = timestamp_secs
             self.info('Downloaded %s block bytes (%s)',
                       current_size,
                       self.calc_format_percent(current_size, expected_size))

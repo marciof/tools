@@ -3,7 +3,6 @@
 # Wraps `feed_enclosure.feed_rebuilder` for use with Liferea.
 
 # TODO add catchall logging wrapper
-# TODO use a single unique prefix to all logging for easy monitoring
 # TODO honor other Python's user environment variables
 
 set -e -u
