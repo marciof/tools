@@ -84,13 +84,15 @@ class UgetFD (ExternalFD):
     def _make_cmd(self, tmpfilename: str, info_dict: dict) -> List[str]:
         (folder, file_name_only) = os.path.split(tmpfilename)
 
-        return self.uget.make_command(
+        (command, file_path) = self.uget.make_command(
             url=info_dict['url'],
             file_name=file_name_only,
             folder=folder,
             quiet=True,
             http_user_agent=info_dict.get('http_headers', {})
                                      .get('User-Agent'))
+
+        return command
 
     @overrides
     def _call_downloader(self, tmpfilename: str, info_dict: dict) -> int:

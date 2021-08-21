@@ -6,12 +6,13 @@ Wraps uGet to add additional functionality and workaround certain issues.
 
 It transliterates Unicode characters in filenames to ASCII; ensures
 multiple consecutive calls to uGet don't block by making it run in the
-background; can watch a download for completion; and ensures relative folder
+background; can wait on a download for completion; and ensures relative folder
 paths are made absolute.
 """
 
 # stdlib
 import argparse
+import asyncio
 import os
 import os.path
 import subprocess
@@ -45,13 +46,28 @@ class Uget:
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
-        self.arg_parser.add_argument('url', nargs='?', default=None)
-        self.arg_parser.add_argument('-?', '-h', '--help', action='store_true')
-        self.arg_parser.add_argument('--filename', dest='file_name')
-        self.arg_parser.add_argument('--folder')
-        self.arg_parser.add_argument('--quiet', action='store_true')
         self.arg_parser.add_argument(
-            '--http-user-agent', dest='http_user_agent')
+            '-?', '-h', '--help', action='store_true', help=argparse.SUPPRESS)
+        self.arg_parser.add_argument(
+            '--quiet', action='store_true', help=argparse.SUPPRESS)
+
+        self.arg_url = self.arg_parser.add_argument(
+            'url', nargs='?', default=None, help=argparse.SUPPRESS)
+        self.arg_file_name = self.arg_parser.add_argument(
+            '--filename', dest='file_name', help=argparse.SUPPRESS)
+        self.arg_folder = self.arg_parser.add_argument(
+            '--folder', help=argparse.SUPPRESS)
+
+        self.arg_parser.add_argument(
+            '--http-user-agent',
+            dest='http_user_agent',
+            help=argparse.SUPPRESS)
+
+        self.arg_wait_for_download = self.arg_parser.add_argument(
+            '--x-wait-download',
+            dest='wait_download',
+            help='Wait for download to finish (requires folder and file name)',
+            action='store_true')
 
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
     def clean_file_name(self, file_name: str) -> str:
@@ -62,13 +78,34 @@ class Uget:
         self.logger.info('Parsed arguments: %s', parsed_args)
         self.logger.info('Remaining arguments: %s', rest_args)
 
+        kwargs = vars(parsed_args)
+        wait_for_download = kwargs.pop(self.arg_wait_for_download.dest)
+
+        # TODO attempt to figure out folder and file name?
+        # TODO honor default folder and file name from uget
+        if wait_for_download:
+            has_folder = kwargs[self.arg_folder.dest] is not None
+            has_file_name = kwargs[self.arg_file_name.dest] is not None
+
+            if not has_folder or not has_file_name:
+                raise Exception(
+                    'Waiting for a download requires folder and file name')
+
         if parsed_args.help:
-            print(self.arg_parser.description)
+            self.arg_parser.print_help()
+            print('\n---')
 
         self.ensure_running()
-        command = self.make_command(args=rest_args, **vars(parsed_args))
+        (command, file_path) = self.make_command(args=rest_args, **kwargs)
+
         self.logger.info('Running command: %s', command)
-        return subprocess.run(args=command).returncode
+        return_code = subprocess.run(args=command).returncode
+
+        # TODO log progress and refactor with `.youtube_dl`
+        if wait_for_download and file_path is not None:
+            asyncio.run(self.wait_for_download(file_path))
+
+        return return_code
 
     def ensure_running(self) -> None:
         """
@@ -129,9 +166,10 @@ class Uget:
             http_user_agent: Optional[str] = None,
             help: bool = False,
             quiet: bool = False) \
-            -> List[str]:
+            -> Tuple[List[str], Optional[str]]:
 
         command = [self.executable_name]
+        file_path = None
 
         if help:
             command += ['--help']
@@ -139,13 +177,20 @@ class Uget:
         if quiet:
             command += ['--quiet']
 
-        if file_name is not None:
-            command += ['--filename=' + self.clean_file_name(file_name)]
-
         # FIXME uGet doesn't seem to interpret relative folder paths correctly,
         #       so as a workaround make it absolute
         if folder is not None:
-            command += ['--folder=' + os.path.abspath(folder)]
+            abs_folder = os.path.abspath(folder)
+            command += ['--folder=' + abs_folder]
+            file_path = abs_folder
+
+        if file_name is not None:
+            clean_file_name = self.clean_file_name(file_name)
+            command += ['--filename=' + clean_file_name]
+            if file_path is None:
+                file_path = clean_file_name
+            else:
+                file_path = os.path.join(file_path, clean_file_name)
 
         if http_user_agent is not None:
             command += ['--http-user-agent=' + http_user_agent]
@@ -153,12 +198,12 @@ class Uget:
         if args is not None:
             command += args
 
-        return command + (['--', url] if url else [])
+        return (command + (['--', url] if url else []), file_path)
 
     async def wait_for_download(
             self,
             file_path: str,
-            file_size: Optional[int],
+            file_size: Optional[int] = None,
             progress_cb: Optional[Callable[[int], None]] = None) \
             -> None:
 

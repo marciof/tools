@@ -94,8 +94,8 @@ download_via_uget() {
         set --
     fi
 
-    # TODO wait for download to finish
     "$PYTHON3" -m feed_enclosure.uget \
+        --x-wait-download \
         --quiet \
         "--folder=$dl_uget_folder" \
         "$@" \
