@@ -11,8 +11,6 @@ URL fragment part as a filename, so downloaders can use it if/when needed.
 
 # stdlib
 import argparse
-import logging
-from logging.handlers import SysLogHandler
 import os.path
 import sys
 from typing import List, Optional
@@ -24,37 +22,17 @@ from feedgen import feed as feedgen  # type: ignore
 import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
+# internal
+from . import logging
+
 
 MODULE_DOC = __doc__.strip()
 
 
-def create_logger(
-        name: Optional[str] = None,
-        syslog_address: str = '/dev/log') -> logging.Logger:
-
-    if name is None:
-        name = os.path.basename(sys.argv[0])
-
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(logging.Formatter(
-        '%(asctime)s [%(levelname)s] %(message)s'))
-    logger.addHandler(stream_handler)
-
-    if os.path.exists(syslog_address):
-        syslog_handler = SysLogHandler(syslog_address)
-        syslog_handler.setFormatter(logging.Formatter(
-            '%(name)s [%(levelname)s] %(message)s'))
-        logger.addHandler(syslog_handler)
-
-    return logger
-
-
 def list_parsed_feed_entry_enclosure_urls(
         feed_entry: feedparser.FeedParserDict,
-        logger: logging.Logger) -> List[str]:
+        logger: logging.Logger) \
+        -> List[str]:
 
     """
     List all feed entry enclosures found, ordered from "best" to "worst".
@@ -93,7 +71,8 @@ def add_title_filename_to_url(url: str, title: str) -> str:
 def rebuild_parsed_feed_entry(
         feed_entry: feedparser.FeedParserDict,
         new_feed: feedgen.FeedGenerator,
-        logger: logging.Logger) -> feedgen.FeedEntry:
+        logger: logging.Logger) \
+        -> feedgen.FeedEntry:
 
     new_feed_entry = new_feed.add_entry()
     new_feed_entry.title(feed_entry.title)
@@ -122,7 +101,8 @@ def rebuild_parsed_feed_entry(
 
 def rebuild_parsed_feed(
         feed: feedparser.FeedParserDict,
-        logger: logging.Logger) -> feedgen.FeedGenerator:
+        logger: logging.Logger) \
+        -> feedgen.FeedGenerator:
 
     new_feed = feedgen.FeedGenerator()
 
@@ -200,7 +180,7 @@ def main(args: Optional[List[str]] = None) -> None:
     logger = None
 
     try:
-        logger = create_logger()
+        logger = logging.create_logger('feed_rebuilder')
         parse_args(args, logger)
         rebuild_feed_from_stdin_to_stdout(logger)
     except (SystemExit, KeyboardInterrupt):

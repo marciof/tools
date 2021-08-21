@@ -23,6 +23,9 @@ from typing import Callable, List, Optional, Tuple
 from asyncinotify import Inotify, Mask  # type: ignore
 from unidecode import unidecode
 
+# internal
+from . import logging
+
 
 MODULE_DOC = __doc__.strip()
 
@@ -31,11 +34,13 @@ def find_executable_name() -> str:
     return 'uget-gtk'
 
 
-# TODO logging
 class Uget:
 
     def __init__(self):
         self.executable_name = find_executable_name()
+
+        self.logger = logging.create_logger(
+            'uget', enable_stream_handler=False)
 
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
@@ -52,12 +57,15 @@ class Uget:
 
     def run(self, args: Optional[List[str]] = None) -> int:
         (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
+        self.logger.info('Parsed arguments: %s', parsed_args)
+        self.logger.info('Remaining arguments: %s', rest_args)
 
         if parsed_args.help:
             print(self.arg_parser.description)
 
         self.ensure_running()
         command = self.make_command(args=rest_args, **vars(parsed_args))
+        self.logger.info('Running command: %s', command)
         return subprocess.run(args=command).returncode
 
     def ensure_running(self) -> None:
@@ -74,7 +82,9 @@ class Uget:
                          stderr=subprocess.DEVNULL)
 
     def get_file_disk_sizes(
-            self, file_path: str, block_size_bytes: int = 512) \
+            self,
+            file_path: str,
+            block_size_bytes: int = 512) \
             -> Tuple[int, int]:
 
         """
@@ -93,7 +103,8 @@ class Uget:
             self,
             file_path: str,
             file_size: Optional[int],
-            progress_cb: Optional[Callable[[int], None]] = None) -> bool:
+            progress_cb: Optional[Callable[[int], None]] = None) \
+            -> bool:
 
         # If the file to be downloaded has been already reserved
         # space on disk, then its apparent size will already be the
@@ -115,7 +126,8 @@ class Uget:
             folder: Optional[str] = None,
             http_user_agent: Optional[str] = None,
             help: bool = False,
-            quiet: bool = False) -> List[str]:
+            quiet: bool = False) \
+            -> List[str]:
 
         command = [self.executable_name]
 
@@ -145,7 +157,8 @@ class Uget:
             self,
             file_path: str,
             file_size: Optional[int],
-            progress_cb: Optional[Callable[[int], None]] = None) -> None:
+            progress_cb: Optional[Callable[[int], None]] = None) \
+            -> None:
 
         (folder, file_name) = os.path.split(file_path)
 
