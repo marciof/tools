@@ -45,11 +45,13 @@ class Uget:
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
-        # TODO add URL and HTTP user agent arguments
+        self.arg_parser.add_argument('url', nargs='?', default=None)
+        self.arg_parser.add_argument('-?', '-h', '--help', action='store_true')
         self.arg_parser.add_argument('--filename', dest='file_name')
         self.arg_parser.add_argument('--folder')
-        self.arg_parser.add_argument('-?', '-h', '--help', action='store_true')
         self.arg_parser.add_argument('--quiet', action='store_true')
+        self.arg_parser.add_argument(
+            '--http-user-agent', dest='http_user_agent')
 
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
     def clean_file_name(self, file_name: str) -> str:
