@@ -179,8 +179,6 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
-# TODO Liferea doesn't download the feed sometimes, while `curl` does?
-#      add command line option to `feed_rebuilder` to download?
 main() {
     process_options "$@"
     shift $((OPTIND - 1))

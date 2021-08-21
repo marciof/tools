@@ -129,6 +129,8 @@ def rebuild_parsed_feed(
 def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
     logger.debug('Feed XML: %s', feed_xml)
 
+    # FIXME Liferea sends no data on stdin when it gets an HTTP 304
+    #       https://github.com/lwindolf/liferea/issues/925#issuecomment-902992812
     if feed_xml.strip() == '':
         raise Exception('Feed XML is an empty string')
 
