@@ -47,9 +47,9 @@ class Uget:
             '-?', '-h', '--help', action='store_true', help=argparse.SUPPRESS)
         self.arg_parser.add_argument(
             '--quiet', action='store_true', help=argparse.SUPPRESS)
-
-        self.arg_url = self.arg_parser.add_argument(
+        self.arg_parser.add_argument(
             'url', nargs='?', default=None, help=argparse.SUPPRESS)
+
         self.arg_file_name = self.arg_parser.add_argument(
             '--filename', dest='file_name', help=argparse.SUPPRESS)
         self.arg_folder = self.arg_parser.add_argument(
@@ -98,6 +98,7 @@ class Uget:
         self.logger.info('Running command: %s', command)
         return_code = subprocess.run(args=command).returncode
 
+        # TODO log progress and refactor with `.youtube_dl`
         if wait_for_download and file_path is not None:
             self.logger.info('Waiting for download to finish')
             asyncio.run(self.wait_for_download(file_path))

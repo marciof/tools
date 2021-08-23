@@ -1,10 +1,14 @@
 # -*- coding: UTF-8 -*-
 
 """
-Wraps youtube-dl to add support for uGet as an external downloader.
+Wraps youtube-dl to add additional functionality.
+
+Changes: (1) support for uGet as an external downloader; (2) support for an
+output download folder.
 """
 
 # stdlib
+import argparse
 import asyncio
 import os.path
 from time import time
@@ -17,7 +21,10 @@ import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 # internal
-from . import uget
+from . import logging, uget
+
+
+MODULE_DOC = __doc__.strip()
 
 
 class UgetFD (ExternalFD):
@@ -143,9 +150,41 @@ def register_uget_external_downloader() -> None:
     register_external_downloader('uget', UgetFD)
 
 
+# TODO use output folder argument
+def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
+    arg_parser = argparse.ArgumentParser(
+        description=MODULE_DOC, add_help=False, allow_abbrev=False)
+
+    arg_parser.add_argument('-o', '--output', help=argparse.SUPPRESS)
+    arg_parser.add_argument(
+        '-h', '--help', action='store_true', help=argparse.SUPPRESS)
+    arg_parser.add_argument(
+        '--x-folder', dest='folder', metavar='PATH', help='Download folder')
+
+    (parsed_args, rest_args) = arg_parser.parse_known_args(args)
+    logger.debug('Parsed arguments: %s', parsed_args)
+    logger.debug('Remaining arguments: %s', rest_args)
+
+    if parsed_args.output:
+        rest_args = ['--output', parsed_args.output] + rest_args
+
+        # TODO allow output template if it doesn't contain a path
+        if parsed_args.folder:
+            raise Exception(
+                'Output template and folder options are mutually exclusive')
+
+    if parsed_args.help:
+        rest_args.insert(0, '--help')
+        arg_parser.print_help()
+        print('\n---')
+
+    return rest_args
+
+
 def main(args: Optional[List[str]] = None) -> None:
+    logger = logging.create_logger('youtube_dl')
     register_uget_external_downloader()
-    youtube_dl.main(args)
+    youtube_dl.main(parse_args(args, logger))
 
 
 if __name__ == '__main__':
