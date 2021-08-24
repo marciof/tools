@@ -119,12 +119,13 @@ def rebuild_parsed_feed(
     else:
         # Description is mandatory for RSS feeds.
         # https://www.rssboard.org/rss-specification
-        logger.warning('No feed description found, setting it anyway.')
+        logger.debug('No feed description found, setting it anyway.')
         new_feed.description('-')
 
     return new_feed
 
 
+# TODO feed handling errors don't indicate which feed it was
 def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
     logger.debug('Feed XML: %s', feed_xml)
 
