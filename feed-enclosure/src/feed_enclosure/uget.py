@@ -90,7 +90,7 @@ class Uget:
 
         if parsed_args.help:
             self.arg_parser.print_help()
-            print('\n---')
+            print('\n---\n')
 
         self.ensure_running()
         (command, file_path) = self.make_command(args=rest_args, **kwargs)

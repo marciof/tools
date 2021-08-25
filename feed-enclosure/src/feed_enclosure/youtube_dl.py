@@ -176,7 +176,7 @@ def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
     if parsed_args.help:
         rest_args.insert(0, '--help')
         arg_parser.print_help()
-        print('\n---')
+        print('\n---\n')
 
     return rest_args
 
