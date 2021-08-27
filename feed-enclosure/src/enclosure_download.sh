@@ -116,8 +116,8 @@ download_via_ytdl() {
     # TODO YouTube download URLs may expire, eg. queued in downloader
     # TODO detect and skip livestreams?
     "$PYTHON3" -m feed_enclosure.youtube_dl \
-        --x-folder "$dl_ytdl_folder" \
         --external-downloader uget \
+        --output "$dl_ytdl_folder" \
         --format "$dl_ytdl_format" \
         --add-metadata \
         --verbose \

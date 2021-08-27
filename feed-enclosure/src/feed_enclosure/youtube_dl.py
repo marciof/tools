@@ -4,7 +4,7 @@
 Wraps youtube-dl to add additional functionality.
 
 Changes: (1) support for uGet as an external downloader; (2) support for an
-output download folder.
+output download folder only template.
 """
 
 # stdlib
@@ -151,39 +151,52 @@ def register_uget_external_downloader() -> None:
     register_external_downloader('uget', UgetFD)
 
 
-# FIXME youtube-dl doesn't have an option for the output directory alone
+# https://github.com/ytdl-org/youtube-dl#output-template
+def parse_output_template_arg(output: str) -> str:
+    (head, tail) = os.path.split(output)
+
+    if not tail:
+        # Directory only, eg. "xyz/"
+        return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
+
+    if not head:
+        if os.path.isdir(output):
+            # Directory constant, eg. ".."
+            return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
+        else:
+            # Filename only, eg. "xyz"
+            return output
+
+    if os.path.isdir(output):
+        return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
+    else:
+        return output
+
+
+# FIXME youtube-dl doesn't have an option for output directory only
 def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
     arg_parser = argparse.ArgumentParser(
         description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
-    arg_parser.add_argument('-o', '--output', help=argparse.SUPPRESS)
     arg_parser.add_argument(
         '-h', '--help', action='store_true', help=argparse.SUPPRESS)
     arg_parser.add_argument(
-        '--x-folder', dest='folder', metavar='PATH', help='Download folder')
+        '-o', '--output', help='Output template')
 
     (parsed_args, rest_args) = arg_parser.parse_known_args(args)
     logger.debug('Parsed arguments: %s', parsed_args)
     logger.debug('Remaining arguments: %s', rest_args)
 
-    # TODO allow output template if it doesn't contain a path
-    if parsed_args.output and parsed_args.folder:
-        raise Exception(
-            'Output template and folder options are mutually exclusive')
-
-    if parsed_args.output:
-        rest_args[0:0] = ['--output', parsed_args.output]
-
-    if parsed_args.folder:
-        rest_args[0:0] = [
-            '--output',
-            os.path.join(parsed_args.folder, youtube_dl.DEFAULT_OUTTMPL),
-        ]
-
     if parsed_args.help:
         rest_args.insert(0, '--help')
         arg_parser.print_help()
         print('\n---\n')
+
+    if parsed_args.output:
+        rest_args[0:0] = [
+            '--output',
+            parse_output_template_arg(parsed_args.output),
+        ]
 
     logger.debug('Final arguments: %s', rest_args)
     return rest_args
