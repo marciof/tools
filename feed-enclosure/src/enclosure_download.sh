@@ -112,21 +112,17 @@ download_via_ytdl() {
     dl_ytdl_format="$2"
     dl_ytdl_folder="$3"
 
-    (
-        # FIXME youtube-dl doesn't have an option for the output directory
-        cd -- "$dl_ytdl_folder"
-
-        # TODO what happens when offline?
-        # TODO YouTube download URLs may expire, eg. queued in downloader
-        # TODO detect and skip livestreams?
-        "$PYTHON3" -m feed_enclosure.youtube_dl \
-            --verbose \
-            --external-downloader uget \
-            --add-metadata \
-            --format "$dl_ytdl_format" \
-            -- \
-            "$dl_ytdl_url"
-    )
+    # TODO what happens when offline?
+    # TODO YouTube download URLs may expire, eg. queued in downloader
+    # TODO detect and skip livestreams?
+    "$PYTHON3" -m feed_enclosure.youtube_dl \
+        --x-folder "$dl_ytdl_folder" \
+        --external-downloader uget \
+        --format "$dl_ytdl_format" \
+        --add-metadata \
+        --verbose \
+        -- \
+        "$dl_ytdl_url"
 }
 
 print_usage() {

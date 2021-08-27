@@ -94,8 +94,6 @@ class Uget:
 
         self.ensure_running()
         (command, file_path) = self.make_command(args=rest_args, **kwargs)
-
-        self.logger.info('Running command: %s', command)
         return_code = subprocess.run(args=command).returncode
 
         # TODO log progress and refactor with `.youtube_dl`
@@ -196,7 +194,11 @@ class Uget:
         if args is not None:
             command += args
 
-        return (command + (['--', url] if url else []), file_path)
+        if url:
+            command += ['--', url]
+
+        self.logger.info('Command: %s', command)
+        return (command, file_path)
 
     async def wait_for_download(
             self,

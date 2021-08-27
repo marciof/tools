@@ -27,6 +27,7 @@ from . import logging, uget
 MODULE_DOC = __doc__.strip()
 
 
+# TODO log to syslog as well
 class UgetFD (ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields
@@ -150,7 +151,7 @@ def register_uget_external_downloader() -> None:
     register_external_downloader('uget', UgetFD)
 
 
-# TODO use output folder argument
+# FIXME youtube-dl doesn't have an option for the output directory alone
 def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
     arg_parser = argparse.ArgumentParser(
         description=MODULE_DOC, add_help=False, allow_abbrev=False)
@@ -165,19 +166,26 @@ def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
     logger.debug('Parsed arguments: %s', parsed_args)
     logger.debug('Remaining arguments: %s', rest_args)
 
-    if parsed_args.output:
-        rest_args = ['--output', parsed_args.output] + rest_args
+    # TODO allow output template if it doesn't contain a path
+    if parsed_args.output and parsed_args.folder:
+        raise Exception(
+            'Output template and folder options are mutually exclusive')
 
-        # TODO allow output template if it doesn't contain a path
-        if parsed_args.folder:
-            raise Exception(
-                'Output template and folder options are mutually exclusive')
+    if parsed_args.output:
+        rest_args[0:0] = ['--output', parsed_args.output]
+
+    if parsed_args.folder:
+        rest_args[0:0] = [
+            '--output',
+            os.path.join(parsed_args.folder, youtube_dl.DEFAULT_OUTTMPL),
+        ]
 
     if parsed_args.help:
         rest_args.insert(0, '--help')
         arg_parser.print_help()
         print('\n---\n')
 
+    logger.debug('Final arguments: %s', rest_args)
     return rest_args
 
 
