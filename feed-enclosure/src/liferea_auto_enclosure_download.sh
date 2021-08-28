@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Transforms a Liferea's OPML file so that each feed is configured to
-# automatically download enclosures.
+# Transforms a Liferea's OPML file so that each feed is configured to be
+# rewritten as well as automatically download enclosures.
 # https://lzone.de/liferea/help110/preferences_en.html#enclosures
 #
 # Stdin: Liferea's OPML format
@@ -16,7 +16,7 @@
 set -e -u
 
 XML_STARLET_BIN="${XML_STARLET_BIN:-xmlstarlet}"
-REBUILD_FEED_BIN="${REBUILD_FEED_BIN:-$(dirname "$(readlink -e "$0")")/liferea_rebuild_feed_filtercmd.sh}"
+REWRITE_FEED_BIN="${REWRITE_FEED_BIN:-$(dirname "$(readlink -e "$0")")/liferea_rebuild_feed_filtercmd.sh}"
 
 # Set a value for an XML attribute in an XPath location.
 #
@@ -46,4 +46,4 @@ fi
 entry_xpath='//outline[@type="rss"]'
 
 xml_set_attr_value "$entry_xpath" encAutoDownload true \
-    | xml_set_attr_value "$entry_xpath" filtercmd "$REBUILD_FEED_BIN"
+    | xml_set_attr_value "$entry_xpath" filtercmd "$REWRITE_FEED_BIN"
