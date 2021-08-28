@@ -31,29 +31,12 @@ dl_hook_arg=
 dl_begin_hook=
 dl_end_hook=
 
-# Check if a URL is for an IGN Daily Fix video.
+# Check if a URL is for IGN.
 #
 # Arguments: url
 # Exit status: 0 when true
-is_ign_daily_fix_url() {
-    printf %s "$1" | grep -q -P '://assets\d*\.ign\.com/videos/'
-}
-
-# Modify a URL for an IGN Daily Fix video to have the highest resolution
-# possible.
-#
-# Arguments: url
-# Stdout: modified URL
-upgrade_ign_daily_fix_url_video_res() {
-    ign_width='[[:digit:]]+'
-    ign_hash='[[:xdigit:]]+'
-    ign_bitrate='[[:digit:]]+'
-
-    # TODO add IGN Daily Fix support to youtube-dl?
-    #      https://github.com/ytdl-org/youtube-dl/tree/master#adding-support-for-a-new-site
-    #      https://github.com/ytdl-org/youtube-dl/issues/24771
-    printf %s "$1" \
-        | sed -r "s#/$ign_width(/$ign_hash-)$ign_bitrate-#/1920\\13906000-#"
+is_ign_url() {
+    printf %s "$1" | grep -q -P '\.ign\.com/'
 }
 
 # Decode a percent-encoded string.
@@ -195,9 +178,8 @@ main() {
 
     # TODO invert condition to let youtube-dl try first?
     # TODO attempt to extract metadata from IGN Daily Fix videos?
-    if is_ign_daily_fix_url "$url"; then
-        download_via_uget \
-            "$(upgrade_ign_daily_fix_url_video_res "$url")" "$download_folder"
+    if is_ign_url "$url"; then
+        download_via_uget "$url" "$download_folder"
     else
         download_via_ytdl "$url" "$ytdl_video_format" "$download_folder"
     fi

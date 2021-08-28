@@ -1,13 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-"""
-Rebuilds RSS/Atom feeds (in stdin) into RSS (in stdout) so that the "best"
-enclosures are chosen. Accepts whatever kinds of feed `feedparser` supports.
-
-Enclosure URLs will also have their associated feed entry title saved in the
-URL fragment part as a filename, so downloaders can use it if/when needed.
-"""
-
 # stdlib
 import logging
 from logging import Logger

@@ -1,8 +1,9 @@
 # -*- coding: UTF-8 -*-
 
 """
-Rebuilds RSS/Atom feeds (in stdin) into RSS (in stdout) so that the "best"
-enclosures are chosen. Accepts whatever kinds of feed `feedparser` supports.
+Rewrites RSS/Atom feeds (in stdin) into RSS (in stdout) so that the best
+enclosures are chosen, and also rewritten to have the best quality possible.
+Accepts whatever kinds of feed `feedparser` supports.
 
 Enclosure URLs will also have their associated feed entry title saved in the
 URL fragment part as a filename, so downloaders can use it if/when needed.
@@ -22,7 +23,7 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 # internal
-from . import logging
+from . import enclosure_rewrite, logging
 
 
 MODULE_DOC = __doc__.strip()
@@ -149,9 +150,10 @@ def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
         urls = list_parsed_feed_entry_enclosure_urls(entry, logger)
 
         if len(urls) > 0:
-            url = add_title_filename_to_url(urls[0], entry.title)
-            logger.info('Enclosure URL for "%s": %s', entry.title, url)
-            new_entry.enclosure(url=url, type='')
+            url = enclosure_rewrite.process_url(urls[0])
+            titled_url = add_title_filename_to_url(url, entry.title)
+            logger.info('Enclosure URL for "%s": %s', entry.title, titled_url)
+            new_entry.enclosure(url=titled_url, type='')
         else:
             logger.warning(
                 'No enclosure URLs found in "%s".', entry.title)
