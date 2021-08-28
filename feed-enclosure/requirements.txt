@@ -1,6 +1,6 @@
 # TODO Python package updates? notify of dependency changes? needs testing
 
-# feed_rebuilder
+# feed_rewrite
 feedgen==0.9.0
 feedparser==6.0.8
 pathvalidate==2.4.1

@@ -182,7 +182,7 @@ def main(args: Optional[List[str]] = None) -> None:
     logger = None
 
     try:
-        logger = logging.create_logger('feed_rebuilder')
+        logger = logging.create_logger('feed_rewrite')
         parse_args(args, logger)
         rebuild_feed_from_stdin_to_stdout(logger)
     except (SystemExit, KeyboardInterrupt):
