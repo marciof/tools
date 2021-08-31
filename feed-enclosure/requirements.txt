@@ -6,6 +6,7 @@ feedparser==6.0.8
 pathvalidate==2.4.1
 
 # liferea
+defusedxml==0.7.1
 xdg==5
 
 # uget
