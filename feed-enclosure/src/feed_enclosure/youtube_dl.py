@@ -21,7 +21,7 @@ import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 # internal
-from . import logging, uget
+from . import log, uget
 
 
 MODULE_DOC = __doc__.strip()
@@ -174,7 +174,7 @@ def parse_output_template_arg(output: str) -> str:
 
 
 # FIXME youtube-dl doesn't have an option for output directory only
-def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
+def parse_args(args: Optional[List[str]], logger: log.Logger) -> List[str]:
     arg_parser = argparse.ArgumentParser(
         description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
@@ -203,7 +203,7 @@ def parse_args(args: Optional[List[str]], logger: logging.Logger) -> List[str]:
 
 
 def main(args: Optional[List[str]] = None) -> None:
-    logger = logging.create_logger('youtube_dl')
+    logger = log.create_logger('youtube_dl')
     register_uget_external_downloader()
     youtube_dl.main(parse_args(args, logger))
 

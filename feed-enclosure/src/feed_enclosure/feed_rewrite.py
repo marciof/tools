@@ -23,7 +23,7 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 # internal
-from . import enclosure_rewrite, logging
+from . import enclosure_rewrite, log
 
 
 MODULE_DOC = __doc__.strip()
@@ -31,7 +31,7 @@ MODULE_DOC = __doc__.strip()
 
 def list_parsed_feed_entry_enclosure_urls(
         feed_entry: feedparser.FeedParserDict,
-        logger: logging.Logger) \
+        logger: log.Logger) \
         -> List[str]:
 
     """
@@ -71,7 +71,7 @@ def add_title_filename_to_url(url: str, title: str) -> str:
 def rebuild_parsed_feed_entry(
         feed_entry: feedparser.FeedParserDict,
         new_feed: feedgen.FeedGenerator,
-        logger: logging.Logger) \
+        logger: log.Logger) \
         -> feedgen.FeedEntry:
 
     new_feed_entry = new_feed.add_entry()
@@ -101,7 +101,7 @@ def rebuild_parsed_feed_entry(
 
 def rebuild_parsed_feed(
         feed: feedparser.FeedParserDict,
-        logger: logging.Logger) \
+        logger: log.Logger) \
         -> feedgen.FeedGenerator:
 
     new_feed = feedgen.FeedGenerator()
@@ -127,7 +127,7 @@ def rebuild_parsed_feed(
 
 
 # TODO feed handling errors don't indicate which feed it was
-def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
+def rebuild_feed(feed_xml: str, logger: log.Logger) -> str:
     logger.debug('Feed XML: %s', feed_xml)
 
     # FIXME Liferea sends no data on stdin when it gets an HTTP 304
@@ -162,7 +162,7 @@ def rebuild_feed(feed_xml: str, logger: logging.Logger) -> str:
     return new_feed.rss_str(pretty=True).decode()
 
 
-def rebuild_feed_from_stdin_to_stdout(logger: logging.Logger) -> None:
+def rebuild_feed_from_stdin_to_stdout(logger: log.Logger) -> None:
     # FIXME `feedparser` breaks on detecting the encoding of the input
     #       data when given a file object (eg `sys.stdin`) that when
     #       `read` gives a string-like object, since the regex is a bytes
@@ -171,7 +171,7 @@ def rebuild_feed_from_stdin_to_stdout(logger: logging.Logger) -> None:
     print(rebuild_feed(sys.stdin.read(), logger))
 
 
-def parse_args(args: Optional[List[str]], logger: logging.Logger) -> None:
+def parse_args(args: Optional[List[str]], logger: log.Logger) -> None:
     parser = argparse.ArgumentParser(description=MODULE_DOC)
     parser.parse_args(args)
 
@@ -184,7 +184,7 @@ def main(args: Optional[List[str]] = None) -> None:
     logger = None
 
     try:
-        logger = logging.create_logger('feed_rewrite')
+        logger = log.create_logger('feed_rewrite')
         parse_args(args, logger)
         rebuild_feed_from_stdin_to_stdout(logger)
     except (SystemExit, KeyboardInterrupt):

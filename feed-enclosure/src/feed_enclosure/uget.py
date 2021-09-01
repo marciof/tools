@@ -24,7 +24,7 @@ from asyncinotify import Inotify, Mask  # type: ignore
 from unidecode import unidecode
 
 # internal
-from . import logging
+from . import log
 
 
 MODULE_DOC = __doc__.strip()
@@ -38,7 +38,7 @@ class Uget:
 
     def __init__(self):
         self.executable_name = find_executable_name()
-        self.logger = logging.create_logger('uget')
+        self.logger = log.create_logger('uget')
 
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
