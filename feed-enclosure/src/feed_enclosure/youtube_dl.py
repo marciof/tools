@@ -27,7 +27,7 @@ from . import log, uget
 MODULE_DOC = __doc__.strip()
 
 
-# TODO log to syslog as well
+# TODO log to syslog as well using `log`
 class UgetFD (ExternalFD):
     """
     https://github.com/ytdl-org/youtube-dl#mandatory-and-optional-metafields

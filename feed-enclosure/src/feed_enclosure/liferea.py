@@ -3,7 +3,7 @@
 """
 Wraps Lifera to add additional functionality.
 
-Changes: (1) minimize Liferea's window; (2) command to get the path to the
+Changes: (1) command to minimize the window; (2) command to get the path to the
 feedlist OPML file; (3) command to enable feed enclosure automatic download;
 (4) command to set feed conversion filter.
 """
@@ -26,7 +26,9 @@ MODULE_DOC = __doc__.strip()
 ENC_AUTO_DOWNLOAD_COMMAND = 'enc-auto-download'
 FEED_LIST_COMMAND = 'feed-list'
 FILTER_CMD_COMMAND = 'filter-cmd'
-MINIMIZE_COMMAND = 'minimize'
+# TODO reuse flag `--mainwindow-state`?
+#      https://github.com/lwindolf/liferea/issues/447
+MINIMIZE_WINDOW_COMMAND = 'minimize-window'
 
 
 def find_feed_list_opml() -> Path:
@@ -48,11 +50,13 @@ def minimize_window() -> None:
     pass
 
 
-# TODO handle help flag
 def parse_args(args: Optional[List[str]]) \
         -> Tuple[argparse.Namespace, List[str]]:
 
-    parser = argparse.ArgumentParser(description=MODULE_DOC)
+    parser = argparse.ArgumentParser(description=MODULE_DOC, add_help=False)
+    parser.add_argument(
+        '-h', '--help', action='store_true', help=argparse.SUPPRESS)
+
     sub_parsers = parser.add_subparsers(dest='command_arg')
 
     sub_parsers.add_parser(
@@ -66,9 +70,16 @@ def parse_args(args: Optional[List[str]]) \
     filtercmd_parser.add_argument('command')
 
     sub_parsers.add_parser(
-        MINIMIZE_COMMAND, help='run in the background minimized')
+        MINIMIZE_WINDOW_COMMAND, help='minimize window')
 
-    return parser.parse_known_args(args)
+    (parsed_args, rest_args) = parser.parse_known_args(args)
+
+    if parsed_args.help:
+        rest_args.insert(0, '--help')
+        parser.print_help()
+        print('\n---\n')
+
+    return (parsed_args, rest_args)
 
 
 def main(args: Optional[List[str]] = None) -> None:
@@ -80,11 +91,12 @@ def main(args: Optional[List[str]] = None) -> None:
         print(find_feed_list_opml())
     elif parsed_args.command_arg == FILTER_CMD_COMMAND:
         set_feed_conversion_filter(parsed_args.command, find_feed_list_opml())
-    elif parsed_args.command_arg == MINIMIZE_COMMAND:
+    elif parsed_args.command_arg == MINIMIZE_WINDOW_COMMAND:
         minimize_window()
     else:
         subprocess.run(['liferea'] + rest_args)
 
 
+# TODO logging
 if __name__ == '__main__':
     main()
