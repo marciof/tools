@@ -92,7 +92,7 @@ class Uget:
             self.arg_parser.print_help()
             print('\n---\n')
 
-        self.ensure_running()
+        self.ensure_running_background()
         (command, file_path) = self.make_command(args=rest_args, **kwargs)
         return_code = subprocess.run(args=command).returncode
 
@@ -103,13 +103,14 @@ class Uget:
 
         return return_code
 
-    def ensure_running(self) -> None:
+    def ensure_running_background(self) -> None:
         """
         If uGet isn't already running, then starting it up will block execution
         until it exits. To avoid that, ensure it's always running already in
         the background.
         """
 
+        # The `--quiet` flag makes it stay in the background.
         # TODO detect existence of `start_new_session` (it's POSIX specific)
         subprocess.Popen([self.executable_name, '--quiet'],
                          start_new_session=True,

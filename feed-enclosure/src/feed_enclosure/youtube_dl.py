@@ -124,7 +124,7 @@ class UgetFD (ExternalFD):
             return 0
 
         if return_code is None:
-            self.uget.ensure_running()
+            self.uget.ensure_running_background()
             return_code = super()._call_downloader(tmpfilename, info_dict)
             self.info('Return code: %s', return_code)
         else:
