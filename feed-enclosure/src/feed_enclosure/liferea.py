@@ -18,7 +18,7 @@ from typing import List, Optional, Tuple
 # FIXME missing type stubs for some external libraries
 import defusedxml.ElementTree as DefusedElementTree  # type: ignore
 from xdg import xdg_config_home  # type: ignore
-from Xlib.display import Display
+from Xlib.display import Display  # type: ignore
 
 
 MODULE_DOC = __doc__.strip()
