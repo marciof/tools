@@ -18,6 +18,7 @@ from typing import List, Optional, Tuple
 # FIXME missing type stubs for some external libraries
 import defusedxml.ElementTree as DefusedElementTree  # type: ignore
 from xdg import xdg_config_home  # type: ignore
+from Xlib.display import Display
 
 
 MODULE_DOC = __doc__.strip()
@@ -47,7 +48,14 @@ def enable_feed_enclosure_auto_download(feed_list_opml: Path) -> None:
 
 # TODO minimize window
 def minimize_window() -> None:
-    pass
+    display = Display()
+    root_window = display.screen().root
+
+    for window in root_window.query_tree().children:
+        (instance_name, class_name) = window.get_wm_class() or (None, None)
+
+        if class_name == 'Liferea':
+            print(window, instance_name, class_name)
 
 
 def parse_args(args: Optional[List[str]]) \
