@@ -76,7 +76,7 @@ def rebuild_parsed_feed_entry(
 
     new_feed_entry = new_feed.add_entry()
     new_feed_entry.title(feed_entry.title)
-    logger.debug('Rebuilding entry: ', feed_entry.title)
+    logger.debug('Rebuilding entry: %s', feed_entry.title)
 
     if 'id' in feed_entry:
         new_feed_entry.id(feed_entry.id)
