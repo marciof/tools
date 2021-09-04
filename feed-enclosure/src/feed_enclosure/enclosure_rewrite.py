@@ -48,5 +48,6 @@ def main(args: Optional[List[str]] = None) -> None:
     print(process_url(url))
 
 
+# TODO tests, refactor as library?
 if __name__ == '__main__':
     main()

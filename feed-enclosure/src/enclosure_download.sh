@@ -158,6 +158,7 @@ process_options() {
 
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
+# TODO option to download from a list of URLs?
 main() {
     process_options "$@"
     shift $((OPTIND - 1))

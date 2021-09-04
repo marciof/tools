@@ -10,15 +10,18 @@ feedlist OPML file; (3) command to enable feed enclosure automatic download;
 
 # stdlib
 import argparse
+from operator import setitem
 from pathlib import Path
 import subprocess
-from typing import List, Optional, Tuple
+from typing import Callable, Iterator, List, Optional, Tuple
+from xml.etree.ElementTree import Element
 
 # external
 # FIXME missing type stubs for some external libraries
-import defusedxml.ElementTree as DefusedElementTree  # type: ignore
+import defusedxml.ElementTree as ElementTree  # type: ignore
 from xdg import xdg_config_home  # type: ignore
 from Xlib.display import Display  # type: ignore
+from Xlib.xobject.drawable import Window  # type: ignore
 
 
 MODULE_DOC = __doc__.strip()
@@ -32,6 +35,31 @@ FILTER_CMD_COMMAND = 'filter-cmd'
 MINIMIZE_WINDOW_COMMAND = 'minimize-window'
 
 
+def iter_windows() -> Iterator[Window]:
+    root_window = Display().screen().root
+
+    for window in root_window.query_tree().children:
+        (instance_name, class_name) = window.get_wm_class() or (None, None)
+
+        if instance_name == 'liferea' and class_name == 'Liferea':
+            yield window
+
+
+def modify_opml_outline_rss(
+        opml: Path, modify: Callable[[Element], None]) \
+        -> str:
+
+    feed_root = None
+
+    for (event, element) in ElementTree.iterparse(opml, {'start'}):
+        if feed_root is None:
+            feed_root = element
+        elif element.tag == 'outline' and element.attrib.get('type') == 'rss':
+            modify(element)
+
+    return ElementTree.tostring(feed_root, encoding='unicode')
+
+
 def find_feed_list_opml() -> Path:
     return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
@@ -41,21 +69,24 @@ def set_feed_conversion_filter(command: str, feed_list_opml: Path) -> None:
     pass
 
 
-# TODO enable feed enclosure automatic download
+# TODO persist changes to OPML
+# TODO add dry-run option?
+# TODO raise exception/report stderr/exit status on error
 def enable_feed_enclosure_auto_download(feed_list_opml: Path) -> None:
-    pass
+    for _ in iter_windows():
+        print('Liferea is currently running, please close it first.')
+        break
+    else:
+        print(modify_opml_outline_rss(
+            feed_list_opml,
+            lambda rss_outline:
+                setitem(rss_outline.attrib, 'encAutoDownload', 'true')))
 
 
 # TODO minimize window
 def minimize_window() -> None:
-    display = Display()
-    root_window = display.screen().root
-
-    for window in root_window.query_tree().children:
-        (instance_name, class_name) = window.get_wm_class() or (None, None)
-
-        if class_name == 'Liferea':
-            print(window, instance_name, class_name)
+    for window in iter_windows():
+        print(window)
 
 
 def parse_args(args: Optional[List[str]]) \
@@ -106,5 +137,6 @@ def main(args: Optional[List[str]] = None) -> None:
 
 
 # TODO logging
+# TODO tests, refactor as library?
 if __name__ == '__main__':
     main()

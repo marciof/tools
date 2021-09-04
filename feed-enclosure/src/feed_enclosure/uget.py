@@ -233,5 +233,6 @@ def main(args: Optional[List[str]] = None) -> None:
     sys.exit(Uget().run(args))
 
 
+# TODO tests, refactor as library?
 if __name__ == '__main__':
     main()
