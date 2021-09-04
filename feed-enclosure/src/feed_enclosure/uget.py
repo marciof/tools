@@ -70,7 +70,7 @@ class Uget:
     def clean_file_name(self, file_name: str) -> str:
         return unidecode(file_name)
 
-    def run(self, args: Optional[List[str]] = None) -> int:
+    def main(self, args: Optional[List[str]] = None) -> int:
         (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
         self.logger.debug('Parsed arguments: %s', parsed_args)
         self.logger.debug('Remaining arguments: %s', rest_args)
@@ -230,9 +230,9 @@ class Uget:
 
 
 def main(args: Optional[List[str]] = None) -> None:
-    sys.exit(Uget().run(args))
+    sys.exit(Uget().main(args))
 
 
-# TODO tests, refactor as library?
+# TODO tests
 if __name__ == '__main__':
     main()

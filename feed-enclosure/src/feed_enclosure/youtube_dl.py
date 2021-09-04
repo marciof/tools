@@ -208,6 +208,6 @@ def main(args: Optional[List[str]] = None) -> None:
     youtube_dl.main(parse_args(args, logger))
 
 
-# TODO tests, refactor as library?
+# TODO tests
 if __name__ == '__main__':
     main()
