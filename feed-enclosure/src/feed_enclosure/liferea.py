@@ -24,6 +24,9 @@ from xdg import xdg_config_home  # type: ignore
 from Xlib.display import Display  # type: ignore
 from Xlib.xobject.drawable import Window  # type: ignore
 
+# internal
+from . import log
+
 
 MODULE_DOC = __doc__.strip()
 
@@ -31,6 +34,8 @@ MODULE_DOC = __doc__.strip()
 class Liferea:
 
     def __init__(self):
+        self.logger = log.create_logger('liferea')
+
         # FIXME add options/commands to Liferea app
         self.ENC_AUTO_DOWNLOAD_COMMAND = 'enc-auto-download'
         self.FEED_LIST_COMMAND = 'feed-list'
@@ -79,12 +84,15 @@ class Liferea:
             -> Tuple[argparse.Namespace, List[str]]:
 
         (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
+        self.logger.debug('Parsed arguments: %s', parsed_args)
+        self.logger.debug('Remaining arguments: %s', rest_args)
 
         if parsed_args.help:
             rest_args.insert(0, '--help')
             self.arg_parser.print_help()
             print('\n---\n')
 
+        self.logger.debug('Final arguments: %s', rest_args)
         return (parsed_args, rest_args)
 
     def iter_windows(self) -> Iterator[Window]:
@@ -94,21 +102,23 @@ class Liferea:
             (instance_name, class_name) = window.get_wm_class() or (None, None)
 
             if instance_name == 'liferea' and class_name == 'Liferea':
+                self.logger.debug('Window: %s', window)
                 yield window
 
     def modify_opml_outline_rss(
             self, opml: Path, modify: Callable[[Element], None]) \
             -> str:
 
-        feed_root = None
+        root = None
 
         for (event, elem) in ElementTree.iterparse(opml, {'start'}):
-            if feed_root is None:
-                feed_root = elem
+            if root is None:
+                root = elem
+                self.logger.debug('OPML root element: %s', root)
             elif elem.tag == 'outline' and elem.attrib.get('type') == 'rss':
                 modify(elem)
 
-        return ElementTree.tostring(feed_root, encoding='unicode')
+        return ElementTree.tostring(root, encoding='unicode')
 
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
@@ -134,11 +144,10 @@ class Liferea:
     # TODO reuse flag `--mainwindow-state`?
     #      https://github.com/lwindolf/liferea/issues/447
     def minimize_window(self) -> None:
-        for window in self.iter_windows():
-            print(window)
+        for _ in self.iter_windows():
+            pass
 
 
-# TODO logging
 # TODO tests
 if __name__ == '__main__':
     sys.exit(Liferea().main())

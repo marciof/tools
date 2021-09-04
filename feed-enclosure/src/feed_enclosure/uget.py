@@ -198,7 +198,7 @@ class Uget:
         if url:
             command += ['--', url]
 
-        self.logger.info('Command: %s', command)
+        self.logger.debug('Command: %s', command)
         return (command, file_path)
 
     async def wait_for_download(
