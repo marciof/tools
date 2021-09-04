@@ -138,7 +138,7 @@ class Liferea:
             print(self.modify_opml_outline_rss(
                 self.find_feed_list_opml(),
                 lambda rss_outline:
-                setitem(rss_outline.attrib, 'encAutoDownload', 'true')))
+                    setitem(rss_outline.attrib, 'encAutoDownload', 'true')))
 
     # TODO minimize window
     # TODO reuse flag `--mainwindow-state`?
