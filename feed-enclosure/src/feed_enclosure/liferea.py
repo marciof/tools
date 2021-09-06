@@ -21,7 +21,9 @@ from xml.etree.ElementTree import Element
 # FIXME missing type stubs for some external libraries
 import defusedxml.ElementTree as ElementTree  # type: ignore
 from xdg import xdg_config_home  # type: ignore
+from Xlib import X, Xutil  # type: ignore
 from Xlib.display import Display  # type: ignore
+from Xlib.protocol.event import ClientMessage  # type: ignore
 from Xlib.xobject.drawable import Window  # type: ignore
 
 # internal
@@ -96,14 +98,33 @@ class Liferea:
         return (parsed_args, rest_args)
 
     def iter_windows(self) -> Iterator[Window]:
-        root_window = Display().screen().root
+        display = Display()
+        self.logger.debug('Display: %s', display)
+        root_window = display.screen().root
 
         for window in root_window.query_tree().children:
             (instance_name, class_name) = window.get_wm_class() or (None, None)
 
             if instance_name == 'liferea' and class_name == 'Liferea':
                 self.logger.debug('Window: %s', window)
-                yield window
+                yield (window, display)
+
+    # TODO iconify window isn't currently working (use python-libxdo?)
+    def iconify_window(self, display: Display, window: Window) -> None:
+        # https://tronche.com/gui/x/xlib/ICC/client-to-window-manager/XIconifyWindow.html
+        # https://babbage.cs.qc.cuny.edu/courses/GUIDesign/motif-faq.html
+
+        iconic_state_message = ClientMessage(
+            window=window,
+            client_type=display.intern_atom('WM_CHANGE_STATE'),
+            # TODO named constant for `32`?
+            data=(32, [Xutil.IconicState] + 4 * [Xutil.NoValue]))
+
+        self.logger.debug('Iconic state message: %s', iconic_state_message)
+
+        window.send_event(
+            event=iconic_state_message,
+            event_mask=X.SubstructureNotifyMask | X.SubstructureRedirectMask)
 
     def modify_opml_outline_rss(
             self, opml: Path, modify: Callable[[Element], None]) \
@@ -144,8 +165,8 @@ class Liferea:
     # TODO reuse flag `--mainwindow-state`?
     #      https://github.com/lwindolf/liferea/issues/447
     def minimize_window(self) -> None:
-        for _ in self.iter_windows():
-            pass
+        for (window, display) in self.iter_windows():
+            self.iconify_window(display, window)
 
 
 # TODO tests
