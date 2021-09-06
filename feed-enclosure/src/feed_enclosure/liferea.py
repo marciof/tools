@@ -97,7 +97,7 @@ class Liferea:
         self.logger.debug('Final arguments: %s', rest_args)
         return (parsed_args, rest_args)
 
-    def iter_windows(self) -> Iterator[Window]:
+    def iter_x_windows(self) -> Iterator[Window]:
         display = Display()
         self.logger.debug('Display: %s', display)
         root_window = display.screen().root
@@ -110,7 +110,7 @@ class Liferea:
                 yield (window, display)
 
     # TODO iconify window isn't currently working (use python-libxdo?)
-    def iconify_window(self, display: Display, window: Window) -> None:
+    def iconify_x_window(self, display: Display, window: Window) -> None:
         # https://tronche.com/gui/x/xlib/ICC/client-to-window-manager/XIconifyWindow.html
         # https://babbage.cs.qc.cuny.edu/courses/GUIDesign/motif-faq.html
 
@@ -144,15 +144,26 @@ class Liferea:
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
-    # TODO set feed conversion filter command
+    # TODO persist changes to OPML
+    # TODO add dry-run option?
+    # TODO raise exception/report stderr/exit status on error
+    # TODO refactor with `enable_feed_enclosure_auto_download`
     def set_feed_conversion_filter(self, command: str) -> None:
-        pass
+        for _ in self.iter_x_windows():
+            print('Liferea is currently running, please close it first.')
+            break
+        else:
+            print(self.modify_opml_outline_rss(
+                self.find_feed_list_opml(),
+                lambda rss_outline:
+                    setitem(rss_outline.attrib, 'filtercmd', command)))
 
     # TODO persist changes to OPML
     # TODO add dry-run option?
     # TODO raise exception/report stderr/exit status on error
+    # TODO refactor with `set_feed_conversion_filter`
     def enable_feed_enclosure_auto_download(self) -> None:
-        for _ in self.iter_windows():
+        for _ in self.iter_x_windows():
             print('Liferea is currently running, please close it first.')
             break
         else:
@@ -165,8 +176,8 @@ class Liferea:
     # TODO reuse flag `--mainwindow-state`?
     #      https://github.com/lwindolf/liferea/issues/447
     def minimize_window(self) -> None:
-        for (window, display) in self.iter_windows():
-            self.iconify_window(display, window)
+        for (window, display) in self.iter_x_windows():
+            self.iconify_x_window(display, window)
 
 
 # TODO tests
