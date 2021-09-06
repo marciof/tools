@@ -26,6 +26,7 @@ shift
 num_jobs="$("$RECSEL_BIN" -c "$database")"
 job_num=0
 
+# TODO idempotent?
 while [ "$job_num" -lt "$num_jobs" ]; do
     # Most to least recent job, while also ensuring parallel jobs don't
     # interfere with each other when modifying the recfile database.
