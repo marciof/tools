@@ -126,6 +126,12 @@ class Liferea:
             event=iconic_state_message,
             event_mask=X.SubstructureNotifyMask | X.SubstructureRedirectMask)
 
+    def is_running(self) -> bool:
+        for _ in self.iter_x_windows():
+            return True
+        else:
+            return False
+
     def modify_opml_outline_rss(
             self, opml: Path, modify: Callable[[Element], None]) \
             -> str:
@@ -141,40 +147,38 @@ class Liferea:
 
         return ElementTree.tostring(root, encoding='unicode')
 
+    # TODO handle error when Liferea is running
+    def modify_feed_list_opml_outline_attrib(
+            self, name: str, value: str) \
+            -> str:
+
+        if self.is_running():
+            raise Exception(
+                'Liferea is currently running, please close it first.')
+        else:
+            return self.modify_opml_outline_rss(
+                self.find_feed_list_opml(),
+                lambda rss_outline:
+                    setitem(rss_outline.attrib, name, value))
+
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
     # TODO persist changes to OPML
     # TODO add dry-run option?
-    # TODO raise exception/report stderr/exit status on error
-    # TODO refactor with `enable_feed_enclosure_auto_download`
     def set_feed_conversion_filter(self, command: str) -> None:
-        for _ in self.iter_x_windows():
-            print('Liferea is currently running, please close it first.')
-            break
-        else:
-            print(self.modify_opml_outline_rss(
-                self.find_feed_list_opml(),
-                lambda rss_outline:
-                    setitem(rss_outline.attrib, 'filtercmd', command)))
+        print(self.modify_feed_list_opml_outline_attrib(
+            'filtercmd', command))
 
     # TODO persist changes to OPML
     # TODO add dry-run option?
-    # TODO raise exception/report stderr/exit status on error
-    # TODO refactor with `set_feed_conversion_filter`
     def enable_feed_enclosure_auto_download(self) -> None:
-        for _ in self.iter_x_windows():
-            print('Liferea is currently running, please close it first.')
-            break
-        else:
-            print(self.modify_opml_outline_rss(
-                self.find_feed_list_opml(),
-                lambda rss_outline:
-                    setitem(rss_outline.attrib, 'encAutoDownload', 'true')))
+        print(self.modify_feed_list_opml_outline_attrib(
+            'encAutoDownload', 'true'))
 
     # TODO minimize window
-    # TODO reuse flag `--mainwindow-state`?
-    #      https://github.com/lwindolf/liferea/issues/447
+    # FIXME fix flag `--mainwindow-state`?
+    #       https://github.com/lwindolf/liferea/issues/447
     def minimize_window(self) -> None:
         for (window, display) in self.iter_x_windows():
             self.iconify_x_window(display, window)
