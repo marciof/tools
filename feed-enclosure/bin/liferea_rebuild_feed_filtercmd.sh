@@ -7,7 +7,7 @@
 
 set -e -u
 
-PYTHONPATH="${PYTHONPATH:-}:$(dirname "$(readlink -e "$0")")"
+PYTHONPATH="${PYTHONPATH:-}:$(dirname "$(readlink -e "$0")")/../"
 PYTHON3="${PYTHON3:-python3}"
 
 export PYTHONPATH

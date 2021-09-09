@@ -183,6 +183,7 @@ class Liferea:
         self.modify_feed_list_opml_outline_attrib('filtercmd', command)
 
     # TODO add dry-run option?
+    # TODO add option to enable/disable
     def enable_feed_enclosure_auto_download(self) -> None:
         self.modify_feed_list_opml_outline_attrib('encAutoDownload', 'true')
 

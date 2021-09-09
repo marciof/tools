@@ -14,7 +14,7 @@ PYCODESTYLE_BIN="${PYCODESTYLE_BIN:-pycodestyle}"
 pwd="$(dirname "$(readlink -e "$0")")"
 
 printf '%s\n' '--- Mypy ---'
-"$MYPY_BIN" -- "$pwd/../src/"
+"$MYPY_BIN" -- "$pwd/../"
 
 printf '\n--- pycodestyle ---\n'
-"$PYCODESTYLE_BIN" --exclude=.mypy_cache -- "$pwd/../src/"
+"$PYCODESTYLE_BIN" --exclude=.mypy_cache -- "$pwd/../"
