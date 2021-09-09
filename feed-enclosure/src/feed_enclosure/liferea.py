@@ -11,9 +11,11 @@ feedlist OPML file; (3) command to enable feed enclosure automatic download;
 # stdlib
 import argparse
 from operator import setitem
+import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 from typing import Any, Callable, Iterator, List, Optional, Tuple
 from xml.etree.ElementTree import Element
 
@@ -99,14 +101,14 @@ class Liferea:
 
     def iter_x_windows(self) -> Iterator[Window]:
         display = Display()
-        self.logger.debug('Display: %s', display)
+        self.logger.debug('X display: %s', display)
         root_window = display.screen().root
 
         for window in root_window.query_tree().children:
             (instance_name, class_name) = window.get_wm_class() or (None, None)
 
             if instance_name == 'liferea' and class_name == 'Liferea':
-                self.logger.debug('Window: %s', window)
+                self.logger.debug('X window: %s', window)
                 yield (window, display)
 
     # TODO iconify window isn't currently working (use python-libxdo?)
@@ -120,7 +122,7 @@ class Liferea:
             # TODO named constant for `32`?
             data=(32, [Xutil.IconicState] + 4 * [Xutil.NoValue]))
 
-        self.logger.debug('Iconic state message: %s', iconic_state_message)
+        self.logger.debug('X iconic state message: %s', iconic_state_message)
 
         window.send_event(
             event=iconic_state_message,
@@ -150,31 +152,39 @@ class Liferea:
     # TODO handle error when Liferea is running
     def modify_feed_list_opml_outline_attrib(
             self, name: str, value: str) \
-            -> str:
+            -> None:
 
         if self.is_running():
             raise Exception(
                 'Liferea is currently running, please close it first.')
-        else:
-            return self.modify_opml_outline_rss(
-                self.find_feed_list_opml(),
-                lambda rss_outline:
-                    setitem(rss_outline.attrib, name, value))
+
+        feed_list_opml_path = self.find_feed_list_opml()
+
+        updated_feed_list_opml = self.modify_opml_outline_rss(
+            feed_list_opml_path,
+            lambda rss_outline: setitem(rss_outline.attrib, name, value))
+
+        self.logger.debug('Modified feed list OPML outline (%s=%s): %s',
+                          name, value, updated_feed_list_opml)
+
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            f.write(updated_feed_list_opml)
+            f.close()
+
+            self.logger.info('Updating feed list OPML: %s --> %s',
+                             f.name, feed_list_opml_path)
+            os.replace(f.name, feed_list_opml_path)
 
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
-    # TODO persist changes to OPML
     # TODO add dry-run option?
     def set_feed_conversion_filter(self, command: str) -> None:
-        print(self.modify_feed_list_opml_outline_attrib(
-            'filtercmd', command))
+        self.modify_feed_list_opml_outline_attrib('filtercmd', command)
 
-    # TODO persist changes to OPML
     # TODO add dry-run option?
     def enable_feed_enclosure_auto_download(self) -> None:
-        print(self.modify_feed_list_opml_outline_attrib(
-            'encAutoDownload', 'true'))
+        self.modify_feed_list_opml_outline_attrib('encAutoDownload', 'true')
 
     # TODO minimize window
     # FIXME fix flag `--mainwindow-state`?
