@@ -14,6 +14,7 @@
 # TODO support ELF files? https://github.com/ruslashev/elfcat
 # TODO support CSV and Excel files? https://github.com/wireservice/csvkit
 # TODO support CSV and TSV files? https://github.com/johnkerl/miller
+# TODO allow different outputs? eg. HTTP to serve a file
 # TODO use `lsvine` for more compact tree output? https://github.com/autofitcloud/lsvine
 # TODO use `exa` for tree output? https://github.com/ogham/exa
 # TODO highlight output from `curl`

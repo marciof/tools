@@ -197,3 +197,37 @@ _job_count_ps1() {
 if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
     export PS1="\[\e[1;34m\]\w\[$color_off\]$host_prompt$git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$color_off\]\\$ "
 fi
+
+serve() {
+    if [ $# -gt 2 ]; then
+        echo 'Missing location and port arguments (in any order).' >&2
+        return 1
+    fi
+
+    local arg location port
+    location=.
+    port=8888
+
+    for arg; do
+        if printf %s "$arg" | grep -qE '^[[:digit:]]+$' \
+                && [ "$arg" -ge 0 ] \
+                && [ "$arg" -le 65535 ]
+        then
+            if [ -e "$arg" ]; then
+                echo "Ambiguous argument (port number or path?): $arg" >&2
+                return 1
+            else
+                port="$arg"
+            fi
+        elif [ -d "$arg" ]; then
+            location="$arg"
+        elif [ -f "$arg" ]; then
+            location="$(dirname "$arg")"
+        else
+            echo "Invalid path: $arg" >&2
+            return 1
+        fi
+    done
+
+    (set -x && cd "$location" && python3 -m http.server "$port")
+}
