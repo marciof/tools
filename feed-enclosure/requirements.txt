@@ -10,6 +10,9 @@ defusedxml==0.7.1
 python-xlib==0.31
 xdg==5
 
+# opml
+defusedxml==0.7.1
+
 # uget
 asyncinotify==2.0.2
 Unidecode==1.2.0

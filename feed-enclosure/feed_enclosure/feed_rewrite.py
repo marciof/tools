@@ -138,7 +138,7 @@ def rebuild_feed(feed_xml: str, logger: log.Logger) -> str:
     parsed_feed = feedparser.parse(feed_xml)
     is_bozo = parsed_feed.get('bozo', False)
     bozo_exception = parsed_feed.get('bozo_exception')
-    logger.info('Feed bozo? %s', is_bozo)
+    logger.debug('Feed bozo? %s', is_bozo)
 
     if is_bozo:
         logger.warning('Feed bozo exception:', bozo_exception)
@@ -152,7 +152,7 @@ def rebuild_feed(feed_xml: str, logger: log.Logger) -> str:
         if len(urls) > 0:
             url = enclosure_rewrite.process_url(urls[0])
             titled_url = add_title_filename_to_url(url, entry.title)
-            logger.info('Enclosure URL for "%s": %s', entry.title, titled_url)
+            logger.debug('Enclosure URL for "%s": %s', entry.title, titled_url)
             new_entry.enclosure(url=titled_url, type='')
         else:
             logger.warning(
