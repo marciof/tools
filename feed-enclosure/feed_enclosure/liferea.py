@@ -13,18 +13,14 @@ import argparse
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any, Iterator, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 # external
 # FIXME missing type stubs for some external libraries
 from xdg import xdg_config_home  # type: ignore
-from Xlib import X, Xutil  # type: ignore
-from Xlib.display import Display  # type: ignore
-from Xlib.protocol.event import ClientMessage  # type: ignore
-from Xlib.xobject.drawable import Window  # type: ignore
 
 # internal
-from . import log, opml
+from . import log, opml, xlib
 
 
 MODULE_DOC = __doc__.strip()
@@ -34,6 +30,10 @@ class Liferea:
 
     def __init__(self):
         self.logger = log.create_logger('liferea')
+
+        self.xlib = xlib.Xlib()
+        self.XLIB_WINDOW_INSTANCE_NAME = 'liferea'
+        self.XLIB_WINDOW_CLASS_NAME = 'Liferea'
 
         # FIXME add options/commands to Liferea app
         self.ENC_AUTO_DOWNLOAD_COMMAND = 'enc-auto-download'
@@ -94,40 +94,9 @@ class Liferea:
         self.logger.debug('Final arguments: %s', rest_args)
         return (parsed_args, rest_args)
 
-    def iter_x_windows(self) -> Iterator[Window]:
-        display = Display()
-        self.logger.debug('X display: %s', display)
-        root_window = display.screen().root
-
-        for window in root_window.query_tree().children:
-            (instance_name, class_name) = window.get_wm_class() or (None, None)
-
-            if instance_name == 'liferea' and class_name == 'Liferea':
-                self.logger.debug('X window: %s', window)
-                yield (window, display)
-
-    # TODO iconify window isn't currently working (use python-libxdo?)
-    def iconify_x_window(self, display: Display, window: Window) -> None:
-        # https://tronche.com/gui/x/xlib/ICC/client-to-window-manager/XIconifyWindow.html
-        # https://babbage.cs.qc.cuny.edu/courses/GUIDesign/motif-faq.html
-
-        iconic_state_message = ClientMessage(
-            window=window,
-            client_type=display.intern_atom('WM_CHANGE_STATE'),
-            # TODO named constant for `32`?
-            data=(32, [Xutil.IconicState] + 4 * [Xutil.NoValue]))
-
-        self.logger.debug('X iconic state message: %s', iconic_state_message)
-
-        window.send_event(
-            event=iconic_state_message,
-            event_mask=X.SubstructureNotifyMask | X.SubstructureRedirectMask)
-
     def is_running(self) -> bool:
-        for _ in self.iter_x_windows():
-            return True
-        else:
-            return False
+        return self.xlib.has_window(
+            self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
 
     # TODO handle error when Liferea is running
     def modify_feed_list_opml_outline_attrib(
@@ -155,12 +124,11 @@ class Liferea:
     def enable_feed_enclosure_auto_download(self) -> None:
         self.modify_feed_list_opml_outline_attrib('encAutoDownload', 'true')
 
-    # TODO minimize window
     # FIXME fix flag `--mainwindow-state`?
     #       https://github.com/lwindolf/liferea/issues/447
     def minimize_window(self) -> None:
-        for (window, display) in self.iter_x_windows():
-            self.iconify_x_window(display, window)
+        self.xlib.iconify_windows(
+            self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
 
 
 # TODO tests

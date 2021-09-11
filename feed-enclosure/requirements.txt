@@ -6,7 +6,6 @@ feedparser==6.0.8
 pathvalidate==2.4.1
 
 # liferea
-python-xlib==0.31
 xdg==5
 
 # opml
@@ -15,6 +14,9 @@ defusedxml==0.7.1
 # uget
 asyncinotify==2.0.2
 Unidecode==1.2.0
+
+# xlib
+python-xlib==0.31
 
 # youtube_dl
 overrides==6.1.0
