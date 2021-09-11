@@ -12,4 +12,4 @@ set -e -u
 SHELLCHECK_BIN="${SHELLCHECK_BIN:-shellcheck}"
 pwd="$(dirname "$(readlink -e "$0")")"
 
-find "$pwd/.." -iname '*.sh' -exec "$SHELLCHECK_BIN" {} +
+find "$pwd/../" -iname '*.sh' -exec "$SHELLCHECK_BIN" {} +
