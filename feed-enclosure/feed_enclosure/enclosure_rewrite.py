@@ -49,6 +49,5 @@ def main(args: Optional[List[str]] = None) -> None:
 
 
 # TODO tests
-# TODO merge into `feed_rewrite`?
 if __name__ == '__main__':
     main()

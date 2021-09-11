@@ -20,7 +20,7 @@ from typing import Any, List, Optional, Tuple
 from xdg import xdg_config_home  # type: ignore
 
 # internal
-from . import log, opml, xlib
+from . import log, opml, osi, xlib
 
 
 MODULE_DOC = __doc__.strip()
@@ -64,20 +64,27 @@ class Liferea:
     def main(self, args: Optional[List[str]] = None) -> Any:
         (parsed_args, rest_args) = self.parse_args(args)
 
-        if parsed_args.command_arg == self.ENC_AUTO_DOWNLOAD_COMMAND:
-            self.enable_feed_enclosure_auto_download()
-            return None
-        elif parsed_args.command_arg == self.FEED_LIST_COMMAND:
-            print(self.find_feed_list_opml())
-            return None
-        elif parsed_args.command_arg == self.FILTER_CMD_COMMAND:
-            self.set_feed_conversion_filter(parsed_args.command)
-            return None
-        elif parsed_args.command_arg == self.MINIMIZE_WINDOW_COMMAND:
-            self.minimize_window()
-            return None
-        else:
+        if parsed_args.command_arg is None:
             return subprocess.run(['liferea'] + rest_args).returncode
+
+        try:
+            if parsed_args.command_arg == self.ENC_AUTO_DOWNLOAD_COMMAND:
+                self.enable_feed_enclosure_auto_download()
+            elif parsed_args.command_arg == self.FEED_LIST_COMMAND:
+                print(self.find_feed_list_opml())
+            elif parsed_args.command_arg == self.FILTER_CMD_COMMAND:
+                self.set_feed_conversion_filter(parsed_args.command)
+            elif parsed_args.command_arg == self.MINIMIZE_WINDOW_COMMAND:
+                self.minimize_window()
+            else:
+                raise Exception('Unknown command: ' + parsed_args.command_arg)
+
+            return osi.EXIT_SUCCESS
+        except SystemExit:
+            raise
+        except BaseException as error:
+            self.logger.error('Failed to interface Liferea', exc_info=error)
+            return osi.EXIT_FAILURE
 
     def parse_args(self, args: Optional[List[str]]) \
             -> Tuple[argparse.Namespace, List[str]]:
@@ -98,7 +105,6 @@ class Liferea:
         return self.xlib.has_window(
             self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
 
-    # TODO handle error when Liferea is running
     def modify_feed_list_opml_outline_attrib(
             self, name: str, value: str) \
             -> None:
@@ -114,13 +120,9 @@ class Liferea:
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
-    # TODO dry-run option?
-    # TODO option to reuse the same filter cmd to all? useful when adding feeds
     def set_feed_conversion_filter(self, command: str) -> None:
         self.modify_feed_list_opml_outline_attrib('filtercmd', command)
 
-    # TODO dry-run option?
-    # TODO option to enable/disable?
     def enable_feed_enclosure_auto_download(self) -> None:
         self.modify_feed_list_opml_outline_attrib('encAutoDownload', 'true')
 

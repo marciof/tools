@@ -117,6 +117,7 @@ class Uget:
                          stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL)
 
+    # TODO refactor into `osi`?
     def get_file_disk_sizes(
             self,
             file_path: str,
@@ -229,10 +230,6 @@ class Uget:
                     break
 
 
-def main(args: Optional[List[str]] = None) -> None:
-    sys.exit(Uget().main(args))
-
-
 # TODO tests
 if __name__ == '__main__':
-    main()
+    sys.exit(Uget().main())

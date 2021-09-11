@@ -1,5 +1,9 @@
 # -*- coding: UTF-8 -*-
 
+"""
+OPML parsing and handling.
+"""
+
 # stdlib
 import os
 from pathlib import Path

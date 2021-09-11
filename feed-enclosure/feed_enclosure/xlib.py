@@ -1,5 +1,9 @@
 # -*- coding: UTF-8 -*-
 
+"""
+Higher-level `Xlib` operations.
+"""
+
 # stdlib
 from typing import Iterator, Optional
 
@@ -16,6 +20,7 @@ from . import log
 
 # TODO tests
 class Xlib:
+
     def __init__(self, display: Optional[Display] = None):
         self.logger = log.create_logger('xlib')
 

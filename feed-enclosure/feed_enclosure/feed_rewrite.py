@@ -13,7 +13,7 @@ URL fragment part as a filename, so downloaders can use it if/when needed.
 import argparse
 import os.path
 import sys
-from typing import List, Optional
+from typing import Any, List, Optional
 from urllib.parse import urldefrag, urlparse
 
 # external
@@ -23,7 +23,7 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 # internal
-from . import enclosure_rewrite, log
+from . import enclosure_rewrite, log, osi
 
 
 MODULE_DOC = __doc__.strip()
@@ -180,21 +180,24 @@ def parse_args(args: Optional[List[str]], logger: log.Logger) -> None:
         logger.warning(parser.format_usage().strip())
 
 
-def main(args: Optional[List[str]] = None) -> None:
+def main(args: Optional[List[str]] = None) -> Any:
     logger = None
 
     try:
         logger = log.create_logger('feed_rewrite')
         parse_args(args, logger)
         rebuild_feed_from_stdin_to_stdout(logger)
-    except (SystemExit, KeyboardInterrupt):
+        return osi.EXIT_SUCCESS
+    except SystemExit:
         raise
     except BaseException as error:
-        if logger is not None:
-            logger.error('Failed to rebuild feed', exc_info=error)
-        raise
+        if logger is None:
+            raise
+        else:
+            logger.error('Failed to rewrite feed', exc_info=error)
+        return osi.EXIT_FAILURE
 
 
 # TODO tests
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
