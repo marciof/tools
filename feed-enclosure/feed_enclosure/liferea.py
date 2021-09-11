@@ -139,12 +139,13 @@ class Liferea:
             -> str:
 
         root = None
+        types = {'rss', 'atom'}
 
         for (event, elem) in ElementTree.iterparse(opml, {'start'}):
             if root is None:
                 root = elem
                 self.logger.debug('OPML root element: %s', root)
-            elif elem.tag == 'outline' and elem.attrib.get('type') == 'rss':
+            elif elem.tag == 'outline' and elem.attrib.get('type') in types:
                 modify(elem)
 
         return ElementTree.tostring(root, encoding='unicode')
@@ -178,12 +179,13 @@ class Liferea:
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
-    # TODO add dry-run option?
+    # TODO dry-run option?
+    # TODO option to apply the same filter cmd to all? useful when adding feeds
     def set_feed_conversion_filter(self, command: str) -> None:
         self.modify_feed_list_opml_outline_attrib('filtercmd', command)
 
-    # TODO add dry-run option?
-    # TODO add option to enable/disable
+    # TODO dry-run option?
+    # TODO option to enable/disable?
     def enable_feed_enclosure_auto_download(self) -> None:
         self.modify_feed_list_opml_outline_attrib('encAutoDownload', 'true')
 

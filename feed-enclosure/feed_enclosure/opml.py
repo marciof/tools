@@ -16,20 +16,24 @@ from . import log
 
 
 class Opml:
+    """
+    Spec: http://opml.org/spec2.opml
+    """
 
     def __init__(self, path: Path):
         self.logger = log.create_logger('opml')
+        self.types = {'rss', 'atom'}
         self.path = path
         self.root = None
 
     def iter_rss_outline(self) -> Iterator[Element]:
-        for (event, elem) in ElementTree.iterparse(self.path, {'start'}):
+        for (event, el) in ElementTree.iterparse(self.path, {'start'}):
             if self.root is None:
-                self.logger.debug('OPML root element: %s', elem)
-                self.root = elem
-            elif elem.tag == 'outline' and elem.attrib.get('type') == 'rss':
-                self.logger.debug('RSS outline: %s', elem)
-                yield elem
+                self.logger.debug('OPML root element: %s', el)
+                self.root = el
+            elif el.tag == 'outline' and el.attrib.get('type') in self.types:
+                self.logger.debug('RSS outline: %s', el)
+                yield el
 
     def set_rss_outline_attrib(self, name: str, value: str) -> None:
         for rss_outline in self.iter_rss_outline():
