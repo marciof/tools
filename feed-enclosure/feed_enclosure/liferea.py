@@ -10,18 +10,13 @@ feedlist OPML file; (3) command to enable feed enclosure automatic download;
 
 # stdlib
 import argparse
-from operator import setitem
-import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
-from typing import Any, Callable, Iterator, List, Optional, Tuple
-from xml.etree.ElementTree import Element
+from typing import Any, Iterator, List, Optional, Tuple
 
 # external
 # FIXME missing type stubs for some external libraries
-import defusedxml.ElementTree as ElementTree  # type: ignore
 from xdg import xdg_config_home  # type: ignore
 from Xlib import X, Xutil  # type: ignore
 from Xlib.display import Display  # type: ignore
@@ -29,7 +24,7 @@ from Xlib.protocol.event import ClientMessage  # type: ignore
 from Xlib.xobject.drawable import Window  # type: ignore
 
 # internal
-from . import log
+from . import log, opml
 
 
 MODULE_DOC = __doc__.strip()
@@ -134,22 +129,6 @@ class Liferea:
         else:
             return False
 
-    def modify_opml_outline_rss(
-            self, opml: Path, modify: Callable[[Element], None]) \
-            -> str:
-
-        root = None
-        types = {'rss', 'atom'}
-
-        for (event, elem) in ElementTree.iterparse(opml, {'start'}):
-            if root is None:
-                root = elem
-                self.logger.debug('OPML root element: %s', root)
-            elif elem.tag == 'outline' and elem.attrib.get('type') in types:
-                modify(elem)
-
-        return ElementTree.tostring(root, encoding='unicode')
-
     # TODO handle error when Liferea is running
     def modify_feed_list_opml_outline_attrib(
             self, name: str, value: str) \
@@ -159,22 +138,9 @@ class Liferea:
             raise Exception(
                 'Liferea is currently running, please close it first.')
 
-        feed_list_opml_path = self.find_feed_list_opml()
-
-        updated_feed_list_opml = self.modify_opml_outline_rss(
-            feed_list_opml_path,
-            lambda rss_outline: setitem(rss_outline.attrib, name, value))
-
-        self.logger.debug('Modified feed list OPML outline (%s=%s): %s',
-                          name, value, updated_feed_list_opml)
-
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
-            f.write(updated_feed_list_opml)
-            f.close()
-
-            self.logger.info('Updating feed list OPML: %s --> %s',
-                             f.name, feed_list_opml_path)
-            os.replace(f.name, feed_list_opml_path)
+        feed_list = opml.Opml(self.find_feed_list_opml())
+        feed_list.set_feed_outline_attrib(name, value)
+        feed_list.save_changes()
 
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')

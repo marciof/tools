@@ -26,29 +26,29 @@ class Opml:
         self.path = path
         self.root = None
 
-    def iter_rss_outline(self) -> Iterator[Element]:
+    def iter_feed_outline(self) -> Iterator[Element]:
         for (event, el) in ElementTree.iterparse(self.path, {'start'}):
             if self.root is None:
                 self.logger.debug('OPML root element: %s', el)
                 self.root = el
             elif el.tag == 'outline' and el.attrib.get('type') in self.types:
-                self.logger.debug('RSS outline: %s', el)
+                self.logger.debug('Feed outline element: %s', el)
                 yield el
 
-    def set_rss_outline_attrib(self, name: str, value: str) -> None:
-        for rss_outline in self.iter_rss_outline():
-            rss_outline.attrib[name] = value
+    def set_feed_outline_attrib(self, name: str, value: str) -> None:
+        for feed in self.iter_feed_outline():
+            feed.attrib[name] = value
 
     def to_string(self) -> str:
         return ElementTree.tostring(self.root, encoding='unicode')
 
     def save_changes(self) -> None:
         content = self.to_string()
-        self.logger.debug('OPML content: %s', content)
+        self.logger.debug('Saving content: %s', content)
 
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_opml:
             temp_opml.write(content)
             temp_opml.close()
 
-            self.logger.info('Saving: %s --> %s', temp_opml.name, self.path)
+            self.logger.info('Replacing: %s --> %s', temp_opml.name, self.path)
             os.replace(temp_opml.name, self.path)

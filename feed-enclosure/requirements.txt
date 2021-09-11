@@ -6,7 +6,6 @@ feedparser==6.0.8
 pathvalidate==2.4.1
 
 # liferea
-defusedxml==0.7.1
 python-xlib==0.31
 xdg==5
 
