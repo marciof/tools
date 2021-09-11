@@ -115,7 +115,7 @@ class Liferea:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
     # TODO dry-run option?
-    # TODO option to apply the same filter cmd to all? useful when adding feeds
+    # TODO option to reuse the same filter cmd to all? useful when adding feeds
     def set_feed_conversion_filter(self, command: str) -> None:
         self.modify_feed_list_opml_outline_attrib('filtercmd', command)
 
