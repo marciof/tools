@@ -3,8 +3,8 @@
 """
 Wraps Liferea to add additional functionality.
 
-Changes: (1) command to minimize the window; (2) command to get the path to the
-feedlist OPML file; (3) command to enable feed enclosure automatic download;
+Changes: (1) option to iconify the window; (2) command to get the path to the
+feed list OPML file; (3) command to enable feed enclosure automatic download;
 (4) command to set feed conversion filter.
 """
 
@@ -13,7 +13,7 @@ import argparse
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # external
 # FIXME missing type stubs for some external libraries
@@ -39,45 +39,58 @@ class Liferea:
         self.ENC_AUTO_DOWNLOAD_COMMAND = 'enc-auto-download'
         self.FEED_LIST_COMMAND = 'feed-list'
         self.FILTER_CMD_COMMAND = 'filter-cmd'
-        self.MINIMIZE_WINDOW_COMMAND = 'minimize-window'
+
+        self.WINDOW_STATE_ICON = 'x-icon'
 
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False)
-        self.arg_parser.add_argument(
+        self.arg_help = self.arg_parser.add_argument(
             '-h', '--help', action='store_true', help=argparse.SUPPRESS)
 
-        sub_parsers = self.arg_parser.add_subparsers(dest='command_arg')
+        # FIXME fix flag `--mainwindow-state`
+        #       https://github.com/lwindolf/liferea/issues/447
+        self.arg_main_window_state = self.arg_parser.add_argument(
+            '-w', '--mainwindow-state',
+            metavar='STATE',
+            help="enables STATE of `%s' to `XIconifyWindow' Liferea"
+                 % self.WINDOW_STATE_ICON)
 
-        sub_parsers.add_parser(
+        self.cmd_arg_parser = self.arg_parser.add_subparsers(
+            dest='command_arg')
+
+        self.cmd_arg_parser.add_parser(
             self.ENC_AUTO_DOWNLOAD_COMMAND,
             help='enable automatic feed enclosure download')
-        sub_parsers.add_parser(
+        self.cmd_arg_parser.add_parser(
             self.FEED_LIST_COMMAND, help='print feedlist OPML file path')
 
-        filtercmd_parser = sub_parsers.add_parser(
+        filter_cmd_arg_parser = self.cmd_arg_parser.add_parser(
             self.FILTER_CMD_COMMAND, help='set feed conversion filter command')
-        filtercmd_parser.add_argument('command')
-
-        sub_parsers.add_parser(
-            self.MINIMIZE_WINDOW_COMMAND, help='minimize window')
+        self.arg_filter_cmd_command = filter_cmd_arg_parser.add_argument(
+            'command')
 
     def main(self, args: Optional[List[str]] = None) -> Any:
-        (parsed_args, rest_args) = self.parse_args(args)
+        (parsed_kwargs, rest_args) = self.parse_args(args)
+        command = parsed_kwargs[self.cmd_arg_parser.dest]
 
-        if parsed_args.command_arg is None:
-            return subprocess.run(['liferea'] + rest_args).returncode
+        if command is None:
+            window_state = parsed_kwargs[self.arg_main_window_state.dest]
+
+            if window_state != self.WINDOW_STATE_ICON:
+                return self.run(rest_args)
+            else:
+                return self.run_iconified(rest_args)
 
         try:
-            if parsed_args.command_arg == self.ENC_AUTO_DOWNLOAD_COMMAND:
+            if command == self.ENC_AUTO_DOWNLOAD_COMMAND:
                 self.enable_feed_enclosure_auto_download()
-            elif parsed_args.command_arg == self.FEED_LIST_COMMAND:
+            elif command == self.FEED_LIST_COMMAND:
                 print(self.find_feed_list_opml())
-            elif parsed_args.command_arg == self.FILTER_CMD_COMMAND:
-                self.set_feed_conversion_filter(parsed_args.command)
-            elif parsed_args.command_arg == self.MINIMIZE_WINDOW_COMMAND:
-                self.minimize_window()
+            elif command == self.FILTER_CMD_COMMAND:
+                self.set_feed_conversion_filter(
+                    parsed_kwargs[self.arg_filter_cmd_command.dest])
             else:
-                raise Exception('Unknown command: ' + parsed_args.command_arg)
+                raise Exception('Unknown command: ' + command)
 
             return os_api.EXIT_SUCCESS
         except SystemExit:
@@ -87,19 +100,30 @@ class Liferea:
             return os_api.EXIT_FAILURE
 
     def parse_args(self, args: Optional[List[str]]) \
-            -> Tuple[argparse.Namespace, List[str]]:
+            -> Tuple[Dict[str, Any], List[str]]:
 
         (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
+        parsed_kwargs = vars(parsed_args)
+
         self.logger.debug('Parsed arguments: %s', parsed_args)
         self.logger.debug('Remaining arguments: %s', rest_args)
 
-        if parsed_args.help:
-            rest_args.insert(0, '--help')
+        if parsed_kwargs[self.arg_main_window_state.dest]:
+            window_state = parsed_kwargs[self.arg_main_window_state.dest]
+
+            if window_state != self.WINDOW_STATE_ICON:
+                rest_args[0:0] = [
+                    self.arg_main_window_state.option_strings[0],
+                    window_state,
+                ]
+
+        if parsed_kwargs[self.arg_help.dest]:
+            rest_args.insert(0, self.arg_help.option_strings[0])
             self.arg_parser.print_help()
             print('\n---\n')
 
         self.logger.debug('Final arguments: %s', rest_args)
-        return (parsed_args, rest_args)
+        return (parsed_kwargs, rest_args)
 
     def is_running(self) -> bool:
         return self.xlib.has_window(
@@ -117,6 +141,22 @@ class Liferea:
         feed_list.set_feed_outline_attrib(name, value)
         feed_list.save_changes()
 
+    def iconify_window(self) -> None:
+        self.xlib.iconify_windows(
+            self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
+
+    def run(self, args: List[str]) -> int:
+        return subprocess.run(['liferea'] + args).returncode
+
+    def run_iconified(self, args: List[str]) -> int:
+        if self.is_running():
+            return_code = self.run(args)
+            self.iconify_window()
+            return return_code
+
+        # TODO implement run and iconify
+        raise NotImplementedError('Run and iconify not implemented.')
+
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')
 
@@ -125,12 +165,6 @@ class Liferea:
 
     def enable_feed_enclosure_auto_download(self) -> None:
         self.modify_feed_list_opml_outline_attrib('encAutoDownload', 'true')
-
-    # FIXME fix flag `--mainwindow-state`?
-    #       https://github.com/lwindolf/liferea/issues/447
-    def minimize_window(self) -> None:
-        self.xlib.iconify_windows(
-            self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
 
 
 # TODO tests

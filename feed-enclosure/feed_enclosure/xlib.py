@@ -66,6 +66,9 @@ class Xlib:
 
     # TODO remove dependency on `libxdo`
     def iconify_windows(self, instance_name: str, class_name: str) -> None:
+        self.logger.debug(
+            'Iconifying windows: %s / %s', instance_name, class_name)
+
         window_ids = self.xdo.search_windows(
             winclassname=class_name.encode(),
             winname=instance_name.encode(),

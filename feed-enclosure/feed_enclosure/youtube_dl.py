@@ -174,6 +174,7 @@ def parse_output_template_arg(output: str) -> str:
 
 
 # FIXME youtube-dl doesn't have an option for output directory only
+# TODO remove hardcoded flags
 def parse_args(args: Optional[List[str]], logger: log.Logger) -> List[str]:
     arg_parser = argparse.ArgumentParser(
         description=MODULE_DOC, add_help=False, allow_abbrev=False)

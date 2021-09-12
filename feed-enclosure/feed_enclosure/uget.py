@@ -43,7 +43,7 @@ class Uget:
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
-        self.arg_parser.add_argument(
+        self.arg_help = self.arg_parser.add_argument(
             '-?', '-h', '--help', action='store_true', help=argparse.SUPPRESS)
         self.arg_parser.add_argument(
             '--quiet', action='store_true', help=argparse.SUPPRESS)
@@ -75,25 +75,26 @@ class Uget:
         self.logger.debug('Parsed arguments: %s', parsed_args)
         self.logger.debug('Remaining arguments: %s', rest_args)
 
-        kwargs = vars(parsed_args)
-        wait_for_download = kwargs.pop(self.arg_wait_for_download.dest)
+        parsed_kwargs = vars(parsed_args)
+        wait_for_download = parsed_kwargs.pop(self.arg_wait_for_download.dest)
 
         # TODO attempt to figure out folder and file name?
         # TODO honor default folder and file name from uget
         if wait_for_download:
-            has_folder = kwargs[self.arg_folder.dest] is not None
-            has_file_name = kwargs[self.arg_file_name.dest] is not None
+            has_folder = parsed_kwargs[self.arg_folder.dest] is not None
+            has_file_name = parsed_kwargs[self.arg_file_name.dest] is not None
 
             if not has_folder or not has_file_name:
                 raise Exception(
                     'Waiting for a download requires folder and file name')
 
-        if parsed_args.help:
+        if parsed_kwargs[self.arg_help.dest]:
             self.arg_parser.print_help()
             print('\n---\n')
 
         self.ensure_running_background()
-        (command, file_path) = self.make_command(args=rest_args, **kwargs)
+        (command, file_path) = self.make_command(
+            args=rest_args, **parsed_kwargs)
         return_code = subprocess.run(args=command).returncode
 
         # TODO log progress and refactor with `.youtube_dl`
@@ -112,6 +113,7 @@ class Uget:
 
         # The `--quiet` flag makes it stay in the background.
         # TODO detect existence of `start_new_session` (it's POSIX specific)
+        # TODO remove hardcoded flag
         subprocess.Popen([self.executable_name, '--quiet'],
                          start_new_session=True,
                          stdout=subprocess.DEVNULL,
@@ -155,6 +157,7 @@ class Uget:
         return ((block_size >= actual_size)
                 and ((file_size is None) or (actual_size == file_size)))
 
+    # TODO remove hardcoded flags
     def make_command(
             self,
             args: Optional[List[str]] = None,
