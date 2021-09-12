@@ -11,6 +11,10 @@
 
 - Can't write videos to a folder automatically (yet?).
   - Can use Chrome on desktop?
+  - See: https://web.dev/file-system-access/ 
+  - See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory 
+  - See: https://github.com/GoogleChromeLabs/browser-fs-access 
+  - See: https://bugs.chromium.org/p/chromium/issues/detail?id=1011535 
 
 - Needs a web server to serve the app.
   - Can use static GitHub pages?
