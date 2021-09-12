@@ -59,11 +59,13 @@
 
     apt install numix-gtk-theme numix-icon-theme
 
-*Appearance*:
+*Appearance*, and *LightDM GTK+ Greeter*:
 
 - *Style*: Numix
 - *Icons*: Numix
-- *Settings*: Window Scaling 2x
+- *Fonts*:
+  - *Size*: 10
+  - *Custom DPI setting*: 150
 
 *Window Manager*:
 
@@ -78,6 +80,23 @@ Decrease resolution to increase font size:
     GRUB_GFXMODE=640x480
 
 And then do `update-grub`.
+
+### LightDM Greeter
+
+*Note*: not needed unless using a custom DPI setting.
+
+*Note*: not needed if changed via the *LightDM GTK+ Greeter* UI.
+
+`/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
+
+    [Seat:*]
+    xserver-command=X -core -dpi 150
+    greeter-hide-users=false
+
+`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_hidpi.conf`
+
+    [greeter]
+    xft-dpi=150
 
 ### Qt4
 
@@ -99,9 +118,15 @@ https://wiki.archlinux.org/index.php/HiDPI#Qt_5
 
 ### Gtk
 
+*Note*: not needed unless using a custom DPI setting.
+
     xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
 
 ### Xfce
+
+*Note*: not needed unless using a custom DPI setting.
+
+*Note*: not needed if changed via the *Appearance* UI.
 
     xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 150
 
