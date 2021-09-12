@@ -98,6 +98,9 @@ download_via_ytdl() {
     # TODO what happens when offline?
     # TODO YouTube download URLs may expire, eg. queued in downloader
     # TODO detect and skip livestreams?
+    # TODO use xattrs? 
+    # TODO embed thumbnail? 
+    # TODO embed subtitles? 
     "$PYTHON3" -m feed_enclosure.youtube_dl \
         --external-downloader uget \
         --output "$dl_ytdl_folder" \
