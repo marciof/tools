@@ -37,6 +37,7 @@ for pdf_file; do
     original_size="$(stat -c %s "$pdf_file")"
     compressed_size="$(stat -c %s "$compressed_pdf_file")"
 
+    # TODO use https://github.com/andreafrancia/trash-cli to safely remove original?
     if [ "$compressed_size" -lt "$original_size" ]; then
         printf '%s\t%s\n' "$pdf_file" "$compressed_pdf_file"
     else
