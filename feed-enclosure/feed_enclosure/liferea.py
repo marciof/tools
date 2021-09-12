@@ -20,7 +20,7 @@ from typing import Any, List, Optional, Tuple
 from xdg import xdg_config_home  # type: ignore
 
 # internal
-from . import log, opml, osi, xlib
+from . import log, opml, os_api, xlib
 
 
 MODULE_DOC = __doc__.strip()
@@ -79,12 +79,12 @@ class Liferea:
             else:
                 raise Exception('Unknown command: ' + parsed_args.command_arg)
 
-            return osi.EXIT_SUCCESS
+            return os_api.EXIT_SUCCESS
         except SystemExit:
             raise
         except BaseException as error:
             self.logger.error('Failed to interface Liferea', exc_info=error)
-            return osi.EXIT_FAILURE
+            return os_api.EXIT_FAILURE
 
     def parse_args(self, args: Optional[List[str]]) \
             -> Tuple[argparse.Namespace, List[str]]:

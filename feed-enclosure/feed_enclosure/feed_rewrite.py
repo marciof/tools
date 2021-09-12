@@ -23,7 +23,7 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 # internal
-from . import enclosure_rewrite, log, osi
+from . import enclosure_rewrite, log, os_api
 
 
 MODULE_DOC = __doc__.strip()
@@ -187,7 +187,7 @@ def main(args: Optional[List[str]] = None) -> Any:
         logger = log.create_logger('feed_rewrite')
         parse_args(args, logger)
         rebuild_feed_from_stdin_to_stdout(logger)
-        return osi.EXIT_SUCCESS
+        return os_api.EXIT_SUCCESS
     except SystemExit:
         raise
     except BaseException as error:
@@ -195,7 +195,7 @@ def main(args: Optional[List[str]] = None) -> Any:
             raise
         else:
             logger.error('Failed to rewrite feed', exc_info=error)
-        return osi.EXIT_FAILURE
+        return os_api.EXIT_FAILURE
 
 
 # TODO tests
