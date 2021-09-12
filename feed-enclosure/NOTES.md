@@ -12,6 +12,7 @@
 - Can't write videos to a folder automatically (yet?).
   - Can use Chrome on desktop?
   - See: https://web.dev/file-system-access/ 
+  - See: https://googlechromelabs.github.io/text-editor/ 
   - See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory 
   - See: https://github.com/GoogleChromeLabs/browser-fs-access 
   - See: https://bugs.chromium.org/p/chromium/issues/detail?id=1011535 
@@ -32,9 +33,13 @@
 1. QR code reader PWA (camera).
    - Feature recent history (storage).
    - Feature P2P syncing (WebRTC).
+     - See: https://github.com/szimek/sharedrop 
+   - Feature offline availability. 
+     - See: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Offline_Service_workers
 
 2. "Sup" PWA.
    - Feature notifications (web workers, background, notifications, sound, vibration).
+     See: https://developer.mozilla.org/en-US/docs/Web/API/Web_Periodic_Background_Synchronization_API 
    - Feature QR code for linking (image generation).
 
 3. Video downloader PWA.
