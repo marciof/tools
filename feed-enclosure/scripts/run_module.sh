@@ -6,6 +6,7 @@
 
 # TODO add catchall logging wrapper
 # TODO honor other Python's user environment variables
+# TODO convert to Python script? to avoid shell scripts and Makefiles
 
 set -e -u
 

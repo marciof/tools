@@ -7,6 +7,8 @@
 # Dependencies:
 #   (See associated requirements.txt file.)
 
+# TODO convert to Python script? to avoid shell scripts and Makefiles
+
 set -e -u
 
 MYPY_BIN="${MYPY_BIN:-mypy}"

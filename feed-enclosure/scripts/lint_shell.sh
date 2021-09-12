@@ -7,6 +7,8 @@
 # Dependencies:
 #   apt install shellcheck # Version: 0.7.1-1build1
 
+# TODO convert to Python script? to avoid shell scripts and Makefiles
+
 set -e -u
 
 SHELLCHECK_BIN="${SHELLCHECK_BIN:-shellcheck}"
