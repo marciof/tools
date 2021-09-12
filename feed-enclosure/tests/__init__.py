@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 # stdlib
-import os.path
+import os
 import sys
 
 sys.path.insert(0, os.path.abspath(

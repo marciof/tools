@@ -3,7 +3,6 @@
 ## Pros
 
 - Available anywhere, no installation, always up to date on the browser.
-
 - Also available as a CLI via Nodejs.
 
 ## Cons
