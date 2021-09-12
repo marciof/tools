@@ -4,8 +4,8 @@
 import unittest
 
 # internal
-from .. import opml
+from feed_enclosure import opml
 
 
-class TestStringMethods (unittest.TestCase):
+class TestOpml (unittest.TestCase):
     pass
