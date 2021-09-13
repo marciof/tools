@@ -1,8 +1,8 @@
+**(TODO fix outdated documentation)**
+
 # Introduction
 
-*(TODO fix outdated documentation)*
-
-This is a collection of scripts to help with feed enclosure downloading. They're made to work together with [Liferea](https://lzone.de/liferea/) and [uGet](https://ugetdm.com/) to try and get the best video quality possible of feed enclosures, while minimizing any required maintenance from the user.
+Feed Enclosure is a Python package to help with feed enclosure downloading. The various Python modules are made to work together with [Liferea](https://lzone.de/liferea/) and [uGet](https://ugetdm.com/) to try and get the best video quality possible of feed enclosures, while minimizing any required maintenance from the user.
 
 # Dependencies
 
@@ -16,7 +16,7 @@ Only [Xubuntu](https://xubuntu.org/) 20.10 on x86-64 is supported/tested at the 
 
 In Liferea's [enclosure settings](https://lzone.de/liferea/help110/preferences_en.html#enclosures) change the download tool to the included script. For example:
 
-    /home/user/feed-enclosure/src/enclosure_download_job.sh -f /home/user/Videos/Feeds/ %s
+    /home/user/feed-enclosure/scripts/enclosure_download_job.sh -f /home/user/Videos/feeds/ %s
 
 ## Enable automatic enclosure download 
 
@@ -24,12 +24,6 @@ After adding feeds to Liferea, exit it, and do the following to enable automatic
 
     ./liferea_find_opml.sh | xargs cat | ./liferea_auto_enclosure_download.sh | tee feedlist.opml
     ./liferea_find_opml.sh | xargs mv --backup feedlist.opml
-
-## Run Liferea minimized on startup
-
-Use the included script:
-
-    ./liferea_minimized.sh
 
 ## Notes
 

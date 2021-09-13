@@ -30,8 +30,7 @@ MODULE_DOC = __doc__.strip()
 
 
 def list_parsed_feed_entry_enclosure_urls(
-        feed_entry: feedparser.FeedParserDict,
-        logger: log.Logger) \
+        feed_entry: feedparser.FeedParserDict) \
         -> List[str]:
 
     """
@@ -49,7 +48,6 @@ def list_parsed_feed_entry_enclosure_urls(
     for media in feed_entry.media_content:
         urls.append(media['url'])
 
-    logger.debug('Enclosure URLs in "%s": %s', feed_entry.title, urls)
     return urls
 
 
@@ -70,13 +68,11 @@ def add_title_filename_to_url(url: str, title: str) -> str:
 
 def rebuild_parsed_feed_entry(
         feed_entry: feedparser.FeedParserDict,
-        new_feed: feedgen.FeedGenerator,
-        logger: log.Logger) \
+        new_feed: feedgen.FeedGenerator) \
         -> feedgen.FeedEntry:
 
     new_feed_entry = new_feed.add_entry()
     new_feed_entry.title(feed_entry.title)
-    logger.debug('Rebuilding entry: %s', feed_entry.title)
 
     if 'id' in feed_entry:
         new_feed_entry.id(feed_entry.id)
@@ -144,8 +140,8 @@ def rebuild_feed(feed_xml: str, logger: log.Logger) -> str:
     new_feed = rebuild_parsed_feed(parsed_feed, logger)
 
     for entry in parsed_feed.entries:
-        new_entry = rebuild_parsed_feed_entry(entry, new_feed, logger)
-        urls = list_parsed_feed_entry_enclosure_urls(entry, logger)
+        new_entry = rebuild_parsed_feed_entry(entry, new_feed)
+        urls = list_parsed_feed_entry_enclosure_urls(entry)
 
         if len(urls) > 0:
             url = enclosure_rewrite.process_url(urls[0])
