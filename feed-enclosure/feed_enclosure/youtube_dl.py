@@ -19,6 +19,7 @@ from overrides import overrides
 # FIXME missing type stubs for some external libraries
 # TODO use yt-dlp? https://github.com/yt-dlp/yt-dlp
 import youtube_dl  # type: ignore
+# FIXME plugin system API for youtube-dl external downloaders
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
 # internal
@@ -175,30 +176,29 @@ def parse_output_template_arg(output: str) -> str:
 
 
 # FIXME youtube-dl doesn't have an option for output directory only
-# TODO remove hardcoded flags
 def parse_args(args: Optional[List[str]], logger: log.Logger) -> List[str]:
     arg_parser = argparse.ArgumentParser(
         description=MODULE_DOC, add_help=False, allow_abbrev=False)
 
-    arg_parser.add_argument(
+    arg_help = arg_parser.add_argument(
         '-h', '--help', action='store_true', help=argparse.SUPPRESS)
-    arg_parser.add_argument(
+    arg_output = arg_parser.add_argument(
         '-o', '--output', help='Output template')
 
     (parsed_args, rest_args) = arg_parser.parse_known_args(args)
     logger.debug('Parsed arguments: %s', parsed_args)
     logger.debug('Remaining arguments: %s', rest_args)
 
-    if parsed_args.help:
-        rest_args.insert(0, '--help')
-        arg_parser.print_help()
-        print('\n---\n')
-
     if parsed_args.output:
         rest_args[0:0] = [
-            '--output',
+            arg_output.option_strings[0],
             parse_output_template_arg(parsed_args.output),
         ]
+
+    if parsed_args.help:
+        rest_args.insert(0, arg_help.option_strings[0])
+        arg_parser.print_help()
+        print('\n---\n')
 
     logger.debug('Final arguments: %s', rest_args)
     return rest_args
