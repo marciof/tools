@@ -163,6 +163,7 @@ process_options() {
 # TODO GUI notification of download errors or significant events?
 #      eg. ffmpeg muxing start/end, error "downloading" livestreams, etc
 # TODO option to download from a list of URLs?
+# TODO add a GUI? https://github.com/chriskiehl/Gooey
 main() {
     process_options "$@"
     shift $((OPTIND - 1))

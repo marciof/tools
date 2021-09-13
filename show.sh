@@ -11,6 +11,7 @@
 # TODO tests
 # TODO logging
 # TODO measure performance
+# TODO add support for "filtering"? https://github.com/BrianHicks/tree-grepper
 # TODO support ELF files? https://github.com/ruslashev/elfcat
 # TODO support CSV and Excel files? https://github.com/wireservice/csvkit
 # TODO support CSV and TSV files? https://github.com/johnkerl/miller
