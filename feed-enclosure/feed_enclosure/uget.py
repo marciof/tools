@@ -24,7 +24,7 @@ from asyncinotify import Inotify, Mask  # type: ignore
 from unidecode import unidecode
 
 # internal
-from . import log
+from . import log, os_api
 
 
 MODULE_DOC = __doc__.strip()
@@ -45,7 +45,7 @@ class Uget:
 
         self.arg_help = self.arg_parser.add_argument(
             '-?', '-h', '--help', action='store_true', help=argparse.SUPPRESS)
-        self.arg_parser.add_argument(
+        self.arg_quiet = self.arg_parser.add_argument(
             '--quiet', action='store_true', help=argparse.SUPPRESS)
         self.arg_parser.add_argument(
             'url', nargs='?', default=None, help=argparse.SUPPRESS)
@@ -55,7 +55,7 @@ class Uget:
         self.arg_folder = self.arg_parser.add_argument(
             '--folder', help=argparse.SUPPRESS)
 
-        self.arg_parser.add_argument(
+        self.arg_http_ua = self.arg_parser.add_argument(
             '--http-user-agent',
             dest='http_user_agent',
             help=argparse.SUPPRESS)
@@ -78,8 +78,6 @@ class Uget:
         parsed_kwargs = vars(parsed_args)
         wait_for_download = parsed_kwargs.pop(self.arg_wait_for_download.dest)
 
-        # TODO attempt to figure out folder and file name?
-        # TODO honor default folder and file name from uGet
         if wait_for_download:
             has_folder = parsed_kwargs[self.arg_folder.dest] is not None
             has_file_name = parsed_kwargs[self.arg_file_name.dest] is not None
@@ -111,32 +109,13 @@ class Uget:
         the background.
         """
 
-        # The `--quiet` flag makes it stay in the background.
-        # TODO detect existence of `start_new_session` (it's POSIX specific)
-        # TODO remove hardcoded flag
-        subprocess.Popen([self.executable_name, '--quiet'],
-                         start_new_session=True,
-                         stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL)
-
-    # TODO refactor into `.os_api`?
-    def get_file_disk_sizes(
-            self,
-            file_path: str,
-            block_size_bytes: int = 512) \
-            -> Tuple[int, int]:
-
-        """
-        Get the reported file size, as well as the actual total block size
-        on disk.
-        """
-
-        stat = os.stat(file_path)
-
-        # TODO detect availability of `st_blocks` (it's Unix specific)
-        block_size = stat.st_blocks * block_size_bytes
-
-        return (stat.st_size, block_size)
+        # The quiet flag makes it stay in the background.
+        subprocess.Popen(
+            [self.executable_name, self.arg_quiet.option_strings[0]],
+            # TODO detect `start_new_session` (it's POSIX specific)
+            start_new_session=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
 
     def is_downloaded(
             self,
@@ -149,7 +128,7 @@ class Uget:
         # space on disk, then its apparent size will already be the
         # final size. In that case use the disk block size to get
         # an idea for when its download is complete.
-        (actual_size, block_size) = self.get_file_disk_sizes(file_path)
+        (actual_size, block_size) = os_api.stat_sizes(file_path)
 
         if progress_cb is not None:
             progress_cb(block_size)
@@ -157,7 +136,6 @@ class Uget:
         return ((block_size >= actual_size)
                 and ((file_size is None) or (actual_size == file_size)))
 
-    # TODO remove hardcoded flags
     def make_command(
             self,
             args: Optional[List[str]] = None,
@@ -173,28 +151,32 @@ class Uget:
         file_path = None
 
         if help:
-            command += ['--help']
+            command += [self.arg_help.option_strings[0]]
 
         if quiet:
-            command += ['--quiet']
+            command += [self.arg_quiet.option_strings[0]]
 
         # FIXME uGet doesn't seem to interpret relative folder paths correctly,
         #       so as a workaround make it absolute
         if folder is not None:
             abs_folder = os.path.abspath(folder)
-            command += ['--folder=' + abs_folder]
+            command += [self.arg_folder.option_strings[0] + '=' + abs_folder]
             file_path = abs_folder
 
         if file_name is not None:
             clean_file_name = self.clean_file_name(file_name)
-            command += ['--filename=' + clean_file_name]
+            command += [
+                self.arg_file_name.option_strings[0] + '=' + clean_file_name
+            ]
             if file_path is None:
                 file_path = clean_file_name
             else:
                 file_path = os.path.join(file_path, clean_file_name)
 
         if http_user_agent is not None:
-            command += ['--http-user-agent=' + http_user_agent]
+            command += [
+                self.arg_http_ua.option_strings[0] + '=' + http_user_agent
+            ]
 
         if args is not None:
             command += args
@@ -225,7 +207,7 @@ class Uget:
 
             # TODO add an optional check, if after starting uGet there's no
             #      inotify event for the target filename then it's
-            #      suspicious and flag it?
+            #      suspicious and flag it or timeout with an error?
             async for event in inotify:
                 if event.path.name != file_name:
                     continue
