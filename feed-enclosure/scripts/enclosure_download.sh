@@ -100,7 +100,8 @@ download_via_ytdl() {
     # TODO detect and skip livestreams?
     # TODO use xattrs? 
     # TODO embed thumbnail? 
-    # TODO embed subtitles? 
+    # TODO embed subtitles?
+    # TODO remove sponsor blocks in videos?
     "$PYTHON3" -m feed_enclosure.youtube_dl \
         --external-downloader uget \
         --output "$dl_ytdl_folder" \

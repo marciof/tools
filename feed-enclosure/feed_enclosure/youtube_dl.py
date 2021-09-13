@@ -17,6 +17,7 @@ from typing import List, Optional, Type
 # external
 from overrides import overrides
 # FIXME missing type stubs for some external libraries
+# TODO use yt-dlp? https://github.com/yt-dlp/yt-dlp
 import youtube_dl  # type: ignore
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
 
