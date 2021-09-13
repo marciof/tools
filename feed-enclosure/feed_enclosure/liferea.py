@@ -10,9 +10,11 @@ feed list OPML file; (3) command to enable feed enclosure automatic download;
 
 # stdlib
 import argparse
+import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 # external
@@ -41,6 +43,7 @@ class Liferea:
         self.FILTER_CMD_COMMAND = 'filter-cmd'
 
         self.WINDOW_STATE_ICON = 'x-icon'
+        self.ICONIFY_WINDOW_DETECTION_MAX_NUM_TRIES = 3
 
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False)
@@ -148,14 +151,46 @@ class Liferea:
     def run(self, args: List[str]) -> int:
         return subprocess.run(['liferea'] + args).returncode
 
+    # TODO too long, refactor
+    # TODO sometimes not iconified on startup? just use kDocker? less code/deps
     def run_iconified(self, args: List[str]) -> int:
         if self.is_running():
+            self.logger.debug('Already running.')
             return_code = self.run(args)
             self.iconify_window()
             return return_code
 
-        # TODO implement run and iconify
-        raise NotImplementedError('Run and iconify not implemented.')
+        self.logger.debug('Not running yet, attempting to start.')
+        child_pid = os.fork()
+
+        if child_pid == 0:
+            sys.exit(self.run(args))
+
+        self.logger.debug('Forked child process to run it (PID %s)', child_pid)
+        sleep_secs = 0.5
+
+        for try_num in range(self.ICONIFY_WINDOW_DETECTION_MAX_NUM_TRIES):
+            if self.is_running():
+                self.logger.debug('Detected running after %s tries.', try_num)
+                break
+            else:
+                self.logger.debug(
+                    'Not yet detected running, retrying (try %s) after %ss.',
+                    try_num, sleep_secs)
+
+                time.sleep(sleep_secs)
+                sleep_secs += sleep_secs
+        else:
+            self.logger.error(
+                'Not detected running after %s tries, giving up.',
+                self.ICONIFY_WINDOW_DETECTION_MAX_NUM_TRIES)
+            return os_api.EXIT_FAILURE
+
+        self.iconify_window()
+        (_, exit_status) = os.waitpid(child_pid, os_api.WAITPID_NO_OPTIONS)
+
+        # FIXME missing type stubs for `os.waitstatus_to_exitcode`?
+        return os.waitstatus_to_exitcode(exit_status)  # type: ignore
 
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')

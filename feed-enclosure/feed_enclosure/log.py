@@ -8,6 +8,7 @@ import os.path
 
 
 # TODO detect availability of syslog
+# TODO include PID?
 def create_logger(name: str, syslog_address: str = '/dev/log') -> Logger:
     logger = logging.getLogger('feed_enclosure.' + name)
     logger.setLevel(logging.DEBUG)
