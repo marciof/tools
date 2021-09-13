@@ -3,18 +3,16 @@
 """
 Wraps Liferea to add additional functionality.
 
-Changes: (1) option to iconify the window; (2) command to get the path to the
-feed list OPML file; (3) command to enable feed enclosure automatic download;
-(4) command to set feed conversion filter.
+Changes: (1) command to get the path to the feed list OPML file; (2) command
+to enable feed enclosure automatic download; (3) command to set feed
+conversion filter.
 """
 
 # stdlib
 import argparse
-import os
 from pathlib import Path
 import subprocess
 import sys
-import time
 from typing import Any, Dict, List, Optional, Tuple
 
 # external
@@ -22,41 +20,28 @@ from typing import Any, Dict, List, Optional, Tuple
 from xdg import xdg_config_home  # type: ignore
 
 # internal
-from . import log, opml, os_api, xlib
+from . import log, opml, os_api
 
 
 MODULE_DOC = __doc__.strip()
 
 
+# FIXME fix flag `--mainwindow-state`
+#       https://github.com/lwindolf/liferea/issues/447
 class Liferea:
 
     def __init__(self):
         self.logger = log.create_logger('liferea')
-
-        self.xlib = xlib.Xlib()
-        self.XLIB_WINDOW_INSTANCE_NAME = 'liferea'
-        self.XLIB_WINDOW_CLASS_NAME = 'Liferea'
 
         # FIXME add options/commands to Liferea app
         self.ENC_AUTO_DOWNLOAD_COMMAND = 'enc-auto-download'
         self.FEED_LIST_COMMAND = 'feed-list'
         self.FILTER_CMD_COMMAND = 'filter-cmd'
 
-        self.WINDOW_STATE_ICON = 'x-icon'
-        self.ICONIFY_WINDOW_DETECTION_MAX_NUM_TRIES = 3
-
         self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False)
         self.arg_help = self.arg_parser.add_argument(
             '-h', '--help', action='store_true', help=argparse.SUPPRESS)
-
-        # FIXME fix flag `--mainwindow-state`
-        #       https://github.com/lwindolf/liferea/issues/447
-        self.arg_main_window_state = self.arg_parser.add_argument(
-            '-w', '--mainwindow-state',
-            metavar='STATE',
-            help="enables STATE of `%s' to `XIconifyWindow' Liferea"
-                 % self.WINDOW_STATE_ICON)
 
         self.cmd_arg_parser = self.arg_parser.add_subparsers(
             dest='command_arg')
@@ -77,12 +62,7 @@ class Liferea:
         command = parsed_kwargs[self.cmd_arg_parser.dest]
 
         if command is None:
-            window_state = parsed_kwargs[self.arg_main_window_state.dest]
-
-            if window_state != self.WINDOW_STATE_ICON:
-                return self.run(rest_args)
-            else:
-                return self.run_iconified(rest_args)
+            return subprocess.run(['liferea'] + rest_args).returncode
 
         try:
             if command == self.ENC_AUTO_DOWNLOAD_COMMAND:
@@ -111,15 +91,6 @@ class Liferea:
         self.logger.debug('Parsed arguments: %s', parsed_args)
         self.logger.debug('Remaining arguments: %s', rest_args)
 
-        if parsed_kwargs[self.arg_main_window_state.dest]:
-            window_state = parsed_kwargs[self.arg_main_window_state.dest]
-
-            if window_state != self.WINDOW_STATE_ICON:
-                rest_args[0:0] = [
-                    self.arg_main_window_state.option_strings[0],
-                    window_state,
-                ]
-
         if parsed_kwargs[self.arg_help.dest]:
             rest_args.insert(0, self.arg_help.option_strings[0])
             self.arg_parser.print_help()
@@ -128,69 +99,13 @@ class Liferea:
         self.logger.debug('Final arguments: %s', rest_args)
         return (parsed_kwargs, rest_args)
 
-    def is_running(self) -> bool:
-        return self.xlib.has_window(
-            self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
-
     def modify_feed_list_opml_outline_attrib(
             self, name: str, value: str) \
             -> None:
 
-        if self.is_running():
-            raise Exception(
-                'Liferea is currently running, please close it first.')
-
         feed_list = opml.Opml(self.find_feed_list_opml())
         feed_list.set_feed_outline_attrib(name, value)
         feed_list.save_changes()
-
-    def iconify_window(self) -> None:
-        self.xlib.iconify_windows(
-            self.XLIB_WINDOW_INSTANCE_NAME, self.XLIB_WINDOW_CLASS_NAME)
-
-    def run(self, args: List[str]) -> int:
-        return subprocess.run(['liferea'] + args).returncode
-
-    # TODO too long, refactor
-    # TODO sometimes not iconified on startup? just use kDocker? less code/deps
-    def run_iconified(self, args: List[str]) -> int:
-        if self.is_running():
-            self.logger.debug('Already running.')
-            return_code = self.run(args)
-            self.iconify_window()
-            return return_code
-
-        self.logger.debug('Not running yet, attempting to start.')
-        child_pid = os.fork()
-
-        if child_pid == 0:
-            sys.exit(self.run(args))
-
-        self.logger.debug('Forked child process to run it (PID %s)', child_pid)
-        sleep_secs = 0.5
-
-        for try_num in range(self.ICONIFY_WINDOW_DETECTION_MAX_NUM_TRIES):
-            if self.is_running():
-                self.logger.debug('Detected running after %s tries.', try_num)
-                break
-            else:
-                self.logger.debug(
-                    'Not yet detected running, retrying (try %s) after %ss.',
-                    try_num, sleep_secs)
-
-                time.sleep(sleep_secs)
-                sleep_secs += sleep_secs
-        else:
-            self.logger.error(
-                'Not detected running after %s tries, giving up.',
-                self.ICONIFY_WINDOW_DETECTION_MAX_NUM_TRIES)
-            return os_api.EXIT_FAILURE
-
-        self.iconify_window()
-        (_, exit_status) = os.waitpid(child_pid, os_api.WAITPID_NO_OPTIONS)
-
-        # FIXME missing type stubs for `os.waitstatus_to_exitcode`?
-        return os.waitstatus_to_exitcode(exit_status)  # type: ignore
 
     def find_feed_list_opml(self) -> Path:
         return xdg_config_home().joinpath('liferea', 'feedlist.opml')

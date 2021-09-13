@@ -15,10 +15,6 @@ defusedxml==0.7.1
 asyncinotify==2.0.2
 Unidecode==1.2.0
 
-# xlib
-python-libxdo==0.1.2a1
-python-xlib==0.31
-
 # youtube_dl
 overrides==6.1.0
 youtube-dl==2021.6.6

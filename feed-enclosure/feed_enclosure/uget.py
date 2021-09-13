@@ -79,7 +79,7 @@ class Uget:
         wait_for_download = parsed_kwargs.pop(self.arg_wait_for_download.dest)
 
         # TODO attempt to figure out folder and file name?
-        # TODO honor default folder and file name from uget
+        # TODO honor default folder and file name from uGet
         if wait_for_download:
             has_folder = parsed_kwargs[self.arg_folder.dest] is not None
             has_file_name = parsed_kwargs[self.arg_file_name.dest] is not None
@@ -119,7 +119,7 @@ class Uget:
                          stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL)
 
-    # TODO refactor into `osi`?
+    # TODO refactor into `.os_api`?
     def get_file_disk_sizes(
             self,
             file_path: str,

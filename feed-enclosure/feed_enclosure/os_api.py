@@ -14,5 +14,3 @@ try:
     EXIT_SUCCESS = os.EX_OK
 except AttributeError:
     EXIT_SUCCESS = 0
-
-WAITPID_NO_OPTIONS = 0
