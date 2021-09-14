@@ -149,6 +149,7 @@ def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
     _BY_NAME[name] = klass
 
 
+# TODO rename to `x-uget` to avoid potential conflicts?
 def register_uget_external_downloader() -> None:
     register_external_downloader('uget', UgetFD)
 
