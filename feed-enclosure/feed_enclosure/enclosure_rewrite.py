@@ -7,7 +7,8 @@ Rewrites enclosure URLs to have the best quality possible.
 # stdlib
 import argparse
 import re
-from typing import List, Optional
+import sys
+from typing import Any, List, Optional
 
 
 MODULE_DOC = __doc__.strip()
@@ -43,11 +44,11 @@ def parse_args(args: Optional[List[str]]) -> str:
     return parsed_args.url
 
 
-def main(args: Optional[List[str]] = None) -> None:
+def main(args: Optional[List[str]] = None) -> Any:
     url = parse_args(args)
     print(process_url(url))
 
 
 # TODO tests
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
