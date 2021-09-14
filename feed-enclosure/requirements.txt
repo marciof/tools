@@ -1,23 +1,28 @@
 # TODO Python package updates? notify of dependency changes? needs testing
 
-# feed_rewrite
+# Runtime
+
+## feed_rewrite
 feedgen==0.9.0
 feedparser==6.0.8
 pathvalidate==2.4.1
 
-# liferea
+## liferea
 xdg==5
 
-# opml
+## opml
 defusedxml==0.7.1
 
-# uget
+## uget
 asyncinotify==2.0.2
 Unidecode==1.2.0
 
-# youtube_dl
+## youtube_dl
 overrides==6.1.0
 youtube-dl==2021.6.6
 
-# lint
+# Test
+
+## lint
 mypy==0.812
+pycodestyle==2.7.0

@@ -1,3 +1,0 @@
-# runtime
-# TODO Python package updates? notify of dependency changes? needs testing
-pycodestyle==2.7.0
