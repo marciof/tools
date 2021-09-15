@@ -102,7 +102,7 @@ download_via_ytdl() {
     # TODO embed subtitles?
     # TODO remove sponsor blocks in videos?
     "$PYTHON3" -m feed_enclosure.youtube_dl \
-        --external-downloader uget \
+        --external-downloader x-uget \
         --output "$dl_ytdl_folder" \
         --format "$dl_ytdl_format" \
         --add-metadata \
