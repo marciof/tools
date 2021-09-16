@@ -23,7 +23,7 @@ import feedparser  # type: ignore
 from pathvalidate import sanitize_filename
 
 # internal
-from . import enclosure_rewrite, log, os_api
+from . import url_rewrite, log, os_api
 
 
 MODULE_DOC = __doc__.strip()
@@ -144,7 +144,7 @@ def rebuild_feed(feed_xml: str, logger: log.Logger) -> str:
         urls = list_parsed_feed_entry_enclosure_urls(entry)
 
         if len(urls) > 0:
-            url = enclosure_rewrite.process_url(urls[0])
+            url = url_rewrite.process_url(urls[0])
             titled_url = add_title_filename_to_url(url, entry.title)
             logger.debug('Enclosure URL for "%s": %s', entry.title, titled_url)
             new_entry.enclosure(url=titled_url, type='')

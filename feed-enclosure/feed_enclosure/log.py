@@ -1,5 +1,9 @@
 # -*- coding: UTF-8 -*-
 
+"""
+Project-wide standard logging.
+"""
+
 # TODO tests
 
 # stdlib
