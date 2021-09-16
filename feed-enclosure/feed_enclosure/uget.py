@@ -67,6 +67,8 @@ class Uget:
             action='store_true')
 
     # FIXME uGet doesn't handle filenames with Unicode characters on the CLI
+    # TODO some Unicode files are still being not handled correctly?
+    #      see https://docs.python.org/3/library/os.html#os.fsencode
     def clean_file_name(self, file_name: str) -> str:
         return unidecode(file_name)
 
