@@ -25,6 +25,11 @@ if [ $# -eq 0 ]; then
 fi
 
 for pdf_file; do
+    if ! [ -r "$pdf_file" ]; then
+        echo "File not available or not readable: $pdf_file" >&2
+        continue
+    fi
+
     compressed_pdf_file="$pdf_file.compressed"
 
     gs -dNOPAUSE -dBATCH \
@@ -41,7 +46,7 @@ for pdf_file; do
     if [ "$compressed_size" -lt "$original_size" ]; then
         printf '%s\t%s\n' "$pdf_file" "$compressed_pdf_file"
     else
-        echo 'Compressed file is larger than original, removing.' >&2
+        echo "Compressed file is larger, removing: $compressed_pdf_file" >&2
         rm -- "$compressed_pdf_file"
     fi
 done
