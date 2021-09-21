@@ -21,5 +21,9 @@ def main(args: Optional[List[str]] = None) -> Any:
 
 
 # TODO tests
+# TODO GUI?
+#      https://github.com/chriskiehl/Gooey
+#      https://github.com/PySimpleGUI/PySimpleGUI
+#      https://github.com/alfiopuglisi/guietta
 if __name__ == '__main__':
     sys.exit(main())
