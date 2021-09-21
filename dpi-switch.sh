@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# TODO set DPI per screen/monitor
+
 # Simple switcher for a multi-monitor setup with different DPIs.
 #
 # Arguments: DPI
