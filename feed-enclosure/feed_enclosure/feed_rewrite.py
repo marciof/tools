@@ -122,7 +122,7 @@ def rebuild_parsed_feed(
     return new_feed
 
 
-# TODO feed handling errors don't indicate which feed it was
+# TODO feed handling errors don't indicate which feed it was on
 def rebuild_feed(feed_xml: str, logger: log.Logger) -> str:
     # FIXME Liferea sends no data on stdin when it gets an HTTP 304
     #       https://github.com/lwindolf/liferea/issues/925#issuecomment-902992812

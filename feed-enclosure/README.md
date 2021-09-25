@@ -1,5 +1,7 @@
 **(TODO fix outdated documentation)**
 
+**(TODO list non-Python dependencies, eg. ffmpeg)**
+
 # Introduction
 
 Feed Enclosure is a Python package to help with feed enclosure downloading. The various Python modules are made to work together with [Liferea](https://lzone.de/liferea/) and [uGet](https://ugetdm.com/) to try and get the best video quality possible of feed enclosures, while minimizing any required maintenance from the user.

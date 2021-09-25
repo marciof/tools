@@ -145,6 +145,25 @@ class UgetFD (ExternalFD):
                 self.log_progress_throttled(current_size, expected_size))
 
 
+# TODO refactor functions into a Youtube DL class
+class YoutubeDl:
+
+    def __init__(self):
+        self.logger = log.create_logger('youtube_dl')
+
+    def download(
+            self,
+            url: str,
+            external_downloader: Optional[str] = None,
+            output: Optional[str] = None,
+            format: Optional[str] = None,
+            add_metadata=False,
+            verbose=False) \
+            -> None:
+
+        raise NotImplementedError
+
+
 def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
     _BY_NAME[name] = klass
 

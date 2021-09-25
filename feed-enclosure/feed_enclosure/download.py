@@ -16,6 +16,9 @@ from . import log, uget, youtube_dl
 MODULE_DOC = __doc__.strip()
 
 
+# TODO youtube-dl detection
+#      https://github.com/ytdl-org/youtube-dl/#how-can-i-detect-whether-a-given-url-is-supported-by-youtube-dl
+#      https://github.com/ytdl-org/youtube-dl/#embedding-youtube-dl
 def main(args: Optional[List[str]] = None) -> Any:
     pass
 

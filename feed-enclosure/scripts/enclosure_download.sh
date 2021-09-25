@@ -4,7 +4,6 @@
 # Accepts whatever youtube-dl supports, plus IGN Daily Fix videos.
 #
 # Dependencies:
-#   ./youtube_dl_wrapper.py
 #   apt install uget # Version: 2.2.3-2 # downloader tool
 #   apt install ffmpeg # Version: 7:4.3.1-4ubuntu1 # merge video/audio
 
