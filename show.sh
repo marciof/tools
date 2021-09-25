@@ -36,6 +36,9 @@
 # TODO structured diff Clojure, https://github.com/ladderlife/autochrome
 # TODO in-depth comparison of files, archives, directories, https://diffoscope.org
 # TODO image support via sixels?
+# TODO chafa terminal graphics, https://hpjansson.org/chafa/
+# TODO terminal image renderer, https://github.com/posva/catimg
+# TODO ANSI terminal draw image, https://github.com/eliukblau/pixterm
 # TODO pixel to ASCII art, http://caca.zoy.org/wiki/libcaca
 # TODO terminal image viewer, https://github.com/stefanhaustein/TerminalImageViewer
 # TODO image to text, https://github.com/jart/hiptext
