@@ -157,11 +157,33 @@ class YoutubeDl:
             external_downloader: Optional[str] = None,
             output: Optional[str] = None,
             format: Optional[str] = None,
-            add_metadata=False,
-            verbose=False) \
+            add_metadata: bool = False,
+            verbose: bool = False) \
             -> None:
 
-        raise NotImplementedError
+        argv = []
+
+        if external_downloader is not None:
+            argv.extend(['--external-downloader', external_downloader])
+
+        if output is not None:
+            argv.extend(['--output', output])
+
+        if format is not None:
+            argv.extend(['--format', format])
+
+        # FIXME add `YoutubeDL` for adding metadata
+        if add_metadata:
+            argv.append('--add-metadata')
+
+        if verbose:
+            argv.append('--verbose')
+
+        argv.extend(['--', url])
+        self.logger.debug('Final arguments: %s', argv)
+
+        # TODO handle exceptions and `sys.exit`
+        youtube_dl._real_main(argv)
 
 
 def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
