@@ -13,7 +13,7 @@
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
 - [Authy](https://authy.com) two-factor authentication
-- [ClipIt](https://github.com/CristianHenzel/ClipIt) clipboard manager
+- [Diodon](https://github.com/diodon-dev/diodon) clipboard manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Signal](https://www.signal.org) instant messaging
