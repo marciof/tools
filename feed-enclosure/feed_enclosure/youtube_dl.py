@@ -11,8 +11,9 @@ output download folder only template.
 import argparse
 import asyncio
 import os.path
+import sys
 from time import time
-from typing import List, Optional, Type
+from typing import Any, List, Optional, Type
 
 # external
 from overrides import overrides
@@ -145,11 +146,81 @@ class UgetFD (ExternalFD):
                 self.log_progress_throttled(current_size, expected_size))
 
 
-# TODO refactor functions into a Youtube DL class
 class YoutubeDl:
 
-    def __init__(self):
+    def __init__(self, register_uget_external_downloader: bool = True):
         self.logger = log.create_logger('youtube_dl')
+
+        self. arg_parser = argparse.ArgumentParser(
+            description=MODULE_DOC, add_help=False, allow_abbrev=False)
+        self.arg_help = self.arg_parser.add_argument(
+            '-h', '--help', action='store_true', help=argparse.SUPPRESS)
+        self.arg_output = self.arg_parser.add_argument(
+            '-o', '--output', help='Output template')
+
+        if register_uget_external_downloader:
+            self.register_uget_external_downloader()
+
+    def main(self, args: Optional[List[str]] = None) -> Any:
+        parsed_args = self.parse_args(args)
+
+        # FIXME expose function to use youtube-dl without exiting
+        try:
+            return youtube_dl._real_main(parsed_args)
+        except SystemExit as exit_error:
+            return exit_error.code
+
+    def register_external_downloader(
+            self, name: str, klass: Type[ExternalFD]) \
+            -> None:
+
+        _BY_NAME[name] = klass
+
+    def register_uget_external_downloader(self) -> None:
+        self.register_external_downloader('x-uget', UgetFD)
+
+    def parse_args(self, args: Optional[List[str]]) -> List[str]:
+        (parsed_args, rest_args) = self.arg_parser.parse_known_args(args)
+        parsed_kwargs = vars(parsed_args)
+
+        self.logger.debug('Parsed arguments: %s', parsed_args)
+        self.logger.debug('Remaining arguments: %s', rest_args)
+
+        if parsed_kwargs[self.arg_output.dest]:
+            rest_args[0:0] = [
+                self.arg_output.option_strings[0],
+                self.parse_output_template_arg(
+                    parsed_kwargs[self.arg_output.dest]),
+            ]
+
+        if parsed_kwargs[self.arg_help.dest]:
+            rest_args.insert(0, self.arg_help.option_strings[0])
+            self.arg_parser.print_help()
+            print('\n---\n')
+
+        self.logger.debug('Final arguments: %s', rest_args)
+        return rest_args
+
+    # https://github.com/ytdl-org/youtube-dl#output-template
+    def parse_output_template_arg(self, output: str) -> str:
+        (head, tail) = os.path.split(output)
+
+        if not tail:
+            # Directory only, eg. "xyz/"
+            return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
+
+        if not head:
+            if os.path.isdir(output):
+                # Directory constant, eg. ".."
+                return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
+            else:
+                # Filename only, eg. "xyz"
+                return output
+
+        if os.path.isdir(output):
+            return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
+        else:
+            return output
 
     def download(
             self,
@@ -172,7 +243,7 @@ class YoutubeDl:
         if format is not None:
             argv.extend(['--format', format])
 
-        # FIXME add `YoutubeDL` for adding metadata
+        # FIXME add `YoutubeDL` option for adding metadata
         if add_metadata:
             argv.append('--add-metadata')
 
@@ -180,77 +251,9 @@ class YoutubeDl:
             argv.append('--verbose')
 
         argv.extend(['--', url])
-        self.logger.debug('Final arguments: %s', argv)
-
-        # TODO handle exceptions and `sys.exit`
-        youtube_dl._real_main(argv)
-
-
-def register_external_downloader(name: str, klass: Type[ExternalFD]) -> None:
-    _BY_NAME[name] = klass
-
-
-def register_uget_external_downloader() -> None:
-    register_external_downloader('x-uget', UgetFD)
-
-
-# https://github.com/ytdl-org/youtube-dl#output-template
-def parse_output_template_arg(output: str) -> str:
-    (head, tail) = os.path.split(output)
-
-    if not tail:
-        # Directory only, eg. "xyz/"
-        return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
-
-    if not head:
-        if os.path.isdir(output):
-            # Directory constant, eg. ".."
-            return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
-        else:
-            # Filename only, eg. "xyz"
-            return output
-
-    if os.path.isdir(output):
-        return os.path.join(output, youtube_dl.DEFAULT_OUTTMPL)
-    else:
-        return output
-
-
-# FIXME youtube-dl doesn't have an option for output directory only
-def parse_args(args: Optional[List[str]], logger: log.Logger) -> List[str]:
-    arg_parser = argparse.ArgumentParser(
-        description=MODULE_DOC, add_help=False, allow_abbrev=False)
-
-    arg_help = arg_parser.add_argument(
-        '-h', '--help', action='store_true', help=argparse.SUPPRESS)
-    arg_output = arg_parser.add_argument(
-        '-o', '--output', help='Output template')
-
-    (parsed_args, rest_args) = arg_parser.parse_known_args(args)
-    logger.debug('Parsed arguments: %s', parsed_args)
-    logger.debug('Remaining arguments: %s', rest_args)
-
-    if parsed_args.output:
-        rest_args[0:0] = [
-            arg_output.option_strings[0],
-            parse_output_template_arg(parsed_args.output),
-        ]
-
-    if parsed_args.help:
-        rest_args.insert(0, arg_help.option_strings[0])
-        arg_parser.print_help()
-        print('\n---\n')
-
-    logger.debug('Final arguments: %s', rest_args)
-    return rest_args
-
-
-def main(args: Optional[List[str]] = None) -> None:
-    logger = log.create_logger('youtube_dl')
-    register_uget_external_downloader()
-    youtube_dl.main(parse_args(args, logger))
+        self.main(argv)
 
 
 # TODO tests
 if __name__ == '__main__':
-    main()
+    sys.exit(YoutubeDl().main())
