@@ -26,15 +26,24 @@
     - Python proxy web server packaged via Python for Android.
 
 - Conflict resolution may be tricky when syncing multiple installations.
-  - Can Syncthing?
+  - Can use Syncthing?
 
 ## Prototyping?
 
 1. QR code reader PWA (camera).
    - Feature recent history (storage).
+     - See: https://github.com/pubkey/rxdb 
    - Feature P2P syncing (WebRTC).
      - See: https://github.com/szimek/sharedrop 
+     - See: conflict-free replicated data type (CRDT)
+     - See: https://github.com/automerge/automerge 
+     - See: https://github.com/yjs/yjs 
+     - See: https://github.com/josephg/diamond-types
+     - See: https://josephg.com/blog/crdts-go-brrr/ 
    - Feature offline availability. 
+     - See: https://www.inkandswitch.com/local-first.html 
+     - See: https://rxdb.info/offline-first.html 
+     - See: https://rxdb.info/downsides-of-offline-first.html 
      - See: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Offline_Service_workers
 
 2. "Sup" PWA.
