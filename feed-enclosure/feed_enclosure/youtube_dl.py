@@ -22,6 +22,7 @@ from overrides import overrides
 import youtube_dl  # type: ignore
 # FIXME plugin system API for youtube-dl external downloaders
 from youtube_dl.downloader.external import _BY_NAME, ExternalFD  # type: ignore
+from youtube_dl.utils import YoutubeDLError  # type: ignore
 
 # internal
 from . import log, uget
@@ -238,7 +239,7 @@ class YoutubeDl:
             argv.extend(['--external-downloader', external_downloader])
 
         if output is not None:
-            argv.extend(['--output', output])
+            argv.extend([self.arg_output.option_strings[0], output])
 
         if format is not None:
             argv.extend(['--format', format])
@@ -251,7 +252,10 @@ class YoutubeDl:
             argv.append('--verbose')
 
         argv.extend(['--', url])
-        self.main(argv)
+        exit_status = self.main(argv)
+
+        if exit_status not in {None, 0}:
+            raise YoutubeDLError(exit_status)
 
 
 # TODO tests
