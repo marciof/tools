@@ -152,7 +152,7 @@ class YoutubeDl:
     def __init__(self, register_uget_external_downloader: bool = True):
         self.logger = log.create_logger('youtube_dl')
 
-        self. arg_parser = argparse.ArgumentParser(
+        self.arg_parser = argparse.ArgumentParser(
             description=MODULE_DOC, add_help=False, allow_abbrev=False)
         self.arg_help = self.arg_parser.add_argument(
             '-h', '--help', action='store_true', help=argparse.SUPPRESS)
@@ -167,6 +167,7 @@ class YoutubeDl:
 
         # FIXME expose function to use youtube-dl without exiting
         try:
+            # TODO capture error output and log it
             return youtube_dl._real_main(parsed_args)
         except SystemExit as exit_error:
             return exit_error.code
