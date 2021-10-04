@@ -28,6 +28,11 @@
 - [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer and forms
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
 
+## Windows
+
+- [Auto Dark Mode](https://github.com/AutoDarkMode/Windows-Auto-Night-Mode) theme switch
+- [laplock](https://github.com/dechamps/laplock) automatic session lock
+
 # Configuration
 
 ## Install
