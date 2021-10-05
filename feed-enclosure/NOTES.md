@@ -11,11 +11,6 @@
 
 - Can't write videos to a folder automatically (yet?).
   - Can use Chrome on desktop?
-  - See: https://web.dev/file-system-access/ 
-  - See: https://googlechromelabs.github.io/text-editor/ 
-  - See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory 
-  - See: https://github.com/GoogleChromeLabs/browser-fs-access 
-  - See: https://bugs.chromium.org/p/chromium/issues/detail?id=1011535 
 
 - Needs a web server to serve the app.
   - Can use static GitHub pages?
@@ -33,6 +28,7 @@
 1. QR code reader PWA (camera).
    - Feature recent history (storage).
      - See: https://github.com/pubkey/rxdb 
+     - See: https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist 
    - Feature P2P syncing (WebRTC).
      - See: https://github.com/szimek/sharedrop 
      - See: conflict-free replicated data type (CRDT)
@@ -44,6 +40,7 @@
      - See: https://www.inkandswitch.com/local-first.html 
      - See: https://rxdb.info/offline-first.html 
      - See: https://rxdb.info/downsides-of-offline-first.html 
+     - See: https://github.com/aerogear/offix 
      - See: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Offline_Service_workers
 
 2. "Sup" PWA.
@@ -54,3 +51,11 @@
 3. Video downloader PWA.
    - Feature YouTube support (CORS).
    - Feature audio/video merging on device (ffmpeg WASM).
+   - See: https://github.com/prettydiff/share-file-systems
+   - See: https://web.dev/file-system-access/ 
+   - See: https://web.dev/browser-fs-access/ 
+   - See: https://googlechromelabs.github.io/text-editor/
+   - See: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API 
+   - See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory 
+   - See: https://github.com/GoogleChromeLabs/browser-fs-access 
+   - See: https://bugs.chromium.org/p/chromium/issues/detail?id=1011535 
