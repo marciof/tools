@@ -1,6 +1,7 @@
 # Software
 
-- [Debian](https://www.debian.org) OS
+- [Debian](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/) OS
+- [Xubuntu](https://xubuntu.org/download/) OS
 - [Xfce](https://xfce.org) desktop environment
 - [Synapse](https://launchpad.net/synapse-project) semantic search
 - [Fira Code](https://github.com/tonsky/FiraCode) font
@@ -42,20 +43,6 @@
 # Configuration
 
 ## Install
-
-- [Current live CD + non-free](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/)
-- [Wifi firmware package](https://packages.debian.org/buster/all/firmware-iwlwifi/download)
-- [Firmware wiki](https://wiki.debian.org/Firmware)
-
-*Surface Book 3*:
-
-- [Xubuntu >= 20.10](https://xubuntu.org/download/) (Debian v10.9 has less support.)
-  - Third-party drivers:
-    - Don't install [third-party drivers during OS installation as it can sometimes break](https://bugs.launchpad.net/ubuntu-cdimage/+bug/1871268).
-    - Install third-party drivers post OS installation: `apt install ubuntu-restricted-extras`
-- [Surface specific kernel and setup](https://github.com/linux-surface/linux-surface/wiki/Installation-and-Setup#debian--ubuntu).
-- [Surface Book 3 specific setup](https://github.com/linux-surface/linux-surface/wiki/Surface-Book-3).
-  - Fix reboot freeze: create `/etc/default/grub.d/00_surface.cfg`, with     `GRUB_CMDLINE_LINUX_DEFAULT='quiet splash reboot=pci'`, and then do `update-grub`.
 
 ### Sudo rights
 
