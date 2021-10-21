@@ -20,6 +20,7 @@
 - [Spotify](https://www.spotify.com) music streaming
 - [DroidCam](https://www.dev47apps.com) phone webcam
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
+- [VLC](https://www.videolan.org/vlc/) media player
 - [Handbrake](https://handbrake.fr) video transcoder
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
 - [uGet](https://ugetdm.com/) download manager
