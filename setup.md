@@ -11,6 +11,7 @@
 - [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
+- [Xarchiver](https://github.com/ib/xarchiver) archive manager
 - [Authy](https://authy.com) two-factor authentication
 - [Diodon](https://github.com/diodon-dev/diodon) clipboard manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
