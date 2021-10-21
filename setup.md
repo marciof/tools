@@ -28,6 +28,7 @@
 - [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer and forms
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
 - [Blueman](https://github.com/blueman-project/blueman) bluetooth manager
+- [Mousepad](https://github.com/codebrainz/mousepad) simple text editor
 
 ## Windows
 
