@@ -16,11 +16,13 @@
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Signal](https://www.signal.org) instant messaging
+- [Ristretto](https://gitlab.xfce.org/apps/ristretto) image viewer
+- [gThumb](https://gitlab.gnome.org/GNOME/gthumb/) image organizer
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [DroidCam](https://www.dev47apps.com) phone webcam
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
-- [VLC](https://www.videolan.org/vlc/) media player
+- [VLC](https://www.videolan.org/vlc/) video player
 - [Handbrake](https://handbrake.fr) video transcoder
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
 - [uGet](https://ugetdm.com/) download manager
