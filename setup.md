@@ -50,7 +50,7 @@
     adduser marcio sudo
     adduser marcio adm
 
-*Surface Book 3*: not needed under Xubuntu (?).
+*Note*: not needed under Xubuntu (?).
 
 ## High DPI
 
@@ -139,14 +139,6 @@ Using `dconf-editor` change `/org/gnome/desktop/interface/scaling-factor` to `2`
 
 Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
-## Audio
-
-*Surface Book 3*: use PulseEffects for less *"scratchy"* sound:
-
-- Enable `Equalizer`: `apt install lsp-plugins`
-- Lower *7.5hKz* a bit and raise *15.0kHz*.
-- Enable *Start Service at Login*.
-
 ### Bluetooth Audio Sink
 
 [Fix *Protocol Not available*:](https://askubuntu.com/a/801669/163034)
@@ -154,7 +146,7 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
     apt-get install pulseaudio-module-bluetooth
     pactl load-module module-bluetooth-discover
 
-*Surface Book 3*: not needed under Xubuntu (?).
+*Note*: not needed under Xubuntu (?).
 
 ## Mouse
 
