@@ -148,9 +148,7 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 *Note*: not needed under Xubuntu (?).
 
-## Mouse
-
-### Touchpad
+## Touchpad
 
 Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.1s`.
 
@@ -163,8 +161,6 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
     synclient HorizScrollDelta=-VALUE_FROM_ABOVE
     synclient VertScrollDelta=-VALUE_FROM_ABOVE
 
-## Keyboard
-
 ## Keyboard compose key
 
 *Keyboard* settings:
@@ -175,9 +171,7 @@ Or alternatively in `~/.xsessionrc`:
 
     setxkbmap -option compose:caps
 
-## Miscellaneous
-
-### Passwords and keys
+## Passwords and keys
 
 GUI for Gnome Keyring:
 
@@ -188,7 +182,7 @@ GUI for Gnome Keyring:
 - Add *SSH Key Agent* to *Application Autostart*.
 - Enable *Launch GNOME services on startup*.
 
-### Date/Time
+## Date/Time
 
 Automatic timezone:
 
@@ -198,19 +192,19 @@ Digital clock format:
 
     %-l:%M%P %a %-m/%-e
 
-### File manager video thumbnails
+## File manager video thumbnails
 
 https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumbnails-in-xubuntu-18-04
 
     apt install tumbler tumbler-plugins-extra ffmpegthumbnailer
 
-### Printer
+## Printer
 
 [Add printer from network.](http://localhost:631)
 
     apt install task-print-server
 
-### Unattended upgrades
+## Unattended upgrades
 
 https://wiki.debian.org/UnattendedUpgrades
 
@@ -218,7 +212,7 @@ https://wiki.debian.org/UnattendedUpgrades
 
     apt install pk-update-icon
 
-### Evince (Document Viewer) zoom level
+## Evince (Document Viewer) zoom level
 
 https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.xml
 
@@ -226,13 +220,13 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
 
-### Trailing newline
+## Trailing newline
 
 [*Mousepad* may have a bug that hides the trailing newline](https://gitlab.xfce.org/apps/mousepad/-/issues/53). In that case [configure *Gedit* to disable adding trailing newlines](https://askubuntu.com/a/1013115/163034):
 
     gsettings set org.gnome.gedit.preferences.editor ensure-trailing-newline false
 
-### Redshift startup crashes
+## Redshift startup crashes
 
 1. Remove crash files in `/var/crash`.
 2. Disable `systemctl` service: `systemctl --user mask redshift.service redshift-gtk.service`
