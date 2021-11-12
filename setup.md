@@ -1,7 +1,6 @@
 # Software
 
-- [Debian](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/) OS
-- [Xubuntu](https://xubuntu.org/download/) OS
+- [Xubuntu](https://xubuntu.org/download/) OS ([Debian](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/) OS)
 - [Xfce](https://xfce.org) desktop environment
 - [Synapse](https://launchpad.net/synapse-project) semantic search
 - [Fira Code](https://github.com/tonsky/FiraCode) font
@@ -14,7 +13,7 @@
 - [KeePassXC](https://keepassxc.org) password manager
 - [Xarchiver](https://github.com/ib/xarchiver) archive manager ([Thunar archive plugin](http://users.xfce.org/~benny/projects/thunar-archive-plugin/index.html))
 - [Authy](https://authy.com) two-factor authentication
-- [Diodon](https://github.com/diodon-dev/diodon) clipboard manager
+- [Clipman](https://docs.xfce.org/panel-plugins/clipman/start) clipboard manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Signal](https://www.signal.org) instant messaging
@@ -216,10 +215,6 @@ Automatic timezone:
 Digital clock format:
 
     %-l:%M%P %a %-m/%-e
-
-### Clipboard
-
-    screen -d -m script -q -c clipit
 
 ### File manager video thumbnails
 
