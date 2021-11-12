@@ -150,10 +150,6 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 ## Mouse
 
-### Logitech Unifying Receiver
-
-    apt install solaar
-
 ### Touchpad
 
 Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.1s`.
