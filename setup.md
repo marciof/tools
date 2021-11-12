@@ -189,12 +189,6 @@ Or alternatively in `~/.xsessionrc`:
 
 ## Miscellaneous
 
-### Firefox
-
-Load all tabs on startup, in `about:config` disable:
-
-    browser.sessionstore.restore_on_demand
-
 ### Passwords and keys
 
 GUI for Gnome Keyring:
