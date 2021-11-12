@@ -39,6 +39,7 @@
 
 - [Auto Dark Mode](https://github.com/AutoDarkMode/Windows-Auto-Night-Mode) theme switch
 - [laplock](https://github.com/dechamps/laplock) automatic session lock
+- [ProduKey](https://www.nirsoft.net/utils/product_cd_key_viewer.html) product key viewer
 
 # Configuration
 
