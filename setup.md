@@ -38,7 +38,9 @@
 
 - [Auto Dark Mode](https://github.com/AutoDarkMode/Windows-Auto-Night-Mode) theme switch
 - [laplock](https://github.com/dechamps/laplock) automatic session lock
-- [ProduKey](https://www.nirsoft.net/utils/product_cd_key_viewer.html) product key viewer
+- [ProduKey](https://www.nirsoft.net/utils/product_cd_key_viewer.html) viewer
+- [BatteryInfoView](https://www.nirsoft.net/utils/battery_information_view.html)
+- [7-Zip](https://www.7-zip.org) archive manager
 
 # Configuration
 
