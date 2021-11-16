@@ -44,16 +44,6 @@
 
 # Configuration
 
-## Install
-
-### Sudo rights
-
-    su -
-    adduser marcio sudo
-    adduser marcio adm
-
-*Note*: not needed under Xubuntu (?).
-
 ## High DPI
 
     apt install numix-gtk-theme numix-icon-theme
