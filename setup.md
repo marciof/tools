@@ -17,6 +17,8 @@
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Signal](https://www.signal.org) instant messaging
+- [GIMP](https://www.gimp.org) raster image editor
+- [Inkscape](https://inkscape.org) vector image editor
 - [Ristretto](https://gitlab.xfce.org/apps/ristretto) image viewer
 - [gThumb](https://gitlab.gnome.org/GNOME/gthumb/) image organizer
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
