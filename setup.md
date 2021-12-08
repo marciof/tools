@@ -155,7 +155,15 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
     synclient HorizScrollDelta=-VALUE_FROM_ABOVE
     synclient VertScrollDelta=-VALUE_FROM_ABOVE
 
-## Keyboard compose key
+## Keyboard
+
+### Swap Caps Lock / Left Ctrl
+
+`/etc/default/keyboard`
+
+    XKBOPTIONS="ctrl:swapcaps"
+
+### Compose key
 
 *Keyboard* settings:
 - *Layout* tab.
