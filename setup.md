@@ -157,7 +157,7 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 
 ## Keyboard
 
-### Swap Caps Lock / Left Ctrl
+### Swap Caps Lock and Left Ctrl
 
 `/etc/default/keyboard`
 
@@ -184,7 +184,7 @@ GUI for Gnome Keyring:
 - Add *SSH Key Agent* to *Application Autostart*.
 - Enable *Launch GNOME services on startup*.
 
-## Date/Time
+## Date / Time
 
 Automatic timezone:
 
@@ -221,9 +221,3 @@ https://gitlab.gnome.org/GNOME/evince/blob/master/data/org.gnome.Evince.gschema.
     gsettings list-recursively org.gnome.Evince
     gsettings set org.gnome.Evince.Default zoom 1.5
     gsettings set org.gnome.Evince.Default sizing-mode free
-
-## Trailing newline
-
-[*Mousepad* may have a bug that hides the trailing newline](https://gitlab.xfce.org/apps/mousepad/-/issues/53). In that case [configure *Gedit* to disable adding trailing newlines](https://askubuntu.com/a/1013115/163034):
-
-    gsettings set org.gnome.gedit.preferences.editor ensure-trailing-newline false
