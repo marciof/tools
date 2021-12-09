@@ -1,6 +1,7 @@
 #!/bin/sh
 # Generic viewer.
 
+# TODO add option to show a file that doesn't exist case-sensitively, but would unambiguously show it case-sensitively
 # TODO add debug option? eg. does `set -x`
 # TODO piping (` | mode_run_color`) can remove error exit codes
 # TODO check which tools are missing a `--` to separate options from arguments
