@@ -231,3 +231,41 @@ serve() {
 
     (set -x && cd "$location" && python3 -m http.server "$port")
 }
+
+notify-command-end() {
+    local start_timestamp_secs stop_timestamp_secs exit_status
+
+    start_timestamp_secs="$(date +%s)"
+    (
+        set -x
+        "$@"
+    )
+    exit_status="$?"
+    stop_timestamp_secs="$(date +%s)"
+
+    if [ "$((stop_timestamp_secs - start_timestamp_secs))" -lt 3 ]; then
+        return "$exit_status"
+    fi
+
+    local title
+
+    if [ "$exit_status" -eq 0 ]; then
+        title='Command OK'
+    else
+        title="Command ERROR (exit code $exit_status)"
+    fi
+
+    local pwd="$PWD"
+    local homeless_pwd="${pwd##$HOME}"
+
+    if [ "$homeless_pwd" != "$pwd" ]; then
+        pwd="$homeless_pwd"
+    fi
+
+    local body="<tt>$*</tt>\n<i>$pwd</i>"
+    (
+        set -x
+        nohup notify-send "$title" "$body" | logger --stderr --tag notify-command-end &
+    )
+    return "$exit_status"
+}
