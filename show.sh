@@ -1,18 +1,19 @@
 #!/bin/sh
 # Generic viewer.
 
-# TODO add option to show a file that doesn't exist case-sensitively, but would unambiguously show it case-sensitively
-# TODO add debug option? eg. does `set -x`
+# TODO option to unambiguously show a file that case-insensitively
+# TODO use `file` to figure out type for highlighting (eg. non-*.json JSON)
+# TODO debug option? eg. does `set -x`
 # TODO piping (` | mode_run_color`) can remove error exit codes
 # TODO check which tools are missing a `--` to separate options from arguments
 # TODO don't discard pydoc's formatting when disabling pager (and other tools?)
 # TODO document functions and parameters/return
-# TODO add option to pass flag "implicitly"? eg. `show.sh -i--stat @`
+# TODO option to pass flag "implicitly"? eg. `show.sh -i--stat @`
 # TODO detect `colordiff` for colored diffs? eg. outside Git
 # TODO tests
 # TODO logging
 # TODO measure performance
-# TODO add support for "filtering"? https://github.com/BrianHicks/tree-grepper
+# TODO support for "filtering"? https://github.com/BrianHicks/tree-grepper
 # TODO support ELF files? https://github.com/ruslashev/elfcat
 # TODO TV CSV viewer, https://github.com/alexhallam/tv
 # TODO support CSV and Excel files? https://github.com/wireservice/csvkit
