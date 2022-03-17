@@ -43,6 +43,7 @@
 - [ProduKey](https://www.nirsoft.net/utils/product_cd_key_viewer.html) viewer
 - [BatteryInfoView](https://www.nirsoft.net/utils/battery_information_view.html)
 - [7-Zip](https://www.7-zip.org) archive manager
+- [PowerToys](https://github.com/microsoft/PowerToys) Windows utilities
 
 # Configuration
 
