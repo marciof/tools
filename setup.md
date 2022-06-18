@@ -21,6 +21,7 @@
 - [Inkscape](https://inkscape.org) vector image editor
 - [Ristretto](https://gitlab.xfce.org/apps/ristretto) image viewer
 - [gThumb](https://gitlab.gnome.org/GNOME/gthumb/) image organizer
+- [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
 - [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
