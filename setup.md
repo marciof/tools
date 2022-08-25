@@ -46,6 +46,7 @@
 - [BatteryInfoView](https://www.nirsoft.net/utils/battery_information_view.html)
 - [7-Zip](https://www.7-zip.org) archive manager
 - [PowerToys](https://github.com/microsoft/PowerToys) Windows utilities
+- [AltDrag](https://stefansundin.github.io/altdrag/) window moving tools
 
 # Configuration
 
