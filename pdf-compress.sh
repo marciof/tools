@@ -29,7 +29,7 @@ fi
 
 has_trash_put=N
 
-if command -v cat >/dev/null; then
+if command -v trash-put >/dev/null; then
     has_trash_put=Y
 fi
 
