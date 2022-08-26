@@ -57,7 +57,7 @@
 
 *Appearance*, and *LightDM GTK+ Greeter*:
 
-- *Style*: Numix
+- *Style*: Greybird-dark
 - *Icons*: Numix
 - *Fonts*:
   - *Size*: 10
@@ -65,7 +65,7 @@
 
 *Window Manager*:
 
-- *Style*: Numix
+- *Style*: Greybird-dark
 
 ### GRUB
 
