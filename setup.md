@@ -48,6 +48,7 @@
 - [PowerToys](https://github.com/microsoft/PowerToys) Windows utilities
 - [AltDrag](https://stefansundin.github.io/altdrag/) window moving tools
 - [Ventoy](https://www.ventoy.net/) ISO bootable USB drive
+- [MSEdgeRedirect](https://github.com/rcmaehl/MSEdgeRedirect) redirect to default browser
 
 # Configuration
 
