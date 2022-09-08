@@ -49,6 +49,7 @@
 - [AltDrag](https://stefansundin.github.io/altdrag/) window moving tools
 - [Ventoy](https://www.ventoy.net/) ISO bootable USB drive
 - [MSEdgeRedirect](https://github.com/rcmaehl/MSEdgeRedirect) redirect to default browser
+- [KeyzPal](https://github.com/limbo666/KeyzPal) tray Caps Lock indicator
 
 # Configuration
 
