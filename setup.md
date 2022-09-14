@@ -215,6 +215,8 @@ https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumb
 
 ## Unattended upgrades
 
+### Debian
+
 https://wiki.debian.org/UnattendedUpgrades
 
 [Tray notifications:](https://code.guido-berhoerster.org/projects/pk-update-icon/)
