@@ -107,6 +107,11 @@ if have xclip; then
     }
 fi
 
+if have trash-put; then
+    # shellcheck disable=SC2139
+    alias r="$HAVE_NAME --"
+fi
+
 if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
@@ -135,9 +140,9 @@ if have git; then
     alias d='g diff'
     alias h='g blame --date=short'
     alias j='g stash'
+    alias k='g checkout'
     alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
     alias p='g push'
-    alias r='g checkout'
     alias t='g status'
     alias v='g pull'
 
