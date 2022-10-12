@@ -26,18 +26,6 @@
 # TODO detect URLs without an explicit protocol? eg. "www."
 # TODO use POSIX env vars `COLUMNS` and `LINES`?
 # TODO make `xargs` call POSIX compliant?
-# TODO pdf diff, https://gitlab.com/eang/diffpdf
-# TODO intra-line diff, https://github.com/ymattw/ydiff
-# TODO intra-line diff, https://github.com/git/git/tree/master/contrib/diff-highlight
-# TODO intra-line diff, https://github.com/mookid/diffr
-# TODO fancier diff, https://github.com/so-fancy/diff-so-fancy
-# TODO diff syntax highlighter, https://github.com/dandavison/delta
-# TODO improved colored diff, https://github.com/jeffkaufman/icdiff
-# TODO colored diff wrapper, https://www.colordiff.org/
-# TODO semantic diff, https://github.com/trailofbits/graphtage
-# TODO structured syntax aware diff, https://github.com/wilfred/difftastic
-# TODO structured diff Clojure, https://github.com/ladderlife/autochrome
-# TODO in-depth comparison of files, archives, directories, https://diffoscope.org
 # TODO image support via sixels?
 # TODO chafa terminal graphics, https://hpjansson.org/chafa/
 # TODO terminal image renderer, https://github.com/posva/catimg
