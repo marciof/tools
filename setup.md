@@ -219,9 +219,22 @@ https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumb
 
 https://wiki.debian.org/UnattendedUpgrades
 
-[Tray notifications:](https://code.guido-berhoerster.org/projects/pk-update-icon/)
+[Tray notification:](https://code.guido-berhoerster.org/projects/pk-update-icon/)
 
     apt install pk-update-icon
+
+### Ubuntu
+
+https://help.ubuntu.com/community/AutomaticSecurityUpdates
+
+To force update on battery power (eg. if `on_ac_power` is incorrect)
+in `/etc/apt/apt.conf.d/50unattended-upgrades` set:
+
+    Unattended-Upgrade::OnlyOnACPower "false";
+
+Tray notification:
+
+    apt install package-update-indicator
 
 ## Evince (Document Viewer) zoom level
 
