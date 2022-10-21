@@ -124,10 +124,6 @@ GUI for Gnome Keyring:
 
 ## Date / Time
 
-Automatic timezone:
-
-    apt install ntp
-
 Digital clock format:
 
     %-l:%M%P %a %-m/%-e
