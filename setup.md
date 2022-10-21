@@ -70,23 +70,6 @@
 
 - *Style*: Greybird-dark
 
-### LightDM Greeter
-
-*Note*: not needed unless using a custom DPI setting.
-
-*Note*: not needed if changed via the *LightDM GTK+ Greeter* UI.
-
-`/usr/share/lightdm/lightdm.conf.d/02_hidpi.conf`
-
-    [Seat:*]
-    xserver-command=X -core -dpi 150
-    greeter-hide-users=false
-
-`/usr/share/lightdm/lightdm-gtk-greeter.conf.d/02_hidpi.conf`
-
-    [greeter]
-    xft-dpi=150
-
 ### Gtk
 
 *Note*: not needed unless using a custom DPI setting.
