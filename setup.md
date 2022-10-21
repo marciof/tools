@@ -143,12 +143,12 @@ Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 ### Bluetooth Audio Sink
 
+#### Debian
+
 [Fix *Protocol Not available*:](https://askubuntu.com/a/801669/163034)
 
     apt-get install pulseaudio-module-bluetooth
     pactl load-module module-bluetooth-discover
-
-*Note*: not needed under Xubuntu (?).
 
 ## Touchpad
 
