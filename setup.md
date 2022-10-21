@@ -210,6 +210,8 @@ https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumb
 
 ## Printer
 
+### Debian
+
 [Add printer from network.](http://localhost:631)
 
     apt install task-print-server
