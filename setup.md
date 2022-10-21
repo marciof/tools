@@ -70,16 +70,6 @@
 
 - *Style*: Greybird-dark
 
-### GRUB
-
-Decrease resolution to increase font size:
-
-`/etc/default/grub.d/10_high_dpi.cfg`
-
-    GRUB_GFXMODE=640x480
-
-And then do `update-grub`.
-
 ### LightDM Greeter
 
 *Note*: not needed unless using a custom DPI setting.
