@@ -110,18 +110,6 @@ Or alternatively in `~/.xsessionrc`:
 
     setxkbmap -option compose:caps
 
-## Passwords and keys
-
-GUI for Gnome Keyring:
-
-    apt install seahorse
-
-*Session and Startup*:
-
-- Enable *Automatically save session on logout*.
-- Add *SSH Key Agent* to *Application Autostart*.
-- Enable *Launch GNOME services on startup*.
-
 ## Date / Time
 
 Digital clock format:
