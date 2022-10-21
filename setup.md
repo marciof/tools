@@ -1,6 +1,6 @@
 # Software
 
-- [Xubuntu](https://xubuntu.org/download/) OS ([Debian](http://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current-live/amd64/iso-hybrid/) OS)
+- [Xubuntu](https://xubuntu.org/download/) OS
 - [Xfce](https://xfce.org) desktop environment
 - [Synapse](https://launchpad.net/synapse-project) semantic search
 - [Fira Code](https://github.com/tonsky/FiraCode) font
@@ -70,24 +70,6 @@
 
 - *Style*: Greybird-dark
 
-### Gtk
-
-*Note*: not needed unless using a custom DPI setting.
-
-    xfconf-query --create -c xsettings -t string -p /Gtk/IconSizes -s gtk-button=32,32
-
-### Xfce
-
-*Note*: not needed unless using a custom DPI setting.
-
-*Note*: not needed if changed via the *Appearance* UI.
-
-    xfconf-query --create -c xsettings -t int -p /Xft/DPI -s 150
-
-### Gnome
-
-Using `dconf-editor` change `/org/gnome/desktop/interface/scaling-factor` to `2`.
-
 ### Spotify
 
     spotify --force-device-scale-factor=1.5
@@ -95,15 +77,6 @@ Using `dconf-editor` change `/org/gnome/desktop/interface/scaling-factor` to `2`
 ### Mouse
 
 Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
-
-### Bluetooth Audio Sink
-
-#### Debian
-
-[Fix *Protocol Not available*:](https://askubuntu.com/a/801669/163034)
-
-    apt-get install pulseaudio-module-bluetooth
-    pactl load-module module-bluetooth-discover
 
 ## Touchpad
 
@@ -165,25 +138,7 @@ https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumb
 
     apt install tumbler tumbler-plugins-extra ffmpegthumbnailer
 
-## Printer
-
-### Debian
-
-[Add printer from network.](http://localhost:631)
-
-    apt install task-print-server
-
 ## Unattended upgrades
-
-### Debian
-
-https://wiki.debian.org/UnattendedUpgrades
-
-[Tray notification:](https://code.guido-berhoerster.org/projects/pk-update-icon/)
-
-    apt install pk-update-icon
-
-### Ubuntu
 
 https://help.ubuntu.com/community/AutomaticSecurityUpdates
 
