@@ -174,6 +174,7 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 ### Compose key
 
 *Keyboard* settings:
+
 - *Layout* tab.
 - *Compose key* dropdown.
 
@@ -188,6 +189,7 @@ GUI for Gnome Keyring:
     apt install seahorse
 
 *Session and Startup*:
+
 - Enable *Automatically save session on logout*.
 - Add *SSH Key Agent* to *Application Autostart*.
 - Enable *Launch GNOME services on startup*.
