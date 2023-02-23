@@ -93,12 +93,6 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 
 ## Keyboard
 
-### Swap Caps Lock and Left Ctrl
-
-`/etc/default/keyboard`
-
-    XKBOPTIONS="ctrl:swapcaps"
-
 ### Compose key
 
 *Keyboard* settings:
@@ -109,6 +103,12 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
 Or alternatively in `~/.xsessionrc`:
 
     setxkbmap -option compose:caps
+
+And disable caps lock:
+
+`/etc/default/keyboard`
+
+    XKBOPTIONS="ctrl:nocaps"
 
 ## Date / Time
 
