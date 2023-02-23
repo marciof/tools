@@ -110,6 +110,13 @@ And disable caps lock:
 
     XKBOPTIONS="ctrl:nocaps"
 
+### Emoji input
+
+*Bus Preferences* settings (command `ibus-setup`):
+
+- *Emoji* tab.
+- *Keyboard Shortcuts* section.
+
 ## Date / Time
 
 Digital clock format:
