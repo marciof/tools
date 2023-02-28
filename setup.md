@@ -70,6 +70,20 @@
 
 - *Style*: Greybird-dark
 
+### GRUB
+
+If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode` is set to `gfxterm`, then the keyboard input will have very noticeable lag the higher the resolution is. Set its terminal output to console to disable graphics mode and remove input lag:
+
+`/etc/default/grub.d/custom.cfg`
+
+    GRUB_TERMINAL_OUTPUT=console
+    GRUB_TIMEOUT_STYLE=countdown
+    GRUB_TIMEOUT=1
+
+And then update the configuration:
+
+    update-grub
+
 ### Spotify
 
     spotify --force-device-scale-factor=1.5
