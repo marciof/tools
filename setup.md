@@ -76,9 +76,14 @@ If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode`
 
 `/etc/default/grub.d/custom.cfg`
 
+    # Fix keyboard input lag on high DPI graphics mode.
     GRUB_TERMINAL_OUTPUT=console
+
     GRUB_TIMEOUT_STYLE=countdown
     GRUB_TIMEOUT=1
+
+    # Fix freeze on boot.
+    GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT nomodeset"
 
 And then update the configuration:
 
