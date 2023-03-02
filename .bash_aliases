@@ -144,7 +144,7 @@ if have git; then
     if ! command -v __git_complete >/dev/null; then
         echo '* Missing: git Bash completion: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash (or apt "bash-completion", or load order in .bashrc)' >&2
     else
-        __git_complete g _git
+        __git_complete g __git_main
         __git_complete a _git_add
         __git_complete b _git_branch
         __git_complete c _git_commit
