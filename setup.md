@@ -110,6 +110,18 @@ To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), i
     synclient HorizScrollDelta=-VALUE_FROM_ABOVE
     synclient VertScrollDelta=-VALUE_FROM_ABOVE
 
+## Sound
+
+### Tivoli Orb (Sphera)
+
+For Bluetooth auto-connect, open *Session and Startup* settings:
+
+- *Application Autostart* tab.
+- *Add application* button.
+
+
+    bash -c 'sleep 3 && bluetoothctl connect CC:90:93:09:FF:26'
+
 ## Keyboard
 
 ### Compose key
