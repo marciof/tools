@@ -1,6 +1,7 @@
 #!/bin/sh
 # Generic viewer.
 
+# TODO missing syntax highlighting for OPML files
 # TODO option to unambiguously show a file that case-insensitively
 # TODO use `file` to figure out type for highlighting (eg. non-*.json JSON)
 # TODO debug option? eg. does `set -x`
