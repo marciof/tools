@@ -151,9 +151,9 @@ if have git; then
         __git_complete d _git_diff
         __git_complete h __gitcomp
         __git_complete j _git_stash
+        __git_complete k _git_checkout
         __git_complete l _git_log
         __git_complete p _git_push
-        __git_complete r _git_checkout
         __git_complete t _git_status
         __git_complete v _git_pull
     fi
