@@ -51,6 +51,7 @@
 - [MSEdgeRedirect](https://github.com/rcmaehl/MSEdgeRedirect) redirect to default browser
 - [KeyzPal](https://github.com/limbo666/KeyzPal) tray Caps Lock indicator
 - [Notepad2](https://www.flos-freeware.ch/notepad2.html) simple text editor with syntax highlighting
+- [WinSCP](https://winscp.net/) graphical FTP client
 
 # Configuration
 
