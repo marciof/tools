@@ -38,6 +38,7 @@
 - [Mousepad](https://github.com/codebrainz/mousepad) simple text editor
 - [Mugshot](https://github.com/bluesabre/mugshot) user profile editor
 - [LightDM GTK+ Greeter](https://github.com/mjun/lightdm-gtk-greeter-settings) login screen editor
+- [Marble](https://marble.kde.org) world atlas map
 
 ## Windows
 
