@@ -31,6 +31,7 @@
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
 - [Redshift](https://github.com/jonls/redshift) screen color temperature
 - [LibreOffice](https://www.libreoffice.org) office suite and PDF editor
+- [Frog](https://tenderowl.com/work/frog/) OCR from images
 - [gscan2pdf](http://gscan2pdf.sourceforge.net) image/scanner with OCR to PDF
 - [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer and forms
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
