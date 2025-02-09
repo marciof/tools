@@ -12,6 +12,7 @@
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
 - [Xarchiver](https://github.com/ib/xarchiver) archive manager ([Thunar archive plugin](http://users.xfce.org/~benny/projects/thunar-archive-plugin/index.html))
+- [SingleFile](https://github.com/gildas-lormeau/SingleFile) HTML web page archiver
 - [Authy](https://authy.com) two-factor authentication
 - [Clipman](https://docs.xfce.org/panel-plugins/clipman/start) clipboard manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
