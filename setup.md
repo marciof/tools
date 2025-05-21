@@ -49,6 +49,7 @@
 - [ProduKey](https://www.nirsoft.net/utils/product_cd_key_viewer.html) key viewer
 - [BatteryInfoView](https://www.nirsoft.net/utils/battery_information_view.html) battery information
 - [Battery Percentage Icon](https://github.com/soleon/Percentage) battery level tray icon
+- [Open Hardware Monitor](https://openhardwaremonitor.org) hardware monitor
 - [7-Zip](https://www.7-zip.org) archive manager
 - [PowerToys](https://github.com/microsoft/PowerToys) Windows utilities
 - [AltDrag](https://stefansundin.github.io/altdrag/) window moving tools
