@@ -8,6 +8,15 @@ Check if two strings have an identical character set.
 import unittest
 
 
+def has_same_char_set_v0(str_1: str, str_2: str) -> bool:
+    """
+    - Time:
+    - Space:
+    """
+
+    return len(set(str_1) ^ set(str_2)) == 0
+
+
 def has_same_char_set_v1(str_1: str, str_2: str) -> bool:
     """
     - Time: O(k+l), where k=len(str_1), l=len(str_2)
@@ -73,6 +82,9 @@ class BaseTestCase (unittest.TestCase):
     def test_mix(self):
         self.assertFalse(self.has_same_char_set('abaacab', 'ddcbd'))
 
+
+class TestCaseV0 (BaseTestCase):
+    has_same_char_set = property(lambda self: has_same_char_set_v0)
 
 class TestCaseV1 (BaseTestCase):
     has_same_char_set = property(lambda self: has_same_char_set_v1)
