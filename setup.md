@@ -13,7 +13,6 @@
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Qalculate](https://qalculate.github.io) desktop calculator
 - [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
-- [Rhythmbox](https://wiki.gnome.org/Apps/Rhythmbox/) music/radio player
 - [Spotify](https://www.spotify.com) music streaming
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
 - [VLC](https://www.videolan.org/vlc/) video player
