@@ -3,7 +3,6 @@
 - [Xubuntu](https://xubuntu.org/download/) OS ([Debian](http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/) OS)
 - [Xfce](https://xfce.org) desktop environment
 - [Synapse](https://launchpad.net/synapse-project) semantic search
-- [Fira Code](https://github.com/tonsky/FiraCode) font
 - [Vivaldi](https://vivaldi.com) browser ([Firefox extensions](https://addons.mozilla.org/firefox/collections/13173821/essentials/))
 - [Tor](https://www.torproject.org) browser
 - [Tilix](https://gnunn1.github.io/tilix-web/) tiling terminal
