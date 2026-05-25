@@ -23,11 +23,8 @@ def has_same_char_set_v1(str_1: str, str_2: str) -> bool:
     - Space: O(k+l), worst-case every character is unique in both strings
     """
 
-    char_set_1 = set()
+    char_set_1 = set(str_1)
     char_set_2 = set()
-
-    for char_1 in str_1:
-        char_set_1.add(char_1)
 
     for char_2 in str_2:
         if char_2 not in char_set_1:
