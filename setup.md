@@ -12,7 +12,6 @@
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Qalculate](https://qalculate.github.io) desktop calculator
-- [Inkscape](https://inkscape.org) vector image editor
 - [Ristretto](https://gitlab.xfce.org/apps/ristretto) image viewer
 - [gThumb](https://gitlab.gnome.org/GNOME/gthumb/) image organizer
 - [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
