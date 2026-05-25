@@ -74,7 +74,13 @@ class BaseTestCase (unittest.TestCase):
         self.assertFalse(self.has_same_char_set('bcb', 'aabc'))
 
     def test_same(self):
-        self.assertTrue(self.has_same_char_set('abaacab', 'abc'))
+        self.assertTrue(self.has_same_char_set('baacab', 'abc'))
+
+    def test_identical(self):
+        self.assertTrue(self.has_same_char_set('abc', 'abc'))
+
+    def test_different(self):
+        self.assertFalse(self.has_same_char_set('abc', 'def'))
 
     def test_mix(self):
         self.assertFalse(self.has_same_char_set('abaacab', 'ddcbd'))
