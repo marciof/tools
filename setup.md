@@ -15,6 +15,7 @@
 - [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
 - [Handbrake](https://handbrake.fr) video transcoder
+- [LosslessCut](https://github.com/mifi/lossless-cut) video splitting
 - [Rygel](https://gnome.pages.gitlab.gnome.org/rygel/) home media sharing
 - [Redshift](https://github.com/jonls/redshift) screen color temperature
 - [Frog](https://tenderowl.com/work/frog/) OCR from images
