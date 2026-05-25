@@ -57,11 +57,12 @@ def has_same_char_set_v2(str_1, str_2) -> bool:
 
 
 class BaseTestCase (unittest.TestCase):
-    has_same_char_set = NotImplementedError
+    impl = None
+    has_same_char_set = property(lambda self: self.impl)
 
     @classmethod
     def setUpClass(cls):
-        if cls.has_same_char_set is NotImplementedError:
+        if cls.impl is None:
             raise unittest.SkipTest(NotImplemented)
 
     def test_empty(self):
@@ -87,13 +88,13 @@ class BaseTestCase (unittest.TestCase):
 
 
 class TestCaseV0 (BaseTestCase):
-    has_same_char_set = staticmethod(has_same_char_set_v0)
+    impl = staticmethod(has_same_char_set_v0)
 
 class TestCaseV1 (BaseTestCase):
-    has_same_char_set = staticmethod(has_same_char_set_v1)
+    impl = staticmethod(has_same_char_set_v1)
 
 class TestCaseV2 (BaseTestCase):
-    has_same_char_set = staticmethod(has_same_char_set_v2)
+    impl = staticmethod(has_same_char_set_v2)
 
 
 if __name__ == '__main__':
