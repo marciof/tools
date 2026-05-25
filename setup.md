@@ -19,7 +19,7 @@
 - [Redshift](https://github.com/jonls/redshift) screen color temperature
 - [Frog](https://tenderowl.com/work/frog/) OCR from images
 - [gscan2pdf](http://gscan2pdf.sourceforge.net) image/scanner with OCR to PDF
-- [Evince](https://wiki.gnome.org/Apps/Evince) PDF viewer and forms
+- [Evince](https://gitlab.gnome.org/GNOME/evince) PDF viewer and forms
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
 - [Blueman](https://github.com/blueman-project/blueman) bluetooth manager
 - [Mugshot](https://github.com/bluesabre/mugshot) user profile editor
