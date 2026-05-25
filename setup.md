@@ -14,7 +14,6 @@
 - [Qalculate](https://qalculate.github.io) desktop calculator
 - [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
-- [VLC](https://www.videolan.org/vlc/) video player
 - [Handbrake](https://handbrake.fr) video transcoder
 - [Rygel](https://wiki.gnome.org/Projects/Rygel) home media sharing
 - [Redshift](https://github.com/jonls/redshift) screen color temperature
