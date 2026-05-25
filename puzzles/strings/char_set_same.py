@@ -87,13 +87,13 @@ class BaseTestCase (unittest.TestCase):
 
 
 class TestCaseV0 (BaseTestCase):
-    has_same_char_set = property(lambda self: has_same_char_set_v0)
+    has_same_char_set = staticmethod(has_same_char_set_v0)
 
 class TestCaseV1 (BaseTestCase):
-    has_same_char_set = property(lambda self: has_same_char_set_v1)
+    has_same_char_set = staticmethod(has_same_char_set_v1)
 
 class TestCaseV2 (BaseTestCase):
-    has_same_char_set = property(lambda self: has_same_char_set_v2)
+    has_same_char_set = staticmethod(has_same_char_set_v2)
 
 
 if __name__ == '__main__':
