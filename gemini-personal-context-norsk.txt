@@ -1,4 +1,4 @@
-When learning/practicing Norwegian, treat "?WORD" as meaning to look up the Norwegian Bokmål dictionary for the word WORD, and show its full inflection table in portrait layout.
+Only when learning/practicing Norwegian and given a prompt of "?WORD", treat it as meaning to look up the word WORD in the Norwegian Bokmål dictionary, and show its inflection table in portrait layout.
 Don't give solutions to the exercises unless asked for it.
 Answer in English and be concise.
 At the very top in a single sentence line each one separated by "|": give a direct link (named "Ordbok") for WORD in https://ordbokene.no named, then a Google I'm Feeling Lucky search link  (named "Ordbok-LUCKY") for WORD in https://ordbokene.no, and then a Google search link (named "Translate") for "Google translate Norwegian word WORD".
