@@ -13,18 +13,18 @@ from typing import Dict
 import unittest
 
 
-def is_anagram(word1: str, word2: str) -> bool:
+def is_anagram_v0(word_1: str, word_2: str) -> bool:
     """
     Time: O(k+l), where k=length of word_1, l=length of word_2
     Space: O(l), worst-case every character is unique in word_2
     """
 
-    if len(word1) != len(word2):
+    if len(word_1) != len(word_2):
         return False
 
-    word2_letters = set(word2)
+    word2_letters = set(word_2)
 
-    for word1_letter in word1:
+    for word1_letter in word_1:
         if word1_letter not in word2_letters:
             return False
         word2_letters.remove(word1_letter)
@@ -57,41 +57,39 @@ def is_anagram_manual(word_1: str, word_2: str) -> bool:
     return len(char_count_1) == 0
 
 
-class Test (unittest.TestCase):
-    is_anagram_impls = {
-        is_anagram,
-        is_anagram_manual,
-    }
+class BaseTestCase (unittest.TestCase):
+    impl = None
+    is_anagram = property(lambda self: self.impl)
+
+    @classmethod
+    def setUpClass(cls):
+        if cls.impl is None:
+            raise unittest.SkipTest(cls.__name__)
 
     def test_empty(self):
-        for is_anagram_impl in self.is_anagram_impls:
-            with self.subTest(is_anagram_impl):
-                self.assertTrue(is_anagram_impl('', ''))
+        self.assertTrue(self.is_anagram('', ''))
 
     def test_match(self):
-        for is_anagram_impl in self.is_anagram_impls:
-            with self.subTest(is_anagram_impl):
-                self.assertTrue(is_anagram_impl('cat', 'act'))
+        self.assertTrue(self.is_anagram('cat', 'act'))
 
     def test_same(self):
-        for is_anagram_impl in self.is_anagram_impls:
-            with self.subTest(is_anagram_impl):
-                self.assertTrue(is_anagram_impl('cat', 'cat'))
+        self.assertTrue(self.is_anagram('cat', 'cat'))
 
     def test_count_mismatch(self):
-        for is_anagram_impl in self.is_anagram_impls:
-            with self.subTest(is_anagram_impl):
-                self.assertFalse(is_anagram_impl('cart', 'cataract'))
+        self.assertFalse(self.is_anagram('cart', 'cataract'))
 
     def test_superset(self):
-        for is_anagram_impl in self.is_anagram_impls:
-            with self.subTest(is_anagram_impl):
-                self.assertFalse(is_anagram_impl('cart', 'cat'))
+        self.assertFalse(self.is_anagram('cart', 'cat'))
 
     def test_subset(self):
-        for is_anagram_impl in self.is_anagram_impls:
-            with self.subTest(is_anagram_impl):
-                self.assertFalse(is_anagram_impl('cat', 'cart'))
+        self.assertFalse(self.is_anagram('cat', 'cart'))
+
+
+class TestCaseV0 (BaseTestCase):
+    impl = staticmethod(is_anagram_v0)
+
+class TestCaseManual (BaseTestCase):
+    impl = staticmethod(is_anagram_manual)
 
 
 if __name__ == '__main__':
