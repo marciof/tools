@@ -9,7 +9,7 @@ Assumes case-insensitivity, and unknown total character size.
 import unittest
 
 
-def has_same_char_set_v0(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_set_cmp(str_1: str, str_2: str) -> bool:
     """
     Where: k=len(str_1), l=len(str_2)
 
@@ -20,27 +20,18 @@ def has_same_char_set_v0(str_1: str, str_2: str) -> bool:
     return set(str_1) == set(str_2)
 
 
-def has_same_char_set_v1(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_set_xor(str_1: str, str_2: str) -> bool:
     """
-    Where: k=len(str_1), l=len(str_2)
+    Where:
 
-    - Time: O(k+l) -- worst-case all identical characters
-    - Space: O(k+l) -- worst-case all unique characters
+    - Time:
+    - Space:
     """
 
-    char_set_1 = set(str_1)
-    char_set_2 = set()
-
-    for char_2 in str_2:
-        if char_2 not in char_set_1:
-            return False
-
-        char_set_2.add(char_2)
-
-    return len(char_set_1) == len(char_set_2)
+    return len(set(str_1) ^ set(str_2)) == 0
 
 
-def has_same_char_set_v2(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_set_cmp_fail_fast(str_1: str, str_2: str) -> bool:
     """
     Where: k=len(str_1), l=len(str_2), n=len(char_set_1)
 
@@ -54,11 +45,11 @@ def has_same_char_set_v2(str_1: str, str_2: str) -> bool:
     for char_2 in str_2:
         if char_2 in char_set_2:
             continue
-        elif char_2 not in char_set_1:
+        if char_2 not in char_set_1:
             return False
-        else:
-            char_set_1.remove(char_2)
-            char_set_2.add(char_2)
+
+        char_set_1.remove(char_2)
+        char_set_2.add(char_2)
 
     return len(char_set_1) == 0
 
@@ -94,14 +85,14 @@ class BaseTestCase (unittest.TestCase):
         self.assertFalse(self.has_same_char_set('abaacab', 'ddcbd'))
 
 
-class TestCaseV0 (BaseTestCase):
-    impl = staticmethod(has_same_char_set_v0)
+class TestCaseSetCmp (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_set_cmp)
 
-class TestCaseV1 (BaseTestCase):
-    impl = staticmethod(has_same_char_set_v1)
+class TestCaseSetXor (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_set_xor)
 
-class TestCaseV2 (BaseTestCase):
-    impl = staticmethod(has_same_char_set_v2)
+class TestCaseSetCmpFailFast (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_set_cmp_fail_fast)
 
 
 if __name__ == '__main__':
