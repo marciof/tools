@@ -3,6 +3,7 @@
 
 """
 Check if two strings have an identical character set.
+Assumes case-insensitivity, and unknown total character size.
 """
 
 import unittest
@@ -10,17 +11,21 @@ import unittest
 
 def has_same_char_set_v0(str_1: str, str_2: str) -> bool:
     """
-    - Time:
-    - Space:
+    Where: k=len(str_1), l=len(str_2)
+
+    - Time: O(k+l) -- loops over both strings
+    - Space: O(k+l) -- worst-case all unique characters
     """
 
-    return len(set(str_1) ^ set(str_2)) == 0
+    return set(str_1) == set(str_2)
 
 
 def has_same_char_set_v1(str_1: str, str_2: str) -> bool:
     """
-    - Time: O(k+l), where k=len(str_1), l=len(str_2)
-    - Space: O(k+l), worst-case every character is unique in both strings
+    Where: k=len(str_1), l=len(str_2)
+
+    - Time: O(k+l) -- worst-case all identical characters
+    - Space: O(k+l) -- worst-case all unique characters
     """
 
     char_set_1 = set(str_1)
@@ -35,10 +40,12 @@ def has_same_char_set_v1(str_1: str, str_2: str) -> bool:
     return len(char_set_1) == len(char_set_2)
 
 
-def has_same_char_set_v2(str_1, str_2) -> bool:
+def has_same_char_set_v2(str_1: str, str_2: str) -> bool:
     """
-    - Time:
-    - Space:
+    Where: k=len(str_1), l=len(str_2), n=len(char_set_1)
+
+    - Time: O(k+l) -- worst-case all identical characters
+    - Space: O(k) or O(n) -- worst-case all unique characters
     """
 
     char_set_1 = set(str_1)
@@ -63,7 +70,7 @@ class BaseTestCase (unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if cls.impl is None:
-            raise unittest.SkipTest(NotImplemented)
+            raise unittest.SkipTest(cls.__name__)
 
     def test_empty(self):
         self.assertTrue(self.has_same_char_set('', ''))
