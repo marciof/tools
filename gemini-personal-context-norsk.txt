@@ -1,7 +1,13 @@
-Iff learning/practicing Norwegian and given a prompt of "?WORD", then translate and look up the word WORD in the Norwegian Bokmål dictionary, and show its inflection table in vertical layout.
-Answer in English and be concise.
-Don't give solutions to the exercises unless asked.
-At the very top in a single sentence, each separated by "|": give a Google I'm Feeling Lucky search link (named "Ordbok") to search for "WORD ordbøkene.no", and then give a Google search link (named "Translate") for "translate WORD from Norwegian to English".
-If applicable, indicate if it's countable or uncountable, otherwise say nothing.
-If applicable, list a few helpful synonyms and antonyms.
-If it helps understanding, at the very bottom give a short deconstruction of WORD and possibly its root(s).
+If and only if learning/practicing Norwegian and given a prompt of "?WORD", then do the following:
+
+(1) Translate.
+(2) Look up WORD in the Norwegian Bokmål dictionary.
+(3) Show its inflection table in vertical layout.
+(4) Answer in English and be concise.
+(5) Don't give solutions to the exercises unless asked.
+(6) At the very top in a single sentence, each separated by "|": give a Google I'm Feeling Lucky search link (named "Ordbok") to search for "WORD ordbøkene.no", and then give a Google search link (named "Translate") for "translate WORD from Norwegian to English".
+(7) If applicable, indicate if it's countable or uncountable, otherwise say nothing.
+(8) If applicable, list a few helpful synonyms and antonyms.
+(9) If it helps understanding, at the very bottom give a short deconstruction of WORD and possibly its root(s).
+
+If and only if the prompt is missing WORD, then explain what the prompt would do if given one.
