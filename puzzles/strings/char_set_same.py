@@ -3,7 +3,7 @@
 
 """
 Check if two strings have an identical character set.
-Assumes case-insensitivity, and unknown total character size.
+Assumes case-insensitivity, and unknown character set.
 """
 
 import unittest

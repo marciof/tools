@@ -3,8 +3,9 @@
 
 """
 Check if two words are an anagram of each other.
+Assumes case-insensitivity.
 
-From Wikipedia: "An anagram is a word or phrase formed by rearranging the
+Wikipedia: "An anagram is a word or phrase formed by rearranging the
 letters of a different word or phrase, typically using all the original
 letters exactly once."
 """
@@ -13,48 +14,55 @@ from typing import Dict
 import unittest
 
 
-def is_anagram_v0(word_1: str, word_2: str) -> bool:
+def is_anagram_by_sorting(word_1: str, word_2: str) -> bool:
     """
-    Time: O(k+l), where k=length of word_1, l=length of word_2
-    Space: O(l), worst-case every character is unique in word_2
+    """
+
+    if len(word_1) != len(word_2):
+        return False
+    else:
+        return sorted(word_1) == sorted(word_2)
+
+
+def is_anagram_by_splicing(word_1: str, word_2: str) -> bool:
+    """
+    """
+
+    if len(word_1) != len(word_2):
+        return False
+    if len(word_1) == 0 and len(word_2) == 0:
+        return True
+
+    i = word_2.find(word_1[0])
+
+    if i < 0:
+        return False
+
+    return is_anagram_by_splicing(word_1[1:], word_2[:i] + word_2[i+1:])
+
+
+def is_anagram_by_histogram(word_1: str, word_2: str) -> bool:
+    """
     """
 
     if len(word_1) != len(word_2):
         return False
 
-    word2_letters = set(word_2)
+    hist_1: Dict[str, int] = {}
 
-    for word1_letter in word_1:
-        if word1_letter not in word2_letters:
-            return False
-        word2_letters.remove(word1_letter)
+    for char_1 in word_1:
+        hist_1[char_1] = hist_1.get(char_1, 0) + 1
 
-    return len(word2_letters) == 0
-
-
-def is_anagram_manual(word_1: str, word_2: str) -> bool:
-    """
-    Time: O(k+l), where k=length of word_1, l=length of word_2
-    Space: O(k), worst-case every character is unique in word_1
-    """
-
-    # Optimization: if of different lengths, return false.
-
-    char_count_1: Dict[str, int] = {}
-
-    for char in word_1:
-        char_count_1[char] = char_count_1.get(char, 0) + 1
-
-    for char in word_2:
-        if char not in char_count_1:
+    for char_2 in word_2:
+        if char_2 not in hist_1:
             return False
 
-        char_count_1[char] -= 1
+        hist_1[char_2] -= 1
 
-        if char_count_1[char] == 0:
-            del char_count_1[char]
+        if hist_1[char_2] == 0:
+            del hist_1[char_2]
 
-    return len(char_count_1) == 0
+    return len(hist_1) == 0
 
 
 class BaseTestCase (unittest.TestCase):
@@ -69,14 +77,14 @@ class BaseTestCase (unittest.TestCase):
     def test_empty(self):
         self.assertTrue(self.is_anagram('', ''))
 
-    def test_match(self):
-        self.assertTrue(self.is_anagram('cat', 'act'))
-
-    def test_same(self):
+    def test_identical_words(self):
         self.assertTrue(self.is_anagram('cat', 'cat'))
 
-    def test_count_mismatch(self):
-        self.assertFalse(self.is_anagram('cart', 'cataract'))
+    def test_match_no_dup_letters(self):
+        self.assertTrue(self.is_anagram('cat', 'act'))
+
+    def test_match_dup_letters(self):
+        self.assertTrue(self.is_anagram('state', 'taste'))
 
     def test_superset(self):
         self.assertFalse(self.is_anagram('cart', 'cat'))
@@ -85,11 +93,14 @@ class BaseTestCase (unittest.TestCase):
         self.assertFalse(self.is_anagram('cat', 'cart'))
 
 
-class TestCaseV0 (BaseTestCase):
-    impl = staticmethod(is_anagram_v0)
+class TestCaseBySorting (BaseTestCase):
+    impl = staticmethod(is_anagram_by_sorting)
 
-class TestCaseManual (BaseTestCase):
-    impl = staticmethod(is_anagram_manual)
+class TestCaseBySplicing (BaseTestCase):
+    impl = staticmethod(is_anagram_by_splicing)
+
+class TestCaseByHistogram (BaseTestCase):
+    impl = staticmethod(is_anagram_by_histogram)
 
 
 if __name__ == '__main__':
