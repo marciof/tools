@@ -16,7 +16,7 @@ def has_same_char_set_by_set_cmp_full(str_1: str, str_2: str) -> bool:
     - ``k=len(str_1)``, ``m=len(char_set_str_1)``
     - ``l=len(str_2)``, ``n=len(char_set_str_2)``
 
-    Then:
+    Upper-bounds:
 
     - ``m<=k``
     - ``n<=l``
@@ -27,8 +27,8 @@ def has_same_char_set_by_set_cmp_full(str_1: str, str_2: str) -> bool:
 
     Then:
 
-    - Time: ``O(k+l)`` -- worst-case identical character sets
-    - Space: ``O(k+l)``
+    - **Time:** ``O(k+l)`` -- worst-case identical character sets
+    - **Space:** ``O(k+l)``
     """
 
     return set(str_1) == set(str_2)
@@ -41,7 +41,7 @@ def has_same_char_set_by_set_xor(str_1: str, str_2: str) -> bool:
     - ``k=len(str_1)``, ``m=len(char_set_str_1)``
     - ``l=len(str_2)``, ``n=len(char_set_str_2)``
 
-    Then:
+    Upper-bounds:
 
     - ``m<=k``
     - ``n<=l``
@@ -52,8 +52,8 @@ def has_same_char_set_by_set_xor(str_1: str, str_2: str) -> bool:
 
     Then:
 
-    - Time: ``O(k+l)``
-    - Space: ``O(k+l)`` -- worst-case non-identical character sets
+    - **Time:** ``O(k+l)``
+    - **Space:** ``O(k+l)`` -- worst-case non-identical character sets
     """
 
     return (set(str_1) ^ set(str_2)) == set()
@@ -66,7 +66,7 @@ def has_same_char_set_by_set_cmp_partial(str_1: str, str_2: str) -> bool:
     - ``k=len(str_1)``, ``m=len(char_set_str_1)``
     - ``l=len(str_2)``, ``n=len(char_set_str_2)``
 
-    Then:
+    Upper-bounds:
 
     - ``m<=k``
     - ``n<=l``
@@ -77,8 +77,8 @@ def has_same_char_set_by_set_cmp_partial(str_1: str, str_2: str) -> bool:
 
     Then:
 
-    - Time: ``O(k+l)`` -- worst-case identical character sets
-    - Space: ``O(k)``
+    - **Time:** ``O(k+l)`` -- worst-case identical character sets
+    - **Space:** ``O(k)``
     """
 
     char_set_1 = set(str_1)
@@ -94,6 +94,27 @@ def has_same_char_set_by_set_cmp_partial(str_1: str, str_2: str) -> bool:
         char_set_2.add(char_2)
 
     return len(char_set_1) == 0
+
+
+def has_same_char_set_by_o1_space(str_1: str, str_2: str) -> bool:
+    """
+    """
+
+    for char_1 in str_1:
+        for char_2 in str_2:
+            if char_1 == char_2:
+                break
+        else:
+            return False
+
+    for char_2 in str_2:
+        for char_1 in str_1:
+            if char_2 == char_1:
+                break
+        else:
+            return False
+
+    return True
 
 
 class BaseTestCase (unittest.TestCase):
@@ -135,6 +156,9 @@ class TestCaseSetXor (BaseTestCase):
 
 class TestCaseSetCmpPartial (BaseTestCase):
     impl = staticmethod(has_same_char_set_by_set_cmp_partial)
+
+class TestCaseSetCmpO1Space (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_o1_space)
 
 
 if __name__ == '__main__':
