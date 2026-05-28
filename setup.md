@@ -1,6 +1,6 @@
 # Software
 
-- [Xubuntu](https://xubuntu.org/download/) OS ([Debian](http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/) OS)
+- [Ubuntu](https://ubuntu.com/download/desktop) OS / [Debian](http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/) OS
 - [Xfce](https://xfce.org) desktop environment
 - [Synapse](https://launchpad.net/synapse-project) semantic search
 - [Tilix](https://gnunn1.github.io/tilix-web/) tiling terminal
@@ -63,7 +63,7 @@
 
 ### GRUB
 
-If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode` is set to `gfxterm`, then the keyboard input will have very noticeable lag the higher the resolution is. Set its terminal output to console to disable graphics mode and remove input lag:
+If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode` is set to `gfxterm`, then the keyboard input will have a very noticeable lag the higher the resolution is. Set its terminal output to console to disable graphics mode and remove input lag:
 
 `/etc/default/grub.d/custom.cfg`
 
