@@ -9,12 +9,26 @@ Assumes case-insensitivity, and unknown total character size.
 import unittest
 
 
-def has_same_char_set_by_set_cmp(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_set_cmp_full(str_1: str, str_2: str) -> bool:
     """
-    Where: k=len(str_1), l=len(str_2)
+    Let:
 
-    - Time: O(k+l) -- loops over both strings
-    - Space: O(k+l) -- worst-case all unique characters
+    - ``k=len(str_1)``, ``m=len(char_set_str_1)``
+    - ``l=len(str_2)``, ``n=len(char_set_str_2)``
+
+    Then:
+
+    - ``m<=k``
+    - ``n<=l``
+
+    Assuming:
+
+    - ``O(1)`` set lookups
+
+    Then:
+
+    - Time: ``O(k+l)`` -- worst-case identical character sets
+    - Space: ``O(k+l)``
     """
 
     return set(str_1) == set(str_2)
@@ -22,21 +36,49 @@ def has_same_char_set_by_set_cmp(str_1: str, str_2: str) -> bool:
 
 def has_same_char_set_by_set_xor(str_1: str, str_2: str) -> bool:
     """
-    Where:
+    Let:
 
-    - Time:
-    - Space:
+    - ``k=len(str_1)``, ``m=len(char_set_str_1)``
+    - ``l=len(str_2)``, ``n=len(char_set_str_2)``
+
+    Then:
+
+    - ``m<=k``
+    - ``n<=l``
+
+    Assuming:
+
+    - ``O(1)`` set lookups
+
+    Then:
+
+    - Time: ``O(k+l)``
+    - Space: ``O(k+l)`` -- worst-case non-identical character sets
     """
 
-    return len(set(str_1) ^ set(str_2)) == 0
+    return (set(str_1) ^ set(str_2)) == set()
 
 
-def has_same_char_set_by_set_cmp_fail_fast(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_set_cmp_partial(str_1: str, str_2: str) -> bool:
     """
-    Where: k=len(str_1), l=len(str_2), n=len(char_set_1)
+    Let:
 
-    - Time: O(k+l) -- worst-case all identical characters
-    - Space: O(k) or O(n) -- worst-case all unique characters
+    - ``k=len(str_1)``, ``m=len(char_set_str_1)``
+    - ``l=len(str_2)``, ``n=len(char_set_str_2)``
+
+    Then:
+
+    - ``m<=k``
+    - ``n<=l``
+
+    Assuming:
+
+    - ``O(1)`` set lookups, removals, insertions
+
+    Then:
+
+    - Time: ``O(k+l)`` -- worst-case identical character sets
+    - Space: ``O(k)``
     """
 
     char_set_1 = set(str_1)
@@ -85,14 +127,14 @@ class BaseTestCase (unittest.TestCase):
         self.assertFalse(self.has_same_char_set('abaacab', 'ddcbd'))
 
 
-class TestCaseSetCmp (BaseTestCase):
-    impl = staticmethod(has_same_char_set_by_set_cmp)
+class TestCaseSetCmpFull (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_set_cmp_full)
 
 class TestCaseSetXor (BaseTestCase):
     impl = staticmethod(has_same_char_set_by_set_xor)
 
-class TestCaseSetCmpFailFast (BaseTestCase):
-    impl = staticmethod(has_same_char_set_by_set_cmp_fail_fast)
+class TestCaseSetCmpPartial (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_set_cmp_partial)
 
 
 if __name__ == '__main__':
