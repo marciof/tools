@@ -9,7 +9,7 @@ Assumes case-insensitivity, and unknown total character size.
 import unittest
 
 
-def has_same_char_set_by_set_cmp_full(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_set_cmp(str_1: str, str_2: str) -> bool:
     """
     Let:
 
@@ -96,8 +96,17 @@ def has_same_char_set_by_set_cmp_partial(str_1: str, str_2: str) -> bool:
     return len(char_set_1) == 0
 
 
-def has_same_char_set_by_o1_space(str_1: str, str_2: str) -> bool:
+def has_same_char_set_by_char(str_1: str, str_2: str) -> bool:
     """
+    Let:
+
+    - ``k=len(str_1)``
+    - ``l=len(str_2)``
+
+    Then:
+
+    - **Time:** ``O(k*l)`` -- loop inside loop
+    - **Space:** ``O(1)``
     """
 
     for char_1 in str_1:
@@ -148,17 +157,17 @@ class BaseTestCase (unittest.TestCase):
         self.assertFalse(self.has_same_char_set('abaacab', 'ddcbd'))
 
 
-class TestCaseSetCmpFull (BaseTestCase):
-    impl = staticmethod(has_same_char_set_by_set_cmp_full)
+class TestCaseBySetCmp (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_set_cmp)
 
-class TestCaseSetXor (BaseTestCase):
+class TestCaseBySetXor (BaseTestCase):
     impl = staticmethod(has_same_char_set_by_set_xor)
 
-class TestCaseSetCmpPartial (BaseTestCase):
+class TestCaseBySetCmpPartial (BaseTestCase):
     impl = staticmethod(has_same_char_set_by_set_cmp_partial)
 
-class TestCaseSetCmpO1Space (BaseTestCase):
-    impl = staticmethod(has_same_char_set_by_o1_space)
+class TestCaseByChar (BaseTestCase):
+    impl = staticmethod(has_same_char_set_by_char)
 
 
 if __name__ == '__main__':
