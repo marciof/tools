@@ -145,7 +145,13 @@ Digital clock format:
 
     %-l:%M%P %a %-m/%-e
 
-## File manager video thumbnails
+## Thunar File Manager
+
+### Dropbox integration
+
+    apt install thunar-dropbox-plugin
+
+### Video thumbnails
 
 https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumbnails-in-xubuntu-18-04
 

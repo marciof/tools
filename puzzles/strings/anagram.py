@@ -21,8 +21,8 @@ def is_anagram_by_sorting(word_1: str, word_2: str) -> bool:
 
     if len(word_1) != len(word_2):
         return False
-    else:
-        return sorted(word_1) == sorted(word_2)
+
+    return sorted(word_1) == sorted(word_2)
 
 
 def is_anagram_by_splicing(word_1: str, word_2: str) -> bool:
