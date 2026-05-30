@@ -72,6 +72,30 @@ else
     host_prompt=
 fi
 
+# gnome-keyring v48.0 removes ssh-agent by default:
+#   https://gitlab.gnome.org/GNOME/gnome-keyring/-/commit/adadbad2fdeb79a654dca37b31349e2a1d527ef0
+#
+# gcr v4.2.1 (GNOME Cryptography) has gcr-ssh-agent set `SSH_AUTH_SOCK`:
+#   https://gitlab.gnome.org/GNOME/gcr/-/commit/7f9dfb291ac475beac911c3868bebd4561267a82
+#   $ systemctl --user cat gcr-ssh-agent.socket
+#
+# But it's not propagating to my user session (for some reason to investigate):
+#   $ printenv | grep SSH_AUTH_SOCK
+#
+# The Arch Linux wiki on GNOME Keyring and SSH keys says otherwise though:
+#   https://wiki.archlinux.org/title/GNOME/Keyring#Setup_gcr
+#
+# Even after I enable and start the GCR SSH agent:
+#   $ systemctl --user enable --now gcr-ssh-agent.socket
+#
+# As well as configuring Xfce to use GNOME services:
+#   https://docs.xfce.org/xfce/xfce4-session/advanced#ssh_and_gpg_agents
+#
+# Therefore avoid hardcoding the environment variable by using `systemctl`:
+if [ -z "${SSH_AUTH_SOCK:-}" ] && have systemctl; then
+    eval "export $(systemctl --user show-environment | grep SSH_AUTH_SOCK)"
+fi
+
 if have nano; then
     alias nano='nano -Sw'
     export EDITOR="$HAVE_NAME" GIT_EDITOR="$HAVE_NAME"
