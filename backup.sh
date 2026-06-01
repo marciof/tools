@@ -2,6 +2,13 @@
 
 set -e -u -x
 
-time rsync --archive --partial --progress --delete --exclude=.dropbox.cache \
+date
+
+rsync \
+    --archive --partial --delete --executability --atimes --no-links \
+    --human-readable --info=progress1,name0 \
+    --exclude=.dropbox.cache \
     ~/Dropbox \
-    "/media/$USER/Backup"
+    "/run/media/$USER/Backup"
+
+date
