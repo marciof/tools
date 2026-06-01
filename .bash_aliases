@@ -135,7 +135,7 @@ if have git; then
     alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
     alias p='g push'
     alias t='g status'
-    alias v='g pull'
+    alias u='g pull'
 
     if command -v _completion_loader >/dev/null; then
         _completion_loader git
@@ -155,7 +155,7 @@ if have git; then
         __git_complete l _git_log
         __git_complete p _git_push
         __git_complete t _git_status
-        __git_complete v _git_pull
+        __git_complete u _git_pull
     fi
 
     git_cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cached"
