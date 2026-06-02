@@ -63,6 +63,34 @@ def is_anagram_by_splicing(word_1: str, word_2: str) -> bool:
     return is_anagram_by_splicing(word_1[1:], word_2[:i] + word_2[i+1:])
 
 
+def is_anagram_by_splicing_iter(word_1: str, word_2: str) -> bool:
+    """
+    Let:
+
+    - ``n=len(word_1)=len(word_2)``
+
+    Then:
+
+    - **Time:** ``O(n^2)``
+    - **Space:** ``O(n)``
+    """
+
+    if len(word_1) != len(word_2):
+        return False
+
+    while True:
+        if len(word_1) == 0 and len(word_2) == 0:
+            return True
+
+        i = word_2.find(word_1[0])
+
+        if i < 0:
+            return False
+
+        word_1 = word_1[1:]
+        word_2 = word_2[:i] + word_2[i+1:]
+
+
 def is_anagram_by_histogram(word_1: str, word_2: str) -> bool:
     """
     """
@@ -120,6 +148,9 @@ class TestCaseBySorting (BaseTestCase):
 
 class TestCaseBySplicing (BaseTestCase):
     impl = staticmethod(is_anagram_by_splicing)
+
+class TestCaseBySplicingIter (BaseTestCase):
+    impl = staticmethod(is_anagram_by_splicing_iter)
 
 class TestCaseByHistogram (BaseTestCase):
     impl = staticmethod(is_anagram_by_histogram)
