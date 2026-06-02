@@ -47,20 +47,6 @@
 
 ## High DPI
 
-    apt install numix-gtk-theme numix-icon-theme
-
-*Appearance*, and *LightDM GTK+ Greeter*:
-
-- *Style*: Greybird-dark
-- *Icons*: Numix
-- *Fonts*:
-  - *Size*: 10
-  - *Custom DPI setting*: 150
-
-*Window Manager*:
-
-- *Style*: Greybird-dark
-
 ### GRUB
 
 If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode` is set to `gfxterm`, then the keyboard input will have a very noticeable lag the higher the resolution is. Set its terminal output to console to disable graphics mode and remove input lag:
@@ -83,10 +69,6 @@ And then update the configuration:
 ### Spotify
 
     spotify --force-device-scale-factor=1.5
-
-### Mouse
-
-Open *Mouse and Touchpad*, go to *Theme*, and change *Cursor size* to 32.
 
 ## Touchpad
 
@@ -138,24 +120,6 @@ And disable caps lock:
 
 - *Emoji* tab.
 - *Keyboard Shortcuts* section.
-
-## Date / Time
-
-Digital clock format:
-
-    %-l:%M%P %a %-m/%-e
-
-## Thunar File Manager
-
-### Dropbox integration
-
-    apt install thunar-dropbox-plugin
-
-### Video thumbnails
-
-https://askubuntu.com/questions/1043976/fix-thunar-doesnt-show-image-video-thumbnails-in-xubuntu-18-04
-
-    apt install tumbler tumbler-plugins-extra ffmpegthumbnailer
 
 ## Unattended upgrades
 
