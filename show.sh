@@ -1,19 +1,20 @@
 #!/bin/sh
 # Generic viewer.
 
-# TODO missing syntax highlighting for OPML files
-# TODO option to unambiguously show a file that case-insensitively
-# TODO use `file` to figure out type for highlighting (eg. non-*.json JSON)
+# TODO documentation (man pages? functions and parameters/return)
+# TODO tests
+# TODO logging
 # TODO debug option? eg. does `set -x`
+# TODO profilingm measure performance
+# TODO use `CDPATH` if present
+# TODO missing syntax highlighting for OPML files
+# TODO option to unambiguously show a file case-insensitively
+# TODO use `file` to figure out type for highlighting (eg. non-*.json JSON)
 # TODO piping (` | mode_run_color`) can remove error exit codes
 # TODO check which tools are missing a `--` to separate options from arguments
 # TODO don't discard pydoc's formatting when disabling pager (and other tools?)
-# TODO document functions and parameters/return
 # TODO option to pass flag "implicitly"? eg. `show.sh -i--stat @`
 # TODO detect `colordiff` for colored diffs? eg. outside Git
-# TODO tests
-# TODO logging
-# TODO measure performance
 # TODO support for "filtering"? https://github.com/BrianHicks/tree-grepper
 # TODO support ELF files? https://github.com/ruslashev/elfcat
 # TODO allow different outputs? eg. HTTP to serve a file
@@ -24,6 +25,7 @@
 # TODO detect URLs without an explicit protocol? eg. "www."
 # TODO use POSIX env vars `COLUMNS` and `LINES`?
 # TODO make `xargs` call POSIX compliant?
+# TODO how to allow its alias to be sent to `xargs`? or alternatives?
 # TODO image support via sixels?
 # TODO chafa terminal graphics, https://hpjansson.org/chafa/
 # TODO terminal image renderer, https://github.com/posva/catimg
