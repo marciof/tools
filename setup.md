@@ -66,10 +66,6 @@ And then update the configuration:
 
     update-grub
 
-### Spotify
-
-    spotify --force-device-scale-factor=1.5
-
 ## Touchpad
 
 Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.1s`.
