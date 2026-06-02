@@ -97,23 +97,6 @@ For Bluetooth auto-connect, open *Session and Startup* settings:
 
 ## Keyboard
 
-### Compose key
-
-*Keyboard* settings:
-
-- *Layout* tab.
-- *Compose key* dropdown.
-
-Or alternatively in `~/.xsessionrc`:
-
-    setxkbmap -option compose:caps
-
-And disable caps lock:
-
-`/etc/default/keyboard`
-
-    XKBOPTIONS="ctrl:nocaps"
-
 ### Emoji input
 
 *Bus Preferences* settings (command `ibus-setup`):
