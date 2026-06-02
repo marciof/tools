@@ -24,12 +24,12 @@ def is_anagram_by_sorting(word_1: str, word_2: str) -> bool:
     Assuming:
 
     - ``O(n log n)`` sort time
-    - ``O(1)`` sort space (sorting stability not required)
+    - ``O(n)`` sort space
 
     Then:
 
     - **Time:** ``O(n log n )``
-    - **Space:** ``O(n)`` -- creates new strings
+    - **Space:** ``O(n)`` -- sorting is not in-place
     """
 
     if len(word_1) != len(word_2):
@@ -40,6 +40,14 @@ def is_anagram_by_sorting(word_1: str, word_2: str) -> bool:
 
 def is_anagram_by_splicing(word_1: str, word_2: str) -> bool:
     """
+    Let:
+
+    - ``n=len(word_1)=len(word_2)``
+
+    Then:
+
+    - **Time:** ``O(n^2)``
+    - **Space:** ``O(n^2)`` -- without tail recursion
     """
 
     if len(word_1) != len(word_2):
