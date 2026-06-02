@@ -38,7 +38,7 @@ def is_anagram_by_sorting(word_1: str, word_2: str) -> bool:
     return sorted(word_1) == sorted(word_2)
 
 
-def is_anagram_by_splicing(word_1: str, word_2: str) -> bool:
+def is_anagram_by_splicing_recur(word_1: str, word_2: str) -> bool:
     """
     Let:
 
@@ -60,7 +60,7 @@ def is_anagram_by_splicing(word_1: str, word_2: str) -> bool:
     if i < 0:
         return False
 
-    return is_anagram_by_splicing(word_1[1:], word_2[:i] + word_2[i+1:])
+    return is_anagram_by_splicing_recur(word_1[1:], word_2[:i] + word_2[i + 1:])
 
 
 def is_anagram_by_splicing_iter(word_1: str, word_2: str) -> bool:
@@ -146,8 +146,8 @@ class BaseTestCase (unittest.TestCase):
 class TestCaseBySorting (BaseTestCase):
     impl = staticmethod(is_anagram_by_sorting)
 
-class TestCaseBySplicing (BaseTestCase):
-    impl = staticmethod(is_anagram_by_splicing)
+class TestCaseBySplicingRecur (BaseTestCase):
+    impl = staticmethod(is_anagram_by_splicing_recur)
 
 class TestCaseBySplicingIter (BaseTestCase):
     impl = staticmethod(is_anagram_by_splicing_iter)
