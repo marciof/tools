@@ -17,6 +17,7 @@ have() {
 }
 
 child_dir="$(readlink -e "$(dirname "${BASH_SOURCE[0]}")")"
+cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cache"
 abs_home_dir="$(readlink -e "$HOME")"
 is_child_home_dir=N
 
@@ -158,9 +159,13 @@ if have git; then
         __git_complete u _git_pull
     fi
 
-    git_cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cached"
+    if [ ! -e "$cache_file" ]; then
+        git_commit_template_file="$cache_file-git-commit-template"
+        echo >"$git_commit_template_file"
 
-    if [ ! -e "$git_cache_file" ]; then
+        git config --global commit.template "$git_commit_template_file"
+        git config --global pager.status true
+
         case "$(git help config 2>&1)" in
             *--rebase-merges*)
                 git config --global pull.rebase merges;;
@@ -169,9 +174,6 @@ if have git; then
             *)
                 git config --global --bool pull.rebase true;;
         esac
-
-        git config --global pager.status true
-        : >"$git_cache_file"
     fi
 
     export GIT_PS1_SHOWSTASHSTATE=x
@@ -193,3 +195,5 @@ _job_count_ps1() {
 if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
     export PS1="\[\e[1;34m\]\w\[$color_off\]$host_prompt$git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$color_off\]\\$ "
 fi
+
+: >"$cache_file"
