@@ -17,6 +17,19 @@ import unittest
 
 def is_anagram_by_sorting(word_1: str, word_2: str) -> bool:
     """
+    Let:
+
+    - ``n=len(word_1)=len(word_2)``
+
+    Assuming:
+
+    - ``O(n log n)`` sort time
+    - ``O(1)`` sort space (sorting stability not required)
+
+    Then:
+
+    - **Time:** ``O(n log n )``
+    - **Space:** ``O(n)`` -- creates new strings
     """
 
     if len(word_1) != len(word_2):
