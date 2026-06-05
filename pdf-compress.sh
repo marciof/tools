@@ -8,7 +8,6 @@
 # with its filename ending in ".compressed".
 #
 # Arguments: [file ...]
-# Stdin: none
 # Stdout: tab separated lines, one per PDF filename: original, compressed
 # Stderr: compression status/progress
 #

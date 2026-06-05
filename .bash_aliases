@@ -41,6 +41,7 @@ done
 
 shopt -s autocd dirspell histappend
 alias -- -='cd -'
+alias j='jobs -l'
 
 have dircolors && eval "$("$HAVE_NAME" -b)"
 have lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
@@ -62,13 +63,13 @@ bind '"\e[1;5C": forward-word' # ctrl-right
 bind '"\e[1;5D": backward-word' # ctrl-left
 bind '"\e[3;5~": kill-word' # ctrl-delete
 
-color_off='\e[0m'
-yellow='\e[0;33m'
+no_color='\[\e[0m\]'
+yellow='\[\e[0;33m\]'
 
 if [ -n "${BASHRC_CUSTOM_LOCATION:-}" ]; then
-    host_prompt=" \[$yellow\]$BASHRC_CUSTOM_LOCATION\[$color_off\]"
+    host_prompt="$yellow$BASHRC_CUSTOM_LOCATION$no_color"
 elif [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
-    host_prompt=" \[$yellow\]\\u@\\h\[$color_off\]"
+    host_prompt="$yellow\\u@\\h$no_color"
 else
     host_prompt=
 fi
@@ -131,7 +132,6 @@ if have git; then
     alias b='g branch -vv'
     alias d='g diff'
     alias h='g blame --date=short'
-    alias j='g stash'
     alias k='g checkout'
     alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
     alias p='g push'
@@ -151,7 +151,6 @@ if have git; then
         __git_complete c _git_commit
         __git_complete d _git_diff
         __git_complete h __gitcomp
-        __git_complete j _git_stash
         __git_complete k _git_checkout
         __git_complete l _git_log
         __git_complete p _git_push
@@ -182,7 +181,8 @@ if have git; then
     if ! command -v __git_ps1 >/dev/null; then
         echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
     else
-        git_prompt="\[\e[0;32m\]\$(__git_ps1 ' %s')\[$color_off\]"
+        green='\[\e[0;32m\]'
+        git_prompt="$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
@@ -192,8 +192,13 @@ _job_count_ps1() {
     [ "$jobs" -gt 0 ] && echo " $jobs"
 }
 
+# TODO show $? if non-zero from previous command?
 if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
-    export PS1="\[\e[1;34m\]\w\[$color_off\]$host_prompt$git_prompt\[\e[1;31m\]\$(_job_count_ps1)\[$color_off\]\\$ "
+    red_bold='\[\e[1;31m\]'
+    blue_bold='\[\e[1;34m\]'
+
+    # TODO include job count formatting in its function
+    export PS1="$blue_bold\w$no_color$host_prompt$git_prompt$red_bold\$(_job_count_ps1)$no_color\\$ "
 fi
 
 : >"$cache_file"

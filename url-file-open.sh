@@ -8,8 +8,6 @@
 #   URL=https://www.example.com
 #
 # Arguments: file
-# Stdin: none
-# Stdout: none
 #
 # Runtime dependencies:
 #   apt install xdg-utils # Version: 1.1.3-2ubuntu1.20.10.2 # open URL
