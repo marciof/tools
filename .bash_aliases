@@ -32,7 +32,7 @@ for child in "${BASH_SOURCE[0]}".*; do
 
         if [ "$is_child_home_dir" = Y ]; then
             # shellcheck disable=SC2088
-            child="~/${child##$abs_home_dir/}"
+            child="~/${child##"$abs_home_dir/"}"
         fi
 
         echo "* Loaded: $child" >&2
