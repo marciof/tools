@@ -89,6 +89,11 @@ if DESC=' <https://github.com/sharkdp/fd>' have fd fdfind; then
     alias fd="$HAVE_NAME"
 fi
 
+if DESC=' <https://www.freedesktop.org/wiki/Software/xdg-utils/>' have xdg-open; then
+    # shellcheck disable=SC2139
+    alias o="$HAVE_NAME"
+fi
+
 if have show.sh; then
     # shellcheck disable=SC2139
     alias s="$HAVE_NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
