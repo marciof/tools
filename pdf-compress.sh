@@ -5,20 +5,20 @@
 # If no PDF files are specified in the command line, then the glob pattern
 # '*.pdf' is used instead.
 # The compressed PDF file is stored in the same location as the original,
-# with its filename ending in ".compressed".
+# with its filename ending in ".compressed.pdf".
 #
 # Arguments: [file ...]
 # Stdout: tab separated lines, one per PDF filename: original, compressed
 # Stderr: compression status/progress
 #
 # Runtime dependencies (required):
-#   apt install ghostscript # Version: 9.52~dfsg-1ubuntu2 # compress PDF
+#   apt install ghostscript
 #
 # Runtime dependencies (optional):
-#   apt install trash-cli # Version: 0.17.1.14-5build1 # move PDF to trash
+#   apt install trash-cli
 #
 # Test dependencies:
-#   apt install shellcheck # Version: 0.7.1-1build1
+#   apt install shellcheck
 
 set -e -u
 
@@ -38,11 +38,13 @@ for pdf_file; do
         continue
     fi
 
-    compressed_pdf_file="$pdf_file.compressed"
+    compressed_pdf_file="${pdf_file%.pdf}.compressed.pdf"
 
     (
         set -x
-        gs -dNOPAUSE -dBATCH \
+        ghostscript \
+            -dNOPAUSE \
+            -dBATCH \
             -sDEVICE=pdfwrite \
             -dCompatibilityLevel=1.4 \
             -dPDFSETTINGS=/screen \

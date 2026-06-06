@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# FIXME add some more documentation
+
 if ! echo "$-" | grep -q i; then
     return 0
 fi
