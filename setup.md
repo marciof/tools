@@ -1,30 +1,22 @@
 # Software
 
 - [Ubuntu](https://ubuntu.com/download/desktop) OS / [Debian](http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/) OS
-- [Xfce](https://xfce.org) desktop environment
-- [Synapse](https://launchpad.net/synapse-project) semantic search
+- [KDE](https://kde.org)
 - [Tilix](https://gnunn1.github.io/tilix-web/) tiling terminal
 - [Liferea](https://lzone.de/liferea/) feed reader
-- [MenuLibre](https://bluesabre.org/projects/menulibre/) menu editor
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
-- [Clipman](https://docs.xfce.org/panel-plugins/clipman/start) clipboard manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
-- [KDocker](https://github.com/user-none/KDocker) system tray application docker
 - [Qalculate](https://qalculate.github.io) desktop calculator
 - [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
 - [Handbrake](https://handbrake.fr) video transcoder
 - [LosslessCut](https://github.com/mifi/lossless-cut) video splitting
 - [Rygel](https://gnome.pages.gitlab.gnome.org/rygel/) home media sharing
-- [Redshift](https://github.com/jonls/redshift) screen color temperature
 - [Frog](https://tenderowl.com/work/frog/) OCR from images
 - [gscan2pdf](http://gscan2pdf.sourceforge.net) image/scanner with OCR to PDF
-- [Evince](https://gitlab.gnome.org/GNOME/evince) PDF viewer and forms
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
 - [Blueman](https://github.com/blueman-project/blueman) bluetooth manager
-- [Mugshot](https://github.com/bluesabre/mugshot) user profile editor
-- [LightDM GTK+ Greeter](https://github.com/mjun/lightdm-gtk-greeter-settings) login screen editor
 - [Marble](https://marble.kde.org) world atlas map
 
 ## Windows
@@ -90,15 +82,6 @@ For Bluetooth auto-connect, open *Session and Startup* settings:
 
 
     bash -c 'sleep 3 && bluetoothctl connect CC:90:93:09:FF:26'
-
-## Keyboard
-
-### Emoji input
-
-*Bus Preferences* settings (command `ibus-setup`):
-
-- *Emoji* tab.
-- *Keyboard Shortcuts* section.
 
 ## Unattended upgrades
 
