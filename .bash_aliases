@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Abort if shell isn't interactive, eg. `i`.
+# Abort when shell isn't interactive, eg. `i`.
 case "$-" in *i*) ;; *) return 0;; esac
 
 have() {
@@ -15,26 +15,14 @@ have() {
     return 1
 }
 
-child_dir="$(readlink --canonicalize-existing "$(dirname "${BASH_SOURCE[0]}")")"
-cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cache"
-abs_home_dir="$(readlink --canonicalize-existing "$HOME")"
-is_child_home_dir=N
+# shellcheck disable=SC3028,SC3054
+self_file="${BASH_SOURCE[0]}"
+cache_file="$self_file-cache"
 
-if [ "$child_dir" = "$abs_home_dir" ]; then
-    is_child_home_dir=Y
-fi
-
-for child in "${BASH_SOURCE[0]}".*; do
-    if [ -e "$child" ]; then
-        # shellcheck source=/dev/null
-        . "$child_dir/$(basename "$child")"
-
-        if [ "$is_child_home_dir" = Y ]; then
-            # shellcheck disable=SC2088
-            child="~/${child##"$abs_home_dir/"}"
-        fi
-
-        echo "* Loaded: $child" >&2
+for custom_aliases in "$self_file".*; do
+    # shellcheck disable=SC1090
+    if [ -r "$custom_aliases" ] && . "$custom_aliases"; then
+        echo "* Loaded: ${custom_aliases##"$HOME/"}" >&2
     fi
 done
 
