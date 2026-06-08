@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# FIXME add some more documentation
-
-if ! echo "$-" | grep -q i; then
-    return 0
-fi
+# Abort if shell isn't interactive, eg. `i`.
+case "$-" in *i*) ;; *) return 0;; esac
 
 have() {
     for HAVE_NAME; do
@@ -18,9 +15,9 @@ have() {
     return 1
 }
 
-child_dir="$(readlink -e "$(dirname "${BASH_SOURCE[0]}")")"
+child_dir="$(readlink --canonicalize-existing "$(dirname "${BASH_SOURCE[0]}")")"
 cache_file="$child_dir/$(basename "${BASH_SOURCE[0]}")-cache"
-abs_home_dir="$(readlink -e "$HOME")"
+abs_home_dir="$(readlink --canonicalize-existing "$HOME")"
 is_child_home_dir=N
 
 if [ "$child_dir" = "$abs_home_dir" ]; then
