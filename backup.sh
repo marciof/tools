@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e -u -x
+
 date
 rsync \
     --archive --partial --delete --executability --atimes --no-links \
@@ -8,5 +9,4 @@ rsync \
     --exclude=.dropbox.cache \
     ~/Dropbox \
     "/run/media/$USER/Backup"
-
 date

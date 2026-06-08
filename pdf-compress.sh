@@ -12,8 +12,8 @@
 #
 # Arguments: [file | directory] ...
 #
-# Dependencies: ghostscript
-# Dependencies (optional): trash-cli
+# Dependencies (runtime): ghostscript
+# Dependencies (runtime / optional): trash-cli
 # Dependencies (test): shellcheck
 
 set -e -u -x

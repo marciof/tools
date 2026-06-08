@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TODO add some more documentation
+# FIXME add some more documentation
 
 if ! echo "$-" | grep -q i; then
     return 0
@@ -199,12 +199,12 @@ _job_count_ps1() {
     [ "$jobs" -gt 0 ] && echo " $jobs"
 }
 
-# TODO show $? if non-zero from previous command?
+# FIXME show $? if non-zero from previous command?
 if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
     red_bold='\[\e[1;31m\]'
     blue_bold='\[\e[1;34m\]'
 
-    # TODO include job count visual formatting in its function
+    # FIXME include job count visual formatting in its function
     export PS1="$blue_bold\w$no_color$host_prompt$git_prompt$red_bold\$(_job_count_ps1)$no_color\\$ "
 fi
 
