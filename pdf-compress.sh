@@ -1,70 +1,74 @@
 #!/bin/sh
 
-# Compresses PDF files, without replacing the original.
+# Compresses PDF files.
 #
-# If no PDF files are specified in the command line, then the glob pattern
-# '*.pdf' is used instead.
-# The compressed PDF file is stored in the same location as the original,
-# with its filename ending in ".compressed.pdf".
+# If no files are specified, then the glob pattern `*.pdf` is used instead.
 #
-# Arguments: [file ...]
-# Stdout: tab separated lines, one per PDF filename: original, compressed
-# Stderr: compression status/progress
+# The compressed file is stored in the same location as the original file, with
+# its filename ending in `.compressed.pdf`, unless its size is larger.
+# If `trash-put` is available and the size of the compressed file is smaller,
+# then the original file is moved to the trash, and the compressed file is
+# renamed to the original.
 #
-# Runtime dependencies (required):
-#   apt install ghostscript
+# Arguments: [file | directory] ...
 #
-# Runtime dependencies (optional):
-#   apt install trash-cli
-#
-# Test dependencies:
-#   apt install shellcheck
+# Dependencies: ghostscript
+# Dependencies (optional): trash-cli
+# Dependencies (test): shellcheck
 
-set -e -u
+set -e -u -x
+
+# Arguments: <original file> <compressed file>
+if command -v trash-put >/dev/null; then
+    trash_or_log() {
+        echo "Moving original PDF to trash: $1"
+        trash-put -- "$1"
+        echo "Renaming compressed PDF: $2"
+        mv --no-clobber -- "$2" "$1"
+    }
+else
+    trash_or_log() {
+        printf '%s\t%s\n' "$1" "$2"
+    }
+fi
+
+# Arguments: [file | directory]
+compress_pdf_files() {
+    for pdf_file; do
+        if [ -d "$pdf_file" ]; then
+            compress_pdf_files "$pdf_file/"*.pdf
+            continue
+        elif [ ! -r "$pdf_file" ]; then
+            echo "PDF not available or not readable: $pdf_file"
+            continue
+        fi
+
+        # Make sure the new file ends in `.pdf`. Some Ghostscript versions
+        # make it an error otherwise due to `-dSAFE` by default.
+        compressed_pdf_file="${pdf_file%.pdf}.compressed.pdf"
+
+        ghostscript \
+            -dNOPAUSE \
+            -sDEVICE=pdfwrite \
+            -dPDFSETTINGS=/screen \
+            -sOutputFile="$compressed_pdf_file" \
+            -- \
+            "$pdf_file"
+
+        original_size="$(stat --format %s -- "$pdf_file")"
+        compressed_size="$(stat --format %s -- "$compressed_pdf_file")"
+
+        if [ "$compressed_size" -ge "$original_size" ]; then
+            echo "Compressed PDF is larger, removing: $compressed_pdf_file"
+            rm -- "$compressed_pdf_file"
+        else
+            trash_or_log "$pdf_file" "$compressed_pdf_file"
+        fi
+    done
+}
 
 if [ $# -eq 0 ]; then
     set -- *.pdf
 fi
 
-has_trash_put=N
-
-if command -v trash-put >/dev/null; then
-    has_trash_put=Y
-fi
-
-for pdf_file; do
-    if ! [ -r "$pdf_file" ]; then
-        echo "PDF not available or not readable: $pdf_file" >&2
-        continue
-    fi
-
-    compressed_pdf_file="${pdf_file%.pdf}.compressed.pdf"
-
-    (
-        set -x
-        ghostscript \
-            -dNOPAUSE \
-            -dBATCH \
-            -sDEVICE=pdfwrite \
-            -dCompatibilityLevel=1.4 \
-            -dPDFSETTINGS=/screen \
-            -sOutputFile="$compressed_pdf_file" \
-            -- \
-            "$pdf_file" >&2
-    )
-
-    original_size="$(stat -c %s -- "$pdf_file")"
-    compressed_size="$(stat -c %s -- "$compressed_pdf_file")"
-
-    if [ "$compressed_size" -ge "$original_size" ]; then
-        echo "Compressed PDF is larger, removing: $compressed_pdf_file" >&2
-        (set -x; rm -- "$compressed_pdf_file")
-    elif [ "$has_trash_put" = "Y" ]; then
-        echo "Moving original PDF to trash: $pdf_file" >&2
-        (set -x; trash-put -- "$pdf_file")
-        echo "Renaming compressed PDF: $compressed_pdf_file" >&2
-        (set -x; mv -n -- "$compressed_pdf_file" "$pdf_file")
-    else
-        printf '%s\t%s\n' "$pdf_file" "$compressed_pdf_file"
-    fi
-done
+compress_pdf_files "$@"
