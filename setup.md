@@ -1,7 +1,9 @@
 # Software
 
+## Linux
+
 - [Ubuntu](https://ubuntu.com/download/desktop) OS / [Debian](http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/) OS
-- [KDE](https://kde.org)
+- [KDE](https://kde.org) desktop environment
 - [Tilix](https://gnunn1.github.io/tilix-web/) tiling terminal
 - [Liferea](https://lzone.de/liferea/) feed reader
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
@@ -18,6 +20,7 @@
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
 - [Blueman](https://github.com/blueman-project/blueman) bluetooth manager
 - [Marble](https://marble.kde.org) world atlas map
+- [Schnelle Umlaute](https://github.com/Maik-0000FF/schnelle-umlaute/) compose key alternative
 
 ## Windows
 
