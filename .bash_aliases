@@ -3,7 +3,15 @@
 # Abort when shell isn't interactive, eg. `i`.
 case "$-" in *i*) ;; *) return 0;; esac
 
-have() {
+# Arguments: <command> ...
+# Returns:
+#   0 if at least one command was found
+#   1 if no command was found
+# Env:
+#   get DESC = optional command description
+#   set HAVE_NAME = which command was found
+#   set HAVE_PATH = path to command
+have_() {
     for HAVE_NAME; do
         HAVE_PATH="$(command -v "$HAVE_NAME")"
         if [ -n "$HAVE_PATH" ]; then
@@ -11,7 +19,7 @@ have() {
         fi
     done
 
-    echo "* Missing: $*$DESC" >&2
+    echo "* Missing: $*${DESC:-}" >&2
     return 1
 }
 
@@ -30,8 +38,8 @@ shopt -s autocd dirspell histappend
 alias -- -='cd -'
 alias j='jobs -l'
 
-have dircolors && eval "$("$HAVE_NAME" -b)"
-have lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
+have_ dircolors && eval "$("$HAVE_NAME" -b)"
+have_ lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
 
 export HISTCONTROL=ignoredups
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
@@ -61,33 +69,33 @@ else
     host_prompt=
 fi
 
-if have nano; then
+if have_ nano; then
     alias nano='nano -Sw'
     export EDITOR="$HAVE_NAME" GIT_EDITOR="$HAVE_NAME"
 fi
 
-if DESC=' <https://github.com/andreafrancia/trash-cli>' have trash-put; then
+if DESC=' <https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
     # shellcheck disable=SC2139
     alias r="$HAVE_NAME --"
 fi
 
-if DESC=' <https://github.com/sharkdp/fd>' have fd fdfind; then
+if DESC=' <https://github.com/sharkdp/fd>' have_ fd fdfind; then
     # shellcheck disable=SC2139
     alias fd="$HAVE_NAME"
 fi
 
-if DESC=' <https://www.freedesktop.org/wiki/Software/xdg-utils/>' have xdg-open; then
+if DESC=' <https://www.freedesktop.org/wiki/Software/xdg-utils/>' have_ xdg-open; then
     # shellcheck disable=SC2139
     alias o="$HAVE_NAME"
 fi
 
-if have show.sh; then
+if have_ show.sh; then
     # shellcheck disable=SC2139
     alias s="$HAVE_NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
     export PAGER="$HAVE_PATH" GIT_PAGER="$HAVE_PATH"
 fi
 
-if have xclip; then
+if have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
             printf %s "$*" | xclip -selection clip-board
@@ -97,7 +105,7 @@ if have xclip; then
     }
 fi
 
-if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
+if DESC=' <https://github.com/ggreer/the_silver_searcher>' have_ ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
         alias f="$HAVE_NAME --follow --pager \"$PAGER\""
@@ -107,7 +115,7 @@ if DESC=' <https://github.com/ggreer/the_silver_searcher>' have ag; then
     fi
 fi
 
-if have git; then
+if have_ git; then
     c() {
         local cached
         cached=$(git diff --cached --name-only | wc -l)
