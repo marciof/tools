@@ -55,9 +55,6 @@ export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-
 # https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
 export PYTHONDONTWRITEBYTECODE=x
 
-alias -- -='cd -'
-alias j='jobs -l'
-
 # Disable XON/XOFF flow control so that Ctrl+S can be used for
 # `bind -q forward-search-history`.
 # https://www.gnu.org/software/coreutils/manual/html_node/Input.html#index-ixon
@@ -83,6 +80,9 @@ elif [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
 else
     host_prompt=
 fi
+
+alias -- -='cd -'
+alias j='jobs -l'
 
 if have_ nano; then
     alias nano='nano -Sw'
