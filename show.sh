@@ -6,6 +6,7 @@
 # TODO logging
 # TODO debug option? eg. does `set -x`
 # TODO fix newline handling, eg. `echo '' | show.sh` vs `printf '' | show.sh`
+# TODO add man pages support
 # TODO profiling measure performance
 # TODO use `CDPATH` if present
 # TODO look into reusing `LESSOPEN`

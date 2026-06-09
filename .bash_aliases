@@ -103,7 +103,7 @@ alias -- -='cd -'
 alias j='jobs -l'
 
 if DESC='<https://www.nano-editor.org>' have_ nano; then
-    alias nano='nano -Sw'
+    alias nano='nano --softwrap --nowrap'
     export EDITOR="$HAVE_NAME"
 fi
 
@@ -137,7 +137,7 @@ if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
 elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
-            printf %s "$*" | xclip -selection clip-board
+            printf '%s' "$*" | xclip -selection clip-board
         else
             xclip -selection clip-board
         fi
@@ -157,13 +157,14 @@ fi
 
 # FIXME move to its own Git-specific sub-aliases file?
 if DESC='<https://git-scm.com>' have_ git; then
-    # FIXME document
+    # With no arguments and no staged files: `git commit -a`
+    # Otherwise: `git commit [pass-through]`
     c() {
         # https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-gitdiffoptions--cached--merge-basecommit--path
         c_num_cached_=$(git diff --cached --name-only | wc -l)
 
         if  [ $# -eq 0 ] && [ "$c_num_cached_" -eq 0 ]; then
-            git commit -a
+            git commit --all
         else
             git commit "$@"
         fi
@@ -173,7 +174,7 @@ if DESC='<https://git-scm.com>' have_ git; then
 
     # https://git-scm.com/docs
     alias a='g add'
-    alias b='g branch -vv'
+    alias b='g branch --verbose --verbose'
     alias d='g diff'
     alias h='g blame --date=short'
     alias k='g checkout'
@@ -243,13 +244,12 @@ fi
 
 # Stdout: " <job count>" unless there aren't any background jobs
 jobs_ps1_() {
+    # shellcheck disable=SC3045
     jobs_ps1_count_="$(jobs -p -r -s | wc -l)"
     jobs_ps1_red_bold_='\001\e[1;31m\002'
     [ "$jobs_ps1_count_" -gt 0 ] \
         && printf " %b$jobs_ps1_count_%b" "$jobs_ps1_red_bold_" "$no_color"
 }
 
-# FIXME show $? if non-zero from previous command?
 export PS1="$custom_ps1\$(jobs_ps1_)\\$ "
-
 : >"$cache_file"
