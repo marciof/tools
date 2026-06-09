@@ -64,7 +64,6 @@ alias j='jobs -l'
 # https://www.gnu.org/software/bash/manual/html_node/Commands-For-History.html#index-forward_002dsearch_002dhistory-_0028C_002ds_0029
 stty -ixon
 
-bind 'set bind-tty-special-chars off'
 bind 'set completion-ignore-case on'
 bind 'set expand-tilde off'
 bind 'set mark-symlinked-directories on'
