@@ -38,6 +38,7 @@ for sub_aliases in "$self_file".*; do
 done
 
 # https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
+# shellcheck disable=SC3044
 shopt -s autocd dirspell histappend
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-HISTCONTROL
@@ -83,12 +84,15 @@ bind '"\e[1;5D": backward-word'
 bind '"\e[3;5~": kill-word'
 
 no_color='\[\e[0m\]'
+blue_bold='\[\e[1;34m\]'
 yellow='\[\e[0;33m\]'
 
+# https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
+custom_ps1="$blue_bold\w$no_color"
+
 if [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
-    host_prompt="$yellow\\u@\\h$no_color"
-else
-    host_prompt=
+    # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
+    custom_ps1="$yellow\\u@\\h$no_color $custom_ps1"
 fi
 
 alias -- -='cd -'
@@ -207,23 +211,20 @@ if have_ git; then
         echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
     else
         green='\[\e[0;32m\]'
-        git_prompt="$green\$(__git_ps1 ' %s')$no_color"
+        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
-_job_count_ps1() {
+job_count_ps1_() {
     local jobs
     jobs=$(jobs -p -r -s | wc -l)
     [ "$jobs" -gt 0 ] && echo " $jobs"
 }
 
-# FIXME show $? if non-zero from previous command?
-if [ -z "${BASHRC_KEEP_PROMPT:-}" ]; then
-    red_bold='\[\e[1;31m\]'
-    blue_bold='\[\e[1;34m\]'
+# FIXME include job count visual formatting in its function
+red_bold='\[\e[1;31m\]'
 
-    # FIXME include job count visual formatting in its function
-    export PS1="$blue_bold\w$no_color$host_prompt$git_prompt$red_bold\$(_job_count_ps1)$no_color\\$ "
-fi
+# FIXME show $? if non-zero from previous command?
+export PS1="$custom_ps1$red_bold\$(job_count_ps1_)$no_color\\$ "
 
 : >"$cache_file"
