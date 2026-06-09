@@ -109,7 +109,7 @@ fi
 
 if DESC='<https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
     # shellcheck disable=SC2139
-    alias r="$HAVE_NAME --"
+    alias r="$HAVE_NAME"
 fi
 
 if DESC='<https://github.com/sharkdp/fd>' have_ fd fdfind; then
@@ -132,8 +132,9 @@ fi
 #   OR
 # Stdin: text to copy
 if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
-    # shellcheck disable=SC2139
-    alias cb="$HAVE_NAME --"
+    cb() {
+        wl-copy -- "$*"
+    }
 elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
@@ -144,18 +145,12 @@ elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     }
 fi
 
-# FIXME have `ag` honor the `$PAGER` env var
 if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
-    if [ -n "${PAGER:-}" ]; then
-        # shellcheck disable=SC2139
-        alias f="$HAVE_NAME --follow --pager \"$PAGER\""
-    else
-        # shellcheck disable=SC2139
-        alias f="$HAVE_NAME --follow"
-    fi
+    f() {
+        ag --follow --pager "${PAGER:-cat}" "$*"
+    }
 fi
 
-# FIXME move to its own Git-specific sub-aliases file?
 if DESC='<https://git-scm.com>' have_ git; then
     # Commits all unstaged and deleted files when given no arguments,
     # otherwise passes-through all the arguments as-is.

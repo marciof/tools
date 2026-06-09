@@ -5,6 +5,7 @@
 # TODO tests
 # TODO logging
 # TODO debug option? eg. does `set -x`
+# TODO seems to break `ag`'s use of `$PAGER` when using pipes
 # TODO fix newline handling, eg. `echo '' | show.sh` vs `printf '' | show.sh`
 # TODO add man pages support
 # TODO profiling measure performance
