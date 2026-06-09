@@ -183,9 +183,9 @@ if DESC='<https://git-scm.com>' have_ git; then
     alias t='g status'
     alias u='g pull'
 
-    # FIXME `_completion_loader` was deprecated in v2.12
-    #   https://github.com/scop/bash-completion/commit/d9082d2c8dff6b709786862bcd1b8d1698648ea1
-    if DESC='<https://github.com/scop/bash-completion>' have_ _completion_loader; then
+    # Deprecated `_completion_loader` in v2.12:
+    # https://github.com/scop/bash-completion/commit/d9082d2c8dff6b709786862bcd1b8d1698648ea1
+    if DESC='<https://github.com/scop/bash-completion>' have_ _comp_complete_load _completion_loader; then
         "$HAVE_NAME" git
 
         __git_complete g __git_main
@@ -217,7 +217,7 @@ if DESC='<https://git-scm.com>' have_ git; then
                 # https://git-scm.com/docs/git-rebase#Documentation/git-rebase.txt---rebase-mergesrebase-cousinsno-rebase-cousins
                 git config --global pull.rebase merges;;
             *--preserve-merges*)
-                # Deprecated, removed in v2.34:
+                # Deprecated and removed in v2.34:
                 # https://github.com/git/git/blob/master/Documentation/RelNotes/2.34.0.adoc
                 git config --global pull.rebase preserve;;
             *)
