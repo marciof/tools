@@ -230,6 +230,7 @@ if DESC='<https://git-scm.com>' have_ git; then
     # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
     export GIT_PS1_SHOWDIRTYSTATE=1
     export GIT_PS1_SHOWSTASHSTATE=1
+    export GIT_PS1_SHOWUNTRACKEDFILES=1
     export GIT_PS1_STATESEPARATOR=
 
     if ! command -v __git_ps1 >/dev/null; then
