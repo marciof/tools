@@ -240,7 +240,9 @@ if DESC='<https://git-scm.com>' have_ git; then
 
     if DESC='<https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh>' have_ __git_ps1; then
         green='\001\e[0;32m\002'
-        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
+
+        # Hide the `=` indicator when HEAD matches upstream.
+        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s' | tr -d =)$no_color"
     fi
 fi
 
