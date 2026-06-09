@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Abort when shell isn't interactive, eg. `i`.
+# Abort when shell isn't interactive.
 case "$-" in *i*) ;; *) return 0;; esac
 
 # Arguments: <command> ...
