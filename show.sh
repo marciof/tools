@@ -5,7 +5,8 @@
 # TODO tests
 # TODO logging
 # TODO debug option? eg. does `set -x`
-# TODO profilingm measure performance
+# TODO fix newline handling, eg. `echo '' | show.sh` vs `printf '' | show.sh`
+# TODO profiling measure performance
 # TODO use `CDPATH` if present
 # TODO look into reusing `LESSOPEN`
 # TODO missing syntax highlighting for OPML files
