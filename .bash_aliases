@@ -20,7 +20,7 @@ have_() {
         fi
     done
 
-    echo "* Missing: $*${DESC:-}" >&2
+    echo "* Missing: $* ${DESC:-}" >&2
     return 1
 }
 
@@ -98,22 +98,22 @@ fi
 alias -- -='cd -'
 alias j='jobs -l'
 
-if have_ nano; then
+if DESC='<https://www.nano-editor.org>' have_ nano; then
     alias nano='nano -Sw'
     export EDITOR="$HAVE_NAME" GIT_EDITOR="$HAVE_NAME"
 fi
 
-if DESC=' <https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
+if DESC='<https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
     # shellcheck disable=SC2139
     alias r="$HAVE_NAME --"
 fi
 
-if DESC=' <https://github.com/sharkdp/fd>' have_ fd fdfind; then
+if DESC='<https://github.com/sharkdp/fd>' have_ fd fdfind; then
     # shellcheck disable=SC2139
     alias fd="$HAVE_NAME"
 fi
 
-if DESC=' <https://www.freedesktop.org/wiki/Software/xdg-utils/>' have_ xdg-open; then
+if DESC='<https://www.freedesktop.org/wiki/Software/xdg-utils/>' have_ xdg-open; then
     # shellcheck disable=SC2139
     alias o="$HAVE_NAME"
 fi
@@ -134,7 +134,7 @@ if have_ xclip; then
     }
 fi
 
-if DESC=' <https://github.com/ggreer/the_silver_searcher>' have_ ag; then
+if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
     if [ -n "$PAGER" ]; then
         # shellcheck disable=SC2139
         alias f="$HAVE_NAME --follow --pager \"$PAGER\""
