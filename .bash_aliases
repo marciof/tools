@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Abort when shell isn't interactive.
+# https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html#tag_19_05_02
 case "$-" in *i*) ;; *) return 0;; esac
 
 # Arguments: <command> ...
@@ -23,8 +24,10 @@ have_() {
     return 1
 }
 
+# https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-BASH_005fSOURCE
 # shellcheck disable=SC3028,SC3054
 self_file="${BASH_SOURCE[0]}"
+
 cache_file="$self_file-cache"
 
 for custom_aliases in "$self_file".*; do
@@ -34,25 +37,38 @@ for custom_aliases in "$self_file".*; do
     fi
 done
 
+# https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
 shopt -s autocd dirspell histappend
+
+# https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-HISTCONTROL
+export HISTCONTROL=ignoredups
+
+# https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-PROMPT_005fDIRTRIM
+export PROMPT_DIRTRIM=2
+
+# https://www.gnu.org/software/coreutils/manual/html_node/dircolors-invocation.html
+have_ dircolors && eval "$("$HAVE_NAME" --sh)"
+
+have_ lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
+export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
+
+# https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
+export PYTHONDONTWRITEBYTECODE=x
+
 alias -- -='cd -'
 alias j='jobs -l'
 
-have_ dircolors && eval "$("$HAVE_NAME" -b)"
-have_ lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
+# Disable XON/XOFF flow control so that Ctrl+S can be used for
+# `bind -q forward-search-history`.
+# https://www.gnu.org/software/coreutils/manual/html_node/Input.html#index-ixon
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-History.html#index-forward_002dsearch_002dhistory-_0028C_002ds_0029
+stty -ixon
 
-export HISTCONTROL=ignoredups
-export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
-export PROMPT_DIRTRIM=2
-export PYTHONDONTWRITEBYTECODE=x
-
-stty -ixon # Allow `bind -q forward-search-history`.
-
-bind 'set bind-tty-special-chars Off'
-bind 'set completion-ignore-case On'
-bind 'set expand-tilde Off'
-bind 'set mark-symlinked-directories On'
-bind 'set visible-stats On'
+bind 'set bind-tty-special-chars off'
+bind 'set completion-ignore-case on'
+bind 'set expand-tilde off'
+bind 'set mark-symlinked-directories on'
+bind 'set visible-stats on'
 
 bind '"\e[1;5C": forward-word' # ctrl-right
 bind '"\e[1;5D": backward-word' # ctrl-left

@@ -7,6 +7,7 @@
 # TODO debug option? eg. does `set -x`
 # TODO profilingm measure performance
 # TODO use `CDPATH` if present
+# TODO look into reusing `LESSOPEN`
 # TODO missing syntax highlighting for OPML files
 # TODO option to unambiguously show a file case-insensitively
 # TODO use `file` to figure out type for highlighting (eg. non-*.json JSON)
