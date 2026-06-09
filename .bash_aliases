@@ -257,3 +257,7 @@ jobs_ps1_() {
 
 export PS1="$custom_ps1\$(jobs_ps1_)\\$ "
 : >"$cache_file"
+
+# Disable in case other scripts are loaded/injected, eg. IntelliJ's terminal.
+# https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20%22TERMINAL_EMULATOR%22&type=code
+set +o nounset
