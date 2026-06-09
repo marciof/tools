@@ -158,13 +158,13 @@ if DESC='<https://git-scm.com>' have_ git; then
     # Arguments: <> | <pass-through> ...
     c() {
         # https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-gitdiffoptions--cached--merge-basecommit--path
-        c_num_cached_=$(git diff --cached --name-only | wc -l)
+        c_num_cached_="$(git diff --cached --name-only | wc -l)"
 
         if  [ $# -eq 0 ] && [ "$c_num_cached_" -eq 0 ]; then
-            git commit --all
-        else
-            git commit "$@"
+            set -- --all
         fi
+
+        git commit "$@"
     }
 
     alias g=git
