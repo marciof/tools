@@ -155,7 +155,9 @@ if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
     fi
 fi
 
+# FIXME move to its own Git-specific sub-aliases file?
 if DESC='<https://git-scm.com>' have_ git; then
+    # FIXME document
     c() {
         _c_num_cached=$(git diff --cached --name-only | wc -l)
 
@@ -167,6 +169,8 @@ if DESC='<https://git-scm.com>' have_ git; then
     }
 
     alias g=git
+
+    # https://git-scm.com/docs
     alias a='g add'
     alias b='g branch -vv'
     alias d='g diff'
@@ -181,11 +185,7 @@ if DESC='<https://git-scm.com>' have_ git; then
     #   https://github.com/scop/bash-completion/commit/d9082d2c8dff6b709786862bcd1b8d1698648ea1
     if DESC='<https://github.com/scop/bash-completion>' have_ _completion_loader; then
         "$HAVE_NAME" git
-    fi
 
-    if ! command -v __git_complete >/dev/null; then
-        echo '* Missing: git Bash completion: https://github.com/git/git/blob/master/contrib/completion/git-completion.bash (or apt "bash-completion", or load order in .bashrc)' >&2
-    else
         __git_complete g __git_main
         __git_complete a _git_add
         __git_complete b _git_branch
