@@ -128,6 +128,9 @@ if have_ show.sh; then
     export PAGER="$HAVE_PATH"
 fi
 
+# Arguments: [text to copy] ...
+#   OR
+# Stdin: text to copy
 if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
     # shellcheck disable=SC2139
     alias cb="$HAVE_NAME --"
@@ -141,6 +144,7 @@ elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     }
 fi
 
+# FIXME have `ag` honor the `$PAGER` env var
 if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
     if [ -n "${PAGER:-}" ]; then
         # shellcheck disable=SC2139
