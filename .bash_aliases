@@ -90,7 +90,8 @@ yellow='\[\e[0;33m\]'
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 custom_ps1="$blue_bold\w$no_color"
 
-if [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
+# https://man.openbsd.org/ssh#SSH_CONNECTION
+if [ -n "${SSH_CONNECTION:-}" ]; then
     # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
     custom_ps1="$yellow\\u@\\h$no_color $custom_ps1"
 fi
@@ -124,6 +125,7 @@ if have_ show.sh; then
     export PAGER="$HAVE_PATH" GIT_PAGER="$HAVE_PATH"
 fi
 
+# FIXME look into https://github.com/bugaevc/wl-clipboard
 if DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
