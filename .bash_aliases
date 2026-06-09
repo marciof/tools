@@ -100,7 +100,7 @@ alias j='jobs -l'
 
 if DESC='<https://www.nano-editor.org>' have_ nano; then
     alias nano='nano -Sw'
-    export EDITOR="$HAVE_NAME" GIT_EDITOR="$HAVE_NAME"
+    export EDITOR="$HAVE_NAME"
 fi
 
 if DESC='<https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
@@ -206,6 +206,10 @@ if have_ git; then
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
+
+    if [ -n "${EDITOR:-}" ]; then
+        export GIT_EDITOR="$EDITOR"
+    fi
 
     if ! command -v __git_ps1 >/dev/null; then
         echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
