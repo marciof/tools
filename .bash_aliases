@@ -147,7 +147,7 @@ fi
 
 if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
     f() {
-        ag --follow --pager "${PAGER:-cat}" "$*"
+        ag --follow --pager "${PAGER:-cat}" "$@"
     }
 fi
 
