@@ -122,7 +122,7 @@ fi
 if have_ show.sh; then
     # shellcheck disable=SC2139
     alias s="$HAVE_NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
-    export PAGER="$HAVE_PATH" GIT_PAGER="$HAVE_PATH"
+    export PAGER="$HAVE_PATH"
 fi
 
 # FIXME look into https://github.com/bugaevc/wl-clipboard
@@ -208,10 +208,8 @@ if have_ git; then
 
     export GIT_PS1_SHOWSTASHSTATE=x
     export GIT_PS1_STATESEPARATOR=
-
-    if [ -n "${EDITOR:-}" ]; then
-        export GIT_EDITOR="$EDITOR"
-    fi
+    export GIT_EDITOR="${EDITOR:-}"
+    export GIT_PAGER="${PAGER:-}"
 
     if ! command -v __git_ps1 >/dev/null; then
         echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
