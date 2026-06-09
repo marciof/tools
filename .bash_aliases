@@ -103,8 +103,9 @@ alias -- -='cd -'
 alias j='jobs -l'
 
 if DESC='<https://www.nano-editor.org>' have_ nano; then
-    alias nano='nano --softwrap --nowrap'
-    export EDITOR="$HAVE_NAME"
+    export EDITOR="$HAVE_NAME --softwrap --nowrap"
+    # shellcheck disable=SC2139
+    alias nano="$EDITOR"
 fi
 
 if DESC='<https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
