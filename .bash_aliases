@@ -64,12 +64,23 @@ stty -ixon
 # https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html#index-completion_002dignore_002dcase
 bind 'set completion-ignore-case on'
 
+# https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html#index-mark_002dsymlinked_002ddirectories
 bind 'set mark-symlinked-directories on'
+
+# https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html#index-visible_002dstats
 bind 'set visible-stats on'
 
-bind '"\e[1;5C": forward-word' # ctrl-right
-bind '"\e[1;5D": backward-word' # ctrl-left
-bind '"\e[3;5~": kill-word' # ctrl-delete
+# Bind Ctrl-Right as well.
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-forward_002dword-_0028M_002df_0029
+bind '"\e[1;5C": forward-word'
+
+# Bind Ctrl-Left as well.
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-backward_002dword-_0028M_002db_0029
+bind '"\e[1;5D": backward-word'
+
+# Bind Ctrl-Delete as well.
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Killing.html#index-kill_002dword-_0028M_002dd_0029
+bind '"\e[3;5~": kill-word'
 
 no_color='\[\e[0m\]'
 yellow='\[\e[0;33m\]'
