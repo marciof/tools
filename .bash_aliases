@@ -128,7 +128,7 @@ if have_ show.sh; then
     export PAGER="$HAVE_PATH"
 fi
 
-# Arguments: [text to copy] ...
+# Arguments: <text to copy> ...
 #   OR
 # Stdin: text to copy
 if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
@@ -157,8 +157,10 @@ fi
 
 # FIXME move to its own Git-specific sub-aliases file?
 if DESC='<https://git-scm.com>' have_ git; then
-    # With no arguments and no staged files: `git commit -a`
-    # Otherwise: `git commit [pass-through]`
+    # Commits all unstaged and deleted files when given no arguments,
+    # otherwise passes-through all the arguments as-is.
+    #
+    # Arguments: <> | <pass-through> ...
     c() {
         # https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-gitdiffoptions--cached--merge-basecommit--path
         c_num_cached_=$(git diff --cached --name-only | wc -l)
