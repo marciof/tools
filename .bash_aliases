@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+set -o nounset
+
 # Abort when shell isn't interactive.
 # https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html#tag_19_05_02
 case "$-" in *i*) ;; *) return 0;; esac
@@ -126,6 +129,7 @@ if have_ show.sh; then
 fi
 
 if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
+    # shellcheck disable=SC2139
     alias cb="$HAVE_NAME --"
 elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
@@ -138,7 +142,7 @@ elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
 fi
 
 if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
-    if [ -n "$PAGER" ]; then
+    if [ -n "${PAGER:-}" ]; then
         # shellcheck disable=SC2139
         alias f="$HAVE_NAME --follow --pager \"$PAGER\""
     else
