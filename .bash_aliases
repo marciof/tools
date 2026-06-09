@@ -124,7 +124,7 @@ if have_ show.sh; then
     export PAGER="$HAVE_PATH" GIT_PAGER="$HAVE_PATH"
 fi
 
-if have_ xclip; then
+if DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
             printf %s "$*" | xclip -selection clip-board
