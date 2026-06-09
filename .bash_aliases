@@ -160,9 +160,9 @@ if DESC='<https://git-scm.com>' have_ git; then
     # FIXME document
     c() {
         # https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-gitdiffoptions--cached--merge-basecommit--path
-        _c_num_cached=$(git diff --cached --name-only | wc -l)
+        c_num_cached_=$(git diff --cached --name-only | wc -l)
 
-        if  [ $# -eq 0 ] && [ "$_c_num_cached" -eq 0 ]; then
+        if  [ $# -eq 0 ] && [ "$c_num_cached_" -eq 0 ]; then
             git commit -a
         else
             git commit "$@"
@@ -235,25 +235,22 @@ if DESC='<https://git-scm.com>' have_ git; then
     export GIT_PS1_SHOWUPSTREAM=auto
     export GIT_PS1_STATESEPARATOR=
 
-    if ! command -v __git_ps1 >/dev/null; then
-        echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
-    else
+    if DESC='<https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh>' have_ __git_ps1; then
         green='\[\e[0;32m\]'
         custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
 # FIXME document
-job_count_ps1_() {
-    local jobs
-    jobs=$(jobs -p -r -s | wc -l)
-    [ "$jobs" -gt 0 ] && echo " $jobs"
+jobs_ps1_() {
+    jobs_ps1_count_="$(jobs -p -r -s | wc -l)"
+    [ "$jobs_ps1_count_" -gt 0 ] && echo " $jobs_ps1_count_"
 }
 
 # FIXME include job count visual formatting in its function
 red_bold='\[\e[1;31m\]'
 
 # FIXME show $? if non-zero from previous command?
-export PS1="$custom_ps1$red_bold\$(job_count_ps1_)$no_color\\$ "
+export PS1="$custom_ps1$red_bold\$(jobs_ps1_)$no_color\\$ "
 
 : >"$cache_file"
