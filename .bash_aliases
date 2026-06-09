@@ -155,12 +155,11 @@ if DESC='<https://github.com/ggreer/the_silver_searcher>' have_ ag; then
     fi
 fi
 
-if have_ git; then
+if DESC='<https://git-scm.com>' have_ git; then
     c() {
-        local cached
-        cached=$(git diff --cached --name-only | wc -l)
+        _c_num_cached=$(git diff --cached --name-only | wc -l)
 
-        if  [ $# -eq 0 ] && [ "$cached" -eq 0 ]; then
+        if  [ $# -eq 0 ] && [ "$_c_num_cached" -eq 0 ]; then
             git commit -a
         else
             git commit "$@"
@@ -178,8 +177,10 @@ if have_ git; then
     alias t='g status'
     alias u='g pull'
 
-    if command -v _completion_loader >/dev/null; then
-        _completion_loader git
+    # FIXME `_completion_loader` was deprecated in v2.12
+    #   https://github.com/scop/bash-completion/commit/d9082d2c8dff6b709786862bcd1b8d1698648ea1
+    if DESC='<https://github.com/scop/bash-completion>' have_ _completion_loader; then
+        "$HAVE_NAME" git
     fi
 
     if ! command -v __git_complete >/dev/null; then
