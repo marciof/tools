@@ -16,7 +16,7 @@
 # Dependencies (runtime / optional): trash-cli
 # Dependencies (test): shellcheck
 
-set -e -u -x
+set -o errexit -o nounset -o xtrace
 
 # Arguments: <original file> <compressed file>
 if command -v trash-put >/dev/null; then

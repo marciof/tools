@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e -u -x
+set -o errexit -o nounset -o xtrace
 
 date
 rsync \

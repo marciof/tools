@@ -8,7 +8,7 @@
 # Dependencies (runtime): xdg-utils
 # Dependencies (test): shellcheck
 
-set -e -u -x
+set -o errexit -o nounset -o xtrace
 
 grep --extended-regexp --max-count 1 '\s*URL\s*=' -- "$1" \
     | cut --delimiter = --fields 2- \
