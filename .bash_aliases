@@ -125,8 +125,9 @@ if have_ show.sh; then
     export PAGER="$HAVE_PATH"
 fi
 
-# FIXME look into https://github.com/bugaevc/wl-clipboard
-if DESC='<https://github.com/astrand/xclip>' have_ xclip; then
+if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
+    alias cb="$HAVE_NAME --"
+elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
             printf %s "$*" | xclip -selection clip-board
