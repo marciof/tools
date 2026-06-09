@@ -159,6 +159,7 @@ fi
 if DESC='<https://git-scm.com>' have_ git; then
     # FIXME document
     c() {
+        # https://git-scm.com/docs/git-diff#Documentation/git-diff.txt-gitdiffoptions--cached--merge-basecommit--path
         _c_num_cached=$(git diff --cached --name-only | wc -l)
 
         if  [ $# -eq 0 ] && [ "$_c_num_cached" -eq 0 ]; then
@@ -200,26 +201,35 @@ if DESC='<https://git-scm.com>' have_ git; then
     fi
 
     if [ ! -e "$cache_file" ]; then
+        # Add a newline between the commit message and Git's comments.
+        # https://git-scm.com/docs/git-config#Documentation/git-config.txt-committemplate
         git_commit_template_file="$cache_file-git-commit-template"
         echo >"$git_commit_template_file"
-
         git config --global commit.template "$git_commit_template_file"
+
+        # https://git-scm.com/docs/git-config#Documentation/git-config.txt-pagercmd
         git config --global pager.status true
 
+        # https://git-scm.com/docs/git-config#Documentation/git-config.txt-pullrebase
         case "$(git help config 2>&1)" in
             *--rebase-merges*)
+                # https://git-scm.com/docs/git-rebase#Documentation/git-rebase.txt---rebase-mergesrebase-cousinsno-rebase-cousins
                 git config --global pull.rebase merges;;
             *--preserve-merges*)
+                # Deprecated, removed in v2.34:
+                # https://github.com/git/git/blob/master/Documentation/RelNotes/2.34.0.adoc
                 git config --global pull.rebase preserve;;
             *)
                 git config --global --bool pull.rebase true;;
         esac
     fi
 
-    export GIT_PS1_SHOWSTASHSTATE=x
-    export GIT_PS1_STATESEPARATOR=
     export GIT_EDITOR="${EDITOR:-}"
     export GIT_PAGER="${PAGER:-}"
+
+    # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+    export GIT_PS1_SHOWSTASHSTATE=1
+    export GIT_PS1_STATESEPARATOR=
 
     if ! command -v __git_ps1 >/dev/null; then
         echo '* Missing: git prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh' >&2
@@ -229,6 +239,7 @@ if DESC='<https://git-scm.com>' have_ git; then
     fi
 fi
 
+# FIXME document
 job_count_ps1_() {
     local jobs
     jobs=$(jobs -p -r -s | wc -l)
