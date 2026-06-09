@@ -86,9 +86,9 @@ bind '"\e[1;5D": backward-word'
 # https://www.gnu.org/software/bash/manual/html_node/Commands-For-Killing.html#index-kill_002dword-_0028M_002dd_0029
 bind '"\e[3;5~": kill-word'
 
-no_color='\[\e[0m\]'
-blue_bold='\[\e[1;34m\]'
-yellow='\[\e[0;33m\]'
+no_color='\001\e[0m\002'
+blue_bold='\001\e[1;34m\002'
+yellow='\001\e[0;33m\002'
 
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 custom_ps1="$blue_bold\w$no_color"
@@ -236,21 +236,20 @@ if DESC='<https://git-scm.com>' have_ git; then
     export GIT_PS1_STATESEPARATOR=
 
     if DESC='<https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh>' have_ __git_ps1; then
-        green='\[\e[0;32m\]'
+        green='\001\e[0;32m\002'
         custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
-# FIXME document
+# Stdout: " <job count>" unless there aren't any background jobs
 jobs_ps1_() {
     jobs_ps1_count_="$(jobs -p -r -s | wc -l)"
-    [ "$jobs_ps1_count_" -gt 0 ] && echo " $jobs_ps1_count_"
+    jobs_ps1_red_bold_='\001\e[1;31m\002'
+    [ "$jobs_ps1_count_" -gt 0 ] \
+        && printf " %b$jobs_ps1_count_%b" "$jobs_ps1_red_bold_" "$no_color"
 }
 
-# FIXME include job count visual formatting in its function
-red_bold='\[\e[1;31m\]'
-
 # FIXME show $? if non-zero from previous command?
-export PS1="$custom_ps1$red_bold\$(jobs_ps1_)$no_color\\$ "
+export PS1="$custom_ps1\$(jobs_ps1_)\\$ "
 
 : >"$cache_file"
