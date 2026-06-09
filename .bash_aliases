@@ -30,10 +30,10 @@ self_file="${BASH_SOURCE[0]}"
 
 cache_file="$self_file-cache"
 
-for custom_aliases in "$self_file".*; do
+for sub_aliases in "$self_file".*; do
     # shellcheck disable=SC1090
-    if [ -r "$custom_aliases" ] && . "$custom_aliases"; then
-        echo "* Loaded: ${custom_aliases##"$HOME/"}" >&2
+    if [ -r "$sub_aliases" ] && . "$sub_aliases"; then
+        echo "* Loaded: ${sub_aliases##"$HOME/"}" >&2
     fi
 done
 
@@ -85,9 +85,7 @@ bind '"\e[3;5~": kill-word'
 no_color='\[\e[0m\]'
 yellow='\[\e[0;33m\]'
 
-if [ -n "${BASHRC_CUSTOM_LOCATION:-}" ]; then
-    host_prompt="$yellow$BASHRC_CUSTOM_LOCATION$no_color"
-elif [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
+if [ -n "${SSH_CLIENT:-}" ] || [ -n "${SSH_TTY:-}" ]; then
     host_prompt="$yellow\\u@\\h$no_color"
 else
     host_prompt=
