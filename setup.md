@@ -85,16 +85,3 @@ For Bluetooth auto-connect, open *Session and Startup* settings:
 
 
     bash -c 'sleep 3 && bluetoothctl connect CC:90:93:09:FF:26'
-
-## Unattended upgrades
-
-https://help.ubuntu.com/community/AutomaticSecurityUpdates
-
-To force update on battery power (eg. if `on_ac_power` is incorrect)
-in `/etc/apt/apt.conf.d/50unattended-upgrades` set:
-
-    Unattended-Upgrade::OnlyOnACPower "false";
-
-Tray notification:
-
-    apt install package-update-indicator
