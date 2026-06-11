@@ -61,6 +61,14 @@ And then update the configuration:
 
     update-grub
 
+### Wine
+
+In `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
+
+Alternatively, to double it from `96` to `192` DPI:
+
+    wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /d 0xC0 /f
+
 ## Touchpad
 
 Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.1s`.
