@@ -242,22 +242,23 @@ if DESC='<https://git-scm.com>' have_ git; then
 
     if DESC='<https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh>' have_ __git_ps1; then
         green='\001\e[0;32m\002'
-
-        # Hide the `=` indicator when HEAD matches upstream.
         custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
-# Stdout: " <job count>" unless there aren't any background jobs
+# Arguments: <printf format string>
+# Stdout: formatted job count, unless there aren't any background jobs
 jobs_ps1_() {
     # shellcheck disable=SC3045
     jobs_ps1_count_="$(jobs -p -r -s | wc -l)"
-    jobs_ps1_red_bold_='\001\e[1;31m\002'
-    [ "$jobs_ps1_count_" -gt 0 ] \
-        && printf " %b$jobs_ps1_count_%b" "$jobs_ps1_red_bold_" "$no_color"
+
+    if [ "$jobs_ps1_count_" -gt 0 ]; then
+        jobs_ps1_red_bold_='\001\e[1;31m\002'
+        printf "%b$1%b" "$jobs_ps1_red_bold_" "$jobs_ps1_count_" "$no_color"
+    fi
 }
 
-export PS1="$custom_ps1\$(jobs_ps1_)\\$ "
+export PS1="$custom_ps1\$(jobs_ps1_ ' %s')\\$ "
 
 # shellcheck disable=SC1090
 . "$cache_file"
