@@ -239,19 +239,11 @@ if DESC='<https://git-scm.com>' have_ git; then
     export GIT_EDITOR="${EDITOR:-}"
     export GIT_PAGER="${PAGER:-}"
 
-    # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
-    export GIT_PS1_SHOWCOLORHINTS=1
-    export GIT_PS1_SHOWDIRTYSTATE=1
-    export GIT_PS1_SHOWSTASHSTATE=1
-    export GIT_PS1_SHOWUNTRACKEDFILES=1
-    export GIT_PS1_SHOWUPSTREAM=auto
-    export GIT_PS1_STATESEPARATOR=
-
     if DESC='<https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh>' have_ __git_ps1; then
         green='\001\e[0;32m\002'
 
         # Hide the `=` indicator when HEAD matches upstream.
-        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s' | tr -d =)$no_color"
+        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
