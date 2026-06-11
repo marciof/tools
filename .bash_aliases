@@ -135,7 +135,7 @@ if DESC='<https://www.freedesktop.org/wiki/Software/xdg-utils/>' have_ xdg-open;
 fi
 
 if have_ show.sh; then
-    export PAGER="$HAVE_NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
+    export PAGER="$HAVE_NAME -t ls=--classify -t ls=--human-readable -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
     # shellcheck disable=SC2139
     alias s="$PAGER "
 fi
