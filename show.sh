@@ -1,10 +1,14 @@
 #!/bin/sh
 # Generic viewer.
 
+# TODO modularize? eg. 1st cat-or-page, 2nd view-format-XYZ, 3rd combine plugins
+# TODO research prior-art (also Python, C?)
+
 # TODO documentation (man pages? functions and parameters/return)
 # TODO tests
 # TODO logging
 # TODO debug option? eg. does `set -x`
+
 # TODO seems to break `ag`'s use of `$PAGER` when using pipes
 # TODO fix newline handling, eg. `echo '' | show.sh` vs `printf '' | show.sh`
 # TODO add man pages support
