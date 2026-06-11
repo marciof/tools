@@ -29,6 +29,7 @@ have_() {
 # shellcheck disable=SC3028,SC3054
 self_file="${BASH_SOURCE[0]}"
 
+# Used to skip performance-costly configuration that only needs to be done once.
 cache_file="$self_file-cache"
 
 for sub_aliases in "$self_file".*; do
