@@ -198,6 +198,7 @@ if DESC='<https://git-scm.com>' have_ git; then
         "$HAVE_NAME" git
 
         # https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
+        export GIT_COMPLETION_IGNORE_CASE=1
         __git_complete g __git_main
         __git_complete a _git_add
         __git_complete b _git_branch
