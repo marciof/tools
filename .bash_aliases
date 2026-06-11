@@ -250,7 +250,7 @@ fi
 # Stdout: formatted job count, unless there aren't any background jobs
 jobs_ps1_() {
     # shellcheck disable=SC3045
-    jobs_ps1_count_="$(jobs -p -r -s | wc -l)"
+    jobs_ps1_count_="$(jobs -p | wc -l)"
 
     if [ "$jobs_ps1_count_" -gt 0 ]; then
         jobs_ps1_red_bold_='\001\e[1;31m\002'
