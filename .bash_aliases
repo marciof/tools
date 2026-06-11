@@ -110,7 +110,7 @@ fi
 
 if DESC='<https://github.com/andreafrancia/trash-cli>' have_ trash-put; then
     # shellcheck disable=SC2139
-    alias r="$HAVE_NAME"
+    alias t="$HAVE_NAME"
 fi
 
 if DESC='<https://github.com/sharkdp/fd>' have_ fd fdfind; then
@@ -178,7 +178,7 @@ if DESC='<https://git-scm.com>' have_ git; then
     alias k='g checkout'
     alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
     alias p='g push'
-    alias t='g status'
+    alias v='g status'
     alias u='g pull'
 
     # Deprecated `_completion_loader` in v2.12:
@@ -195,7 +195,7 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete k _git_checkout
         __git_complete l _git_log
         __git_complete p _git_push
-        __git_complete t _git_status
+        __git_complete v _git_status
         __git_complete u _git_pull
     fi
 
