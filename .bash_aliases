@@ -192,6 +192,9 @@ if DESC='<https://git-scm.com>' have_ git; then
     alias v='g status'
     alias u='g pull'
 
+    export GIT_EDITOR="${EDITOR:-}"
+    export GIT_PAGER="${PAGER:-}"
+
     # Deprecated `_completion_loader` in v2.12:
     # https://github.com/scop/bash-completion/commit/d9082d2c8dff6b709786862bcd1b8d1698648ea1
     if DESC='<https://github.com/scop/bash-completion>' have_ _comp_complete_load _completion_loader; then
@@ -210,6 +213,10 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete p _git_push
         __git_complete v _git_status
         __git_complete u _git_pull
+
+        # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+        green='\001\e[0;32m\002'
+        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 
     git_commit_template_file="$cache_file.git.commit-template"
@@ -235,14 +242,6 @@ if DESC='<https://git-scm.com>' have_ git; then
             *)
                 git config --global --bool pull.rebase true;;
         esac
-    fi
-
-    export GIT_EDITOR="${EDITOR:-}"
-    export GIT_PAGER="${PAGER:-}"
-
-    if DESC='<https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh>' have_ __git_ps1; then
-        green='\001\e[0;32m\002'
-        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 fi
 
