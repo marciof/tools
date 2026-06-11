@@ -14,11 +14,9 @@ case "$-" in *i*) ;; *) return 0;; esac
 # Env:
 #   get DESC = optional command description
 #   set HAVE_NAME = which command was found
-#   set HAVE_PATH = path to command
 have_() {
     for HAVE_NAME; do
-        HAVE_PATH="$(command -v "$HAVE_NAME")"
-        if [ -n "$HAVE_PATH" ]; then
+        if command -v "$HAVE_NAME" >/dev/null; then
             return 0
         fi
     done
@@ -124,7 +122,7 @@ if DESC='<https://www.freedesktop.org/wiki/Software/xdg-utils/>' have_ xdg-open;
 fi
 
 if have_ show.sh; then
-    export PAGER="$HAVE_PATH -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
+    export PAGER="$HAVE_NAME -t ls=-Fh -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
     # shellcheck disable=SC2139
     alias s="$PAGER "
 fi
