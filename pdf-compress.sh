@@ -16,15 +16,13 @@
 # Dependencies (runtime / optional): trash-cli
 # Dependencies (test): shellcheck
 
-set -o errexit -o nounset -o xtrace
+set -o errexit -o nounset
 
 # Arguments: <original file> <compressed file>
 if command -v trash-put >/dev/null; then
     trash_or_log() {
-        echo "Moving original PDF to trash: $1"
-        trash-put -- "$1"
-        echo "Renaming compressed PDF: $2"
-        mv --no-clobber -- "$2" "$1"
+        trash-put --verbose -- "$1"
+        mv --no-clobber --verbose -- "$2" "$1"
     }
 else
     trash_or_log() {
@@ -39,13 +37,15 @@ compress_pdf_files() {
             compress_pdf_files "$pdf_file/"*.pdf
             continue
         elif [ ! -r "$pdf_file" ]; then
-            echo "PDF not available or not readable: $pdf_file"
+            echo "* PDF not available/readable: $pdf_file"
             continue
         fi
 
         # Make sure the new file ends in `.pdf`. Some Ghostscript versions
         # make it an error otherwise due to `-dSAFE` by default.
         compressed_pdf_file="${pdf_file%.pdf}.compressed.pdf"
+
+        echo "* Compressing PDF: $pdf_file"
 
         ghostscript \
             -dNOPAUSE \
@@ -59,8 +59,8 @@ compress_pdf_files() {
         compressed_size="$(stat --format %s -- "$compressed_pdf_file")"
 
         if [ "$compressed_size" -ge "$original_size" ]; then
-            echo "Compressed PDF is larger, removing: $compressed_pdf_file"
-            rm -- "$compressed_pdf_file"
+            echo "* Compressed PDF is larger (skipping)."
+            rm --verbose -- "$compressed_pdf_file"
         else
             trash_or_log "$pdf_file" "$compressed_pdf_file"
         fi
