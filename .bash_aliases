@@ -27,14 +27,25 @@ have_() {
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-BASH_005fSOURCE
 # shellcheck disable=SC3028,SC3054
-self_file="${BASH_SOURCE[0]}"
+self_file_name="$(basename "${BASH_SOURCE[0]}")"
 
 # Used to skip performance-costly configuration that only needs to be done once.
-cache_file="$self_file-cache"
+# https://specifications.freedesktop.org/basedir/latest/#variables
+cache_file="${XDG_CONFIG_HOME:-"$HOME/.config"}/${self_file_name#.}.cache"
 
-for sub_aliases in "$self_file".*; do
+if [ -e "$cache_file" ]; then
+    alias cache_=:
+else
+    echo "* Building cache: ${cache_file##"$HOME/"}" >&2
+    cache_() {
+        echo "* Caching: $*" >&2
+        "$@" >> "$cache_file"
+    }
+fi
+
+for sub_aliases in "$HOME/$self_file_name".*; do
     # shellcheck disable=SC1090
-    if [ -r "$sub_aliases" ] && . "$sub_aliases"; then
+    if . "$sub_aliases"; then
         echo "* Loaded: ${sub_aliases##"$HOME/"}" >&2
     fi
 done
@@ -50,9 +61,10 @@ export HISTCONTROL=ignoredups
 export PROMPT_DIRTRIM=2
 
 # https://www.gnu.org/software/coreutils/manual/html_node/dircolors-invocation.html
-have_ dircolors && eval "$("$HAVE_NAME" --sh)"
+have_ dircolors && cache_ "$HAVE_NAME" --sh
 
-have_ lesspipe lesspipe.sh && eval "$("$HAVE_NAME")"
+# https://www.greenwoodsoftware.com/less/
+have_ lesspipe lesspipe.sh && cache_ "$HAVE_NAME"
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
 
 # https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
@@ -185,6 +197,7 @@ if DESC='<https://git-scm.com>' have_ git; then
     if DESC='<https://github.com/scop/bash-completion>' have_ _comp_complete_load _completion_loader; then
         "$HAVE_NAME" git
 
+        # https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
         __git_complete g __git_main
         __git_complete a _git_add
         __git_complete b _git_branch
@@ -198,10 +211,11 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete u _git_pull
     fi
 
-    if [ ! -e "$cache_file" ]; then
+    git_commit_template_file="$cache_file.git.commit-template"
+
+    if [ ! -e "$git_commit_template_file" ]; then
         # Add a newline between the commit message and Git's comments.
         # https://git-scm.com/docs/git-config#Documentation/git-config.txt-committemplate
-        git_commit_template_file="$cache_file-git-commit-template"
         echo >"$git_commit_template_file"
         git config --global commit.template "$git_commit_template_file"
 
@@ -251,7 +265,9 @@ jobs_ps1_() {
 }
 
 export PS1="$custom_ps1\$(jobs_ps1_)\\$ "
-: >"$cache_file"
+
+# shellcheck disable=SC1090
+. "$cache_file"
 
 # Disable in case other scripts are loaded/injected, eg. IntelliJ's terminal.
 # https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20%22TERMINAL_EMULATOR%22&type=code
