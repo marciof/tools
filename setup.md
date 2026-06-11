@@ -52,7 +52,7 @@ If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode`
     GRUB_TERMINAL_OUTPUT=console
 
     GRUB_TIMEOUT_STYLE=countdown
-    GRUB_TIMEOUT=1
+    GRUB_TIMEOUT=3
 
 And then update the configuration:
 
