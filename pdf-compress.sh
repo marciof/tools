@@ -18,19 +18,24 @@
 
 set -o errexit -o nounset
 
-indent_stdout() {
-    sed 's/^/\|   /'
+SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
+
+log() {
+    logger --tag "$SCRIPT_FILENAME"
 }
 
 # Arguments: <original file> <compressed file>
 if command -v trash-put >/dev/null; then
     trash_or_log() {
-        trash-put --verbose -- "$1" 2>&1
-        mv --no-clobber --verbose -- "$2" "$1"
+        (
+            set -o xtrace
+            trash-put -- "$1"
+            mv --no-clobber -- "$2" "$1"
+        ) 2>&1 | log
     }
 else
     trash_or_log() {
-        printf '+   %s --> %s\n' "$1" "$2" >&2
+        echo "$1 --> $2"
     }
 fi
 
@@ -40,23 +45,15 @@ compress_pdf_file() {
     # make it an error otherwise due to `-dSAFE` by default.
     compressed_pdf_file="${1%.pdf}.compressed.pdf"
 
-    # Pretty print header output.
-    {
-        echo "[ ${1##./} ]"
-        printf "+%${#1}s+\n" | tr ' ' '-'
-    } >&2
-    echo
-
     if ! ghostscript \
             -dNOPAUSE \
             -sDEVICE=pdfwrite \
             -dPDFSETTINGS=/screen \
             -sOutputFile="$compressed_pdf_file" \
-            -- \
-            "$1" 2>&1
+            -- "$1"
     then
-        # Remove leftover file created by Ghostscript even when it fails.
-        rm --verbose -- "$compressed_pdf_file"
+        # Remove leftover file created by Ghostscript when it fails.
+        rm -- "$compressed_pdf_file"
         return 1
     fi
 
@@ -64,8 +61,7 @@ compress_pdf_file() {
     compressed_size="$(stat --format %s -- "$compressed_pdf_file")"
 
     if [ "$compressed_size" -ge "$original_size" ]; then
-        echo "+   Compressed PDF is larger, skipping." >&2
-        rm --verbose -- "$compressed_pdf_file"
+        rm -- "$compressed_pdf_file"
     else
         trash_or_log "$1" "$compressed_pdf_file"
     fi
@@ -77,8 +73,8 @@ compress_pdf_files() {
         if [ -d "$file_or_dir" ]; then
             compress_pdf_files "${file_or_dir%%/}/"*.pdf
         else
-            compress_pdf_file "$file_or_dir" | indent_stdout
-            echo
+            echo "${file_or_dir#./}"
+            compress_pdf_file "$file_or_dir" | log
         fi
     done
 }
