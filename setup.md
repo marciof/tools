@@ -23,6 +23,7 @@
 - [Marble](https://marble.kde.org) world atlas map
 - [Schnelle Umlaute](https://github.com/Maik-0000FF/schnelle-umlaute/) compose key alternative
 - [Flatseal](https://github.com/tchx84/flatseal) Flatpak settings
+- [IrScrutinizer](https://github.com/bengtmartensson/IrScrutinizer) IR analysis
 
 ## Windows
 
