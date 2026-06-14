@@ -58,6 +58,19 @@ And then update the configuration:
 
     update-grub
 
+### JDownloader
+
+[Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) doesn't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
+
+Options for Flatpak applications:
+
+- Either use [Flatseal](https://github.com/tchx84/flatseal) to set an environment variable: `J2D_UISCALE=2`
+- Or use the CLI: `flatpak override --user --env=J2D_UISCALE=2 org.jdownloader.JDownloader`
+
+For non-Flatpak:
+
+- Edit its `.desktop` file (eg. via its menu entry) and prepend `Exec` with: `env J2D_UISCALE=2 ...`
+
 ### Wine
 
 In `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
