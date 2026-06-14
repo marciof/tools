@@ -29,26 +29,32 @@ have_() {
 # shellcheck disable=SC3028,SC3054
 self_file_name="$(basename "${BASH_SOURCE[0]}")"
 
+for sub_aliases in "$HOME/$self_file_name".*; do
+    echo "[load] ${sub_aliases##"$HOME/"}" >&2
+
+    # shellcheck disable=SC1090
+    . "$sub_aliases"
+done
+
 # Used to skip performance-costly configuration that only needs to be done once.
 # https://specifications.freedesktop.org/basedir/latest/#variables
 cache_file="${XDG_CONFIG_HOME:-"$HOME/.config"}/${self_file_name#.}.cache"
 
 if [ -e "$cache_file" ]; then
+    echo "[load] ${cache_file##"$HOME/"}" >&2
+
+    # shellcheck disable=SC1090
+    . "$cache_file"
+
     alias cache_=:
 else
-    echo "* Building cache: ${cache_file##"$HOME/"}" >&2
+    echo "[build] ${cache_file##"$HOME/"}" >&2
+
     cache_() {
-        echo "* Caching: $*" >&2
-        "$@" >> "$cache_file"
+        echo "[cache] $*" >&2
+        eval "$("$@" | tee --append "$cache_file")"
     }
 fi
-
-for sub_aliases in "$HOME/$self_file_name".*; do
-    # shellcheck disable=SC1090
-    if . "$sub_aliases"; then
-        echo "* Loaded: ${sub_aliases##"$HOME/"}" >&2
-    fi
-done
 
 # https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
 # shellcheck disable=SC3044
@@ -264,9 +270,6 @@ jobs_ps1_() {
 }
 
 export PS1="$custom_ps1\$(jobs_ps1_ ' %s')\\$ "
-
-# shellcheck disable=SC1090
-. "$cache_file"
 
 # Disable in case other scripts are loaded/injected, eg. IntelliJ's terminal.
 # https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20%22TERMINAL_EMULATOR%22&type=code
