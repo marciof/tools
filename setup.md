@@ -14,6 +14,7 @@
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
 - [Handbrake](https://handbrake.fr) video transcoder
 - [LosslessCut](https://github.com/mifi/lossless-cut) video splitting
+- [Shotcut](https://www.shotcut.org) video editing/joining
 - [Rygel](https://gnome.pages.gitlab.gnome.org/rygel/) home media sharing
 - [Frog](https://tenderowl.com/work/frog/) OCR from images
 - [gscan2pdf](http://gscan2pdf.sourceforge.net) image/scanner with OCR to PDF
