@@ -21,7 +21,7 @@ have_() {
         fi
     done
 
-    echo "* Missing: $* ${DESC:-}" >&2
+    echo "[miss] $* ${DESC:-}" >&2
     return 1
 }
 
