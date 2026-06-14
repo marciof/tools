@@ -55,7 +55,7 @@ done
 shopt -s autocd dirspell histappend
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-HISTCONTROL
-export HISTCONTROL=ignoredups
+export HISTCONTROL='ignoredups erasedups'
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-PROMPT_005fDIRTRIM
 export PROMPT_DIRTRIM=2
