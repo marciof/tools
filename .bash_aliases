@@ -61,7 +61,7 @@ fi
 shopt -s autocd dirspell histappend
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-HISTCONTROL
-export HISTCONTROL='ignorespace ignoredups erasedups'
+export HISTCONTROL='ignorespace:ignoredups:erasedups'
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-HISTSIZE
 export HISTSIZE=-1
