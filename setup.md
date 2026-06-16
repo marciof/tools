@@ -106,3 +106,11 @@ For Bluetooth auto-connect, open *Session and Startup* settings:
 
 
     bash -c 'sleep 3 && bluetoothctl connect CC:90:93:09:FF:26'
+
+## Performance
+
+### IntelliJ
+
+[Switch to the X11 toolkit](https://youtrack.jetbrains.com/projects/PY/articles/SUPPORT-A-3748/Wayland-native-mode-poor-scrolling-and-rendering-performance) to reduce keyboard lag and general stuttering. Under `Help` and `Edit Custom VM Options`:
+
+    -Dawt.toolkit.name=XToolkit
