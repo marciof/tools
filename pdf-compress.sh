@@ -50,7 +50,7 @@ compress_pdf_file() {
             -sDEVICE=pdfwrite \
             -dPDFSETTINGS=/screen \
             -sOutputFile="$compressed_pdf_file" \
-            -- "$1"
+            -- "$1" 2>&1
     then
         # Remove leftover file created by Ghostscript when it fails.
         rm -- "$compressed_pdf_file"
