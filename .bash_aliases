@@ -30,10 +30,14 @@ have_() {
 self_file_name="$(basename "${BASH_SOURCE[0]}")"
 
 for sub_aliases in "$HOME/$self_file_name".*; do
-    echo "[load] ${sub_aliases##"$HOME/"}" >&2
+    # Skip verbatim glob pattern when no files are found.
+    # https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
+    if [ -r "$sub_aliases" ]; then
+        echo "[load] ${sub_aliases##"$HOME/"}" >&2
 
-    # shellcheck disable=SC1090
-    . "$sub_aliases"
+        # shellcheck disable=SC1090
+        . "$sub_aliases"
+    fi
 done
 
 # Used to skip performance-costly configuration that only needs to be done once.
