@@ -10,7 +10,7 @@
 - [KeePassXC](https://keepassxc.org) password manager
 - [Solaar](https://pwr-solaar.github.io/Solaar/) Logitech Unifying Receiver manager
 - [Qalculate](https://qalculate.github.io) desktop calculator
-- [EasyEffects](https://github.com/wwmm/easyeffects) audio equalizer (formerly known as PulseEffects)
+- [Easy Effects](https://github.com/wwmm/easyeffects) audio equalizer
 - [Elisa](https://apps.kde.org/elisa) music player
   - [KEXP](https://www.kexp.org/streaming-urls) ([logo](https://www.kexp.org/static/assets/img/logo-footer.svg))
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
