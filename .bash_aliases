@@ -149,7 +149,7 @@ fi
 if have_ show.sh; then
     export PAGER="$HAVE_NAME -t ls=--classify -t ls=--human-readable -t ls=--group-directories-first -t ls=--dereference-command-line-symlink-to-dir"
     # shellcheck disable=SC2139
-    alias s="$PAGER "
+    alias s="$PAGER"
 fi
 
 # Arguments: <text to copy> ...
