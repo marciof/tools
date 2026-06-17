@@ -12,6 +12,7 @@
 - [Qalculate](https://qalculate.github.io) desktop calculator
 - [Easy Effects](https://github.com/wwmm/easyeffects) audio equalizer
 - [Elisa](https://apps.kde.org/elisa) music/radio player ([KEXP](https://www.kexp.org/streaming-urls) & [logo](https://www.kexp.org/static/assets/img/logo-footer.svg), [C89.5](https://www.c895.org/mp3) & [logo](https://www.c895.org/wp-content/uploads/2024/07/Cling_PurpleBack_WhiteLogo-Update.png))
+- [Blanket](https://apps.gnome.org/Blanket) ambient sounds
 - [KDE Connect](https://kdeconnect.kde.org) device pairing
 - [Handbrake](https://handbrake.fr) video transcoder
 - [LosslessCut](https://github.com/mifi/lossless-cut) video splitting
