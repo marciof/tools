@@ -66,7 +66,7 @@ And then update the configuration:
 
 ### JDownloader
 
-[Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) doesn't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
+[Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) don't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
 
 Options for Flatpak applications:
 
@@ -75,7 +75,7 @@ Options for Flatpak applications:
 
 For non-Flatpak:
 
-- Edit its `.desktop` file (eg. via its menu entry) and prepend `Exec` with: `env J2D_UISCALE=2 ...`
+- Edit its `.desktop` file (eg. via its menu entry) and in `Exec` prepend with: `env J2D_UISCALE=2 ...`
 
 ### Wine
 
