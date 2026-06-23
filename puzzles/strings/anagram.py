@@ -93,6 +93,14 @@ def is_anagram_by_splicing_iter(word_1: str, word_2: str) -> bool:
 
 def is_anagram_by_histogram(word_1: str, word_2: str) -> bool:
     """
+    Let:
+
+    - ``n=len(word_1)=len(word_2)``
+
+    Then:
+
+    - **Time:** ``O(n)``
+    - **Space:** ``O(n)``
     """
 
     if len(word_1) != len(word_2):
