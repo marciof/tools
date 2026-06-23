@@ -77,7 +77,7 @@ To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma
 
     im-config -n none
 
-Don't set `*_IM_MODULE` variables:
+Disable setting `*_IM_MODULE` variables:
 
     rm ~/.config/environment.d/fcitx5.conf
 
@@ -85,7 +85,7 @@ And then log out / log in.
 
 ## Wine
 
-In `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
+For high DPI, in `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
 
 Alternatively, to double it from `96` to `192` DPI:
 
@@ -95,12 +95,12 @@ Alternatively, to double it from `96` to `192` DPI:
 
 [Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) for high DPI don't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
 
-Options for Flatpak applications:
+Flatpak apps:
 
 - Either use [Flatseal](https://github.com/tchx84/flatseal) to set an environment variable: `J2D_UISCALE=2`
 - Or use the CLI: `flatpak override --user --env=J2D_UISCALE=2 org.jdownloader.JDownloader`
 
-For non-Flatpak:
+non-Flatpak:
 
 - Edit its `.desktop` file (eg. via its menu entry) and in `Exec` prepend with: `env J2D_UISCALE=2 ...`
 
