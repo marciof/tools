@@ -71,6 +71,18 @@ And then update the configuration:
 
     -Dawt.toolkit.name=XToolkit
 
+## Chrome
+
+To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) and have Schnelle Umlaute working, disable `im-config`:
+
+    im-config -n none
+
+And force X11:
+
+    google-chrome --ozone-platform=x11
+
+To enable the Gemini sidebar, [enable `glic`](chrome://flags/#glic).
+
 ## Wine
 
 In `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
