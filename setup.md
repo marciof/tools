@@ -88,19 +88,6 @@ Alternatively, to double it from `96` to `192` DPI:
 
     wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /d 0xC0 /f
 
-## Touchpad
-
-Open *Mouse and Touchpad*, choose the touchpad *Device*, go to *Touchpad*, and set *Disable touchpad while typing* to `0.1s`.
-
-To [enable touchpad natural scrolling](https://askubuntu.com/a/690513/163034), invert the Synaptics scroll delta.
-
-    synclient | grep ScrollDelta
-
-`/etc/X11/Xsession.d/80synaptics`
-
-    synclient HorizScrollDelta=-VALUE_FROM_ABOVE
-    synclient VertScrollDelta=-VALUE_FROM_ABOVE
-
 ## Sound
 
 ### Tivoli Orb (Sphera)
