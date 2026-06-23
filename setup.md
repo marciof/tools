@@ -73,9 +73,15 @@ And then update the configuration:
 
 ## Schnelle Umlaute
 
-To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) under KDE/Plasma and Wayland, disable `im-config` and log out / log in:
+To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) under KDE/Plasma and Wayland, disable `im-config`:
 
     im-config -n none
+
+Don't set `*_IM_MODULE` variables:
+
+    rm ~/.config/environment.d/fcitx5.conf
+
+And then log out / log in.
 
 ## Wine
 
