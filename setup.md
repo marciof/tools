@@ -71,17 +71,11 @@ And then update the configuration:
 
     -Dawt.toolkit.name=XToolkit
 
-## Chrome
+## Schnelle Umlaute
 
-To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) and have Schnelle Umlaute working, disable `im-config`:
+To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) under KDE/Plasma and Wayland, disable `im-config` and log out / log in:
 
     im-config -n none
-
-And force X11:
-
-    google-chrome --ozone-platform=x11
-
-To enable the Gemini sidebar, [enable `glic`](chrome://flags/#glic).
 
 ## Wine
 
