@@ -4,6 +4,7 @@
 """
 Check if two words are an anagram of each other.
 Assumes case-insensitivity.
+
 Example: are ear
 
 Wikipedia: "An anagram is a word or phrase formed by rearranging the

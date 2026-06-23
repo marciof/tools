@@ -4,6 +4,7 @@
 """
 Check if two strings have an identical character set.
 Assumes case-insensitivity, and unknown character set.
+
 Example: abbc aabc
 """
 

@@ -3,13 +3,15 @@
 
 """
 List all possible balanced parenthesis combinations up to `total` pairs.
+
+Example: 2 total pairs gives '()()' and '(())'
 """
 
 from typing import Iterator, List
 import unittest
 
 
-def permutate_recur(
+def permute_recur(
         max_num_pairs: int,
         parens: str = '()',
         has_nesting: bool = False) -> Iterator[str]:
@@ -23,13 +25,13 @@ def permutate_recur(
     elif max_num_pairs == 1:
         yield parens
     else:
-        yield from permutate_recur(max_num_pairs - 1, '(' + parens + ')', True)
-        yield from permutate_recur(max_num_pairs - 1, '()' + parens, False)
+        yield from permute_recur(max_num_pairs - 1, '(' + parens + ')', True)
+        yield from permute_recur(max_num_pairs - 1, '()' + parens, False)
         if has_nesting:
-            yield from permutate_recur(max_num_pairs - 1, parens + '()', True)
+            yield from permute_recur(max_num_pairs - 1, parens + '()', True)
 
 
-def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
+def permute(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
     """
     Time: O(2^n), two branches of recursive calls for each call
     Space: O(2^n)
@@ -38,11 +40,11 @@ def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
     combinations = []
 
     if num_open < total:
-        for c in permutate(total, num_open + 1, num_closed):
+        for c in permute(total, num_open + 1, num_closed):
             combinations.append('(' + c)
 
     if num_closed < num_open:
-        for c in permutate(total, num_open, num_closed + 1):
+        for c in permute(total, num_open, num_closed + 1):
             combinations.append(')' + c)
         else:
             if (num_closed + 1) == total:
@@ -51,47 +53,49 @@ def permutate(total: int, num_open: int = 0, num_closed: int = 0) -> List[str]:
     return combinations
 
 
-class Test (unittest.TestCase):
+class BaseTestCase (unittest.TestCase):
     """
     Each test case sorts the result so that comparison works irrespective of
     the generated order, while at the same time catching errors if duplicate
     elements are given.
     """
 
-    permutate_impls = {
-        permutate_recur,
-        permutate,
-    }
+    impl = None
+    list_pairs = property(lambda self: self.impl)
 
-    def test_count_0(self):
-        for permutate_impl in self.permutate_impls:
-            with self.subTest(permutate_impl):
-                self.assertEqual(list(sorted(permutate_impl(0))), [])
+    @classmethod
+    def setUpClass(cls):
+        if cls.impl is None:
+            raise unittest.SkipTest(cls.__name__)
 
-    def test_count_1(self):
-        for permutate_impl in self.permutate_impls:
-            with self.subTest(permutate_impl):
-                self.assertEqual(list(sorted(permutate_impl(1))), ['()'])
+    def test_0_pairs(self):
+        self.assertEqual(self.list_pairs(0), [])
 
-    def test_count_2(self):
-        for permutate_impl in self.permutate_impls:
-            with self.subTest(permutate_impl):
-                self.assertEqual(
-                    list(sorted(permutate_impl(2))),
-                    sorted(['()()', '(())']))
+    def test_1_pair(self):
+        self.assertEqual(self.list_pairs(1), ['()'])
 
-    def test_count_3(self):
-        for permutate_impl in self.permutate_impls:
-            with self.subTest(permutate_impl):
-                self.assertEqual(
-                    list(sorted(permutate_impl(3))),
-                    sorted([
-                        '()()()',
-                        '((()))',
-                        '(()())',
-                        '(())()',
-                        '()(())',
-                    ]))
+    def test_2_pairs(self):
+        self.assertEqual(
+            sorted(self.list_pairs(2)),
+            sorted(['()()', '(())']))
+
+    def test_3_pairs(self):
+        self.assertEqual(
+            sorted(self.list_pairs(3)),
+            sorted([
+                '()()()',
+                '((()))',
+                '(()())',
+                '(())()',
+                '()(())',
+            ]))
+
+
+class TestCaseByPermuteRecur (BaseTestCase):
+    impl = staticmethod(permute_recur)
+
+class TestCaseByPermute (BaseTestCase):
+    impl = staticmethod(permute)
 
 
 if __name__ == '__main__':

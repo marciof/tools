@@ -2,7 +2,9 @@
 # -*- coding: UTF-8 -*-
 
 """
-Check if a string contains only balanced delimiters (eg. (), [], {}).
+Check if a string contains only balanced delimiters.
+
+Example: ({}[])
 """
 
 import unittest
