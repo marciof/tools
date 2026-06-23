@@ -46,9 +46,7 @@
 
 # Configuration
 
-## High DPI
-
-### GRUB
+## GRUB
 
 If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode` is set to `gfxterm`, then the keyboard input will have a very noticeable lag the higher the resolution is. Set its terminal output to console to disable graphics mode and remove input lag:
 
@@ -67,9 +65,23 @@ And then update the configuration:
 
     update-grub
 
-### JDownloader
+## IntelliJ
 
-[Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) don't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
+[Switch to the X11 toolkit](https://youtrack.jetbrains.com/projects/PY/articles/SUPPORT-A-3748/Wayland-native-mode-poor-scrolling-and-rendering-performance) to reduce keyboard lag and general stuttering. Under `Help` and `Edit Custom VM Options`:
+
+    -Dawt.toolkit.name=XToolkit
+
+## Wine
+
+In `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
+
+Alternatively, to double it from `96` to `192` DPI:
+
+    wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /d 0xC0 /f
+
+## JDownloader
+
+[Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) for high DPI don't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
 
 Options for Flatpak applications:
 
@@ -80,17 +92,7 @@ For non-Flatpak:
 
 - Edit its `.desktop` file (eg. via its menu entry) and in `Exec` prepend with: `env J2D_UISCALE=2 ...`
 
-### Wine
-
-In `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
-
-Alternatively, to double it from `96` to `192` DPI:
-
-    wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /d 0xC0 /f
-
-## Sound
-
-### Tivoli Orb (Sphera)
+## Tivoli Orb (Sphera)
 
 For Bluetooth auto-connect, open *Session and Startup* settings:
 
@@ -99,11 +101,3 @@ For Bluetooth auto-connect, open *Session and Startup* settings:
 
 
     bash -c 'sleep 3 && bluetoothctl connect CC:90:93:09:FF:26'
-
-## Performance
-
-### IntelliJ
-
-[Switch to the X11 toolkit](https://youtrack.jetbrains.com/projects/PY/articles/SUPPORT-A-3748/Wayland-native-mode-poor-scrolling-and-rendering-performance) to reduce keyboard lag and general stuttering. Under `Help` and `Edit Custom VM Options`:
-
-    -Dawt.toolkit.name=XToolkit
