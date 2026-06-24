@@ -58,9 +58,6 @@ If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode`
     GRUB_TIMEOUT_STYLE=countdown
     GRUB_TIMEOUT=3
 
-    # Potential workaround for Nvidia GPU freeze.
-    GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT nvidia.NVreg_EnableGpuFirmware=0"
-
 And then update the configuration:
 
     update-grub
