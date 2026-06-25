@@ -3,7 +3,7 @@
 
 # FIXME documentation
 # FIXME error handling
-# FIXME tests
+# FIXME tests (including mypy)
 # FIXME logging
 # FIXME typing
 
@@ -53,13 +53,19 @@ class AutoColorScheme (QApplication):
         ColorScheme.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
     }
 
+
     def __init__(self, args: List[str]):
         super().__init__(args)
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.DEBUG)
+
+        syslog_handler = SysLogHandler(address='/dev/log')
+        syslog_handler.setFormatter(
+            logging.Formatter('%(name)s[%(process)d]: %(message)s'))
+
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
-        self.logger.addHandler(SysLogHandler(address='/dev/log'))
+        self.logger.addHandler(syslog_handler)
 
         self.dbus_session = QDBusConnection.sessionBus()
         self.setQuitOnLastWindowClosed(False)
