@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# FIXME documentation
-# FIXME error handling
+"""
+"""
+
+# FIXME refactor to reduce coupling
 # FIXME tests (including mypy)
+# FIXME error handling
+# FIXME documentation
 # FIXME logging
 # FIXME typing
-# FIXME runs twice when color scheme changes
-# FIXME enforce single instance
+# FIXME runs event listener twice when color scheme changes
 
 # standard
 from enum import Enum
@@ -19,11 +22,13 @@ import sys
 from typing import Dict, List, NoReturn
 
 # external
-from PyQt6.QtCore import pyqtSlot, QSocketNotifier
+from PyQt6.QtCore import pyqtSlot, QSharedMemory, QSocketNotifier
 from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusVariant
 from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
+
+APP_NAME: str = 'Auto Color Scheme'
 
 DESKTOP_SERVICE: str = 'org.freedesktop.portal.Desktop'
 DESKTOP_PATH: str = '/org/freedesktop/portal/desktop'
@@ -75,6 +80,8 @@ class AutoColorScheme (QApplication):
         self.logger.addHandler(stdout_handler)
         self.logger.addHandler(syslog_handler)
 
+        self.shared_memory = self.ensure_single_instance()
+
         self.logger.debug('Setting up SIGINT handler')
         (self.read_socket, self.write_socket) = socket.socketpair()
         self.write_socket.setblocking(False)
@@ -100,7 +107,7 @@ class AutoColorScheme (QApplication):
 
         self.tray = QSystemTrayIcon()
         self.tray.setIcon(self.get_current_day_night_cycle_icon())
-        self.tray.setToolTip('Auto Color Scheme')
+        self.tray.setToolTip(APP_NAME)
         self.tray.setContextMenu(self.menu)
         self.tray.show()
 
@@ -112,6 +119,25 @@ class AutoColorScheme (QApplication):
             self.on_setting_changed)
 
         self.logger.info('Running...')
+
+
+    def ensure_single_instance(self) -> QSharedMemory | SystemExit:
+        shared_memory = QSharedMemory(
+            'com.marciof.tools.kde.plasma.autoColorScheme')
+        self.logger.debug('Created shared memory: %s', shared_memory.key())
+
+        if shared_memory.attach() or not shared_memory.create(1):
+            self.logger.info('Another application instance is already running')
+
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setText('Already running.')
+            msg.setWindowTitle(APP_NAME)
+            msg.exec()
+
+            raise SystemExit()
+
+        return shared_memory
 
 
     def quit(self) -> NoReturn:
