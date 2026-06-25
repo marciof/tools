@@ -6,16 +6,20 @@
 # FIXME tests (including mypy)
 # FIXME logging
 # FIXME typing
+# FIXME runs twice when color scheme changes
+# FIXME enforce single instance
 
 # standard
 from enum import Enum
 import logging
 from logging.handlers import SysLogHandler
+import signal
+import socket
 import sys
-from typing import Dict, List
+from typing import Dict, List, NoReturn
 
 # external
-from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtCore import pyqtSlot, QSocketNotifier
 from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusVariant
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
@@ -71,12 +75,27 @@ class AutoColorScheme (QApplication):
         self.logger.addHandler(stdout_handler)
         self.logger.addHandler(syslog_handler)
 
+        self.logger.debug('Setting up SIGINT handler')
+        (self.read_socket, self.write_socket) = socket.socketpair()
+        self.write_socket.setblocking(False)
+        self.read_socket.setblocking(False)
+
+        # No-op signal handler, quit app in Qt event loop instead.
+        signal.set_wakeup_fd(self.write_socket.fileno())
+        signal.signal(signal.SIGINT, lambda sig, frame: None)
+
+        self.socket_notifier = QSocketNotifier(
+            self.read_socket.fileno(), QSocketNotifier.Type.Read, self)
+        self.socket_notifier.activated.connect(self.on_sigint)
+        self.logger.debug('Socket fds for SIGINT: read=%s write=%s',
+            self.read_socket.fileno(), self.write_socket.fileno())
+
+        self.logger.debug('Setting up D-Bus session')
         self.dbus_session = QDBusConnection.sessionBus()
-        self.setQuitOnLastWindowClosed(False)
 
         self.menu = QMenu()
         exit_action = QAction('Quit', self.menu)
-        exit_action.triggered.connect(QApplication.quit)
+        exit_action.triggered.connect(self.quit)
         self.menu.addAction(exit_action)
 
         self.tray = QSystemTrayIcon()
@@ -93,6 +112,17 @@ class AutoColorScheme (QApplication):
             self.on_setting_changed)
 
         self.logger.info('Running...')
+
+
+    def quit(self) -> NoReturn:
+        self.logger.info('Quitting...')
+        super().quit()
+
+
+    def on_sigint(self) -> None:
+        self.logger.debug('Received SIGINT (Ctrl+C)')
+        self.socket_notifier.setEnabled(False)
+        self.quit()
 
 
     def get_current_color_scheme(self) -> ColorScheme:
@@ -126,7 +156,7 @@ class AutoColorScheme (QApplication):
         if (namespace, key) != (APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY):
             return
 
-        self.logger.info('Color scheme setting changed: %s', value)
+        self.logger.info('Color scheme setting changed')
 
         color_scheme_id: int = value.variant()
         color_scheme = ColorScheme(color_scheme_id)
