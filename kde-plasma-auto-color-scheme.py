@@ -61,10 +61,14 @@ class AutoColorScheme (QApplication):
         self.logger.setLevel(logging.DEBUG)
 
         syslog_handler = SysLogHandler(address='/dev/log')
-        syslog_handler.setFormatter(
-            logging.Formatter('%(name)s[%(process)d]: %(message)s'))
+        syslog_handler.setFormatter(logging.Formatter(
+            '%(name)s[%(process)d]: %(message)s'))
 
-        self.logger.addHandler(logging.StreamHandler(sys.stdout))
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(logging.Formatter(
+            '%(asctime)s: %(message)s'))
+
+        self.logger.addHandler(stdout_handler)
         self.logger.addHandler(syslog_handler)
 
         self.dbus_session = QDBusConnection.sessionBus()
