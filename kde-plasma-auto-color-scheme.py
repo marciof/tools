@@ -112,6 +112,18 @@ class DesktopAppearanceApi (QObject):
                 self._filter_on_color_scheme_changes)
 
 
+class SharedInstance:
+
+    def __init__(self, key: str, logger: logging.Logger):
+        self._logger = logger
+        self._shared_memory = QSharedMemory(key)
+        self._logger.debug('Shared memory: %s', key)
+
+
+    def is_shared(self) -> bool:
+        return self._shared_memory.attach() or not self._shared_memory.create(1)
+
+
 class AutoColorScheme (QApplication):
 
     """
@@ -140,7 +152,7 @@ class AutoColorScheme (QApplication):
         self._logger.addHandler(stdout_handler)
         self._logger.addHandler(syslog_handler)
 
-        self._shared_memory = self._ensure_single_instance()
+        self._shared_instance = self._ensure_single_instance()
 
         (self._read_socket, self._write_socket) = socket.socketpair()
         self._write_socket.setblocking(False)
@@ -175,12 +187,12 @@ class AutoColorScheme (QApplication):
         self._logger.info('Running...')
 
 
-    def _ensure_single_instance(self) -> QSharedMemory | SystemExit:
-        shared_memory = QSharedMemory(
-            'com.marciof.tools.kde.plasma.autoColorScheme')
-        self._logger.debug('Shared memory: %s', shared_memory.key())
+    def _ensure_single_instance(self) -> SharedInstance | SystemExit:
+        shared_instance = SharedInstance(
+            key='com.marciof.tools.kde.plasma.autoColorScheme',
+            logger=self._logger)
 
-        if shared_memory.attach() or not shared_memory.create(1):
+        if shared_instance.is_shared():
             self._logger.info('Another application instance is already running')
 
             msg = QMessageBox()
@@ -191,7 +203,7 @@ class AutoColorScheme (QApplication):
 
             raise SystemExit()
 
-        return shared_memory
+        return shared_instance
 
 
     def _on_sigint(self) -> None:
