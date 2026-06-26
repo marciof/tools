@@ -17,6 +17,7 @@ import argparse
 from enum import Enum
 import logging
 from logging.handlers import SysLogHandler
+import os
 import signal
 import socket
 import subprocess
@@ -113,9 +114,23 @@ class PlasmaAppearance:
         self._logger = logger
 
 
-    def apply_color_scheme(self, name: str):
+    def apply_color_scheme(self, name: str) -> None|LookupError:
         self._logger.info('Apply Plasma color scheme: %s', name)
-        subprocess.Popen(['plasma-apply-colorscheme', '--', name])
+
+        process_result = subprocess.run(
+            ['plasma-apply-colorscheme', '--', name],
+            capture_output=True,
+            text=True)
+
+        stdout = process_result.stdout.strip()
+        stderr = process_result.stderr.strip()
+
+        self._logger.debug('Process exit code: %s', process_result.returncode)
+        self._logger.info('Process stdout: %s', stdout)
+        self._logger.error('Process stderr: %s', stderr)
+
+        if process_result.returncode != os.EX_OK:
+            raise LookupError(stderr or stdout)
 
 
 class SharedInstance:
@@ -285,7 +300,10 @@ class AutoColorSchemeApp (QApplication):
             color_mode.name,
             color_scheme)
 
-        self._plasma_appearance.apply_color_scheme(color_scheme)
+        try:
+            self._plasma_appearance.apply_color_scheme(color_scheme)
+        except LookupError:
+            pass
 
 
 def main(argv: List[str]) -> NoReturn:
