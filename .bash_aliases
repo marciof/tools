@@ -42,7 +42,7 @@ done
 
 # Used to skip performance-costly configuration that only needs to be done once.
 # https://specifications.freedesktop.org/basedir/latest/#variables
-cache_file="${XDG_CONFIG_HOME:-"$HOME/.config"}/${self_file_name#.}.cache"
+cache_file="${XDG_CACHE_HOME:-"$HOME/.cache"}/${self_file_name#.}.cache"
 
 if [ -e "$cache_file" ]; then
     echo "[load] ${cache_file##"$HOME/"}" >&2
