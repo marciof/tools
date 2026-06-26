@@ -124,6 +124,43 @@ class SharedInstance:
         return self._shared_memory.attach() or not self._shared_memory.create(1)
 
 
+class SigIntHandler (QObject):
+
+    def __init__(self, logger: logging.Logger):
+        super().__init__()
+
+        self._logger = logger
+        self._callbacks: List[Callable[[], None]] = []
+
+        (self._read_socket, self._write_socket) = socket.socketpair()
+        self._write_socket.setblocking(False)
+        self._read_socket.setblocking(False)
+
+        self._logger.debug(
+            'Socket fds for SIGINT handler: read=%s write=%s',
+            self._read_socket.fileno(),
+            self._write_socket.fileno())
+
+        # No-op signal handler, callbacks are used in Qt's event loop instead.
+        signal.set_wakeup_fd(self._write_socket.fileno())
+        signal.signal(signal.SIGINT, lambda sig, frame: None)
+
+        self._socket_notifier = QSocketNotifier(
+            self._read_socket.fileno(), QSocketNotifier.Type.Read, self)
+        self._socket_notifier.activated.connect(self._on_signal_received)
+
+
+    def _on_signal_received(self) -> None:
+        self._logger.debug('Received SIGINT (Ctrl+C)')
+
+        for callback in self._callbacks:
+            callback()
+
+
+    def on_signal(self, callback: Callable[[], None]) -> None:
+        self._callbacks.append(callback)
+
+
 class AutoColorScheme (QApplication):
 
     """
@@ -154,19 +191,8 @@ class AutoColorScheme (QApplication):
 
         self._shared_instance = self._ensure_single_instance()
 
-        (self._read_socket, self._write_socket) = socket.socketpair()
-        self._write_socket.setblocking(False)
-        self._read_socket.setblocking(False)
-
-        # No-op signal handler, quit app in Qt event loop instead.
-        signal.set_wakeup_fd(self._write_socket.fileno())
-        signal.signal(signal.SIGINT, lambda sig, frame: None)
-
-        self._socket_notifier = QSocketNotifier(
-            self._read_socket.fileno(), QSocketNotifier.Type.Read, self)
-        self._socket_notifier.activated.connect(self._on_sigint)
-        self._logger.debug('Socket fds for SIGINT handler: read=%s write=%s',
-                           self._read_socket.fileno(), self._write_socket.fileno())
+        self._sigint_handler = SigIntHandler(self._logger)
+        self._sigint_handler.on_signal(self.quit)
 
         self._desktop_appearance_api = DesktopAppearanceApi(self._logger)
 
@@ -187,7 +213,7 @@ class AutoColorScheme (QApplication):
         self._logger.info('Running...')
 
 
-    def _ensure_single_instance(self) -> SharedInstance | SystemExit:
+    def _ensure_single_instance(self) -> SharedInstance | NoReturn:
         shared_instance = SharedInstance(
             key='com.marciof.tools.kde.plasma.autoColorScheme',
             logger=self._logger)
@@ -201,20 +227,15 @@ class AutoColorScheme (QApplication):
             msg.setWindowTitle(APP_NAME)
             msg.exec()
 
-            raise SystemExit()
+            self.quit()
 
         return shared_instance
-
-
-    def _on_sigint(self) -> None:
-        self._logger.debug('Received SIGINT (Ctrl+C)')
-        self._socket_notifier.setEnabled(False)
-        self.quit()
 
 
     def quit(self) -> NoReturn:
         self._logger.info('Quitting...')
         super().quit()
+        raise SystemExit()
 
 
     def get_day_night_cycle_icon(self, color_scheme: ColorScheme) -> QIcon:
