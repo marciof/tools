@@ -22,6 +22,7 @@ import signal
 import socket
 import subprocess
 import sys
+import time
 from typing import Callable, Dict, List, NoReturn, Optional
 
 # external
@@ -59,9 +60,11 @@ class DesktopAppearance (QObject):
         super().__init__()
 
         self._logger = logger
+        self._time_interval = 1
+        self._on_color_mode_time = 0
         self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
 
-        self._logger.debug('Setting up D-Bus session...')
+        self._logger.debug('Setting up desktop D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
         self._dbus_session.connect(
             self.DESKTOP_SERVICE,
@@ -80,9 +83,15 @@ class DesktopAppearance (QObject):
         if key != self.COLOR_SCHEME_KEY:
             return
 
+        if (time.monotonic() - self._on_color_mode_time) < self._time_interval:
+            self._logger.info('Ignoring too-quick desktop color mode change')
+            return
+
+        self._on_color_mode_time = time.monotonic()
+
         color_mode_id: int = value.variant()
         color_mode = ColorMode(color_mode_id)
-        self._logger.info('Color mode setting changed: %s', color_mode.name)
+        self._logger.info('Desktop color mode changed: %s', color_mode.name)
 
         for callback in self._on_color_mode_callbacks:
             callback(color_mode)
@@ -100,7 +109,7 @@ class DesktopAppearance (QObject):
 
         color_mode_id: int = response.arguments()[0]
         color_mode = ColorMode(color_mode_id)
-        self._logger.info('Current color mode: %s', color_mode.name)
+        self._logger.info('Current desktop color mode: %s', color_mode.name)
         return color_mode
 
 
@@ -115,7 +124,7 @@ class PlasmaAppearance:
 
 
     def apply_color_scheme(self, name: str) -> None|LookupError:
-        self._logger.info('Apply Plasma color scheme: %s', name)
+        self._logger.info('Plasma apply color scheme: %s', name)
 
         process_result = subprocess.run(
             ['plasma-apply-colorscheme', '--', name],
@@ -125,9 +134,9 @@ class PlasmaAppearance:
         stdout = process_result.stdout.strip()
         stderr = process_result.stderr.strip()
 
-        self._logger.debug('Process exit code: %s', process_result.returncode)
-        self._logger.info('Process stdout: %s', stdout)
-        self._logger.error('Process stderr: %s', stderr)
+        self._logger.debug('Plasma exit code: %s', process_result.returncode)
+        self._logger.info('Plasma stdout: %s', stdout)
+        self._logger.error('Plasma stderr: %s', stderr)
 
         if process_result.returncode != os.EX_OK:
             raise LookupError(stderr or stdout)
@@ -158,7 +167,7 @@ class SigIntHandler (QObject):
         self._read_socket.setblocking(False)
 
         self._logger.debug(
-            'Socket fds for SIGINT handler: read=%s write=%s',
+            'SIGINT handler socket fds: read=%s write=%s',
             self._read_socket.fileno(),
             self._write_socket.fileno())
 
@@ -172,7 +181,7 @@ class SigIntHandler (QObject):
 
 
     def _on_signal_received(self) -> None:
-        self._logger.debug('Received SIGINT (Ctrl+C)')
+        self._logger.debug('SIGINT received (Ctrl+C)')
 
         for callback in self._callbacks:
             callback()
@@ -207,7 +216,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
     def _update_icon(self, color_mode: ColorMode) -> None:
         icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
         self._logger.info(
-            'Update tray icon: %s --> %s', color_mode.name, icon.name())
+            'Tray icon update: %s --> %s', color_mode.name, icon.name())
         self.setIcon(icon)
 
 
