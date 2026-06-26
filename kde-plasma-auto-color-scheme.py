@@ -153,7 +153,7 @@ class SigIntHandler (QObject):
         self._callbacks.append(callback)
 
 
-class DayNightCycleTrayIcon (QSystemTrayIcon):
+class ColorSchemeTrayIcon (QSystemTrayIcon):
 
     """
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
@@ -171,14 +171,29 @@ class DayNightCycleTrayIcon (QSystemTrayIcon):
         super().__init__()
 
         self._logger = logger
+        self._color_scheme_tooltip = '?'
+        self._tooltip = None
+
         desktop_appearance.on_color_scheme(self._update_icon)
         self._update_icon(desktop_appearance.get_current_color_scheme())
 
 
     def _update_icon(self, color_scheme: ColorScheme) -> None:
         icon = self.TRAY_ICON_BY_COLOR_SCHEME[color_scheme]
-        self._logger.info('Update day/night cycle tray icon: %s', icon.name())
+
+        self._logger.info(
+            'Update tray icon: %s=%s', color_scheme.name, icon.name())
+
+        self._color_scheme_tooltip = color_scheme.name.lower()
         self.setIcon(icon)
+
+        if self._tooltip is not None:
+            self.setToolTip(self._tooltip)
+
+
+    def setToolTip(self, tooltip: str) -> None:
+        self._tooltip = tooltip
+        super().setToolTip('%s (%s)' % (tooltip, self._color_scheme_tooltip))
 
 
 class AutoColorSchemeApp (QApplication):
@@ -216,7 +231,7 @@ class AutoColorSchemeApp (QApplication):
         exit_action.triggered.connect(self.quit)
         self._menu.addAction(exit_action)
 
-        self._trayIcon = DayNightCycleTrayIcon(
+        self._trayIcon = ColorSchemeTrayIcon(
             self._desktop_appearance, self._logger)
         self._trayIcon.setToolTip(self.APP_NAME)
         self._trayIcon.setContextMenu(self._menu)
