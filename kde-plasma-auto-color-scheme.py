@@ -13,13 +13,14 @@
 # FIXME runs event listener twice when color scheme changes
 
 # standard
+import argparse
 from enum import Enum
 import logging
 from logging.handlers import SysLogHandler
 import signal
 import socket
 import sys
-from typing import Callable, Dict, List, NoReturn
+from typing import Callable, Dict, List, NoReturn, Optional
 
 # external
 from PyQt6.QtCore import pyqtSlot, QObject, QSharedMemory, QSocketNotifier
@@ -159,8 +160,8 @@ class ColorSchemeTrayIcon (QSystemTrayIcon):
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
     """
     TRAY_ICON_BY_COLOR_SCHEME: Dict[ColorScheme, QIcon] = {
-        ColorScheme.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
         ColorScheme.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
+        ColorScheme.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
     }
 
     def __init__(
@@ -201,8 +202,13 @@ class AutoColorSchemeApp (QApplication):
     APP_NAME: str = 'Auto Color Scheme'
 
 
-    def __init__(self, args: List[str]):
-        super().__init__(args)
+    def __init__(
+            self,
+            qargs: List[str],
+            light: Optional[str] = None,
+            dark: Optional[str] = None):
+
+        super().__init__(qargs)
 
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(logging.DEBUG)
@@ -218,6 +224,7 @@ class AutoColorSchemeApp (QApplication):
         self._logger.addHandler(stdout_handler)
         self._logger.addHandler(syslog_handler)
 
+        self._logger.info('Color schemes: light=%s, dark=%s', light, dark)
         self._shared_instance = self._ensure_single_instance()
 
         self._sigint_handler = SigIntHandler(self._logger)
@@ -269,5 +276,16 @@ class AutoColorSchemeApp (QApplication):
         self._logger.info('Apply color scheme: %s', color_scheme.name)
 
 
+def main(argv: List[str]) -> NoReturn:
+    arg_parser = argparse.ArgumentParser(description=__doc__.strip())
+    arg_parser.add_argument('-l', '--light', help='name of light color scheme')
+    arg_parser.add_argument('-d', '--dark', help='name of dark color scheme')
+
+    (parsed_args, unknown_args) = arg_parser.parse_known_args(argv)
+    qargs = [argv[0]] + unknown_args
+
+    sys.exit(AutoColorSchemeApp(qargs, **vars(parsed_args)).exec())
+
+
 if __name__ == '__main__':
-    sys.exit(AutoColorSchemeApp(sys.argv).exec())
+    main(sys.argv)
