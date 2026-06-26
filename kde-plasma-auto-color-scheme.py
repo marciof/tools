@@ -183,10 +183,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
             logger: logging.Logger):
 
         super().__init__()
-
         self._logger = logger
-        self._color_mode_tooltip = '?'
-        self._tooltip = None
 
         desktop_appearance.on_color_mode(self._update_icon)
         self._update_icon(desktop_appearance.get_current_color_mode())
@@ -194,20 +191,9 @@ class ColorModeTrayIcon (QSystemTrayIcon):
 
     def _update_icon(self, color_mode: ColorMode) -> None:
         icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
-
         self._logger.info(
             'Update tray icon: %s --> %s', color_mode.name, icon.name())
-
-        self._color_mode_tooltip = color_mode.name.lower()
         self.setIcon(icon)
-
-        if self._tooltip is not None:
-            self.setToolTip(self._tooltip)
-
-
-    def setToolTip(self, tooltip: str) -> None:
-        self._tooltip = tooltip
-        super().setToolTip('%s (%s)' % (tooltip, self._color_mode_tooltip))
 
 
 class AutoColorSchemeApp (QApplication):
