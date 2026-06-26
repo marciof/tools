@@ -38,7 +38,7 @@ class ColorScheme (Enum):
     LIGHT = 2
 
 
-class DesktopAppearanceApi (QObject):
+class DesktopAppearance (QObject):
 
     DESKTOP_SERVICE: str = 'org.freedesktop.portal.Desktop'
     DESKTOP_PATH: str = '/org/freedesktop/portal/desktop'
@@ -153,9 +153,7 @@ class SigIntHandler (QObject):
         self._callbacks.append(callback)
 
 
-class AutoColorScheme (QApplication):
-
-    APP_NAME: str = 'Auto Color Scheme'
+class DayNightCycleTrayIcon (QSystemTrayIcon):
 
     """
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
@@ -164,6 +162,28 @@ class AutoColorScheme (QApplication):
         ColorScheme.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
         ColorScheme.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
     }
+
+    def __init__(
+            self,
+            desktop_appearance: DesktopAppearance,
+            logger: logging.Logger):
+
+        super().__init__()
+
+        self._logger = logger
+        desktop_appearance.on_color_scheme(self._update_icon)
+        self._update_icon(desktop_appearance.get_current_color_scheme())
+
+
+    def _update_icon(self, color_scheme: ColorScheme) -> None:
+        icon = self.TRAY_ICON_BY_COLOR_SCHEME[color_scheme]
+        self._logger.info('Update day/night cycle tray icon: %s', icon.name())
+        self.setIcon(icon)
+
+
+class AutoColorSchemeApp (QApplication):
+
+    APP_NAME: str = 'Auto Color Scheme'
 
 
     def __init__(self, args: List[str]):
@@ -188,21 +208,19 @@ class AutoColorScheme (QApplication):
         self._sigint_handler = SigIntHandler(self._logger)
         self._sigint_handler.on_signal(self.quit)
 
-        self._desktop_appearance_api = DesktopAppearanceApi(self._logger)
+        self._desktop_appearance = DesktopAppearance(self._logger)
+        self._desktop_appearance.on_color_scheme(self.apply_custom_color_scheme)
 
         self._menu = QMenu()
         exit_action = QAction('Quit', self._menu)
         exit_action.triggered.connect(self.quit)
         self._menu.addAction(exit_action)
 
-        self._tray = QSystemTrayIcon()
-        self._tray.setIcon(self.get_current_day_night_cycle_icon())
-        self._tray.setToolTip(self.APP_NAME)
-        self._tray.setContextMenu(self._menu)
-        self._tray.show()
-
-        self._desktop_appearance_api.on_color_scheme(
-            self.apply_custom_color_scheme)
+        self._trayIcon = DayNightCycleTrayIcon(
+            self._desktop_appearance, self._logger)
+        self._trayIcon.setToolTip(self.APP_NAME)
+        self._trayIcon.setContextMenu(self._menu)
+        self._trayIcon.show()
 
         self._logger.info('Running...')
 
@@ -232,19 +250,9 @@ class AutoColorScheme (QApplication):
         raise SystemExit()
 
 
-    def get_day_night_cycle_icon(self, color_scheme: ColorScheme) -> QIcon:
-        return self.TRAY_ICON_BY_COLOR_SCHEME[color_scheme]
-
-
-    def get_current_day_night_cycle_icon(self) -> QIcon:
-        return self.get_day_night_cycle_icon(
-            self._desktop_appearance_api.get_current_color_scheme())
-
-
     def apply_custom_color_scheme(self, color_scheme: ColorScheme) -> None:
         self._logger.info('Apply color scheme: %s', color_scheme.name)
-        self._tray.setIcon(self.get_day_night_cycle_icon(color_scheme))
 
 
 if __name__ == '__main__':
-    sys.exit(AutoColorScheme(sys.argv).exec())
+    sys.exit(AutoColorSchemeApp(sys.argv).exec())
