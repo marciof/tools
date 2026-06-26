@@ -19,27 +19,16 @@ from logging.handlers import SysLogHandler
 import signal
 import socket
 import sys
-from typing import Dict, List, NoReturn
+from typing import Callable, Dict, List, NoReturn
 
 # external
-from PyQt6.QtCore import pyqtSlot, QSharedMemory, QSocketNotifier
+from PyQt6.QtCore import pyqtSlot, QObject, QSharedMemory, QSocketNotifier
 from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusVariant
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 
 APP_NAME: str = 'Auto Color Scheme'
-
-DESKTOP_SERVICE: str = 'org.freedesktop.portal.Desktop'
-DESKTOP_PATH: str = '/org/freedesktop/portal/desktop'
-
-"""
-https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
-"""
-SETTINGS_INTERFACE: str = 'org.freedesktop.portal.Settings'
-
-APPEARANCE_NAMESPACE: str = 'org.freedesktop.appearance'
-COLOR_SCHEME_KEY: str = 'color-scheme'
 
 
 class ColorScheme (Enum):
@@ -50,6 +39,77 @@ class ColorScheme (Enum):
     NONE = 0
     DARK = 1
     LIGHT = 2
+
+
+class DesktopAppearanceApi (QObject):
+
+    DESKTOP_SERVICE: str = 'org.freedesktop.portal.Desktop'
+    DESKTOP_PATH: str = '/org/freedesktop/portal/desktop'
+
+    """
+    https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
+    """
+    SETTINGS_INTERFACE: str = 'org.freedesktop.portal.Settings'
+
+    APPEARANCE_NAMESPACE: str = 'org.freedesktop.appearance'
+    COLOR_SCHEME_KEY: str = 'color-scheme'
+
+
+    def __init__(self, logger: logging.Logger):
+        super().__init__()
+        self._logger = logger
+
+        self._logger.debug('Setting up D-Bus session')
+        self._dbus_session = QDBusConnection.sessionBus()
+
+        self._on_color_scheme_change_callbacks: List[Callable[[ColorScheme], None]] = []
+        self._is_on_setting_changed_connected = False
+
+
+    def get_current_color_scheme(self) -> ColorScheme:
+        settings = QDBusInterface(
+            self.DESKTOP_SERVICE,
+            self.DESKTOP_PATH,
+            self.SETTINGS_INTERFACE,
+            self._dbus_session)
+
+        response = settings.call(
+            'Read', self.APPEARANCE_NAMESPACE, self.COLOR_SCHEME_KEY)
+
+        color_scheme_id: int = response.arguments()[0]
+        color_scheme = ColorScheme(color_scheme_id)
+        return color_scheme
+
+
+    def on_color_scheme_change(self, callback: Callable[[ColorScheme], None]):
+        self._on_color_scheme_change_callbacks.append(callback)
+
+        if not self._is_on_setting_changed_connected:
+            self._is_on_setting_changed_connected = True
+
+            self._dbus_session.connect(
+                self.DESKTOP_SERVICE,
+                self.DESKTOP_PATH,
+                self.SETTINGS_INTERFACE,
+                'SettingChanged',
+                self._filter_on_color_scheme_changes)
+
+
+    @pyqtSlot(str, str, QDBusVariant)
+    def _filter_on_color_scheme_changes(
+            self, namespace: str, key: str, value: QDBusVariant) -> None:
+
+        if namespace != self.APPEARANCE_NAMESPACE:
+            return
+        if key != self.COLOR_SCHEME_KEY:
+            return
+
+        color_scheme_id: int = value.variant()
+        color_scheme = ColorScheme(color_scheme_id)
+        self._logger.info('Color scheme setting changed: %s', color_scheme.name)
+
+        for callback in self._on_color_scheme_change_callbacks:
+            callback(color_scheme)
 
 
 class AutoColorScheme (QApplication):
@@ -82,7 +142,6 @@ class AutoColorScheme (QApplication):
 
         self.shared_memory = self.ensure_single_instance()
 
-        self.logger.debug('Setting up SIGINT handler')
         (self.read_socket, self.write_socket) = socket.socketpair()
         self.write_socket.setblocking(False)
         self.read_socket.setblocking(False)
@@ -94,11 +153,10 @@ class AutoColorScheme (QApplication):
         self.socket_notifier = QSocketNotifier(
             self.read_socket.fileno(), QSocketNotifier.Type.Read, self)
         self.socket_notifier.activated.connect(self.on_sigint)
-        self.logger.debug('Socket fds for SIGINT: read=%s write=%s',
+        self.logger.debug('Socket fds for SIGINT handler: read=%s write=%s',
             self.read_socket.fileno(), self.write_socket.fileno())
 
-        self.logger.debug('Setting up D-Bus session')
-        self.dbus_session = QDBusConnection.sessionBus()
+        self.desktop_appearance_api = DesktopAppearanceApi(self.logger)
 
         self.menu = QMenu()
         exit_action = QAction('Quit', self.menu)
@@ -111,12 +169,8 @@ class AutoColorScheme (QApplication):
         self.tray.setContextMenu(self.menu)
         self.tray.show()
 
-        self.dbus_session.connect(
-            DESKTOP_SERVICE,
-            DESKTOP_PATH,
-            SETTINGS_INTERFACE,
-            'SettingChanged',
-            self.on_setting_changed)
+        self.desktop_appearance_api.on_color_scheme_change(
+            self.apply_custom_color_scheme)
 
         self.logger.info('Running...')
 
@@ -124,7 +178,7 @@ class AutoColorScheme (QApplication):
     def ensure_single_instance(self) -> QSharedMemory | SystemExit:
         shared_memory = QSharedMemory(
             'com.marciof.tools.kde.plasma.autoColorScheme')
-        self.logger.debug('Created shared memory: %s', shared_memory.key())
+        self.logger.debug('Shared memory: %s', shared_memory.key())
 
         if shared_memory.attach() or not shared_memory.create(1):
             self.logger.info('Another application instance is already running')
@@ -151,50 +205,18 @@ class AutoColorScheme (QApplication):
         self.quit()
 
 
-    def get_current_color_scheme(self) -> ColorScheme:
-        settings = QDBusInterface(
-            DESKTOP_SERVICE,
-            DESKTOP_PATH,
-            SETTINGS_INTERFACE,
-            self.dbus_session)
-
-        response = settings.call(
-            'Read', APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY)
-
-        color_scheme_id: int = response.arguments()[0]
-        color_scheme = ColorScheme(color_scheme_id)
-        self.logger.info('Current color scheme: %s', color_scheme.name)
-        return color_scheme
-
-
     def get_day_night_cycle_icon(self, color_scheme: ColorScheme) -> QIcon:
         return self.TRAY_ICON_BY_COLOR_SCHEME[color_scheme]
 
 
     def get_current_day_night_cycle_icon(self) -> QIcon:
-        return self.get_day_night_cycle_icon(self.get_current_color_scheme())
+        return self.get_day_night_cycle_icon(
+            self.desktop_appearance_api.get_current_color_scheme())
 
 
-    @pyqtSlot(str, str, QDBusVariant)
-    def on_setting_changed(
-            self, namespace: str, key: str, value: QDBusVariant) -> None:
-
-        if (namespace, key) != (APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY):
-            return
-
-        self.logger.info('Color scheme setting changed')
-
-        color_scheme_id: int = value.variant()
-        color_scheme = ColorScheme(color_scheme_id)
-
-        self.logger.info('New color scheme: %s', color_scheme.name)
+    def apply_custom_color_scheme(self, color_scheme: ColorScheme) -> None:
+        self.logger.info('Apply color scheme: %s', color_scheme.name)
         self.tray.setIcon(self.get_day_night_cycle_icon(color_scheme))
-
-        self.apply_custom_color_scheme()
-
-
-    def apply_custom_color_scheme(self) -> None:
-        pass
 
 
 if __name__ == '__main__':
