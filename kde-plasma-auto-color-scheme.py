@@ -28,9 +28,6 @@ from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 
-APP_NAME: str = 'Auto Color Scheme'
-
-
 class ColorScheme (Enum):
     """
     https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
@@ -57,13 +54,18 @@ class DesktopAppearanceApi (QObject):
 
     def __init__(self, logger: logging.Logger):
         super().__init__()
+
         self._logger = logger
+        self._on_color_scheme_callbacks: List[Callable[[ColorScheme], None]] = []
 
         self._logger.debug('Setting up D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
-
-        self._on_color_scheme_change_callbacks: List[Callable[[ColorScheme], None]] = []
-        self._is_on_setting_changed_connected = False
+        self._dbus_session.connect(
+            self.DESKTOP_SERVICE,
+            self.DESKTOP_PATH,
+            self.SETTINGS_INTERFACE,
+            'SettingChanged',
+            self._filter_on_color_scheme_changes)
 
 
     @pyqtSlot(str, str, QDBusVariant)
@@ -79,7 +81,7 @@ class DesktopAppearanceApi (QObject):
         color_scheme = ColorScheme(color_scheme_id)
         self._logger.info('Color scheme setting changed: %s', color_scheme.name)
 
-        for callback in self._on_color_scheme_change_callbacks:
+        for callback in self._on_color_scheme_callbacks:
             callback(color_scheme)
 
 
@@ -98,18 +100,8 @@ class DesktopAppearanceApi (QObject):
         return color_scheme
 
 
-    def on_color_scheme_change(self, callback: Callable[[ColorScheme], None]):
-        self._on_color_scheme_change_callbacks.append(callback)
-
-        if not self._is_on_setting_changed_connected:
-            self._is_on_setting_changed_connected = True
-
-            self._dbus_session.connect(
-                self.DESKTOP_SERVICE,
-                self.DESKTOP_PATH,
-                self.SETTINGS_INTERFACE,
-                'SettingChanged',
-                self._filter_on_color_scheme_changes)
+    def on_color_scheme(self, callback: Callable[[ColorScheme], None]):
+        self._on_color_scheme_callbacks.append(callback)
 
 
 class SharedInstance:
@@ -163,6 +155,8 @@ class SigIntHandler (QObject):
 
 class AutoColorScheme (QApplication):
 
+    APP_NAME: str = 'Auto Color Scheme'
+
     """
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
     """
@@ -203,11 +197,11 @@ class AutoColorScheme (QApplication):
 
         self._tray = QSystemTrayIcon()
         self._tray.setIcon(self.get_current_day_night_cycle_icon())
-        self._tray.setToolTip(APP_NAME)
+        self._tray.setToolTip(self.APP_NAME)
         self._tray.setContextMenu(self._menu)
         self._tray.show()
 
-        self._desktop_appearance_api.on_color_scheme_change(
+        self._desktop_appearance_api.on_color_scheme(
             self.apply_custom_color_scheme)
 
         self._logger.info('Running...')
@@ -224,7 +218,7 @@ class AutoColorScheme (QApplication):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Icon.Warning)
             msg.setText('Already running.')
-            msg.setWindowTitle(APP_NAME)
+            msg.setWindowTitle(self.APP_NAME)
             msg.exec()
 
             self.quit()
