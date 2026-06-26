@@ -19,6 +19,7 @@ import logging
 from logging.handlers import SysLogHandler
 import signal
 import socket
+import subprocess
 import sys
 from typing import Callable, Dict, List, NoReturn, Optional
 
@@ -106,6 +107,17 @@ class DesktopAppearance (QObject):
         self._on_color_mode_callbacks.append(callback)
 
 
+class PlasmaAppearance:
+
+    def __init__(self, logger: logging.Logger):
+        self._logger = logger
+
+
+    def apply_color_scheme(self, name: str):
+        self._logger.info('Apply Plasma color scheme: %s', name)
+        subprocess.Popen(['plasma-apply-colorscheme', '--', name])
+
+
 class SharedInstance:
 
     def __init__(self, key: str, logger: logging.Logger):
@@ -184,7 +196,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
         icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
 
         self._logger.info(
-            'Update tray icon: %s=%s', color_mode.name, icon.name())
+            'Update tray icon: %s --> %s', color_mode.name, icon.name())
 
         self._color_mode_tooltip = color_mode.name.lower()
         self.setIcon(icon)
@@ -231,6 +243,12 @@ class AutoColorSchemeApp (QApplication):
         self._sigint_handler = SigIntHandler(self._logger)
         self._sigint_handler.on_signal(self.quit)
 
+        self._color_scheme_by_mode: Dict[ColorMode, Optional[str]] = {
+            ColorMode.LIGHT: light,
+            ColorMode.DARK: dark,
+        }
+
+        self._plasma_appearance = PlasmaAppearance(self._logger)
         self._desktop_appearance = DesktopAppearance(self._logger)
         self._desktop_appearance.on_color_mode(self.apply_custom_color_scheme)
 
@@ -274,7 +292,14 @@ class AutoColorSchemeApp (QApplication):
 
 
     def apply_custom_color_scheme(self, color_mode: ColorMode) -> None:
-        self._logger.info('Apply color scheme')
+        color_scheme = self._color_scheme_by_mode[color_mode]
+
+        self._logger.info(
+            'Apply color scheme for mode: %s --> %s',
+            color_mode.name,
+            color_scheme)
+
+        self._plasma_appearance.apply_color_scheme(color_scheme)
 
 
 def main(argv: List[str]) -> NoReturn:
