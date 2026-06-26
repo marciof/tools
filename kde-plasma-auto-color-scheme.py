@@ -113,7 +113,7 @@ class DesktopAppearance (QObject):
         return color_mode
 
 
-    def on_color_mode(self, callback: Callable[[ColorMode], None]):
+    def on_color_mode(self, callback: Callable[[ColorMode], None]) -> None:
         self._on_color_mode_callbacks.append(callback)
 
 
@@ -123,7 +123,7 @@ class PlasmaAppearance:
         self._logger = logger
 
 
-    def apply_color_scheme(self, name: str) -> None|LookupError:
+    def apply_color_scheme(self, name: str) -> None | LookupError:
         self._logger.info('Plasma apply color scheme: %s', name)
 
         process_result = subprocess.run(
