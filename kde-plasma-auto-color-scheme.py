@@ -29,7 +29,7 @@ from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 
-class ColorScheme (Enum):
+class ColorMode (Enum):
     """
     https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
     """
@@ -57,7 +57,7 @@ class DesktopAppearance (QObject):
         super().__init__()
 
         self._logger = logger
-        self._on_color_scheme_callbacks: List[Callable[[ColorScheme], None]] = []
+        self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
 
         self._logger.debug('Setting up D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
@@ -66,11 +66,11 @@ class DesktopAppearance (QObject):
             self.DESKTOP_PATH,
             self.SETTINGS_INTERFACE,
             'SettingChanged',
-            self._filter_on_color_scheme_changes)
+            self._filter_on_color_mode_appearance_changes)
 
 
     @pyqtSlot(str, str, QDBusVariant)
-    def _filter_on_color_scheme_changes(
+    def _filter_on_color_mode_appearance_changes(
             self, namespace: str, key: str, value: QDBusVariant) -> None:
 
         if namespace != self.APPEARANCE_NAMESPACE:
@@ -78,15 +78,15 @@ class DesktopAppearance (QObject):
         if key != self.COLOR_SCHEME_KEY:
             return
 
-        color_scheme_id: int = value.variant()
-        color_scheme = ColorScheme(color_scheme_id)
-        self._logger.info('Color scheme setting changed: %s', color_scheme.name)
+        color_mode_id: int = value.variant()
+        color_mode = ColorMode(color_mode_id)
+        self._logger.info('Color mode setting changed: %s', color_mode.name)
 
-        for callback in self._on_color_scheme_callbacks:
-            callback(color_scheme)
+        for callback in self._on_color_mode_callbacks:
+            callback(color_mode)
 
 
-    def get_current_color_scheme(self) -> ColorScheme:
+    def get_current_color_mode(self) -> ColorMode:
         settings = QDBusInterface(
             self.DESKTOP_SERVICE,
             self.DESKTOP_PATH,
@@ -96,13 +96,14 @@ class DesktopAppearance (QObject):
         response = settings.call(
             'Read', self.APPEARANCE_NAMESPACE, self.COLOR_SCHEME_KEY)
 
-        color_scheme_id: int = response.arguments()[0]
-        color_scheme = ColorScheme(color_scheme_id)
-        return color_scheme
+        color_mode_id: int = response.arguments()[0]
+        color_mode = ColorMode(color_mode_id)
+        self._logger.info('Current color mode: %s', color_mode.name)
+        return color_mode
 
 
-    def on_color_scheme(self, callback: Callable[[ColorScheme], None]):
-        self._on_color_scheme_callbacks.append(callback)
+    def on_color_mode(self, callback: Callable[[ColorMode], None]):
+        self._on_color_mode_callbacks.append(callback)
 
 
 class SharedInstance:
@@ -154,14 +155,14 @@ class SigIntHandler (QObject):
         self._callbacks.append(callback)
 
 
-class ColorSchemeTrayIcon (QSystemTrayIcon):
+class ColorModeTrayIcon (QSystemTrayIcon):
 
     """
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
     """
-    TRAY_ICON_BY_COLOR_SCHEME: Dict[ColorScheme, QIcon] = {
-        ColorScheme.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
-        ColorScheme.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
+    TRAY_ICON_BY_COLOR_MODE: Dict[ColorMode, QIcon] = {
+        ColorMode.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
+        ColorMode.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
     }
 
     def __init__(
@@ -172,20 +173,20 @@ class ColorSchemeTrayIcon (QSystemTrayIcon):
         super().__init__()
 
         self._logger = logger
-        self._color_scheme_tooltip = '?'
+        self._color_mode_tooltip = '?'
         self._tooltip = None
 
-        desktop_appearance.on_color_scheme(self._update_icon)
-        self._update_icon(desktop_appearance.get_current_color_scheme())
+        desktop_appearance.on_color_mode(self._update_icon)
+        self._update_icon(desktop_appearance.get_current_color_mode())
 
 
-    def _update_icon(self, color_scheme: ColorScheme) -> None:
-        icon = self.TRAY_ICON_BY_COLOR_SCHEME[color_scheme]
+    def _update_icon(self, color_mode: ColorMode) -> None:
+        icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
 
         self._logger.info(
-            'Update tray icon: %s=%s', color_scheme.name, icon.name())
+            'Update tray icon: %s=%s', color_mode.name, icon.name())
 
-        self._color_scheme_tooltip = color_scheme.name.lower()
+        self._color_mode_tooltip = color_mode.name.lower()
         self.setIcon(icon)
 
         if self._tooltip is not None:
@@ -194,7 +195,7 @@ class ColorSchemeTrayIcon (QSystemTrayIcon):
 
     def setToolTip(self, tooltip: str) -> None:
         self._tooltip = tooltip
-        super().setToolTip('%s (%s)' % (tooltip, self._color_scheme_tooltip))
+        super().setToolTip('%s (%s)' % (tooltip, self._color_mode_tooltip))
 
 
 class AutoColorSchemeApp (QApplication):
@@ -231,14 +232,14 @@ class AutoColorSchemeApp (QApplication):
         self._sigint_handler.on_signal(self.quit)
 
         self._desktop_appearance = DesktopAppearance(self._logger)
-        self._desktop_appearance.on_color_scheme(self.apply_custom_color_scheme)
+        self._desktop_appearance.on_color_mode(self.apply_custom_color_scheme)
 
         self._menu = QMenu()
         exit_action = QAction('Quit', self._menu)
         exit_action.triggered.connect(self.quit)
         self._menu.addAction(exit_action)
 
-        self._trayIcon = ColorSchemeTrayIcon(
+        self._trayIcon = ColorModeTrayIcon(
             self._desktop_appearance, self._logger)
         self._trayIcon.setToolTip(self.APP_NAME)
         self._trayIcon.setContextMenu(self._menu)
@@ -272,8 +273,8 @@ class AutoColorSchemeApp (QApplication):
         raise SystemExit()
 
 
-    def apply_custom_color_scheme(self, color_scheme: ColorScheme) -> None:
-        self._logger.info('Apply color scheme: %s', color_scheme.name)
+    def apply_custom_color_scheme(self, color_mode: ColorMode) -> None:
+        self._logger.info('Apply color scheme')
 
 
 def main(argv: List[str]) -> NoReturn:
