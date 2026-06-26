@@ -247,7 +247,11 @@ class AutoColorSchemeApp (QApplication):
         self._logger.addHandler(stdout_handler)
         self._logger.addHandler(syslog_handler)
 
-        self._logger.info('Color schemes: light=%s, dark=%s', light, dark)
+        if (light, dark) == (None, None):
+            self._show_warning_message_box('No color scheme specified.')
+            self.quit()
+
+        self._logger.info('Color schemes: LIGHT=%s, DARK=%s', light, dark)
         self._shared_instance = self._ensure_single_instance()
 
         self._sigint_handler = SigIntHandler(self._logger)
@@ -283,16 +287,18 @@ class AutoColorSchemeApp (QApplication):
 
         if shared_instance.is_shared():
             self._logger.info('Another application instance is already running')
-
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Warning)
-            msg.setText('Already running.')
-            msg.setWindowTitle(self.APP_NAME)
-            msg.exec()
-
+            self._show_warning_message_box('Already running.')
             self.quit()
 
         return shared_instance
+
+
+    def _show_warning_message_box(self, text: str) -> None:
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText(text)
+        msg.setWindowTitle(self.APP_NAME)
+        msg.exec()
 
 
     def quit(self) -> NoReturn:
@@ -304,6 +310,11 @@ class AutoColorSchemeApp (QApplication):
     def apply_custom_color_scheme(self, color_mode: ColorMode) -> None:
         color_scheme = self._color_scheme_by_mode[color_mode]
 
+        if color_scheme is None:
+            self._logger.info(
+                'No color scheme set for mode: %s', color_mode.name)
+            return
+
         self._logger.info(
             'Apply color scheme for mode: %s --> %s',
             color_mode.name,
@@ -311,8 +322,8 @@ class AutoColorSchemeApp (QApplication):
 
         try:
             self._plasma_appearance.apply_color_scheme(color_scheme)
-        except LookupError:
-            pass
+        except LookupError as error:
+            self._show_warning_message_box(str(error))
 
 
 def main(argv: List[str]) -> NoReturn:
