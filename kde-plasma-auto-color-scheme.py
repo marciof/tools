@@ -269,8 +269,8 @@ class AutoColorSchemeApp (QApplication):
         }
 
         self._desktop_appearance = DesktopAppearance(self._logger)
-        self._desktop_appearance.on_color_mode(self.apply_custom_color_scheme)
-        self.apply_custom_color_scheme(
+        self._desktop_appearance.on_color_mode(self.apply_color_scheme_by_mode)
+        self.apply_color_scheme_by_mode(
             self._desktop_appearance.get_current_color_mode())
 
         self._menu = QMenu()
@@ -314,7 +314,7 @@ class AutoColorSchemeApp (QApplication):
         raise SystemExit()
 
 
-    def apply_custom_color_scheme(self, color_mode: ColorMode) -> None:
+    def apply_color_scheme_by_mode(self, color_mode: ColorMode) -> None:
         color_scheme = self._color_scheme_by_mode[color_mode]
 
         if color_scheme is None:
