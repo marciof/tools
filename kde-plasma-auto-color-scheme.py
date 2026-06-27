@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+
 """
 Automatic Color Scheme for Light/Dark Modes.
 
@@ -23,6 +24,7 @@ References:
 - KDE bug #433059: https://bugs.kde.org/show_bug.cgi?id=433059
 """
 
+
 # FIXME refactor to reduce coupling
 # FIXME tests (including mypy)
 # FIXME error handling
@@ -30,6 +32,7 @@ References:
 # FIXME logging
 # FIXME typing
 # FIXME runs event listener twice when color scheme changes
+
 
 # standard
 import argparse
