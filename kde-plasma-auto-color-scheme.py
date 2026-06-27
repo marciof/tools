@@ -86,6 +86,15 @@ class KdePlasmaAppearance:
             raise LookupError(stderr or stdout)
 
 
+    def list_color_schemes(self) -> str:
+        plasma_proc = subprocess.run(
+            ['plasma-apply-colorscheme', '--list-schemes'],
+            capture_output=True,
+            text=True)
+
+        return plasma_proc.stdout.strip()
+
+
 class DesktopAppearance (QObject):
 
     DESKTOP_SERVICE: str = 'org.freedesktop.portal.Desktop'
@@ -165,6 +174,10 @@ class DesktopAppearance (QObject):
     def apply_color_scheme(self, name: str) -> None | LookupError:
         self._last_color_time = time.monotonic()
         self._kde_plasma_appearance.apply_color_scheme(name)
+
+
+    def list_color_schemes(self) -> str:
+        return self._kde_plasma_appearance.list_color_schemes()
 
 
 class SharedInstance:
@@ -272,22 +285,25 @@ class AutoColorSchemeApp (QApplication):
         self._logger.addHandler(stdout_handler)
         self._logger.addHandler(syslog_handler)
 
+        self._sigint_handler = SigIntHandler(self._logger)
+        self._sigint_handler.on_signal(self.quit)
+
+        self._shared_instance = self._ensure_single_instance()
+        self._desktop_appearance = DesktopAppearance(self._logger)
+
         if (light, dark) == (None, None):
-            self._show_warning_message_box('No color scheme specified.')
+            self._show_warning_message_box(
+                'No color scheme specified.\n\n'
+                + self._desktop_appearance.list_color_schemes())
             self.quit()
 
         self._logger.info('Color schemes: LIGHT=%s, DARK=%s', light, dark)
-        self._shared_instance = self._ensure_single_instance()
-
-        self._sigint_handler = SigIntHandler(self._logger)
-        self._sigint_handler.on_signal(self.quit)
 
         self._color_scheme_by_mode: Dict[ColorMode, Optional[str]] = {
             ColorMode.LIGHT: light,
             ColorMode.DARK: dark,
         }
 
-        self._desktop_appearance = DesktopAppearance(self._logger)
         self._desktop_appearance.on_color_mode(self.apply_color_scheme_by_mode)
         self.apply_color_scheme_by_mode(
             self._desktop_appearance.get_current_color_mode())
