@@ -42,6 +42,31 @@ class ColorMode (Enum):
     LIGHT = 2
 
 
+class KdePlasmaAppearance:
+
+    def __init__(self, logger: logging.Logger):
+        self._logger = logger
+
+
+    def apply_color_scheme(self, name: str) -> None | LookupError:
+        self._logger.info('KDE Plasma applying color scheme: %s', name)
+
+        plasma_proc = subprocess.run(
+            ['plasma-apply-colorscheme', '--', name],
+            capture_output=True,
+            text=True)
+
+        stdout = plasma_proc.stdout.strip()
+        stderr = plasma_proc.stderr.strip()
+
+        self._logger.debug('KDE Plasma exit code: %s', plasma_proc.returncode)
+        self._logger.info('KDE Plasma stdout: %s', stdout)
+        self._logger.error('KDE Plasma stderr: %s', stderr)
+
+        if plasma_proc.returncode != os.EX_OK:
+            raise LookupError(stderr or stdout)
+
+
 class DesktopAppearance (QObject):
 
     DESKTOP_SERVICE: str = 'org.freedesktop.portal.Desktop'
@@ -61,8 +86,9 @@ class DesktopAppearance (QObject):
 
         self._logger = logger
         self._time_interval = 1
-        self._on_color_mode_time = 0
+        self._last_color_time = 0
         self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
+        self._kde_plasma_appearance = KdePlasmaAppearance(logger)
 
         self._logger.debug('Setting up desktop D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
@@ -83,11 +109,11 @@ class DesktopAppearance (QObject):
         if key != self.COLOR_SCHEME_KEY:
             return
 
-        if (time.monotonic() - self._on_color_mode_time) < self._time_interval:
+        if (time.monotonic() - self._last_color_time) < self._time_interval:
             self._logger.info('Ignoring too-quick desktop color mode change')
             return
 
-        self._on_color_mode_time = time.monotonic()
+        self._last_color_time = time.monotonic()
 
         color_mode_id: int = value.variant()
         color_mode = ColorMode(color_mode_id)
@@ -117,29 +143,9 @@ class DesktopAppearance (QObject):
         self._on_color_mode_callbacks.append(callback)
 
 
-class PlasmaAppearance:
-
-    def __init__(self, logger: logging.Logger):
-        self._logger = logger
-
-
     def apply_color_scheme(self, name: str) -> None | LookupError:
-        self._logger.info('Plasma apply color scheme: %s', name)
-
-        process_result = subprocess.run(
-            ['plasma-apply-colorscheme', '--', name],
-            capture_output=True,
-            text=True)
-
-        stdout = process_result.stdout.strip()
-        stderr = process_result.stderr.strip()
-
-        self._logger.debug('Plasma exit code: %s', process_result.returncode)
-        self._logger.info('Plasma stdout: %s', stdout)
-        self._logger.error('Plasma stderr: %s', stderr)
-
-        if process_result.returncode != os.EX_OK:
-            raise LookupError(stderr or stdout)
+        self._last_color_time = time.monotonic()
+        self._kde_plasma_appearance.apply_color_scheme(name)
 
 
 class SharedInstance:
@@ -262,9 +268,10 @@ class AutoColorSchemeApp (QApplication):
             ColorMode.DARK: dark,
         }
 
-        self._plasma_appearance = PlasmaAppearance(self._logger)
         self._desktop_appearance = DesktopAppearance(self._logger)
         self._desktop_appearance.on_color_mode(self.apply_custom_color_scheme)
+        self.apply_custom_color_scheme(
+            self._desktop_appearance.get_current_color_mode())
 
         self._menu = QMenu()
         exit_action = QAction('Quit', self._menu)
@@ -282,7 +289,7 @@ class AutoColorSchemeApp (QApplication):
 
     def _ensure_single_instance(self) -> SharedInstance | NoReturn:
         shared_instance = SharedInstance(
-            key='com.marciof.tools.kde.plasma.autoColorScheme',
+            key='com.marciof.tools.autoColorScheme',
             logger=self._logger)
 
         if shared_instance.is_shared():
@@ -316,12 +323,12 @@ class AutoColorSchemeApp (QApplication):
             return
 
         self._logger.info(
-            'Apply color scheme for mode: %s --> %s',
+            'Applying color scheme for mode: %s --> %s',
             color_mode.name,
             color_scheme)
 
         try:
-            self._plasma_appearance.apply_color_scheme(color_scheme)
+            self._desktop_appearance.apply_color_scheme(color_scheme)
         except LookupError as error:
             self._show_warning_message_box(str(error))
 
