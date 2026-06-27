@@ -2,6 +2,25 @@
 # -*- coding: UTF-8 -*-
 
 """
+Automatic Color Scheme for Light/Dark Modes.
+
+---
+
+How to change active/inactive titlebar color:
+
+1. Copy an existing color scheme (`Edit Color Scheme` and `Save As`)
+   that has active/inactive titlebar colors.
+2. Ensure there aren't any `[Colors:Header]` and `[Colors:Header][Inactive]`
+   sections in the new color scheme file.
+3. Ensure there is a `[WM]` section in the new color scheme file, which
+   will have the active/inactive titlebar colors.
+
+References:
+
+- KDE Plasma docs: https://develop.kde.org/docs/plasma/theme/theme-details/#colors
+- KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
+- KDE bug #446584: https://bugs.kde.org/show_bug.cgi?id=446584
+- KDE bug #433059: https://bugs.kde.org/show_bug.cgi?id=433059
 """
 
 # FIXME refactor to reduce coupling
@@ -334,7 +353,13 @@ class AutoColorSchemeApp (QApplication):
 
 
 def main(argv: List[str]) -> NoReturn:
-    arg_parser = argparse.ArgumentParser(description=__doc__.strip())
+    (description, epilog) = map(str.strip,  __doc__.split('---'))
+
+    arg_parser = argparse.ArgumentParser(
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
     arg_parser.add_argument('-l', '--light', help='name of light color scheme')
     arg_parser.add_argument('-d', '--dark', help='name of dark color scheme')
 
