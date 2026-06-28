@@ -160,7 +160,9 @@ fi
 #   OR
 # Stdin: text to copy
 if DESC='<https://github.com/bugaevc/wl-clipboard>' have_ wl-copy; then
-    alias cb=wl-copy
+    cb() {
+        wl-copy --type text/plain -- "$@"
+    }
 elif DESC='<https://github.com/astrand/xclip>' have_ xclip; then
     cb() {
         if [ $# -gt 0 ]; then
