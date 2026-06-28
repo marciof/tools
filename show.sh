@@ -4,11 +4,12 @@
 # TODO modularize? eg. 1st cat-or-page, 2nd view-format-XYZ, 3rd combine plugins
 # TODO research prior-art (also Python, C?)
 
-# TODO documentation (man pages? functions and parameters/return)
+# TODO documentation (functions and parameters/return, long form command flags)
 # TODO tests
 # TODO logging
 # TODO debug option? eg. does `set -x`
 
+# TODO `lesspipe` no output on mistaken bin files, eg. `*.url`
 # TODO seems to break `ag`'s use of `$PAGER` when using pipes
 # TODO fix newline handling, eg. `echo '' | show.sh` vs `printf '' | show.sh`
 # TODO add man pages support
@@ -134,6 +135,10 @@ if [ -t 1 ]; then
 else
     is_tty_out=false
 fi
+
+debug() {
+    logger  --tag "show[$$]" -- "$@"
+}
 
 tool_has_cat() {
     command -v cat >/dev/null
@@ -369,15 +374,20 @@ is_file_binary() {
         _is_bin_path="$(resolve_symlink "$_is_bin_path")"
     fi
 
-    _is_bin_type="$(LC_MESSAGES=C \
-        run_with_options "$tool_options_file" false file -i "$_is_bin_path")"
+    _is_bin_type="$(LC_MESSAGES=C run_with_options \
+        "$tool_options_file" false file --mime "$_is_bin_path")"
     _is_bin_type="${_is_bin_type#"$_is_bin_path: "}"
 
+    debug "is_file_binary: $_is_bin_type"
+
     # Some `file` implementations don't indicate "text/" as the MIME type
-    # for some files, so handle those cases as well.
-    test "$_is_bin_type" = "${_is_bin_type#text/}" \
-        && test "$_is_bin_type" = "${_is_bin_type#application/json}" \
-        && test "$_is_bin_type" = "${_is_bin_type#application/xml}"
+    # for some files, so handle those cases as well. (Ignoring charset.)
+    case "${_is_bin_type%%;*}" in
+        text/* | */json | */xml* | */x-mswinurl)
+            return 1;;
+        *)
+            return 0;;
+    esac
 }
 
 resolve_symlink() {
@@ -437,16 +447,21 @@ run_with_options() {
     _run_uses_stdin="$2"
     shift 2
 
+    debug "run_with_options: opts=$_run_opts uses_stdin=$_run_uses_stdin / $*"
+
     if [ -z "$_run_opts" ]; then
         "$@"
     elif [ "$_run_uses_stdin" = false ]; then
-        printf %s "$_run_opts" | xargs -d "$arg_separator" -- "$@"
+        printf %s "$_run_opts" | xargs --delimiter "$arg_separator" -- "$@"
     else
         _run_opts_pipe="$(mktemp_posix)"
         rm -- "$_run_opts_pipe"
         mkfifo "$_run_opts_pipe"
-        { printf %s "$_run_opts" >"$_run_opts_pipe"; rm -- "$_run_opts_pipe"; } &
-        xargs -a "$_run_opts_pipe" -d "$arg_separator" -- "$@"
+        {
+            printf %s "$_run_opts" >"$_run_opts_pipe"
+            rm -- "$_run_opts_pipe"
+        } &
+        xargs --arg-file "$_run_opts_pipe" --delimiter "$arg_separator" -- "$@"
     fi
 }
 
