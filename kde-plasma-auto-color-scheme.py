@@ -119,7 +119,7 @@ class DesktopAppearance (QObject):
         self._time_interval = 1
         self._last_color_time = 0
         self._on_color_mode_callbacks: \
-            List[Callable[[ColorMode], None | Exception]] = []
+            List[Callable[[ColorMode], None | LookupError]] = []
         self._kde_plasma_appearance = KdePlasmaAppearance(logger)
 
         self._logger.debug('Setting up desktop D-Bus session...')
@@ -134,7 +134,8 @@ class DesktopAppearance (QObject):
 
     @pyqtSlot(str, str, QDBusVariant)
     def _filter_on_color_mode_appearance_changes(
-            self, namespace: str, key: str, value: QDBusVariant) -> None:
+            self, namespace: str, key: str, value: QDBusVariant) \
+            -> None | LookupError:
 
         if namespace != self.APPEARANCE_NAMESPACE:
             return
@@ -154,8 +155,8 @@ class DesktopAppearance (QObject):
         for callback in self._on_color_mode_callbacks:
             try:
                 callback(color_mode)
-            except Exception as error:
-                self._logger.error(
+            except LookupError as error:
+                self._logger.exception(
                     'Desktop on color mode callback error: %s', error)
 
 
@@ -176,7 +177,7 @@ class DesktopAppearance (QObject):
 
 
     def on_color_mode(
-            self, callback: Callable[[ColorMode], None | Exception]) -> None:
+            self, callback: Callable[[ColorMode], None | LookupError]) -> None:
         self._on_color_mode_callbacks.append(callback)
 
 
@@ -260,7 +261,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
         self._update_icon(desktop_appearance.get_current_color_mode())
 
 
-    def _update_icon(self, color_mode: ColorMode) -> None | Exception:
+    def _update_icon(self, color_mode: ColorMode) -> None | LookupError:
         icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
         self._logger.info(
             'Tray icon update: %s --> %s', color_mode.name, icon.name())
