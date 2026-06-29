@@ -4,7 +4,7 @@
 # TODO modularize? eg. 1st view-format-XYZ, 2nd combine plugins, 3rd cat-or-page
 # TODO research prior-art (also Python, C?)
 
-# TODO documentation (functions and parameters/return, long form command flags)
+# TODO documentation (functions and parameters/return, comments where needed)
 # TODO tests
 # TODO logging
 # TODO debug option? eg. does `set -x`
@@ -50,6 +50,9 @@ set -o errexit -o nounset
 
 # Separates single-string arguments (eg. to `xargs`) using the ASCII RS char.
 arg_separator="$(printf '\036')"
+
+stdin_fd=0
+stdout_fd=1
 
 newline='
 '
@@ -130,7 +133,7 @@ tool_help_tput='POSIX `tput`'
 # shellcheck disable=SC2034
 tool_help_tree='http://mama.indstate.edu/users/ice/tree/'
 
-if [ -t 1 ]; then
+if [ -t "$stdout_fd" ]; then
     is_tty_out=true
 else
     is_tty_out=false
@@ -221,7 +224,7 @@ mode_has_color() {
 
 mode_run_color() {
     run_with_options "$tool_options_highlight" false \
-        highlight --force -O ansi "$@" 2>/dev/null
+        highlight --force --out-format ansi "$@" 2>/dev/null
 }
 
 mode_can_dir() {
@@ -255,8 +258,9 @@ mode_can_doc() {
     # status code when no documentation is found.
     test "$mode_is_disabled_doc" = false \
         && python3 -m pydoc -- "$1" \
-            | head -n 1 \
-            | grep -qvF 'No Python documentation found'
+            | head --lines 1 \
+            | grep --quiet --invert-match --fixed-strings \
+                'No Python documentation found'
 }
 
 mode_has_doc() {
@@ -315,8 +319,8 @@ mode_run_pager() {
     _pager_buffer="${_pager_buffer%E}"
 
     _pager_lines="$(printf %s "$_pager_buffer" \
-        | fold -b -w "$_pager_max_cols" \
-        | wc -l)"
+        | fold --bytes --width "$_pager_max_cols" \
+        | wc --lines)"
 
     if [ "$_pager_lines" -le "$_pager_max_lines" ]; then
         printf %s "$_pager_buffer"
@@ -328,7 +332,7 @@ mode_run_pager() {
 }
 
 mode_can_stdin() {
-    test "$mode_is_disabled_stdin" = false -a ! -t 0
+    test "$mode_is_disabled_stdin" = false -a ! -t "$stdin_fd"
 }
 
 mode_has_stdin() {
@@ -575,7 +579,7 @@ if command -v mktemp >/dev/null; then
     }
 else
     mktemp_posix() {
-        echo 'mkstemp(template)' | m4 -D "template=${TMPDIR:-/tmp}/"
+        echo 'mkstemp(template)' | m4 --define "template=${TMPDIR:-/tmp}/"
     }
 fi
 
