@@ -1,7 +1,7 @@
 #!/bin/sh
 # Generic viewer.
 
-# TODO modularize? eg. 1st cat-or-page, 2nd view-format-XYZ, 3rd combine plugins
+# TODO modularize? eg. 1st view-format-XYZ, 2nd combine plugins, 3rd cat-or-page
 # TODO research prior-art (also Python, C?)
 
 # TODO documentation (functions and parameters/return, long form command flags)
@@ -136,9 +136,13 @@ else
     is_tty_out=false
 fi
 
-debug() {
-    logger  --tag "show[$$]" -- "$@"
-}
+if [ -z "${SHOW_DEBUG:-}" ]; then
+    alias debug=:
+else
+    debug() {
+        logger  --tag "show[$$]" -- "$@"
+    }
+fi
 
 tool_has_cat() {
     command -v cat >/dev/null
