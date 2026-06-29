@@ -267,6 +267,24 @@ class ColorModeTrayIcon (QSystemTrayIcon):
         self.setIcon(icon)
 
 
+def get_stdout_syslog_logger(name: str) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+
+    syslog_handler = SysLogHandler(address='/dev/log')
+    syslog_handler.setFormatter(logging.Formatter(
+        '%(name)s[%(process)d]: %(message)s'))
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter(
+        '%(asctime)s: %(message)s'))
+
+    logger.addHandler(stdout_handler)
+    logger.addHandler(syslog_handler)
+
+    return logger
+
+
 class AutoColorSchemeApp (QApplication):
 
     APP_NAME: str = 'Auto Color Scheme'
@@ -279,20 +297,7 @@ class AutoColorSchemeApp (QApplication):
             dark: Optional[str] = None):
 
         super().__init__(qargs)
-
-        self._logger = logging.getLogger(self.__class__.__name__)
-        self._logger.setLevel(logging.DEBUG)
-
-        syslog_handler = SysLogHandler(address='/dev/log')
-        syslog_handler.setFormatter(logging.Formatter(
-            '%(name)s[%(process)d]: %(message)s'))
-
-        stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(logging.Formatter(
-            '%(asctime)s: %(message)s'))
-
-        self._logger.addHandler(stdout_handler)
-        self._logger.addHandler(syslog_handler)
+        self._logger = get_stdout_syslog_logger(self.__class__.__name__)
 
         self._sigint_handler = SigIntHandler(self._logger)
         self._sigint_handler.on_signal(self.quit)
