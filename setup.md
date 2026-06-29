@@ -88,14 +88,14 @@ Alternatively, to double it from `96` to `192` DPI:
 
     wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /d 0xC0 /f
 
-## JDownloader
+## Java
 
-[Official instructions](https://support.jdownloader.org/en/knowledgebase/article/high-dpi-support) for high DPI don't seem to work, so double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html) instead.
+For high DPI, double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html).
 
 Flatpak apps:
 
 - Either use [Flatseal](https://github.com/tchx84/flatseal) to set an environment variable: `J2D_UISCALE=2`
-- Or use the CLI: `flatpak override --user --env=J2D_UISCALE=2 org.jdownloader.JDownloader`
+- Or use the CLI: `flatpak override --user --env=J2D_UISCALE=2 com.example.App`
 
 non-Flatpak:
 
