@@ -80,6 +80,12 @@ Disable setting `*_IM_MODULE` variables:
 
 And then log out / log in.
 
+## Google Chrome
+
+To have Duolingo able to use `Ctrl+Space` for replaying audio, set Chrome to use X11:
+
+    google-chrome --ozone-platform=x11
+
 ## Wine
 
 For high DPI, in `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
