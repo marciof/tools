@@ -161,7 +161,7 @@ tool_has_less() {
 }
 
 tool_has_lesspipe() {
-    command -v lesspipe >/dev/null || command -v lesspipe.sh >/dev/null
+    command -v lesspipe lesspipe.sh >/dev/null
 }
 
 tool_has_ls() {
