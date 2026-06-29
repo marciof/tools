@@ -142,13 +142,16 @@ class DesktopAppearance (QObject):
         if key != self.COLOR_SCHEME_KEY:
             return
 
+        color_mode_id: int = value.variant()
+
+        if color_mode_id not in ColorMode:
+            raise LookupError('Unknown color mode ID: %s' % color_mode_id)
+
         if (time.monotonic() - self._last_color_time) < self._time_interval:
             self._logger.info('Ignoring too-quick desktop color mode change')
             return
 
         self._last_color_time = time.monotonic()
-
-        color_mode_id: int = value.variant()
         color_mode = ColorMode(color_mode_id)
         self._logger.info('Desktop color mode changed: %s', color_mode.name)
 
