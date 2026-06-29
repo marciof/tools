@@ -118,7 +118,8 @@ class DesktopAppearance (QObject):
         self._logger = logger
         self._time_interval = 1
         self._last_color_time = 0
-        self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
+        self._on_color_mode_callbacks: \
+            List[Callable[[ColorMode], None | Exception]] = []
         self._kde_plasma_appearance = KdePlasmaAppearance(logger)
 
         self._logger.debug('Setting up desktop D-Bus session...')
@@ -151,7 +152,11 @@ class DesktopAppearance (QObject):
         self._logger.info('Desktop color mode changed: %s', color_mode.name)
 
         for callback in self._on_color_mode_callbacks:
-            callback(color_mode)
+            try:
+                callback(color_mode)
+            except Exception as error:
+                self._logger.error(
+                    'Desktop on color mode callback error: %s', error)
 
 
     def get_current_color_mode(self) -> ColorMode:
@@ -170,7 +175,8 @@ class DesktopAppearance (QObject):
         return color_mode
 
 
-    def on_color_mode(self, callback: Callable[[ColorMode], None]) -> None:
+    def on_color_mode(
+            self, callback: Callable[[ColorMode], None | Exception]) -> None:
         self._on_color_mode_callbacks.append(callback)
 
 
@@ -254,7 +260,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
         self._update_icon(desktop_appearance.get_current_color_mode())
 
 
-    def _update_icon(self, color_mode: ColorMode) -> None:
+    def _update_icon(self, color_mode: ColorMode) -> None | Exception:
         icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
         self._logger.info(
             'Tray icon update: %s --> %s', color_mode.name, icon.name())
@@ -308,8 +314,12 @@ class AutoColorSchemeApp (QApplication):
         }
 
         self._desktop_appearance.on_color_mode(self.apply_color_scheme_by_mode)
-        self.apply_color_scheme_by_mode(
-            self._desktop_appearance.get_current_color_mode())
+
+        try:
+            self.apply_color_scheme_by_mode(
+                self._desktop_appearance.get_current_color_mode())
+        except LookupError:
+            self.quit()
 
         self._menu = QMenu()
         exit_action = QAction('Quit', self._menu)
@@ -352,7 +362,8 @@ class AutoColorSchemeApp (QApplication):
         raise SystemExit()
 
 
-    def apply_color_scheme_by_mode(self, color_mode: ColorMode) -> None:
+    def apply_color_scheme_by_mode(
+            self, color_mode: ColorMode) -> None | LookupError:
         color_scheme = self._color_scheme_by_mode[color_mode]
 
         if color_scheme is None:
@@ -368,7 +379,10 @@ class AutoColorSchemeApp (QApplication):
         try:
             self._desktop_appearance.apply_color_scheme(color_scheme)
         except LookupError as error:
-            self._show_warning_message_box(str(error))
+            self._show_warning_message_box(
+                'Error applying color scheme for %s color mode.\n\n%s'
+                % (color_mode.name.lower(), error))
+            raise
 
 
 def main(argv: List[str]) -> NoReturn:
