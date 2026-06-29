@@ -297,9 +297,14 @@ mode_run_pager() {
     _pager_size="$(printf 'cols\nlines\n' \
         | run_with_options "$tool_options_tput" true tput -S)"
 
-    _pager_max_cols="${_pager_size%%$newline*}"
-    _pager_max_lines=$((${_pager_size#*$newline} / 2))
+    _pager_max_cols="${_pager_size%%"$newline"*}"
+    _pager_max_lines=$((${_pager_size#*"$newline"} / 2))
     _pager_max_bytes=$((_pager_max_cols * _pager_max_lines))
+
+    debug 'mode_run_pager: ' \
+        "max-cols=$_pager_max_cols " \
+        "max-lines=$_pager_max_lines " \
+        "max-bytes=$_pager_max_bytes"
 
     # Add a trailing character to avoid trailing newline removal.
     _pager_buffer="$(dd bs=1 "count=$_pager_max_bytes" 2>/dev/null; printf E)"
