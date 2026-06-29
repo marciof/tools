@@ -355,6 +355,7 @@ class AutoColorSchemeApp (QApplication):
 
     def _show_warning_message_box(self, text: str) -> None:
         msg = QMessageBox()
+        msg.setWindowIcon(QIcon.fromTheme(QIcon.ThemeIcon.VideoDisplay))
         msg.setIcon(QMessageBox.Icon.Warning)
         msg.setText(text)
         msg.setWindowTitle(self.APP_NAME)
