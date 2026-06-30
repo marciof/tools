@@ -105,6 +105,7 @@ class KdePlasmaAppearance:
         plasma_proc = subprocess.run(
             ['plasma-apply-colorscheme', '--list-schemes'],
             capture_output=True,
+            check=True,
             text=True)
 
         return plasma_proc.stdout.strip()
