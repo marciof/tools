@@ -64,13 +64,21 @@ class ColorMode (Enum):
     LIGHT = 2
 
 
+    @staticmethod
+    def from_valid_id(mode_id: int) -> ColorMode:
+        if mode_id not in ColorMode:
+            raise LookupError('Unknown color mode ID: %s' % mode_id)
+        else:
+            return ColorMode(mode_id)
+
+
 class KdePlasmaAppearance:
 
     def __init__(self, logger: logging.Logger):
         self._logger = logger
 
 
-    def apply_color_scheme(self, name: str) -> None | LookupError:
+    def apply_color_scheme(self, name: str) -> None:
         self._logger.info('KDE Plasma applying color scheme: %s', name)
 
         plasma_proc = subprocess.run(
@@ -116,14 +124,14 @@ class DesktopAppearance (QObject):
         super().__init__()
 
         self._logger = logger
-        self._time_interval = 1
-        self._last_color_time = 0
-        self._on_color_mode_callbacks: \
-            List[Callable[[ColorMode], None | LookupError]] = []
+        self._time_interval: float = 1
+        self._last_color_time: float = 0
+        self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
         self._kde_plasma_appearance = KdePlasmaAppearance(logger)
 
         self._logger.debug('Setting up desktop D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
+
         self._dbus_session.connect(
             self.DESKTOP_SERVICE,
             self.DESKTOP_PATH,
@@ -134,8 +142,7 @@ class DesktopAppearance (QObject):
 
     @pyqtSlot(str, str, QDBusVariant)
     def _filter_on_color_mode_appearance_changes(
-            self, namespace: str, key: str, value: QDBusVariant) \
-            -> None | LookupError:
+            self, namespace: str, key: str, value: QDBusVariant) -> None:
 
         if namespace != self.APPEARANCE_NAMESPACE:
             return
@@ -143,16 +150,13 @@ class DesktopAppearance (QObject):
             return
 
         color_mode_id: int = value.variant()
-
-        if color_mode_id not in ColorMode:
-            raise LookupError('Unknown color mode ID: %s' % color_mode_id)
+        color_mode = ColorMode.from_valid_id(color_mode_id)
 
         if (time.monotonic() - self._last_color_time) < self._time_interval:
             self._logger.info('Ignoring too-quick desktop color mode change')
             return
 
         self._last_color_time = time.monotonic()
-        color_mode = ColorMode(color_mode_id)
         self._logger.info('Desktop color mode changed: %s', color_mode.name)
 
         for callback in self._on_color_mode_callbacks:
@@ -174,17 +178,16 @@ class DesktopAppearance (QObject):
             'Read', self.APPEARANCE_NAMESPACE, self.COLOR_SCHEME_KEY)
 
         color_mode_id: int = response.arguments()[0]
-        color_mode = ColorMode(color_mode_id)
+        color_mode = ColorMode.from_valid_id(color_mode_id)
         self._logger.info('Current desktop color mode: %s', color_mode.name)
         return color_mode
 
 
-    def on_color_mode(
-            self, callback: Callable[[ColorMode], None | LookupError]) -> None:
+    def on_color_mode(self, callback: Callable[[ColorMode], None]) -> None:
         self._on_color_mode_callbacks.append(callback)
 
 
-    def apply_color_scheme(self, name: str) -> None | LookupError:
+    def apply_color_scheme(self, name: str) -> None:
         self._last_color_time = time.monotonic()
         self._kde_plasma_appearance.apply_color_scheme(name)
 
@@ -248,6 +251,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
     """
     TRAY_ICON_BY_COLOR_MODE: Dict[ColorMode, QIcon] = {
+        ColorMode.NONE: QIcon.fromTheme(QIcon.ThemeIcon.WeatherFog),
         ColorMode.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
         ColorMode.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
     }
@@ -264,7 +268,7 @@ class ColorModeTrayIcon (QSystemTrayIcon):
         self._update_icon(desktop_appearance.get_current_color_mode())
 
 
-    def _update_icon(self, color_mode: ColorMode) -> None | LookupError:
+    def _update_icon(self, color_mode: ColorMode) -> None:
         icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
         self._logger.info(
             'Tray icon update: %s --> %s', color_mode.name, icon.name())
@@ -372,8 +376,11 @@ class AutoColorSchemeApp (QApplication):
         raise SystemExit()
 
 
-    def apply_color_scheme_by_mode(
-            self, color_mode: ColorMode) -> None | LookupError:
+    def apply_color_scheme_by_mode(self, color_mode: ColorMode) -> None:
+        if color_mode == ColorMode.NONE:
+            self._logger.warning('No color mode preference set.')
+            return
+
         color_scheme = self._color_scheme_by_mode[color_mode]
 
         if color_scheme is None:
