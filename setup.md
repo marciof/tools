@@ -106,13 +106,3 @@ Flatpak apps:
 non-Flatpak:
 
 - Edit its `.desktop` file (eg. via its menu entry) and in `Exec` prepend with: `env J2D_UISCALE=2 ...`
-
-## Tivoli Orb (Sphera)
-
-For Bluetooth auto-connect, open *Session and Startup* settings:
-
-- *Application Autostart* tab.
-- *Add application* button.
-
-
-    bash -c 'sleep 3 && bluetoothctl connect CC:90:93:09:FF:26'
