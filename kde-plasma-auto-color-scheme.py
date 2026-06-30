@@ -91,13 +91,17 @@ class KdePlasmaAppearance:
 
         self._logger.debug('KDE Plasma exit code: %s', plasma_proc.returncode)
         self._logger.info('KDE Plasma stdout: %s', stdout)
-        self._logger.error('KDE Plasma stderr: %s', stderr)
+
+        if stderr:
+            self._logger.error('KDE Plasma stderr: %s', stderr)
 
         if plasma_proc.returncode != os.EX_OK:
             raise LookupError(stderr or stdout)
 
 
     def list_color_schemes(self) -> str:
+        self._logger.debug('KDE Plasma listing color schemes')
+
         plasma_proc = subprocess.run(
             ['plasma-apply-colorscheme', '--list-schemes'],
             capture_output=True,
@@ -252,8 +256,8 @@ class ColorModeTrayIcon (QSystemTrayIcon):
     """
     TRAY_ICON_BY_COLOR_MODE: Dict[ColorMode, QIcon] = {
         ColorMode.NONE: QIcon.fromTheme(QIcon.ThemeIcon.WeatherFog),
-        ColorMode.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
         ColorMode.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
+        ColorMode.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
     }
 
     def __init__(
