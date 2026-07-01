@@ -133,8 +133,8 @@ class DesktopAppearance (QObject):
         super().__init__()
 
         self._logger = logger
-        self._time_interval: float = 1
-        self._last_color_time: float = 0
+        self._change_rate_time_interval: float = 1
+        self._on_color_mode_timestamp: float = 0
         self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
         self._kde_plasma_appearance = KdePlasmaAppearance(logger)
 
@@ -163,12 +163,13 @@ class DesktopAppearance (QObject):
 
         color_mode_id: int = value.variant()
         color_mode = ColorMode.from_valid_id(color_mode_id)
+        last_time_interval = (time.monotonic() - self._on_color_mode_timestamp)
 
-        if (time.monotonic() - self._last_color_time) < self._time_interval:
+        if last_time_interval < self._change_rate_time_interval:
             self._logger.info('Ignoring too-quick desktop color mode change')
             return
 
-        self._last_color_time = time.monotonic()
+        self._on_color_mode_timestamp = time.monotonic()
         self._logger.info('Desktop color mode changed: %s', color_mode.name)
 
         for callback in self._on_color_mode_callbacks:
@@ -200,7 +201,7 @@ class DesktopAppearance (QObject):
 
 
     def apply_color_scheme(self, name: str) -> None:
-        self._last_color_time = time.monotonic()
+        self._on_color_mode_timestamp = time.monotonic()
         self._kde_plasma_appearance.apply_color_scheme(name)
 
 
