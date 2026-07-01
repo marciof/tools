@@ -55,7 +55,11 @@ from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 
 class ColorMode (Enum):
+
     """
+    XDG Desktop Portal Color Scheme (called "mode" here to contrast with KDE
+    Plasma's color scheme).
+
     https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
     """
 
