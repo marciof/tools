@@ -141,12 +141,15 @@ class DesktopAppearance (QObject):
         self._logger.debug('Setting up desktop D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
 
-        self._dbus_session.connect(
+        is_connected: bool = self._dbus_session.connect(
             self.DESKTOP_SERVICE,
             self.DESKTOP_PATH,
             self.SETTINGS_INTERFACE,
             'SettingChanged',
             self._filter_on_color_mode_appearance_changes)
+
+        if not is_connected:
+            raise LookupError('Failed to connect to desktop D-Bus session.')
 
 
     @pyqtSlot(str, str, QDBusVariant)
@@ -406,7 +409,7 @@ class AutoColorSchemeApp (QApplication):
             self._desktop_appearance.apply_color_scheme(color_scheme)
         except LookupError as error:
             self._show_warning_message_box(
-                'Error applying color scheme for %s color mode.\n\n%s'
+                'Failed to apply color scheme for %s color mode.\n\n%s'
                 % (color_mode.name.lower(), error))
             raise
 
