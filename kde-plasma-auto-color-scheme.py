@@ -22,6 +22,14 @@ References:
 - KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
 - KDE bug #446584: https://bugs.kde.org/show_bug.cgi?id=446584
 - KDE bug #433059: https://bugs.kde.org/show_bug.cgi?id=433059
+
+See also:
+
+- Yin-Yang: https://github.com/oskarsh/Yin-Yang
+- Koi: https://github.com/baduhai/Koi
+- auto-knight: https://github.com/DimseBoms/auto-knight
+- Blueblack: https://github.com/smitropoulos/blueblack
+- darkman: https://gitlab.com/WhyNotHugo/darkman
 """
 
 
