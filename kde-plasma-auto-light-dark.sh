@@ -2,6 +2,8 @@
 
 # KDE Plasma auto light/dark settings.
 #
+# ---
+#
 # How to change active/inactive titlebar color:
 #
 # 1. Copy an existing color scheme (`Edit Color Scheme` and `Save As`)
@@ -38,7 +40,7 @@ current_color_scheme_id() {
         org.freedesktop.portal.Settings.ReadOne \
         string:org.freedesktop.appearance \
         string:color-scheme \
-    | sed -E 's/^.+([[:digit:]]+)$/\1/'
+    | awk '{print $NF}'
 }
 
 current_color_scheme() {
