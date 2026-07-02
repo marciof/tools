@@ -15,6 +15,7 @@
 #
 # References:
 #
+# - XDG Settings: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
 # - KDE Plasma docs: https://develop.kde.org/docs/plasma/theme/theme-details/#colors
 # - KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
 # - KDE bug #446584: https://bugs.kde.org/show_bug.cgi?id=446584
