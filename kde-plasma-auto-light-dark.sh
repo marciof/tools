@@ -60,7 +60,7 @@ monitor_color_scheme() {
 }
 
 rate_limit() {
-    last_time_secs="$(date +%s)"
+    last_time_secs=0
 
     while IFS= read -r line; do
         current_time_secs="$(date +%s)"
