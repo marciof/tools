@@ -57,6 +57,19 @@ monitor_color_scheme() {
     done
 }
 
+rate_limit() {
+    last_time_secs="$(date +%s)"
+
+    while IFS= read -r line; do
+        current_time_secs="$(date +%s)"
+
+        if [ $((current_time_secs - last_time_secs)) -ge 1 ]; then
+            last_time_secs="$current_time_secs"
+            echo "$line"
+        fi
+    done
+}
+
 script_file="$0"
 
 help_opt=h
@@ -110,6 +123,7 @@ shift "$((OPTIND - 1))"
     current_color_scheme
     monitor_color_scheme
 } \
+| rate_limit \
 | while IFS= read -r color; do
     case "$color" in
         light)
