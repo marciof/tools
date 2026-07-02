@@ -25,6 +25,8 @@
 # - auto-knight: https://github.com/DimseBoms/auto-knight
 # - Blueblack: https://github.com/smitropoulos/blueblack
 # - darkman: https://gitlab.com/WhyNotHugo/darkman
+#
+# Dependencies: dbus-bin plasma-workspace
 
 set -e -u
 
