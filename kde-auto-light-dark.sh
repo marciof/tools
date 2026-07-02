@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# KDE Plasma auto light/dark color scheme and wallpaper.
+# KDE Plasma auto light/dark settings.
 #
 # How to change active/inactive titlebar color:
 #
@@ -17,11 +17,47 @@
 # - KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
 # - KDE bug #446584: https://bugs.kde.org/show_bug.cgi?id=446584
 # - KDE bug #433059: https://bugs.kde.org/show_bug.cgi?id=433059
+#
+# See also:
+#
+# - Yin-Yang: https://github.com/oskarsh/Yin-Yang
+# - Koi: https://github.com/baduhai/Koi
+# - auto-knight: https://github.com/DimseBoms/auto-knight
+# - Blueblack: https://github.com/smitropoulos/blueblack
+# - darkman: https://gitlab.com/WhyNotHugo/darkman
 
 set -e -u
 
+current_color_scheme_id() {
+    dbus-send \
+        --print-reply=literal \
+        --dest=org.freedesktop.portal.Desktop \
+        /org/freedesktop/portal/desktop \
+        org.freedesktop.portal.Settings.ReadOne \
+        string:org.freedesktop.appearance \
+        string:color-scheme \
+    | sed -E 's/^.+([[:digit:]]+)$/\1/'
+}
+
+current_color_scheme() {
+    case "$(current_color_scheme_id)" in
+        1) echo dark;;
+        2) echo light;;
+        *) echo none;;
+    esac
+}
+
+monitor_color_scheme() {
+    dbus-monitor "interface='org.freedesktop.portal.Settings',member='SettingChanged'" \
+    | while IFS= read -r line; do
+        case "$line" in
+            *color-scheme*)
+                current_color_scheme;;
+        esac
+    done
+}
+
 script_file="$0"
-base_path="$(dirname "$(realpath -e "$script_file")")"
 
 help_opt=h
 light_color_scheme_opt=l
@@ -70,7 +106,11 @@ done
 
 shift "$((OPTIND - 1))"
 
-"$base_path"/xdg-color-scheme.py -t "$@" | while read -r color; do
+{
+    current_color_scheme
+    monitor_color_scheme
+} \
+| while IFS= read -r color; do
     case "$color" in
         light)
             if [ -n "$light_color_scheme" ]; then
