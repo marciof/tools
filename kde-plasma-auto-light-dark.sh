@@ -128,5 +128,8 @@ shift "$((OPTIND - 1))"
                 plasma-apply-wallpaperimage "$dark_wallpaper"
             fi
             ;;
+        *)
+            echo "$color" >&2
+            ;;
     esac
 done
