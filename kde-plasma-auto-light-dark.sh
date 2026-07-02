@@ -28,7 +28,7 @@
 #
 # Dependencies: dbus-bin plasma-workspace
 
-set -e -u
+set -o errexit -o nounset
 
 current_color_scheme_id() {
     dbus-send \
