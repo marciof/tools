@@ -3,25 +3,9 @@
 
 
 """
-Automatic Color Scheme for Light/Dark Modes.
+XDG Color Scheme event listener.
 
 ---
-
-How to change active/inactive titlebar color:
-
-1. Copy an existing color scheme (`Edit Color Scheme` and `Save As`)
-   that has active/inactive titlebar colors.
-2. Ensure there aren't any `[Colors:Header]` and `[Colors:Header][Inactive]`
-   sections in the new color scheme file.
-3. Ensure there is a `[WM]` section in the new color scheme file, which
-   will have the active/inactive titlebar colors.
-
-References:
-
-- KDE Plasma docs: https://develop.kde.org/docs/plasma/theme/theme-details/#colors
-- KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
-- KDE bug #446584: https://bugs.kde.org/show_bug.cgi?id=446584
-- KDE bug #433059: https://bugs.kde.org/show_bug.cgi?id=433059
 
 See also:
 
@@ -33,27 +17,16 @@ See also:
 """
 
 
-# FIXME refactor to reduce coupling
-# FIXME tests (including mypy)
-# FIXME error handling
-# FIXME documentation
-# FIXME logging
-# FIXME typing
-# FIXME runs event listener twice when color scheme changes
-
-
 # standard
 import argparse
-from enum import Enum
+from enum import IntEnum, unique
 import logging
 from logging.handlers import SysLogHandler
-import os
 import signal
 import socket
-import subprocess
 import sys
 import time
-from typing import Callable, Dict, List, NoReturn, Optional
+from typing import Callable, Dict, List, NoReturn
 
 # external
 from PyQt6.QtCore import pyqtSlot, QObject, QSharedMemory, QSocketNotifier
@@ -62,12 +35,10 @@ from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 
-class ColorMode (Enum):
+@unique
+class ColorScheme (IntEnum):
 
     """
-    XDG Desktop Portal Color Scheme (called "mode" here to contrast with KDE
-    Plasma's color scheme).
-
     https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
     """
 
@@ -77,50 +48,14 @@ class ColorMode (Enum):
 
 
     @staticmethod
-    def from_valid_id(mode_id: int) -> ColorMode:
-        if mode_id not in ColorMode:
-            raise LookupError('Unknown color mode ID: %s' % mode_id)
-        else:
-            return ColorMode(mode_id)
+    def to_name(scheme: int) -> str:
+        names: Dict[int, str] = {
+            ColorScheme.NONE: 'none',
+            ColorScheme.DARK: 'dark',
+            ColorScheme.LIGHT: 'light',
+        }
 
-
-class KdePlasmaAppearance:
-
-    def __init__(self, logger: logging.Logger):
-        self._logger = logger
-
-
-    def apply_color_scheme(self, name: str) -> None:
-        self._logger.info('KDE Plasma applying color scheme: %s', name)
-
-        plasma_proc = subprocess.run(
-            ['plasma-apply-colorscheme', '--', name],
-            capture_output=True,
-            text=True)
-
-        stdout = plasma_proc.stdout.strip()
-        stderr = plasma_proc.stderr.strip()
-
-        self._logger.debug('KDE Plasma exit code: %s', plasma_proc.returncode)
-        self._logger.info('KDE Plasma stdout: %s', stdout)
-
-        if stderr:
-            self._logger.error('KDE Plasma stderr: %s', stderr)
-
-        if plasma_proc.returncode != os.EX_OK:
-            raise LookupError(stderr or stdout)
-
-
-    def list_color_schemes(self) -> str:
-        self._logger.debug('KDE Plasma listing color schemes')
-
-        plasma_proc = subprocess.run(
-            ['plasma-apply-colorscheme', '--list-schemes'],
-            capture_output=True,
-            check=True,
-            text=True)
-
-        return plasma_proc.stdout.strip()
+        return names.get(scheme, str(scheme))
 
 
 class DesktopAppearance (QObject):
@@ -142,9 +77,8 @@ class DesktopAppearance (QObject):
 
         self._logger = logger
         self._change_rate_time_interval: float = 1
-        self._on_color_mode_timestamp: float = 0
-        self._on_color_mode_callbacks: List[Callable[[ColorMode], None]] = []
-        self._kde_plasma_appearance = KdePlasmaAppearance(logger)
+        self._on_color_scheme_timestamp: float = 0
+        self._on_color_scheme_callbacks: List[Callable[[int], None]] = []
 
         self._logger.debug('Setting up desktop D-Bus session...')
         self._dbus_session = QDBusConnection.sessionBus()
@@ -154,14 +88,14 @@ class DesktopAppearance (QObject):
             self.DESKTOP_PATH,
             self.SETTINGS_INTERFACE,
             'SettingChanged',
-            self._filter_on_color_mode_appearance_changes)
+            self._filter_on_color_scheme_appearance_changes)
 
         if not is_connected:
             raise LookupError('Failed to connect to desktop D-Bus session.')
 
 
     @pyqtSlot(str, str, QDBusVariant)
-    def _filter_on_color_mode_appearance_changes(
+    def _filter_on_color_scheme_appearance_changes(
             self, namespace: str, key: str, value: QDBusVariant) -> None:
 
         if namespace != self.APPEARANCE_NAMESPACE:
@@ -169,26 +103,23 @@ class DesktopAppearance (QObject):
         if key != self.COLOR_SCHEME_KEY:
             return
 
-        color_mode_id: int = value.variant()
-        color_mode = ColorMode.from_valid_id(color_mode_id)
-        last_time_interval = (time.monotonic() - self._on_color_mode_timestamp)
+        color_scheme: int = value.variant()
+        last_time_interval = (time.monotonic() - self._on_color_scheme_timestamp)
 
         if last_time_interval < self._change_rate_time_interval:
-            self._logger.info('Ignoring too-quick desktop color mode change')
+            self._logger.info('Ignoring too-quick desktop color scheme change')
             return
 
-        self._on_color_mode_timestamp = time.monotonic()
-        self._logger.info('Desktop color mode changed: %s', color_mode.name)
+        self._on_color_scheme_timestamp = time.monotonic()
+        self._logger.info(
+            'Desktop color scheme changed: %s',
+            ColorScheme.to_name(color_scheme))
 
-        for callback in self._on_color_mode_callbacks:
-            try:
-                callback(color_mode)
-            except LookupError as error:
-                self._logger.exception(
-                    'Desktop on color mode callback error: %s', error)
+        for callback in self._on_color_scheme_callbacks:
+            callback(color_scheme)
 
 
-    def get_current_color_mode(self) -> ColorMode:
+    def get_current_color_scheme(self) -> int:
         settings = QDBusInterface(
             self.DESKTOP_SERVICE,
             self.DESKTOP_PATH,
@@ -196,25 +127,18 @@ class DesktopAppearance (QObject):
             self._dbus_session)
 
         response = settings.call(
-            'Read', self.APPEARANCE_NAMESPACE, self.COLOR_SCHEME_KEY)
+            'ReadOne', self.APPEARANCE_NAMESPACE, self.COLOR_SCHEME_KEY)
 
-        color_mode_id: int = response.arguments()[0]
-        color_mode = ColorMode.from_valid_id(color_mode_id)
-        self._logger.info('Current desktop color mode: %s', color_mode.name)
-        return color_mode
+        color_scheme: int = response.arguments()[0]
+        self._logger.info(
+            'Current desktop color scheme: %s',
+            ColorScheme.to_name(color_scheme))
 
-
-    def on_color_mode(self, callback: Callable[[ColorMode], None]) -> None:
-        self._on_color_mode_callbacks.append(callback)
+        return color_scheme
 
 
-    def apply_color_scheme(self, name: str) -> None:
-        self._on_color_mode_timestamp = time.monotonic()
-        self._kde_plasma_appearance.apply_color_scheme(name)
-
-
-    def list_color_schemes(self) -> str:
-        return self._kde_plasma_appearance.list_color_schemes()
+    def on_color_scheme(self, callback: Callable[[int], None]) -> None:
+        self._on_color_scheme_callbacks.append(callback)
 
 
 class SharedInstance:
@@ -266,15 +190,14 @@ class SigIntHandler (QObject):
         self._callbacks.append(callback)
 
 
-class ColorModeTrayIcon (QSystemTrayIcon):
+class ColorSchemeTrayIcon (QSystemTrayIcon):
 
     """
     https://doc.qt.io/qt-6/qicon.html#ThemeIcon-enum
     """
-    TRAY_ICON_BY_COLOR_MODE: Dict[ColorMode, QIcon] = {
-        ColorMode.NONE: QIcon.fromTheme(QIcon.ThemeIcon.WeatherFog),
-        ColorMode.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
-        ColorMode.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
+    COLOR_SCHEME_TO_ICON: Dict[int, QIcon] = {
+        ColorScheme.DARK: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClearNight),
+        ColorScheme.LIGHT: QIcon.fromTheme(QIcon.ThemeIcon.WeatherClear),
     }
 
     def __init__(
@@ -285,18 +208,23 @@ class ColorModeTrayIcon (QSystemTrayIcon):
         super().__init__()
         self._logger = logger
 
-        desktop_appearance.on_color_mode(self._update_icon)
-        self._update_icon(desktop_appearance.get_current_color_mode())
+        desktop_appearance.on_color_scheme(self._update_icon)
+        self._update_icon(desktop_appearance.get_current_color_scheme())
 
 
-    def _update_icon(self, color_mode: ColorMode) -> None:
-        icon = self.TRAY_ICON_BY_COLOR_MODE[color_mode]
+    def _update_icon(self, color_scheme: int) -> None:
+        icon = self.COLOR_SCHEME_TO_ICON.get(
+            color_scheme, QIcon.fromTheme(QIcon.ThemeIcon.WeatherFog))
+
         self._logger.info(
-            'Tray icon update: %s --> %s', color_mode.name, icon.name())
+            'Tray icon update: %s --> %s',
+            ColorScheme.to_name(color_scheme),
+            icon.name())
+
         self.setIcon(icon)
 
 
-def get_stdout_syslog_logger(name: str) -> logging.Logger:
+def get_syslog_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
@@ -304,63 +232,39 @@ def get_stdout_syslog_logger(name: str) -> logging.Logger:
     syslog_handler.setFormatter(logging.Formatter(
         '%(name)s[%(process)d]: %(message)s'))
 
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(logging.Formatter(
-        '%(asctime)s: %(message)s'))
-
-    logger.addHandler(stdout_handler)
     logger.addHandler(syslog_handler)
-
     return logger
 
 
-class AutoColorSchemeApp (QApplication):
+class XdgColorSchemeApp (QApplication):
 
-    APP_NAME: str = 'Auto Color Scheme'
+    APP_NAME: str = 'XDG Color Scheme'
 
 
-    def __init__(
-            self,
-            qargs: List[str],
-            light: Optional[str] = None,
-            dark: Optional[str] = None):
-
+    def __init__(self, qargs: List[str], tty: bool = True):
         super().__init__(qargs)
-        self._logger = get_stdout_syslog_logger(self.__class__.__name__)
+        self._logger = get_syslog_logger(self.__class__.__name__)
 
         self._sigint_handler = SigIntHandler(self._logger)
         self._sigint_handler.on_signal(self.quit)
 
+        if tty and not sys.stdin.isatty():
+            self._show_warning_message_box('No TTY detected.')
+            self.quit()
+
         self._shared_instance = self._ensure_single_instance()
         self._desktop_appearance = DesktopAppearance(self._logger)
 
-        if (light, dark) == (None, None):
-            self._show_warning_message_box(
-                'No color scheme specified.\n\n'
-                + self._desktop_appearance.list_color_schemes())
-            self.quit()
-
-        self._logger.info('Color schemes: LIGHT=%s, DARK=%s', light, dark)
-
-        self._color_scheme_by_mode: Dict[ColorMode, Optional[str]] = {
-            ColorMode.LIGHT: light,
-            ColorMode.DARK: dark,
-        }
-
-        self._desktop_appearance.on_color_mode(self.apply_color_scheme_by_mode)
-
-        try:
-            self.apply_color_scheme_by_mode(
-                self._desktop_appearance.get_current_color_mode())
-        except LookupError:
-            self.quit()
+        self._desktop_appearance.on_color_scheme(self.print_color_scheme_name)
+        self.print_color_scheme_name(
+            self._desktop_appearance.get_current_color_scheme())
 
         self._menu = QMenu()
         exit_action = QAction('Quit', self._menu)
         exit_action.triggered.connect(self.quit)
         self._menu.addAction(exit_action)
 
-        self._trayIcon = ColorModeTrayIcon(
+        self._trayIcon = ColorSchemeTrayIcon(
             self._desktop_appearance, self._logger)
         self._trayIcon.setToolTip(self.APP_NAME)
         self._trayIcon.setContextMenu(self._menu)
@@ -371,7 +275,7 @@ class AutoColorSchemeApp (QApplication):
 
     def _ensure_single_instance(self) -> SharedInstance | NoReturn:
         shared_instance = SharedInstance(
-            key='com.marciof.tools.autoColorScheme',
+            key='com.marciof.tools.xdgColorScheme',
             logger=self._logger)
 
         if shared_instance.is_shared():
@@ -397,30 +301,10 @@ class AutoColorSchemeApp (QApplication):
         raise SystemExit()
 
 
-    def apply_color_scheme_by_mode(self, color_mode: ColorMode) -> None:
-        if color_mode == ColorMode.NONE:
-            self._logger.warning('No color mode preference set.')
-            return
-
-        color_scheme = self._color_scheme_by_mode[color_mode]
-
-        if color_scheme is None:
-            self._logger.info(
-                'No color scheme set for mode: %s', color_mode.name)
-            return
-
-        self._logger.info(
-            'Applying color scheme for mode: %s --> %s',
-            color_mode.name,
-            color_scheme)
-
-        try:
-            self._desktop_appearance.apply_color_scheme(color_scheme)
-        except LookupError as error:
-            self._show_warning_message_box(
-                'Failed to apply color scheme for %s color mode.\n\n%s'
-                % (color_mode.name.lower(), error))
-            raise
+    def print_color_scheme_name(self, color_scheme: int) -> None:
+        name = ColorScheme.to_name(color_scheme)
+        self._logger.info('Color scheme: %s', name)
+        print(name, flush=True)
 
 
 def main(argv: List[str]) -> NoReturn:
@@ -431,13 +315,13 @@ def main(argv: List[str]) -> NoReturn:
         epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    arg_parser.add_argument('-l', '--light', help='name of light color scheme')
-    arg_parser.add_argument('-d', '--dark', help='name of dark color scheme')
+    arg_parser.add_argument(
+        '-t', '--tty', help='disable TTY check', action='store_false')
 
     (parsed_args, unknown_args) = arg_parser.parse_known_args(argv)
     qargs = [argv[0]] + unknown_args
 
-    sys.exit(AutoColorSchemeApp(qargs, **vars(parsed_args)).exec())
+    sys.exit(XdgColorSchemeApp(qargs, **vars(parsed_args)).exec())
 
 
 if __name__ == '__main__':
