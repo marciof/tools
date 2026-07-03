@@ -35,7 +35,8 @@ set -o errexit -o nounset
 
 log_cat() {
     while IFS= read -r line; do
-        logger --id $$ --tag kdePlasmaAutoLightDark -- "$(printf "$1\n" "$line")"
+        logger --id $$ --tag kdePlasmaAutoLightDark -- \
+            "$(printf "%s: %s\n" "$1" "$line")"
         echo "$line"
     done
 }
@@ -48,9 +49,9 @@ current_color_scheme_id() {
         org.freedesktop.portal.Settings.ReadOne \
         string:org.freedesktop.appearance \
         string:color-scheme \
-    | log_cat 'D-Bus color-scheme: "%s"' \
+    | log_cat 'D-Bus color-scheme' \
     | awk '{print $NF}' \
-    | log_cat 'Color scheme ID: %s'
+    | log_cat 'Color scheme ID'
 }
 
 current_color_scheme() {
@@ -59,7 +60,7 @@ current_color_scheme() {
         2) echo light;;
         *) echo none;;
     esac \
-    | log_cat 'Color scheme name: %s'
+    | log_cat 'Color scheme name'
 }
 
 monitor_color_scheme() {
@@ -137,7 +138,7 @@ shift "$((OPTIND - 1))"
     monitor_color_scheme
 } \
 | throttle \
-| log_cat 'Throttled color scheme change: %s' \
+| log_cat 'Throttled color scheme change' \
 | while IFS= read -r color; do
     case "$color" in
         light)
@@ -161,4 +162,4 @@ shift "$((OPTIND - 1))"
             ;;
     esac
 done \
-| log_cat 'Changed: %s'
+| log_cat 'Changed'
