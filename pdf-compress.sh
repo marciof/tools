@@ -21,7 +21,7 @@ set -o errexit -o nounset
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 
 log() {
-    logger --tag "$SCRIPT_FILENAME"
+    logger --id $$ --tag "$SCRIPT_FILENAME"
 }
 
 # Arguments: <original file> <compressed file>

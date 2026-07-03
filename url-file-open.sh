@@ -15,7 +15,7 @@ SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 # Arguments: [output file] ...
 log_and_cat() {
     while IFS= read -r line; do
-        logger --tag "$SCRIPT_FILENAME" -- "$line"
+        logger --id $$ --tag "$SCRIPT_FILENAME" -- "$line"
         echo "$line"
 
         for output; do

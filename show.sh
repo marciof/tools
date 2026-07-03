@@ -143,7 +143,7 @@ if [ -z "${SHOW_DEBUG:-}" ]; then
     alias debug=:
 else
     debug() {
-        logger  --tag "show[$$]" -- "$@"
+        logger --id $$ --tag show -- "$@"
     }
 fi
 
