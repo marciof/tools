@@ -33,9 +33,11 @@
 
 set -o errexit -o nounset
 
+SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
+
 log_cat() {
     while IFS= read -r line; do
-        logger --id $$ --tag kdePlasmaAutoLightDark -- \
+        logger --id $$ --tag "$SCRIPT_FILENAME" -- \
             "$(printf "%s: %s\n" "$1" "$line")"
         echo "$line"
     done
@@ -120,7 +122,7 @@ while getopts "$help_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color
             exit 1
             ;;
         "$help_opt")
-            printf 'usage: %s [options]\n\n' "$0"
+            printf 'usage: %s [options]\n\n' "$SCRIPT_FILENAME"
             printf 'options:\n'
             printf '  -%s NAME\tname of light color scheme\n' "$light_color_scheme_opt"
             printf '  -%s NAME\tname of dark color scheme\n' "$dark_color_scheme_opt"
