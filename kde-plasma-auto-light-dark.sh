@@ -33,6 +33,13 @@
 
 set -o errexit -o nounset
 
+log_cat() {
+    while IFS= read -r line; do
+        logger --id $$ --tag kdePlasmaAutoLightDark -- "$(printf "$1\n" "$line")"
+        echo "$line"
+    done
+}
+
 current_color_scheme_id() {
     dbus-send \
         --print-reply=literal \
@@ -41,7 +48,9 @@ current_color_scheme_id() {
         org.freedesktop.portal.Settings.ReadOne \
         string:org.freedesktop.appearance \
         string:color-scheme \
-    | awk '{print $NF}'
+    | log_cat 'D-Bus color-scheme: "%s"' \
+    | awk '{print $NF}' \
+    | log_cat 'Color scheme ID: %s'
 }
 
 current_color_scheme() {
@@ -49,7 +58,8 @@ current_color_scheme() {
         1) echo dark;;
         2) echo light;;
         *) echo none;;
-    esac
+    esac \
+    | log_cat 'Color scheme name: %s'
 }
 
 monitor_color_scheme() {
@@ -74,8 +84,6 @@ rate_limit() {
         fi
     done
 }
-
-script_file="$0"
 
 help_opt=h
 light_color_scheme_opt=l
@@ -111,7 +119,7 @@ while getopts "$help_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color
             exit 1
             ;;
         "$help_opt")
-            printf 'usage: %s [options]\n\n' "$script_file"
+            printf 'usage: %s [options]\n\n' "$0"
             printf 'options:\n'
             printf '  -%s NAME\tname of light color scheme\n' "$light_color_scheme_opt"
             printf '  -%s NAME\tname of dark color scheme\n' "$dark_color_scheme_opt"
@@ -129,6 +137,7 @@ shift "$((OPTIND - 1))"
     monitor_color_scheme
 } \
 | rate_limit \
+| log_cat 'Rate-limited color scheme change: %s' \
 | while IFS= read -r color; do
     case "$color" in
         light)
@@ -151,4 +160,5 @@ shift "$((OPTIND - 1))"
             echo "$color" >&2
             ;;
     esac
-done
+done \
+| log_cat 'Changed: %s'
