@@ -13,7 +13,7 @@ set -o errexit -o nounset
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 
 # Arguments: [output file] ...
-log_and_cat() {
+log_cat() {
     while IFS= read -r line; do
         logger --id $$ --tag "$SCRIPT_FILENAME" -- "$line"
         echo "$line"
@@ -25,9 +25,9 @@ log_and_cat() {
 }
 
 for url_file; do
-    log_and_cat <"$url_file" \
-        | grep --extended-regexp --max-count 1 '\s*URL\s*=' \
+    log_cat <"$url_file" \
+        | grep --extended-regexp --max-count 1 '^\s*URL\s*=' \
         | cut --delimiter = --fields 2- \
-        | log_and_cat /dev/tty \
+        | log_cat /dev/tty \
         | xargs xdg-open
 done
