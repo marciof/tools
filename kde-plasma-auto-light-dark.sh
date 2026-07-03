@@ -72,13 +72,13 @@ monitor_color_scheme() {
     done
 }
 
-rate_limit() {
+throttle() {
     last_time_secs=0
 
     while IFS= read -r line; do
         current_time_secs="$(date +%s)"
 
-        if [ $((current_time_secs - last_time_secs)) -ge 1 ]; then
+        if [ "$current_time_secs" -ge "$((last_time_secs + 1))" ]; then
             last_time_secs="$current_time_secs"
             echo "$line"
         fi
@@ -136,8 +136,8 @@ shift "$((OPTIND - 1))"
     current_color_scheme
     monitor_color_scheme
 } \
-| rate_limit \
-| log_cat 'Rate-limited color scheme change: %s' \
+| throttle \
+| log_cat 'Throttled color scheme change: %s' \
 | while IFS= read -r color; do
     case "$color" in
         light)
