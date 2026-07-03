@@ -103,6 +103,8 @@ if [ $# -eq 0 ]; then
     set -- "-$help_opt"
 fi
 
+echo "$*" | log_cat 'Arguments' >/dev/null
+
 while getopts "$help_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color_scheme_opt:$dark_wallpaper_opt:" opt "$@"; do
     case "$opt" in
         "$light_color_scheme_opt")
@@ -164,4 +166,4 @@ shift "$((OPTIND - 1))"
             ;;
     esac
 done \
-| log_cat 'Changed'
+| log_cat 'Plasma'
