@@ -162,7 +162,7 @@ shift "$((OPTIND - 1))"
             fi
             ;;
         *)
-            echo "$color" >&2
+            echo "Unsupported color scheme: $color" >&2
             ;;
     esac
 done \
