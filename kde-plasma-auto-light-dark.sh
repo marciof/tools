@@ -88,7 +88,18 @@ throttle() {
     done
 }
 
+run() {
+    "$@"
+}
+
+dry_run() {
+    printf '[dry-run] %s\n' "$*"
+}
+
 help_opt=h
+dry_run_opt=n
+run_cmd=run
+
 light_color_scheme_opt=l
 light_wallpaper_opt=L
 dark_color_scheme_opt=d
@@ -105,7 +116,7 @@ fi
 
 echo "$*" | log_cat 'Arguments' >/dev/null
 
-while getopts "$help_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color_scheme_opt:$dark_wallpaper_opt:" opt "$@"; do
+while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color_scheme_opt:$dark_wallpaper_opt:" opt "$@"; do
     case "$opt" in
         "$light_color_scheme_opt")
             light_color_scheme="$OPTARG"
@@ -119,6 +130,9 @@ while getopts "$help_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color
         "$dark_wallpaper_opt")
             dark_wallpaper="$OPTARG"
             ;;
+        "$dry_run_opt")
+            run_cmd=dry_run
+            ;;
         \?)
             printf "use '-%s' for help\n" "$help_opt" >&2
             exit 1
@@ -130,6 +144,8 @@ while getopts "$help_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color
             printf '  -%s NAME\tname of dark color scheme\n' "$dark_color_scheme_opt"
             printf '  -%s FILE\tpath to light wallpaper\n' "$light_wallpaper_opt"
             printf '  -%s FILE\tpath to dark wallpaper\n' "$dark_wallpaper_opt"
+            printf '  -%s \t\tdry-run\n' "$dry_run_opt"
+            printf '  -%s \t\thelp\n' "$help_opt"
             exit 0
             ;;
     esac
@@ -147,18 +163,18 @@ shift "$((OPTIND - 1))"
     case "$color" in
         light)
             if [ -n "$light_color_scheme" ]; then
-                plasma-apply-colorscheme "$light_color_scheme"
+                "$run_cmd" plasma-apply-colorscheme "$light_color_scheme"
             fi
             if [ -n "$light_wallpaper" ]; then
-                plasma-apply-wallpaperimage "$light_wallpaper"
+                "$run_cmd" plasma-apply-wallpaperimage "$light_wallpaper"
             fi
             ;;
         dark)
             if [ -n "$dark_color_scheme" ]; then
-                plasma-apply-colorscheme "$dark_color_scheme"
+                "$run_cmd" plasma-apply-colorscheme "$dark_color_scheme"
             fi
             if [ -n "$dark_wallpaper" ]; then
-                plasma-apply-wallpaperimage "$dark_wallpaper"
+                "$run_cmd" plasma-apply-wallpaperimage "$dark_wallpaper"
             fi
             ;;
         *)
