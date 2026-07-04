@@ -29,7 +29,7 @@
 # - Blueblack: https://github.com/smitropoulos/blueblack
 # - darkman: https://gitlab.com/WhyNotHugo/darkman
 #
-# Dependencies: dbus-bin plasma-workspace
+# Dependencies: dbus-bin plasma-workspace libkf6config-bin
 
 set -o errexit -o nounset
 
@@ -121,7 +121,7 @@ while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt
             has_required_args=true
             ;;
         "$light_wallpaper_opt")
-            light_wallpaper="$OPTARG"
+            light_wallpaper="$(realpath -e "$OPTARG")"
             has_required_args=true
             ;;
         "$dark_color_scheme_opt")
@@ -129,7 +129,7 @@ while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt
             has_required_args=true
             ;;
         "$dark_wallpaper_opt")
-            dark_wallpaper="$OPTARG"
+            dark_wallpaper="$(realpath -e "$OPTARG")"
             has_required_args=true
             ;;
         "$dry_run_opt")
@@ -175,6 +175,13 @@ fi
             fi
             if [ -n "$light_wallpaper" ]; then
                 "$run_cmd" plasma-apply-wallpaperimage "$light_wallpaper"
+                "$run_cmd" kwriteconfig6 \
+                    --file kscreenlockerrc \
+                    --group Greeter \
+                    --group Wallpaper \
+                    --group org.kde.image \
+                    --group General \
+                    --key Image "file://$light_wallpaper"
             fi
             ;;
         dark)
@@ -183,6 +190,13 @@ fi
             fi
             if [ -n "$dark_wallpaper" ]; then
                 "$run_cmd" plasma-apply-wallpaperimage "$dark_wallpaper"
+                "$run_cmd" kwriteconfig6 \
+                    --file kscreenlockerrc \
+                    --group Greeter \
+                    --group Wallpaper \
+                    --group org.kde.image \
+                    --group General \
+                    --key Image "file://$dark_wallpaper"
             fi
             ;;
         *)
