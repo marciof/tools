@@ -98,7 +98,6 @@ dry_run() {
 
 help_opt=h
 dry_run_opt=n
-run_cmd=run
 
 light_color_scheme_opt=l
 light_wallpaper_opt=L
@@ -110,9 +109,8 @@ light_wallpaper=
 dark_color_scheme=
 dark_wallpaper=
 
-if [ $# -eq 0 ]; then
-    set -- "-$help_opt"
-fi
+run_cmd=run
+has_required_args=false
 
 echo "$*" | log_cat 'Arguments' >/dev/null
 
@@ -120,15 +118,19 @@ while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt
     case "$opt" in
         "$light_color_scheme_opt")
             light_color_scheme="$OPTARG"
+            has_required_args=true
             ;;
         "$light_wallpaper_opt")
             light_wallpaper="$OPTARG"
+            has_required_args=true
             ;;
         "$dark_color_scheme_opt")
             dark_color_scheme="$OPTARG"
+            has_required_args=true
             ;;
         "$dark_wallpaper_opt")
             dark_wallpaper="$OPTARG"
+            has_required_args=true
             ;;
         "$dry_run_opt")
             run_cmd=dry_run
@@ -152,6 +154,12 @@ while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt
 done
 
 shift "$((OPTIND - 1))"
+
+if [ $# -gt 0 ] || ! "$has_required_args"; then
+    echo 'Invalid or missing required arguments' >&2
+    printf "use '-%s' for help\n" "$help_opt" >&2
+    exit 1
+fi
 
 {
     current_color_scheme
