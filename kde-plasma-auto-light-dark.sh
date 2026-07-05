@@ -208,4 +208,4 @@ fi
             ;;
     esac
 done \
-| log_cat 'Plasma'
+| log_cat 'Status'
