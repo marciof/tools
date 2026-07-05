@@ -39,6 +39,7 @@ SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 # Stdin: input to `logger`
 # Stdout: pass-through
 log_cat() {
+    # FIXME log stderr
     while IFS= read -r line; do
         logger --id $$ --tag "$SCRIPT_FILENAME" -- \
             "$(printf "%s: %s\n" "$1" "$line")"
@@ -50,6 +51,7 @@ log_cat() {
 # Stdout: color scheme ID according to XDG Desktop Portal Appearance Settings
 # See: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
 current_color_scheme_id() {
+    # FIXME error handling
     dbus-send \
         --print-reply=literal \
         --dest=org.freedesktop.portal.Desktop \
@@ -76,6 +78,7 @@ current_color_scheme() {
 # Arguments: -
 # Stdout: color scheme name anytime it changes, once per line
 monitor_color_scheme() {
+    # FIXME error handling
     dbus-monitor "interface='org.freedesktop.portal.Settings',member='SettingChanged'" \
     | while IFS= read -r line; do
         case "$line" in
