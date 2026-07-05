@@ -26,8 +26,8 @@ log_cat() {
 
 for url_file; do
     log_cat <"$url_file" \
-        | grep --extended-regexp --max-count 1 '^\s*URL\s*=' \
-        | cut --delimiter = --fields 2- \
-        | log_cat /dev/tty \
-        | xargs xdg-open
+    | grep --extended-regexp --max-count 1 '^\s*URL\s*=' \
+    | cut --delimiter = --fields 2- \
+    | log_cat /dev/tty \
+    | xargs xdg-open
 done

@@ -46,11 +46,11 @@ compress_pdf_file() {
     compressed_pdf_file="${1%.pdf}.compressed.pdf"
 
     if ! ghostscript \
-            -dNOPAUSE \
-            -sDEVICE=pdfwrite \
-            -dPDFSETTINGS=/screen \
-            -sOutputFile="$compressed_pdf_file" \
-            -- "$1"
+        -dNOPAUSE \
+        -sDEVICE=pdfwrite \
+        -dPDFSETTINGS=/screen \
+        -sOutputFile="$compressed_pdf_file" \
+        -- "$1"
     then
         # Remove leftover file created by Ghostscript when it fails.
         rm -- "$compressed_pdf_file"
