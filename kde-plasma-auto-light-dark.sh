@@ -28,6 +28,7 @@
 # - auto-knight: https://github.com/DimseBoms/auto-knight
 # - Blueblack: https://github.com/smitropoulos/blueblack
 # - darkman: https://gitlab.com/WhyNotHugo/darkman
+# - KDE Night Light Dimming: https://github.com/DefendTheDisabled/KDE-night-light-dimming
 #
 # Dependencies: dbus-bin plasma-workspace libkf6config-bin
 
