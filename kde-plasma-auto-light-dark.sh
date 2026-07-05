@@ -136,8 +136,8 @@ while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt
             run_cmd=dry_run
             ;;
         \?)
-            printf "try '-%s' for help\n" "$help_opt" >&2
-            exit 1
+            has_required_args=false
+            break
             ;;
         "$help_opt")
             printf 'usage: %s [options]\n\n' "$SCRIPT_FILENAME"
