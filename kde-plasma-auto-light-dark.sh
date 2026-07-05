@@ -2,8 +2,6 @@
 
 # KDE Plasma auto light/dark settings.
 #
-# ---
-#
 # How to change active/inactive titlebar color:
 #
 # 1. Copy an existing color scheme (`Edit Color Scheme` and `Save As`)
@@ -30,7 +28,8 @@
 # - darkman: https://gitlab.com/WhyNotHugo/darkman
 # - KDE Night Light Dimming: https://github.com/DefendTheDisabled/KDE-night-light-dimming
 #
-# Dependencies: dbus-bin plasma-workspace libkf6config-bin
+# Dependencies (runtime): dbus-bin plasma-workspace libkf6config-bin
+# Dependencies (test): shellcheck
 
 set -o errexit -o nounset
 
@@ -137,7 +136,7 @@ while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt
             run_cmd=dry_run
             ;;
         \?)
-            printf "use '-%s' for help\n" "$help_opt" >&2
+            printf "try '-%s' for help\n" "$help_opt" >&2
             exit 1
             ;;
         "$help_opt")
@@ -158,7 +157,7 @@ shift "$((OPTIND - 1))"
 
 if [ $# -gt 0 ] || ! "$has_required_args"; then
     echo 'Invalid or missing required arguments' >&2
-    printf "use '-%s' for help\n" "$help_opt" >&2
+    printf "try '-%s' for help\n" "$help_opt" >&2
     exit 1
 fi
 
