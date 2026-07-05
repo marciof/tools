@@ -15,6 +15,7 @@
 #
 # - XDG Settings: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
 # - KDE Plasma docs: https://develop.kde.org/docs/plasma/theme/theme-details/#colors
+# - KDE Discuss #40968: https://discuss.kde.org/t/plasma-6-5-is-there-a-way-to-switch-just-the-color-scheme-at-night/40968
 # - KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
 # - KDE bug #446584: https://bugs.kde.org/show_bug.cgi?id=446584
 # - KDE bug #433059: https://bugs.kde.org/show_bug.cgi?id=433059
