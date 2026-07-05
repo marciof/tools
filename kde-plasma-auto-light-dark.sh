@@ -175,6 +175,8 @@ fi
             fi
             if [ -n "$light_wallpaper" ]; then
                 "$run_cmd" plasma-apply-wallpaperimage "$light_wallpaper"
+
+                # FIXME lockscreen only updated if not in use
                 "$run_cmd" kwriteconfig6 \
                     --file kscreenlockerrc \
                     --group Greeter \
@@ -190,6 +192,8 @@ fi
             fi
             if [ -n "$dark_wallpaper" ]; then
                 "$run_cmd" plasma-apply-wallpaperimage "$dark_wallpaper"
+
+                # FIXME lockscreen only updated if not in use
                 "$run_cmd" kwriteconfig6 \
                     --file kscreenlockerrc \
                     --group Greeter \
