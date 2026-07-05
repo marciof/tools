@@ -13,7 +13,6 @@
 #
 # References:
 #
-# - XDG Settings: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
 # - KDE Plasma docs: https://develop.kde.org/docs/plasma/theme/theme-details/#colors
 # - KDE Discuss #40968: https://discuss.kde.org/t/plasma-6-5-is-there-a-way-to-switch-just-the-color-scheme-at-night/40968
 # - KDE bug #433761: https://bugs.kde.org/show_bug.cgi?id=433761
@@ -36,6 +35,9 @@ set -o errexit -o nounset
 
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 
+# Arguments: <log message prefix>
+# Stdin: input to `logger`
+# Stdout: pass-through
 log_cat() {
     while IFS= read -r line; do
         logger --id $$ --tag "$SCRIPT_FILENAME" -- \
@@ -44,6 +46,9 @@ log_cat() {
     done
 }
 
+# Arguments: -
+# Stdout: color scheme ID according to XDG Desktop Portal Appearance Settings
+# See: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
 current_color_scheme_id() {
     dbus-send \
         --print-reply=literal \
@@ -57,6 +62,8 @@ current_color_scheme_id() {
     | log_cat 'Color scheme ID'
 }
 
+# Arguments: -
+# Stdout: color scheme name as `dark`, `light`, or `none`
 current_color_scheme() {
     case "$(current_color_scheme_id)" in
         1) echo dark;;
@@ -66,6 +73,8 @@ current_color_scheme() {
     | log_cat 'Color scheme name'
 }
 
+# Arguments: -
+# Stdout: color scheme name anytime it changes, once per line
 monitor_color_scheme() {
     dbus-monitor "interface='org.freedesktop.portal.Settings',member='SettingChanged'" \
     | while IFS= read -r line; do
@@ -76,7 +85,10 @@ monitor_color_scheme() {
     done
 }
 
-throttle() {
+# Arguments: -
+# Stdin: input to be throttled line by line
+# Stdout: throttled pass-through
+throttle_once_per_sec() {
     last_time_secs=0
 
     while IFS= read -r line; do
@@ -89,10 +101,12 @@ throttle() {
     done
 }
 
+# Arguments: <command> [arguments...]
 run() {
     "$@"
 }
 
+# Arguments: <command> [arguments...]
 dry_run() {
     printf '[dry-run] %s\n' "$*"
 }
@@ -166,7 +180,7 @@ fi
     current_color_scheme
     monitor_color_scheme
 } \
-| throttle \
+| throttle_once_per_sec \
 | log_cat 'Throttled color scheme change' \
 | while IFS= read -r color; do
     case "$color" in
