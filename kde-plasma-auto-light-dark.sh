@@ -35,10 +35,10 @@ set -o errexit -o nounset
 
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 IS_DRY_RUN=false
-LIGHT_COLOR_SCHEME=
-LIGHT_WALLPAPER=
-DARK_COLOR_SCHEME=
-DARK_WALLPAPER=
+LIGHT_COLOR_SCHEME_NAME=
+LIGHT_WALLPAPER_PATH=
+DARK_COLOR_SCHEME_NAME=
+DARK_WALLPAPER_PATH=
 
 # Arguments: <log message prefix>
 # Stdin: input to `logger`
@@ -52,7 +52,7 @@ log_cat() {
     done
 }
 
-# Arguments: <command> [arguments...]
+# Arguments: <command> [arguments ...]
 run() {
     if "$IS_DRY_RUN"; then
         printf '[dry-run] %s\n' "$*"
@@ -118,7 +118,22 @@ throttle_once_per_sec() {
     done
 }
 
-# Arguments: <arguments to parse>
+# Arguments: <path to wallpaper file>
+apply_wallpaper() {
+    wallpaper_path="$1"; shift
+    run plasma-apply-wallpaperimage -- "$wallpaper_path"
+
+    # FIXME lockscreen isn't always immediately updated
+    run kwriteconfig6 \
+        --file kscreenlockerrc \
+        --group Greeter \
+        --group Wallpaper \
+        --group org.kde.image \
+        --group General \
+        --key Image "file://$wallpaper_path"
+}
+
+# Arguments: <script filename> [arguments ...]
 parse_args() {
     script_filename="$1"; shift
     has_required_args=false
@@ -136,19 +151,19 @@ parse_args() {
     while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color_scheme_opt:$dark_wallpaper_opt:" opt "$@"; do
         case "$opt" in
             "$light_color_scheme_opt")
-                LIGHT_COLOR_SCHEME="$OPTARG"
+                LIGHT_COLOR_SCHEME_NAME="$OPTARG"
                 has_required_args=true
                 ;;
             "$light_wallpaper_opt")
-                LIGHT_WALLPAPER="$(realpath -e "$OPTARG")"
+                LIGHT_WALLPAPER_PATH="$(realpath -e "$OPTARG")"
                 has_required_args=true
                 ;;
             "$dark_color_scheme_opt")
-                DARK_COLOR_SCHEME="$OPTARG"
+                DARK_COLOR_SCHEME_NAME="$OPTARG"
                 has_required_args=true
                 ;;
             "$dark_wallpaper_opt")
-                DARK_WALLPAPER="$(realpath -e "$OPTARG")"
+                DARK_WALLPAPER_PATH="$(realpath -e "$OPTARG")"
                 has_required_args=true
                 ;;
             "$dry_run_opt")
@@ -192,37 +207,19 @@ parse_args "$SCRIPT_FILENAME" "$@"
 | while IFS= read -r color; do
     case "$color" in
         light)
-            if [ -n "$LIGHT_COLOR_SCHEME" ]; then
-                run plasma-apply-colorscheme -- "$LIGHT_COLOR_SCHEME"
+            if [ -n "$LIGHT_COLOR_SCHEME_NAME" ]; then
+                run plasma-apply-colorscheme -- "$LIGHT_COLOR_SCHEME_NAME"
             fi
-            if [ -n "$LIGHT_WALLPAPER" ]; then
-                run plasma-apply-wallpaperimage -- "$LIGHT_WALLPAPER"
-
-                # FIXME lockscreen only updated if not in use
-                run kwriteconfig6 \
-                    --file kscreenlockerrc \
-                    --group Greeter \
-                    --group Wallpaper \
-                    --group org.kde.image \
-                    --group General \
-                    --key Image "file://$LIGHT_WALLPAPER"
+            if [ -n "$LIGHT_WALLPAPER_PATH" ]; then
+                apply_wallpaper "$LIGHT_WALLPAPER_PATH"
             fi
             ;;
         dark)
-            if [ -n "$DARK_COLOR_SCHEME" ]; then
-                run plasma-apply-colorscheme -- "$DARK_COLOR_SCHEME"
+            if [ -n "$DARK_COLOR_SCHEME_NAME" ]; then
+                run plasma-apply-colorscheme -- "$DARK_COLOR_SCHEME_NAME"
             fi
-            if [ -n "$DARK_WALLPAPER" ]; then
-                run plasma-apply-wallpaperimage -- "$DARK_WALLPAPER"
-
-                # FIXME lockscreen only updated if not in use
-                run kwriteconfig6 \
-                    --file kscreenlockerrc \
-                    --group Greeter \
-                    --group Wallpaper \
-                    --group org.kde.image \
-                    --group General \
-                    --key Image "file://$DARK_WALLPAPER"
+            if [ -n "$DARK_WALLPAPER_PATH" ]; then
+                apply_wallpaper "$DARK_WALLPAPER_PATH"
             fi
             ;;
         *)
