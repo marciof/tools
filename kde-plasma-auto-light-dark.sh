@@ -34,6 +34,11 @@
 set -o errexit -o nounset
 
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
+IS_DRY_RUN=false
+LIGHT_COLOR_SCHEME=
+LIGHT_WALLPAPER=
+DARK_COLOR_SCHEME=
+DARK_WALLPAPER=
 
 # Arguments: <log message prefix>
 # Stdin: input to `logger`
@@ -45,6 +50,15 @@ log_cat() {
             "$(printf "%s: %s\n" "$1" "$line")"
         echo "$line"
     done
+}
+
+# Arguments: <command> [arguments...]
+run() {
+    if "$IS_DRY_RUN"; then
+        printf '[dry-run] %s\n' "$*"
+    else
+        "$@"
+    fi
 }
 
 # Arguments: -
@@ -104,80 +118,70 @@ throttle_once_per_sec() {
     done
 }
 
-# Arguments: <command> [arguments...]
-run() {
-    "$@"
+# Arguments: <arguments to parse>
+parse_args() {
+    script_filename="$1"; shift
+    has_required_args=false
+
+    help_opt=h
+    dry_run_opt=n
+
+    light_color_scheme_opt=l
+    light_wallpaper_opt=L
+    dark_color_scheme_opt=d
+    dark_wallpaper_opt=D
+
+    echo "$*" | log_cat 'Arguments' >/dev/null
+
+    while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color_scheme_opt:$dark_wallpaper_opt:" opt "$@"; do
+        case "$opt" in
+            "$light_color_scheme_opt")
+                LIGHT_COLOR_SCHEME="$OPTARG"
+                has_required_args=true
+                ;;
+            "$light_wallpaper_opt")
+                LIGHT_WALLPAPER="$(realpath -e "$OPTARG")"
+                has_required_args=true
+                ;;
+            "$dark_color_scheme_opt")
+                DARK_COLOR_SCHEME="$OPTARG"
+                has_required_args=true
+                ;;
+            "$dark_wallpaper_opt")
+                DARK_WALLPAPER="$(realpath -e "$OPTARG")"
+                has_required_args=true
+                ;;
+            "$dry_run_opt")
+                IS_DRY_RUN=true
+                ;;
+            \?)
+                has_required_args=false
+                break
+                ;;
+            "$help_opt")
+                printf 'usage: %s [options]\n\n' "$script_filename"
+                printf 'options:\n'
+                printf '  -%s NAME\tname of light color scheme\n' "$light_color_scheme_opt"
+                printf '  -%s NAME\tname of dark color scheme\n' "$dark_color_scheme_opt"
+                printf '  -%s FILE\tpath to light wallpaper\n' "$light_wallpaper_opt"
+                printf '  -%s FILE\tpath to dark wallpaper\n' "$dark_wallpaper_opt"
+                printf '  -%s \t\tdry-run\n' "$dry_run_opt"
+                printf '  -%s \t\thelp\n' "$help_opt"
+                exit 0
+                ;;
+        esac
+    done
+
+    shift "$((OPTIND - 1))"
+
+    if [ $# -gt 0 ] || ! "$has_required_args"; then
+        echo 'Invalid or missing required arguments' >&2
+        printf "try '-%s' for help\n" "$help_opt" >&2
+        exit 1
+    fi
 }
 
-# Arguments: <command> [arguments...]
-dry_run() {
-    printf '[dry-run] %s\n' "$*"
-}
-
-help_opt=h
-dry_run_opt=n
-
-light_color_scheme_opt=l
-light_wallpaper_opt=L
-dark_color_scheme_opt=d
-dark_wallpaper_opt=D
-
-light_color_scheme=
-light_wallpaper=
-dark_color_scheme=
-dark_wallpaper=
-
-run_cmd=run
-has_required_args=false
-
-echo "$*" | log_cat 'Arguments' >/dev/null
-
-while getopts "$help_opt$dry_run_opt$light_color_scheme_opt:$light_wallpaper_opt:$dark_color_scheme_opt:$dark_wallpaper_opt:" opt "$@"; do
-    case "$opt" in
-        "$light_color_scheme_opt")
-            light_color_scheme="$OPTARG"
-            has_required_args=true
-            ;;
-        "$light_wallpaper_opt")
-            light_wallpaper="$(realpath -e "$OPTARG")"
-            has_required_args=true
-            ;;
-        "$dark_color_scheme_opt")
-            dark_color_scheme="$OPTARG"
-            has_required_args=true
-            ;;
-        "$dark_wallpaper_opt")
-            dark_wallpaper="$(realpath -e "$OPTARG")"
-            has_required_args=true
-            ;;
-        "$dry_run_opt")
-            run_cmd=dry_run
-            ;;
-        \?)
-            has_required_args=false
-            break
-            ;;
-        "$help_opt")
-            printf 'usage: %s [options]\n\n' "$SCRIPT_FILENAME"
-            printf 'options:\n'
-            printf '  -%s NAME\tname of light color scheme\n' "$light_color_scheme_opt"
-            printf '  -%s NAME\tname of dark color scheme\n' "$dark_color_scheme_opt"
-            printf '  -%s FILE\tpath to light wallpaper\n' "$light_wallpaper_opt"
-            printf '  -%s FILE\tpath to dark wallpaper\n' "$dark_wallpaper_opt"
-            printf '  -%s \t\tdry-run\n' "$dry_run_opt"
-            printf '  -%s \t\thelp\n' "$help_opt"
-            exit 0
-            ;;
-    esac
-done
-
-shift "$((OPTIND - 1))"
-
-if [ $# -gt 0 ] || ! "$has_required_args"; then
-    echo 'Invalid or missing required arguments' >&2
-    printf "try '-%s' for help\n" "$help_opt" >&2
-    exit 1
-fi
+parse_args "$SCRIPT_FILENAME" "$@"
 
 {
     current_color_scheme
@@ -188,37 +192,37 @@ fi
 | while IFS= read -r color; do
     case "$color" in
         light)
-            if [ -n "$light_color_scheme" ]; then
-                "$run_cmd" plasma-apply-colorscheme "$light_color_scheme"
+            if [ -n "$LIGHT_COLOR_SCHEME" ]; then
+                run plasma-apply-colorscheme -- "$LIGHT_COLOR_SCHEME"
             fi
-            if [ -n "$light_wallpaper" ]; then
-                "$run_cmd" plasma-apply-wallpaperimage "$light_wallpaper"
+            if [ -n "$LIGHT_WALLPAPER" ]; then
+                run plasma-apply-wallpaperimage -- "$LIGHT_WALLPAPER"
 
                 # FIXME lockscreen only updated if not in use
-                "$run_cmd" kwriteconfig6 \
+                run kwriteconfig6 \
                     --file kscreenlockerrc \
                     --group Greeter \
                     --group Wallpaper \
                     --group org.kde.image \
                     --group General \
-                    --key Image "file://$light_wallpaper"
+                    --key Image "file://$LIGHT_WALLPAPER"
             fi
             ;;
         dark)
-            if [ -n "$dark_color_scheme" ]; then
-                "$run_cmd" plasma-apply-colorscheme "$dark_color_scheme"
+            if [ -n "$DARK_COLOR_SCHEME" ]; then
+                run plasma-apply-colorscheme -- "$DARK_COLOR_SCHEME"
             fi
-            if [ -n "$dark_wallpaper" ]; then
-                "$run_cmd" plasma-apply-wallpaperimage "$dark_wallpaper"
+            if [ -n "$DARK_WALLPAPER" ]; then
+                run plasma-apply-wallpaperimage -- "$DARK_WALLPAPER"
 
                 # FIXME lockscreen only updated if not in use
-                "$run_cmd" kwriteconfig6 \
+                run kwriteconfig6 \
                     --file kscreenlockerrc \
                     --group Greeter \
                     --group Wallpaper \
                     --group org.kde.image \
                     --group General \
-                    --key Image "file://$dark_wallpaper"
+                    --key Image "file://$DARK_WALLPAPER"
             fi
             ;;
         *)
