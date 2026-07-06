@@ -10,7 +10,7 @@
 # then the original file is moved to the trash, and the compressed file is
 # renamed to the original.
 #
-# Arguments: [file | directory] ...
+# Arguments: [file | directory ...]
 #
 # Dependencies (runtime): ghostscript
 # Dependencies (runtime / optional): trash-cli
@@ -67,7 +67,7 @@ compress_pdf_file() {
     fi
 }
 
-# Arguments: [file | directory] ...
+# Arguments: [file | directory ...]
 compress_pdf_files() {
     for file_or_dir; do
         if [ -d "$file_or_dir" ]; then

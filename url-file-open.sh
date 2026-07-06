@@ -12,7 +12,7 @@ set -o errexit -o nounset
 
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 
-# Arguments: [output file] ...
+# Arguments: [output file ...]
 log_cat() {
     while IFS= read -r line; do
         logger --id $$ --tag "$SCRIPT_FILENAME" -- "$line"
