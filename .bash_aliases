@@ -127,6 +127,7 @@ if [ -n "${SSH_CONNECTION:-}" ]; then
 fi
 
 alias -- -='cd -'
+alias h=history
 alias j='jobs -l'
 
 if DESC='<https://www.nano-editor.org>' have_ nano; then
@@ -201,9 +202,9 @@ if DESC='<https://git-scm.com>' have_ git; then
     alias a='g add'
     alias b='g branch --verbose --verbose'
     alias d='g diff'
-    alias h='g blame --date=short'
     alias k='g checkout'
     alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
+    alias n='g blame --date=short'
     alias p='g push'
     alias v='g status'
     alias u='g pull'
@@ -223,9 +224,9 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete b _git_branch
         __git_complete c _git_commit
         __git_complete d _git_diff
-        __git_complete h __gitcomp
         __git_complete k _git_checkout
         __git_complete l _git_log
+        __git_complete n __gitcomp
         __git_complete p _git_push
         __git_complete v _git_status
         __git_complete u _git_pull
