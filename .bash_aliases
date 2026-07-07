@@ -74,7 +74,7 @@ export HISTSIZE=-1
 export HISTFILESIZE=$((HISTFILESIZE * 10))
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html#index-PROMPT_005fDIRTRIM
-export PROMPT_DIRTRIM=2
+export PROMPT_DIRTRIM=5
 
 # https://www.gnu.org/software/coreutils/manual/html_node/dircolors-invocation.html
 have_ dircolors && cache_ "$HAVE_NAME" --sh
@@ -274,7 +274,7 @@ jobs_ps1_() {
     fi
 }
 
-export PS1="$custom_ps1\$(jobs_ps1_ ' %s')\\$ "
+export PS1="$custom_ps1\$(jobs_ps1_ ' %s')\\n\\$ "
 
 # Disable in case other scripts are loaded/injected, eg. IntelliJ's terminal.
 # https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20%22TERMINAL_EMULATOR%22&type=code
