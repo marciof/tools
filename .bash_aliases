@@ -202,7 +202,6 @@ if DESC='<https://git-scm.com>' have_ git; then
     alias a='g add'
     alias b='g branch --verbose --verbose'
     alias d='g diff'
-    alias k='g checkout'
     alias l='g log --graph --pretty="tformat:%C(yellow)%h%C(reset) -- %s %C(green)%ai %C(cyan)%aN%C(blue bold)%d"'
     alias n='g blame --date=short'
     alias p='g push'
@@ -224,7 +223,6 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete b _git_branch
         __git_complete c _git_commit
         __git_complete d _git_diff
-        __git_complete k _git_checkout
         __git_complete l _git_log
         __git_complete n __gitcomp
         __git_complete p _git_push
