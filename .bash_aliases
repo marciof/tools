@@ -3,10 +3,6 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -o nounset
 
-# Abort when shell isn't interactive.
-# https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html#tag_19_05_02
-case "$-" in *i*) ;; *) return 0;; esac
-
 # Arguments: <command> ...
 # Returns:
 #   0 if at least one command was found
@@ -39,6 +35,15 @@ for sub_aliases in "$HOME/$self_file_name".*; do
         . "$sub_aliases"
     fi
 done
+
+# https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
+export PYTHONDONTWRITEBYTECODE=x
+
+# Abort when shell isn't interactive.
+# https://pubs.opengroup.org/onlinepubs/9799919799/utilities/V3_chap02.html#tag_19_05_02
+case "$-" in *i*) ;; *) return 0;; esac
+
+################################################################################
 
 # Used to skip performance-costly configuration that only needs to be done once.
 # https://specifications.freedesktop.org/basedir/latest/#variables
@@ -82,9 +87,6 @@ have_ dircolors && cache_ "$HAVE_NAME" --sh
 # https://www.greenwoodsoftware.com/less/
 have_ lesspipe lesspipe.sh && cache_ "$HAVE_NAME"
 export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
-
-# https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
-export PYTHONDONTWRITEBYTECODE=x
 
 # Disable XON/XOFF flow control so that Ctrl+S can be used for
 # `bind -q forward-search-history`.
