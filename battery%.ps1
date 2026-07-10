@@ -13,9 +13,14 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
+# https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowlongptrw
 Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @'
-    [DllImport("user32.dll")] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-    [DllImport("user32.dll")] public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr SetWindowLongPtr(
+        IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 '@
 
 
@@ -34,27 +39,32 @@ $textPaddingBottom = 10
 $updateBatteryLevelFreqSecs = 30
 $unknownBatteryLevelPlaceholder = '--'
 
-
+# https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
 $batteryLevelTimer = New-Object System.Windows.Threading.DispatcherTimer
 $batteryLevelTimer.Interval = [TimeSpan]::FromSeconds($updateBatteryLevelFreqSecs)
 
+# https://learn.microsoft.com/dotnet/api/system.windows.media.effects.dropshadoweffect
 $textOutline = New-Object System.Windows.Media.Effects.DropShadowEffect
 $textOutline.Color = [System.Windows.Media.Colors]::$textOutlineColor
 $textOutline.ShadowDepth = 0
 $textOutline.BlurRadius = 10
 $textOutline.Opacity = 1
 
+# https://learn.microsoft.com/dotnet/api/system.windows.controls.textblock
 $textBlock = New-Object System.Windows.Controls.TextBlock
 $textBlock.Effect = $textOutline
 $textBlock.Text = "${unknownBatteryLevelPlaceholder}%"
 $textBlock.Foreground = [System.Windows.Media.Brushes]::$textColor
-$textBlock.FontSize = $textFontSize
-$textBlock.FontFamily = New-Object System.Windows.Media.FontFamily($textFont)
 $textBlock.TextAlignment = 'Right'
 $textBlock.VerticalAlignment = 'Bottom'
 $textBlock.HorizontalAlignment = 'Right'
 $textBlock.Margin = "${textPaddingLeft},${textPaddingTop},${textPaddingRight},${textPaddingBottom}"
 
+# https://learn.microsoft.com/dotnet/api/system.windows.media.fontfamily
+$textBlock.FontFamily = New-Object System.Windows.Media.FontFamily($textFont)
+$textBlock.FontSize = $textFontSize
+
+# https://learn.microsoft.com/dotnet/api/system.windows.window
 $window = New-Object System.Windows.Window
 $window.Title = $appName
 $window.Topmost = $true
@@ -69,12 +79,15 @@ $window.ResizeMode = 'NoResize' # Windows 10 Tablet Mode
 $window.WindowStartupLocation = 'Manual'
 $window.Content = $textBlock
 
+# https://learn.microsoft.com/dotnet/api/system.windows.forms.toolstripmenuitem
 $exitMenuItem = New-Object System.Windows.Forms.ToolStripMenuItem('Exit')
 $exitMenuItem.Add_Click({ $window.Close() })
 
+# https://learn.microsoft.com/dotnet/api/system.windows.forms.contextmenustrip
 $trayIconMenu = New-Object System.Windows.Forms.ContextMenuStrip
 $trayIconMenu.Items.Add($exitMenuItem) | Out-Null
 
+# https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
 $trayIcon = New-Object System.Windows.Forms.NotifyIcon
 $trayIcon.Icon = [System.Drawing.SystemIcons]::Application
 $trayIcon.Text = $appName
@@ -120,14 +133,14 @@ $window.Add_Closed({
 
 $window.Add_SourceInitialized({
     $hwnd = (New-Object System.Windows.Interop.WindowInteropHelper($window)).Handle
-    $exStyle = [Win32.NativeMethods]::GetWindowLong($hwnd, -20) # GWL_EXSTYLE
-    
+    $exStyle = [Win32.NativeMethods]::GetWindowLongPtr($hwnd, -20) # GWL_EXSTYLE
+
     # WS_EX_TOOLWINDOW (0x80)
     # WS_EX_NOACTIVATE (0x08000000)
     # WS_EX_TRANSPARENT (0x20) aka window click-through
-    $exStyle = $exStyle -bor 0x80 -bor 0x08000000 -bor 0x20
+    $exStyle = [IntPtr]($exStyle -bor 0x80 -bor 0x08000000 -bor 0x20)
     
-    [void][Win32.NativeMethods]::SetWindowLong($hwnd, -20, $exStyle)
+    [void][Win32.NativeMethods]::SetWindowLongPtr($hwnd, -20, $exStyle)
 })
 
 [System.Console]::add_CancelKeyPress({
