@@ -31,6 +31,7 @@
 ## Windows
 
 - [Auto Dark Mode](https://github.com/AutoDarkMode/Windows-Auto-Night-Mode) theme switch
+- [AutoHotkey](https://www.autohotkey.com) automation
 - [laplock](https://github.com/dechamps/laplock) automatic session lock
 - [ProduKey](https://www.nirsoft.net/utils/product_cd_key_viewer.html) key viewer
 - [BatteryInfoView](https://www.nirsoft.net/utils/battery_information_view.html) battery information
