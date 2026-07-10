@@ -43,6 +43,7 @@
 - [MSEdgeRedirect](https://github.com/rcmaehl/MSEdgeRedirect) redirect to default browser
 - [KeyzPal](https://github.com/limbo666/KeyzPal) tray Caps Lock indicator
 - [Notepad2](https://www.flos-freeware.ch/notepad2.html) simple text editor with syntax highlighting
+- [Notepad++](https://notepad-plus-plus.org) full-featured text editor
 
 # Configuration
 
