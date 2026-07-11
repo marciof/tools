@@ -39,6 +39,7 @@ $textPaddingTop = 10
 $textPaddingRight = 10
 $textPaddingBottom = 10
 
+$isRightAligned = $true
 $updateBatteryLevelFreqSecs = 30
 $unknownBatteryLevelPlaceholder = '--'
 
@@ -123,9 +124,21 @@ $UpdateWindowPosition = {
 
     # https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.workarea
     $WorkArea = [System.Windows.SystemParameters]::WorkArea
-    $window.Left = $WorkArea.Right - $window.ActualWidth
     $window.Top = $WorkArea.Bottom - $window.ActualHeight
+
+    if ($isRightAligned) {
+        $window.Left = $WorkArea.Right - $window.ActualWidth
+    }
+    else {
+        $window.Left = $WorkArea.Left
+    }
 }
+
+# https://learn.microsoft.com/dotnet/api/system.windows.uielement.mousedown
+$window.Add_MouseDown({
+    $script:isRightAligned = -not $script:isRightAligned
+    & $UpdateWindowPosition
+})
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
 $window.Add_ContentRendered({
@@ -157,8 +170,7 @@ $window.Add_SourceInitialized({
     # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
     $WS_EX_TOOLWINDOW = 0x80
     $WS_EX_NOACTIVATE = 0x8000000
-    $WS_EX_TRANSPARENT = 0x20 # pass-through mouse clicks
-    $windowExtStyle = [IntPtr]($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE -bor $WS_EX_TRANSPARENT)
+    $windowExtStyle = [IntPtr]($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
     [void][Win32.NativeMethods]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
