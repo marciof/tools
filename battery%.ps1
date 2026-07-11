@@ -15,7 +15,9 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
-Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @'
+# https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.dllimportattribute.setlasterror
+# https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.unmanagedtype
+Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
     [DllImport("user32.dll")]
     public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
@@ -26,6 +28,10 @@ Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @'
     [DllImport("shell32.dll")]
     public static extern IntPtr ExtractIcon(
         IntPtr hInst, string lpszExeFileName, int nIconIndex);
+
+    [DllImport("user32.dll", SetLastError=true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool DestroyIcon(IntPtr hIcon);
 '@
 
 
@@ -97,11 +103,14 @@ $exitMenuItem.Add_Click({ $window.Close() })
 $trayIconMenu = New-Object System.Windows.Forms.ContextMenuStrip
 $trayIconMenu.Items.Add($exitMenuItem) | Out-Null
 
+# https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
+# https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
+$yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
+    [IntPtr]::Zero, "pifmgr.dll", 1)
+
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
 $trayIcon = New-Object System.Windows.Forms.NotifyIcon
-$trayIcon.Icon = [System.Drawing.Icon]::FromHandle(
-    [Win32.NativeMethods]::ExtractIcon(
-        [IntPtr]::Zero, "pifmgr.dll", 1)) # yellow umbrella
+$trayIcon.Icon = [System.Drawing.Icon]::FromHandle($yellowUmbrellaIcon)
 $trayIcon.Text = $appName
 $trayIcon.Visible = $true
 $trayIcon.ContextMenuStrip = $trayIconMenu
@@ -172,6 +181,7 @@ $window.Add_Closed({
     $batteryLevelTimer.Stop()
 	$trayIcon.Visible = $false
 	$trayIcon.Dispose()
+    [void][WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
 })
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
@@ -181,7 +191,7 @@ $window.Add_SourceInitialized({
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowlongptrw
     $GWL_EXSTYLE = -20
-    $windowExtStyle = [Win32.NativeMethods]::GetWindowLongPtr($windowHandle, $GWL_EXSTYLE)
+    $windowExtStyle = [WinApi.Call]::GetWindowLongPtr($windowHandle, $GWL_EXSTYLE)
 
     # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
     $WS_EX_TOOLWINDOW = 0x80
@@ -189,7 +199,7 @@ $window.Add_SourceInitialized({
     $windowExtStyle = [IntPtr]($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
-    [void][Win32.NativeMethods]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
+    [void][WinApi.Call]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
 })
 
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
