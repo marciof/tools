@@ -13,7 +13,6 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
-# https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowlongptrw
 Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @'
     [DllImport("user32.dll")]
     public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
@@ -103,6 +102,9 @@ $trayIcon.ContextMenuStrip = $trayIconMenu
 
 $updateBatteryLevel = {
     Write-Host 'Updating battery level...'
+
+    # https://learn.microsoft.com/powershell/module/cimcmdlets/get-ciminstance
+    # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-battery
     $batteries = Get-CimInstance -ClassName Win32_Battery -ErrorAction SilentlyContinue
 
     if (-not $batteries) {
@@ -116,41 +118,54 @@ $updateBatteryLevel = {
 }
 
 $UpdateWindowPosition = {
+    # https://learn.microsoft.com/dotnet/api/system.windows.uielement.updatelayout
     $window.UpdateLayout()
+
+    # https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.workarea
     $WorkArea = [System.Windows.SystemParameters]::WorkArea
     $window.Left = $WorkArea.Right - $window.ActualWidth
     $window.Top = $WorkArea.Bottom - $window.ActualHeight
 }
 
+# https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
 $window.Add_ContentRendered({
     & $updateBatteryLevel
     & $UpdateWindowPosition
 })
 
+# https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.sizechanged
 $window.Add_SizeChanged({
     & $UpdateWindowPosition
 })
 
+# https://learn.microsoft.com/dotnet/api/system.windows.window.closed
 $window.Add_Closed({
     $batteryLevelTimer.Stop()
 	$trayIcon.Visible = $false
 	$trayIcon.Dispose()
 })
 
+# https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
 $window.Add_SourceInitialized({
-    $hwnd = (New-Object System.Windows.Interop.WindowInteropHelper($window)).Handle
-    $exStyle = [Win32.NativeMethods]::GetWindowLongPtr($hwnd, -20) # GWL_EXSTYLE
+    # https://learn.microsoft.com/dotnet/api/system.windows.interop.windowinterophelper
+    $windowHandle = (New-Object System.Windows.Interop.WindowInteropHelper($window)).Handle
 
-    # WS_EX_TOOLWINDOW (0x80)
-    # WS_EX_NOACTIVATE (0x08000000)
-    # WS_EX_TRANSPARENT (0x20) aka window click-through
-    $exStyle = [IntPtr]($exStyle -bor 0x80 -bor 0x08000000 -bor 0x20)
+    # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowlongptrw
+    $GWL_EXSTYLE = -20
+    $windowExtStyle = [Win32.NativeMethods]::GetWindowLongPtr($windowHandle, $GWL_EXSTYLE)
 
-    [void][Win32.NativeMethods]::SetWindowLongPtr($hwnd, -20, $exStyle)
+    # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
+    $WS_EX_TOOLWINDOW = 0x80
+    $WS_EX_NOACTIVATE = 0x8000000
+    $WS_EX_TRANSPARENT = 0x20 # pass-through mouse clicks
+    $windowExtStyle = [IntPtr]($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE -bor $WS_EX_TRANSPARENT)
+
+    # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
+    [void][Win32.NativeMethods]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
 })
 
+# https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
 [System.Console]::add_CancelKeyPress({
-    $EventArgs.Cancel = $true
     $window.Dispatcher.Invoke([System.Action]{ $window.Close() })
 })
 
