@@ -49,6 +49,7 @@ $textPaddingTop = 10
 $textPaddingRight = 10
 $textPaddingBottom = 10
 
+# Eyeballed.
 $textMarginRight = -7
 $textMarginBottom = -10
 
@@ -127,27 +128,21 @@ $trayIcon.ContextMenuStrip = $trayIconMenu
 
 
 $updateBatteryLevel = {
-    # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-battery
-    # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_wql
-    # https://learn.microsoft.com/dotnet/api/system.management.managementobjectsearcher
-    $searcher = [System.Management.ManagementObjectSearcher]::new(
-        'SELECT EstimatedChargeRemaining FROM Win32_Battery')
+    # https://learn.microsoft.com/dotnet/api/system.windows.forms.systeminformation.powerstatus
+    $power = [System.Windows.Forms.SystemInformation]::PowerStatus
 
-    $batteries = $searcher.Get()
-    $levelSum = 0
-    $numBatteries = 0
+    # https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
+    $isUnknown = ($power.BatteryChargeStatus `
+        -band [System.Windows.Forms.BatteryChargeStatus]::NoSystemBattery `
+        -band [System.Windows.Forms.BatteryChargeStatus]::Unknown)
 
-    foreach ($battery in $batteries) {
-        $levelSum += [int] $battery['EstimatedChargeRemaining']
-        $numBatteries++
-    }
-
-    $textBlock.Text = if ($numBatteries -eq 0) {
+    $textBlock.Text = if ($isUnknown) {
         "${unknownBatteryLevelPlaceholder}%"
     } else {
-        "$([Math]::Round($levelSum / $numBatteries))%"
+        "$([Math]::Round($power.BatteryLifePercent * 100))%"
     }
 }
+
 
 $UpdateWindowPosition = {
     # https://learn.microsoft.com/dotnet/api/system.windows.uielement.updatelayout
@@ -164,6 +159,7 @@ $UpdateWindowPosition = {
         $WorkArea.Left
     }
 }
+
 
 # https://learn.microsoft.com/dotnet/api/system.windows.uielement.mousedown
 $window.Add_MouseDown({
@@ -182,16 +178,19 @@ $window.Add_MouseDown({
     }
 })
 
+
 # https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
 $window.Add_ContentRendered({
     & $updateBatteryLevel
     & $UpdateWindowPosition
 })
 
+
 # https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.sizechanged
 $window.Add_SizeChanged({
     & $UpdateWindowPosition
 })
+
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.closed
 $window.Add_Closed({
@@ -200,6 +199,7 @@ $window.Add_Closed({
 	$trayIcon.Dispose()
     $null = [WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
 })
+
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
 $window.Add_SourceInitialized({
@@ -214,13 +214,14 @@ $window.Add_SourceInitialized({
     # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
     $WS_EX_TOOLWINDOW = 0x80
     $WS_EX_NOACTIVATE = 0x8000000
-    $taskbarModifier = if ($showInTaskbar) { 0 } else { $WS_EX_TOOLWINDOW }
-    $extStyle = [IntPtr] (
-        $extStyle -bor $WS_EX_NOACTIVATE -bor $taskbarModifier)
+    $extStyle = [IntPtr] ($extStyle `
+        -bor $WS_EX_NOACTIVATE `
+        -bor $(if ($showInTaskbar) { 0 } else { $WS_EX_TOOLWINDOW }))
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
     $null = [WinApi.Call]::SetWindowLongPtr($handle, $GWL_EXSTYLE, $extStyle)
 })
+
 
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
 [System.Console]::add_CancelKeyPress({
