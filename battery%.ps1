@@ -21,6 +21,10 @@ Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @'
     [DllImport("user32.dll")]
     public static extern IntPtr SetWindowLongPtr(
         IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+    [DllImport("shell32.dll")]
+    public static extern IntPtr ExtractIcon(
+        IntPtr hInst, string lpszExeFileName, int nIconIndex);
 '@
 
 
@@ -89,7 +93,9 @@ $trayIconMenu.Items.Add($exitMenuItem) | Out-Null
 
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
 $trayIcon = New-Object System.Windows.Forms.NotifyIcon
-$trayIcon.Icon = [System.Drawing.SystemIcons]::Application
+$trayIcon.Icon = [System.Drawing.Icon]::FromHandle(
+    [Win32.NativeMethods]::ExtractIcon(
+        [IntPtr]::Zero, "pifmgr.dll", 1)) # yellow umbrella
 $trayIcon.Text = $appName
 $trayIcon.Visible = $true
 $trayIcon.ContextMenuStrip = $trayIconMenu
@@ -139,7 +145,7 @@ $window.Add_SourceInitialized({
     # WS_EX_NOACTIVATE (0x08000000)
     # WS_EX_TRANSPARENT (0x20) aka window click-through
     $exStyle = [IntPtr]($exStyle -bor 0x80 -bor 0x08000000 -bor 0x20)
-    
+
     [void][Win32.NativeMethods]::SetWindowLongPtr($hwnd, -20, $exStyle)
 })
 
