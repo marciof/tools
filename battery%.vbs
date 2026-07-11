@@ -1,9 +1,22 @@
 ' Shortcut this in location `shell:startup`.
 
-Set WshShell = CreateObject("WScript.Shell")
-Set FSO = CreateObject("Scripting.FileSystemObject")
+Option Explicit
 
-ScriptFolder = FSO.GetParentFolderName(WScript.ScriptFullName)
-PSPath = ScriptFolder & "\battery%.ps1"
+Dim Shell: Set Shell = CreateObject("WScript.Shell")
 
-WshShell.Run "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -NoProfile -File """ & PSPath & """", 0, False
+' https://learn.microsoft.com/office/vba/language/reference/user-interface-help/filesystemobject-object
+Dim FS: Set FS = CreateObject("Scripting.FileSystemObject")
+
+' https://learn.microsoft.com/office/vba/language/reference/user-interface-help/getparentfoldername-method
+Dim folderName: folderName = FS.GetParentFolderName(WScript.ScriptFullName)
+
+' https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_powershell_exe
+Dim pwshCmd: pwshCmd = "powershell.exe " _
+    & "-WindowStyle Hidden " _
+    & "-ExecutionPolicy Bypass " _
+    & "-NoProfile " _
+    & "-File """ & folderName & "\battery%.ps1" & """"
+
+Const WINDOW_STYLE_HIDE = 0
+Const DONT_WAIT_ON_RETURN = False
+Shell.Run pwshCmd, WINDOW_STYLE_HIDE, DONT_WAIT_ON_RETURN
