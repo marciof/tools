@@ -169,6 +169,7 @@ $window.Add_MouseDown({
         $trayIconMenu.Show([System.Windows.Forms.Cursor]::Position)
     }
     else {
+        # TODO maybe nice to switch font/outline colors too?
         $script:isRightAligned = -not $script:isRightAligned
         & $UpdateWindowPosition
     }
@@ -219,7 +220,28 @@ $window.Add_SourceInitialized({
 })
 
 
-Write-Host 'Press Ctrl+C to stop.'
-$updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
-$updateBatteryLevelTimer.Start()
-$null = $window.ShowDialog()
+$isNewInstance = $false
+
+# https://learn.microsoft.com/dotnet/api/system.threading.mutex
+$singleInstanceMutex = [System.Threading.Mutex]::new(
+    $true, 'Global\com.marciof.tools.batteryLevelOverlay', [ref] $isNewInstance)
+
+if (-not $isNewInstance) {
+    $null = [System.Windows.Forms.MessageBox]::Show(
+        'Already running.',
+        $appName,
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Warning)
+    Exit
+}
+
+try {
+    Write-Host 'Press Ctrl+C to stop.'
+    $updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
+    $updateBatteryLevelTimer.Start()
+    $null = $window.ShowDialog()
+}
+finally {
+    $singleInstanceMutex.ReleaseMutex()
+    $singleInstanceMutex.Dispose()
+}
