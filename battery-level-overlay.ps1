@@ -1,6 +1,7 @@
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
+# https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
-#Requires -Version 5.1 # Windows 10
+#Requires -Version 5.1 # Windows 10 / Lenovo Yoga Book YB1-X91
 
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/set-strictmode
 Set-StrictMode -Version 3
@@ -32,7 +33,25 @@ Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
     [DllImport("user32.dll", SetLastError=true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool DestroyIcon(IntPtr hIcon);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SetProcessDpiAwarenessContext(int dpiContext);
 '@
+
+
+# v2 was introduced in Windows 10 version 1703 (OS build 15063):
+# - https://learn.microsoft.com/windows/win32/hidpi/dpi-awareness-context
+# - https://learn.microsoft.com/en-us/windows/uwp/whats-new/windows-10-build-15063
+# Which was made available starting on 2017-04-11:
+# - https://learn.microsoft.com/en-us/windows/release-health/release-information
+# However Lenovo Yoga Book YB1-X91F/L was released in 2016:
+# - https://blogs.windows.com/windowsexperience/2016/08/31/lenovo-announces-convertible-and-detachable-pcs-with-windows-10/
+# - https://web.archive.org/web/20161019000522/http://news.lenovo.com/news-releases/lenovo-reveals-yoga-book-2-in-1-tablet-for-productivity-and-creativity.htm
+# - https://pcsupport.lenovo.com/us/en/products/tablets/yoga-series/yoga-book/solutions/pd104400-overview-for-yoga-book
+$DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3
+
+# https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setprocessdpiawarenesscontext
+$null = [WinApi.Call]::SetProcessDpiAwarenessContext($DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE)
 
 
 $appName = 'Battery Level Overlay'
@@ -138,7 +157,8 @@ $updateBatteryLevel = {
 
     $textBlock.Text = if ($isUnknown) {
         "${unknownBatteryLevelPlaceholder}%"
-    } else {
+    }
+    else {
         "$([Math]::Round($power.BatteryLifePercent * 100))%"
     }
 }
@@ -188,6 +208,12 @@ $window.Add_ContentRendered({
 
 # https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.sizechanged
 $window.Add_SizeChanged({
+    & $UpdateWindowPosition
+})
+
+
+# https://learn.microsoft.com/dotnet/api/system.windows.window.dpichanged
+$window.Add_DpiChanged({
     & $UpdateWindowPosition
 })
 
