@@ -15,7 +15,7 @@ Dim pwshCmd: pwshCmd = "powershell.exe " _
     & "-WindowStyle Hidden " _
     & "-ExecutionPolicy Bypass " _
     & "-NoProfile " _
-    & "-File """ & folderName & "\battery%.ps1" & """"
+    & "-File """ & folderName & "\battery-level-overlay.ps1" & """"
 
 Const WINDOW_STYLE_HIDE = 0
 Const DONT_WAIT_ON_RETURN = False
