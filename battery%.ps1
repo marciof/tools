@@ -34,10 +34,14 @@ $textFontSize = 20
 $textColor = 'White'
 $textOutlineColor = 'Black'
 
+# Reducing padding too much will crop outline effects.
 $textPaddingLeft = 10
 $textPaddingTop = 10
 $textPaddingRight = 10
 $textPaddingBottom = 10
+
+$textMarginRight = -7
+$textMarginBottom = -10
 
 $isRightAligned = $true
 $updateBatteryLevelFreqSecs = 30
@@ -124,10 +128,10 @@ $UpdateWindowPosition = {
 
     # https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.workarea
     $WorkArea = [System.Windows.SystemParameters]::WorkArea
-    $window.Top = $WorkArea.Bottom - $window.ActualHeight
+    $window.Top = $WorkArea.Bottom - $window.ActualHeight - $textMarginBottom
 
     if ($isRightAligned) {
-        $window.Left = $WorkArea.Right - $window.ActualWidth
+        $window.Left = $WorkArea.Right - $window.ActualWidth - $textMarginRight
     }
     else {
         $window.Left = $WorkArea.Left
