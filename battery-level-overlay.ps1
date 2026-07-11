@@ -1,5 +1,3 @@
-# Battery Level Overlay
-
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
 #Requires -Version 5.1 # Windows 10
@@ -37,7 +35,7 @@ Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
 '@
 
 
-$appName = 'Battery Level'
+$appName = 'Battery Level Overlay'
 
 $textFont = 'Arial'
 $textFontSize = 20
@@ -57,9 +55,11 @@ $isRightAligned = $true
 $updateBatteryLevelFreqSecs = 60
 $unknownBatteryLevelPlaceholder = '--'
 
+
 # https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
-$batteryLevelTimer = [System.Windows.Threading.DispatcherTimer]::new()
-$batteryLevelTimer.Interval = [TimeSpan]::FromSeconds($updateBatteryLevelFreqSecs)
+$updateBatteryLevelTimer = [System.Windows.Threading.DispatcherTimer]::new()
+$updateBatteryLevelTimer.Interval = [TimeSpan]::FromSeconds(
+    $updateBatteryLevelFreqSecs)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.media.effects.dropshadoweffect
 $textOutline = [System.Windows.Media.Effects.DropShadowEffect]::new()
@@ -76,7 +76,8 @@ $textBlock.Foreground = [System.Windows.Media.Brushes]::$textColor
 $textBlock.TextAlignment = 'Right'
 $textBlock.VerticalAlignment = 'Bottom'
 $textBlock.HorizontalAlignment = 'Right'
-$textBlock.Margin = [System.Windows.Thickness]::new($textPaddingLeft, $textPaddingTop, $textPaddingRight, $textPaddingBottom)
+$textBlock.Margin = [System.Windows.Thickness]::new(
+    $textPaddingLeft, $textPaddingTop, $textPaddingRight, $textPaddingBottom)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.media.fontfamily
 $textBlock.FontFamily = [System.Windows.Media.FontFamily]::new($textFont)
@@ -122,7 +123,8 @@ $updateBatteryLevel = {
     # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-battery
     # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_wql
     # https://learn.microsoft.com/dotnet/api/system.management.managementobjectsearcher
-    $searcher = [System.Management.ManagementObjectSearcher]::new('SELECT EstimatedChargeRemaining FROM Win32_Battery')
+    $searcher = [System.Management.ManagementObjectSearcher]::new(
+        'SELECT EstimatedChargeRemaining FROM Win32_Battery')
 
     $batteries = $searcher.Get()
     $levelSum = 0
@@ -133,11 +135,10 @@ $updateBatteryLevel = {
         $numBatteries++
     }
 
-    if ($numBatteries -gt 0) {
-        $level = [Math]::Round($levelSum / $numBatteries)
-        $textBlock.Text = "${level}%"
+    $textBlock.Text = if ($numBatteries -eq 0) {
+        "${unknownBatteryLevelPlaceholder}%"
     } else {
-        $textBlock.Text = "${unknownBatteryLevelPlaceholder}%"
+        "$([Math]::Round($levelSum / $numBatteries))%"
     }
 }
 
@@ -149,11 +150,11 @@ $UpdateWindowPosition = {
     $WorkArea = [System.Windows.SystemParameters]::WorkArea
     $window.Top = $WorkArea.Bottom - $window.ActualHeight - $textMarginBottom
 
-    if ($isRightAligned) {
-        $window.Left = $WorkArea.Right - $window.ActualWidth - $textMarginRight
+    $window.Left = if ($isRightAligned) {
+        $WorkArea.Right - $window.ActualWidth - $textMarginRight
     }
     else {
-        $window.Left = $WorkArea.Left
+        $WorkArea.Left
     }
 }
 
@@ -186,7 +187,7 @@ $window.Add_SizeChanged({
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.closed
 $window.Add_Closed({
-    $batteryLevelTimer.Stop()
+    $updateBatteryLevelTimer.Stop()
 	$trayIcon.Visible = $false
 	$trayIcon.Dispose()
     $null = [WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
@@ -195,19 +196,21 @@ $window.Add_Closed({
 # https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
 $window.Add_SourceInitialized({
     # https://learn.microsoft.com/dotnet/api/system.windows.interop.windowinterophelper
-    $windowHandle = ([System.Windows.Interop.WindowInteropHelper]::new($window)).Handle
+    $handle = ([System.Windows.Interop.WindowInteropHelper]::new(
+        $window)).Handle
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowlongptrw
     $GWL_EXSTYLE = -20
-    $windowExtStyle = [WinApi.Call]::GetWindowLongPtr($windowHandle, $GWL_EXSTYLE)
+    $extStyle = [WinApi.Call]::GetWindowLongPtr($handle, $GWL_EXSTYLE)
 
     # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
     $WS_EX_TOOLWINDOW = 0x80
     $WS_EX_NOACTIVATE = 0x8000000
-    $windowExtStyle = [IntPtr] ($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
+    $extStyle = [IntPtr] (
+        $extStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
-    $null = [WinApi.Call]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
+    $null = [WinApi.Call]::SetWindowLongPtr($handle, $GWL_EXSTYLE, $extStyle)
 })
 
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
@@ -217,6 +220,6 @@ $window.Add_SourceInitialized({
 
 
 Write-Host 'Press Ctrl+C to stop.'
-$batteryLevelTimer.Add_Tick($updateBatteryLevel)
-$batteryLevelTimer.Start()
+$updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
+$updateBatteryLevelTimer.Start()
 $null = $window.ShowDialog()
