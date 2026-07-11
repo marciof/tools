@@ -136,8 +136,18 @@ $UpdateWindowPosition = {
 
 # https://learn.microsoft.com/dotnet/api/system.windows.uielement.mousedown
 $window.Add_MouseDown({
-    $script:isRightAligned = -not $script:isRightAligned
-    & $UpdateWindowPosition
+    param(
+        [object] $sender,
+        [System.Windows.Input.MouseButtonEventArgs] $event
+    )
+
+    if ($event.RightButton -eq 'Pressed') {
+        $trayIconMenu.Show([System.Windows.Forms.Cursor]::Position)
+    }
+    else {
+        $script:isRightAligned = -not $script:isRightAligned
+        & $UpdateWindowPosition
+    }
 })
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
