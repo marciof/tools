@@ -44,7 +44,7 @@ $textMarginRight = -7
 $textMarginBottom = -10
 
 $isRightAligned = $true
-$updateBatteryLevelFreqSecs = 30
+$updateBatteryLevelFreqSecs = 60
 $unknownBatteryLevelPlaceholder = '--'
 
 # https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
