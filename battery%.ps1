@@ -14,6 +14,7 @@ Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Management
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
 # https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.dllimportattribute.setlasterror
@@ -118,19 +119,25 @@ $trayIcon.ContextMenuStrip = $trayIconMenu
 
 
 $updateBatteryLevel = {
-    Write-Host 'Updating battery level...'
-
-    # https://learn.microsoft.com/powershell/module/cimcmdlets/get-ciminstance
     # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-battery
-    $batteries = Get-CimInstance -ClassName Win32_Battery -ErrorAction SilentlyContinue
+    # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_wql
+    # https://learn.microsoft.com/dotnet/api/system.management.managementobjectsearcher
+    $searcher = [System.Management.ManagementObjectSearcher]::new('SELECT EstimatedChargeRemaining FROM Win32_Battery')
 
-    if (-not $batteries) {
-        $textBlock.Text = "${unknownBatteryLevelPlaceholder}%"
+    $batteries = $searcher.Get()
+    $levelSum = 0
+    $numBatteries = 0
+
+    foreach ($battery in $batteries) {
+        $levelSum += [int] $battery['EstimatedChargeRemaining']
+        $numBatteries++
     }
-    else {
-        $stats = $batteries | Measure-Object -Property EstimatedChargeRemaining -Average
-        $level = [Math]::Round($stats.Average)
+
+    if ($numBatteries -gt 0) {
+        $level = [Math]::Round($levelSum / $numBatteries)
         $textBlock.Text = "${level}%"
+    } else {
+        $textBlock.Text = "${unknownBatteryLevelPlaceholder}%"
     }
 }
 
