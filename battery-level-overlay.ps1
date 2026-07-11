@@ -36,6 +36,7 @@ Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
 
 
 $appName = 'Battery Level Overlay'
+$showInTaskbar = $false
 
 $textFont = 'Arial'
 $textFontSize = 20
@@ -83,11 +84,16 @@ $textBlock.Margin = [System.Windows.Thickness]::new(
 $textBlock.FontFamily = [System.Windows.Media.FontFamily]::new($textFont)
 $textBlock.FontSize = $textFontSize
 
+# https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
+# https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
+$yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
+    [IntPtr]::Zero, "pifmgr.dll", 1)
+
 # https://learn.microsoft.com/dotnet/api/system.windows.window
 $window = [System.Windows.Window]::new()
 $window.Title = $appName
 $window.Topmost = $true
-$window.ShowInTaskbar = $false
+$window.ShowInTaskbar = $showInTaskbar
 $window.ShowActivated = $false
 $window.Focusable = $false
 $window.WindowStyle = 'None'
@@ -98,6 +104,12 @@ $window.ResizeMode = 'NoResize' # Windows 10 Tablet Mode
 $window.WindowStartupLocation = 'Manual'
 $window.Content = $textBlock
 
+# https://learn.microsoft.com/dotnet/api/system.windows.interop.imaging.createbitmapsourcefromhicon
+$window.Icon = [System.Windows.Interop.Imaging]::CreateBitmapSourceFromHIcon(
+    $yellowUmbrellaIcon,
+    [System.Windows.Int32Rect]::Empty,
+    [System.Windows.Media.Imaging.BitmapSizeOptions]::FromEmptyOptions())
+
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.toolstripmenuitem
 $exitMenuItem = [System.Windows.Forms.ToolStripMenuItem]::new('Exit')
 $exitMenuItem.Add_Click({ $window.Close() })
@@ -105,11 +117,6 @@ $exitMenuItem.Add_Click({ $window.Close() })
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.contextmenustrip
 $trayIconMenu = [System.Windows.Forms.ContextMenuStrip]::new()
 $null = $trayIconMenu.Items.Add($exitMenuItem)
-
-# https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
-# https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
-$yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
-    [IntPtr]::Zero, "pifmgr.dll", 1)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
 $trayIcon = [System.Windows.Forms.NotifyIcon]::new()
@@ -207,8 +214,9 @@ $window.Add_SourceInitialized({
     # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
     $WS_EX_TOOLWINDOW = 0x80
     $WS_EX_NOACTIVATE = 0x8000000
+    $taskbarModifier = if ($showInTaskbar) { 0 } else { $WS_EX_TOOLWINDOW }
     $extStyle = [IntPtr] (
-        $extStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
+        $extStyle -bor $WS_EX_NOACTIVATE -bor $taskbarModifier)
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
     $null = [WinApi.Call]::SetWindowLongPtr($handle, $GWL_EXSTYLE, $extStyle)
