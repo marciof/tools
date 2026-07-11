@@ -1,3 +1,5 @@
+# Battery Level Overlay
+
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
 #Requires -Version 5.1 # Windows 10
 
