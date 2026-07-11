@@ -1,6 +1,7 @@
 # Battery Level Overlay
 
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
+# https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
 #Requires -Version 5.1 # Windows 10
 
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/set-strictmode
@@ -56,32 +57,32 @@ $updateBatteryLevelFreqSecs = 60
 $unknownBatteryLevelPlaceholder = '--'
 
 # https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
-$batteryLevelTimer = New-Object System.Windows.Threading.DispatcherTimer
+$batteryLevelTimer = [System.Windows.Threading.DispatcherTimer]::new()
 $batteryLevelTimer.Interval = [TimeSpan]::FromSeconds($updateBatteryLevelFreqSecs)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.media.effects.dropshadoweffect
-$textOutline = New-Object System.Windows.Media.Effects.DropShadowEffect
+$textOutline = [System.Windows.Media.Effects.DropShadowEffect]::new()
 $textOutline.Color = [System.Windows.Media.Colors]::$textOutlineColor
 $textOutline.ShadowDepth = 0
 $textOutline.BlurRadius = 10
 $textOutline.Opacity = 1
 
 # https://learn.microsoft.com/dotnet/api/system.windows.controls.textblock
-$textBlock = New-Object System.Windows.Controls.TextBlock
+$textBlock = [System.Windows.Controls.TextBlock]::new()
 $textBlock.Effect = $textOutline
 $textBlock.Text = "${unknownBatteryLevelPlaceholder}%"
 $textBlock.Foreground = [System.Windows.Media.Brushes]::$textColor
 $textBlock.TextAlignment = 'Right'
 $textBlock.VerticalAlignment = 'Bottom'
 $textBlock.HorizontalAlignment = 'Right'
-$textBlock.Margin = "${textPaddingLeft},${textPaddingTop},${textPaddingRight},${textPaddingBottom}"
+$textBlock.Margin = [System.Windows.Thickness]::new($textPaddingLeft, $textPaddingTop, $textPaddingRight, $textPaddingBottom)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.media.fontfamily
-$textBlock.FontFamily = New-Object System.Windows.Media.FontFamily($textFont)
+$textBlock.FontFamily = [System.Windows.Media.FontFamily]::new($textFont)
 $textBlock.FontSize = $textFontSize
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window
-$window = New-Object System.Windows.Window
+$window = [System.Windows.Window]::new()
 $window.Title = $appName
 $window.Topmost = $true
 $window.ShowInTaskbar = $false
@@ -96,12 +97,12 @@ $window.WindowStartupLocation = 'Manual'
 $window.Content = $textBlock
 
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.toolstripmenuitem
-$exitMenuItem = New-Object System.Windows.Forms.ToolStripMenuItem('Exit')
+$exitMenuItem = [System.Windows.Forms.ToolStripMenuItem]::new('Exit')
 $exitMenuItem.Add_Click({ $window.Close() })
 
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.contextmenustrip
-$trayIconMenu = New-Object System.Windows.Forms.ContextMenuStrip
-$trayIconMenu.Items.Add($exitMenuItem) | Out-Null
+$trayIconMenu = [System.Windows.Forms.ContextMenuStrip]::new()
+$null = $trayIconMenu.Items.Add($exitMenuItem)
 
 # https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
 # https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
@@ -109,7 +110,7 @@ $yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
     [IntPtr]::Zero, "pifmgr.dll", 1)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
-$trayIcon = New-Object System.Windows.Forms.NotifyIcon
+$trayIcon = [System.Windows.Forms.NotifyIcon]::new()
 $trayIcon.Icon = [System.Drawing.Icon]::FromHandle($yellowUmbrellaIcon)
 $trayIcon.Text = $appName
 $trayIcon.Visible = $true
@@ -181,13 +182,13 @@ $window.Add_Closed({
     $batteryLevelTimer.Stop()
 	$trayIcon.Visible = $false
 	$trayIcon.Dispose()
-    [void][WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
+    $null = [WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
 })
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
 $window.Add_SourceInitialized({
     # https://learn.microsoft.com/dotnet/api/system.windows.interop.windowinterophelper
-    $windowHandle = (New-Object System.Windows.Interop.WindowInteropHelper($window)).Handle
+    $windowHandle = ([System.Windows.Interop.WindowInteropHelper]::new($window)).Handle
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowlongptrw
     $GWL_EXSTYLE = -20
@@ -196,10 +197,10 @@ $window.Add_SourceInitialized({
     # https://learn.microsoft.com/windows/win32/winmsg/extended-window-styles
     $WS_EX_TOOLWINDOW = 0x80
     $WS_EX_NOACTIVATE = 0x8000000
-    $windowExtStyle = [IntPtr]($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
+    $windowExtStyle = [IntPtr] ($windowExtStyle -bor $WS_EX_TOOLWINDOW -bor $WS_EX_NOACTIVATE)
 
     # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
-    [void][WinApi.Call]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
+    $null = [WinApi.Call]::SetWindowLongPtr($windowHandle, $GWL_EXSTYLE, $windowExtStyle)
 })
 
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
@@ -211,4 +212,4 @@ $window.Add_SourceInitialized({
 Write-Host 'Press Ctrl+C to stop.'
 $batteryLevelTimer.Add_Tick($updateBatteryLevel)
 $batteryLevelTimer.Start()
-$window.ShowDialog() | Out-Null
+$null = $window.ShowDialog()
