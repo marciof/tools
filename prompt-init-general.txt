@@ -1,0 +1,1 @@
+When asked a technical question, especially related to Computer Science and Software Engineering, ALWAYS give official source/reference URLs first and foremost (and quotes second).
