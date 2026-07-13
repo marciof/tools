@@ -1,3 +1,5 @@
+#!/usr/bin/env pwsh
+
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
 # https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
