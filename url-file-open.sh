@@ -15,7 +15,7 @@ SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 # Arguments: [output file ...]
 log_cat() {
     while IFS= read -r line; do
-        logger --id $$ --tag "$SCRIPT_FILENAME" -- "$line"
+        logger --id=$$ --tag "$SCRIPT_FILENAME" -- "$line"
         echo "$line"
 
         for output; do
@@ -26,7 +26,7 @@ log_cat() {
 
 for url_file; do
     log_cat <"$url_file" \
-    | grep --extended-regexp --max-count 1 '^\s*URL\s*=' \
+    | grep --extended-regexp --max-count=1 '^\s*URL\s*=' \
     | cut --delimiter = --fields 2- \
     | log_cat /dev/tty \
     | xargs xdg-open

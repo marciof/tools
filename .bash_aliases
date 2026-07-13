@@ -133,7 +133,7 @@ alias h=history
 alias j='jobs -l'
 
 if DESC='<https://www.nano-editor.org>' have_ nano; then
-    export EDITOR="$HAVE_NAME --softwrap --nowrap --tabstospaces --tabsize 4"
+    export EDITOR="$HAVE_NAME --softwrap --nowrap --tabstospaces --tabsize=4"
     # shellcheck disable=SC2139
     alias nano="$EDITOR"
 fi

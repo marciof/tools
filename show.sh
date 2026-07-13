@@ -143,7 +143,7 @@ if [ -z "${SHOW_DEBUG:-}" ]; then
     alias debug=:
 else
     debug() {
-        logger --id $$ --tag show -- "$@"
+        logger --id=$$ --tag show -- "$@"
     }
 fi
 
@@ -224,7 +224,7 @@ mode_has_color() {
 
 mode_run_color() {
     run_with_options "$tool_options_highlight" false \
-        highlight --force --out-format ansi "$@" 2>/dev/null
+        highlight --force --out-format=ansi "$@" 2>/dev/null
 }
 
 mode_can_dir() {
@@ -465,7 +465,7 @@ run_with_options() {
     if [ -z "$_run_opts" ]; then
         "$@"
     elif [ "$_run_uses_stdin" = false ]; then
-        printf %s "$_run_opts" | xargs --delimiter "$arg_separator" -- "$@"
+        printf %s "$_run_opts" | xargs --delimiter="$arg_separator" -- "$@"
     else
         _run_opts_pipe="$(mktemp_posix)"
         rm -- "$_run_opts_pipe"
@@ -474,7 +474,7 @@ run_with_options() {
             printf %s "$_run_opts" >"$_run_opts_pipe"
             rm -- "$_run_opts_pipe"
         } &
-        xargs --arg-file "$_run_opts_pipe" --delimiter "$arg_separator" -- "$@"
+        xargs --arg-file="$_run_opts_pipe" --delimiter="$arg_separator" -- "$@"
     fi
 }
 
@@ -579,7 +579,7 @@ if command -v mktemp >/dev/null; then
     }
 else
     mktemp_posix() {
-        echo 'mkstemp(template)' | m4 --define "template=${TMPDIR:-/tmp}/"
+        echo 'mkstemp(template)' | m4 --define="template=${TMPDIR:-/tmp}/"
     }
 fi
 

@@ -46,7 +46,7 @@ DARK_WALLPAPER_PATH=
 log_cat() {
     # FIXME log stderr
     while IFS= read -r line; do
-        logger --id $$ --tag "$SCRIPT_FILENAME" -- \
+        logger --id=$$ --tag "$SCRIPT_FILENAME" -- \
             "$(printf "%s: %s\n" "$1" "$line")"
         echo "$line"
     done
