@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+# Dependencies (test): PSScriptAnalyzer
+
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
 # https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
@@ -186,11 +188,10 @@ $updateWindowPosition = {
 # https://learn.microsoft.com/dotnet/api/system.windows.uielement.mousedown
 $window.Add_MouseDown({
     param(
-        [object] $sender,
-        [System.Windows.Input.MouseButtonEventArgs] $event
-    )
+        [object] $eSender,
+        [System.Windows.Input.MouseButtonEventArgs] $eArgs)
 
-    if ($event.RightButton -eq 'Pressed') {
+    if ($eArgs.RightButton -eq 'Pressed') {
         $trayIconMenu.Show([System.Windows.Forms.Cursor]::Position)
     }
     else {
