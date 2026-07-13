@@ -161,9 +161,9 @@ $updateBatteryLevel = {
     $power = [System.Windows.Forms.SystemInformation]::PowerStatus
 
     # https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
-    $isUnknown = ($power.BatteryChargeStatus `
-        -band [System.Windows.Forms.BatteryChargeStatus]::NoSystemBattery `
-        -band [System.Windows.Forms.BatteryChargeStatus]::Unknown)
+    $isUnknown = $power.BatteryChargeStatus -in
+        [System.Windows.Forms.BatteryChargeStatus]::Unknown,
+        [System.Windows.Forms.BatteryChargeStatus]::NoSystemBattery
 
     $textBlock.Text = if ($isUnknown) {
         "${unknownBatteryLevelPlaceholder}%"
@@ -186,7 +186,7 @@ $updateWindowPosition = {
         $workArea.Right - $window.ActualWidth - $textMarginRight
     }
     else {
-        # FIXME not completely left aligned
+        # FIXME not fully left aligned when switching positions
         $workArea.Left
     }
 }
@@ -282,7 +282,7 @@ $window.Add_SourceInitialized({
 })
 
 
-# FIXME long delay between keypress and action
+# FIXME long delay between keypress and action (InvokeAsync didn't work)
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
 [System.Console]::add_CancelKeyPress({
     $window.Dispatcher.Invoke([System.Action]{ $window.Close() })
