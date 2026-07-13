@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
 
 # Dependencies (test): PSScriptAnalyzer
+#   Invoke-ScriptAnalyzer -Settings @{Rules=@{PSUseCompatibleSyntax=@{Enable=$true;TargetVersions='5.1'}}} -Severity Error,Warning,Information
 
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
 # https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
@@ -186,12 +187,13 @@ $updateWindowPosition = {
 
 
 # https://learn.microsoft.com/dotnet/api/system.windows.uielement.mousedown
+# https://learn.microsoft.com/dotnet/api/system.windows.input.mousebuttoneventargs.changedbutton
 $window.Add_MouseDown({
     param(
         [object] $eSender,
         [System.Windows.Input.MouseButtonEventArgs] $eArgs)
 
-    if ($eArgs.RightButton -eq 'Pressed') {
+    if ($eArgs.ChangedButton -eq [System.Windows.Input.MouseButton]::Right) {
         $trayIconMenu.Show([System.Windows.Forms.Cursor]::Position)
     }
     else {
@@ -274,7 +276,7 @@ if (-not $isNewInstance) {
 }
 
 try {
-    Write-Host 'Press Ctrl+C to stop.'
+    Write-Information 'Press Ctrl+C to stop.'
     $updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
     $updateBatteryLevelTimer.Start()
     $null = $window.ShowDialog()
