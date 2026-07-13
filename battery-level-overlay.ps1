@@ -164,19 +164,19 @@ $updateBatteryLevel = {
 }
 
 
-$UpdateWindowPosition = {
+$updateWindowPosition = {
     # https://learn.microsoft.com/dotnet/api/system.windows.uielement.updatelayout
     $window.UpdateLayout()
 
     # https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.workarea
-    $WorkArea = [System.Windows.SystemParameters]::WorkArea
-    $window.Top = $WorkArea.Bottom - $window.ActualHeight - $textMarginBottom
+    $workArea = [System.Windows.SystemParameters]::WorkArea
+    $window.Top = $workArea.Bottom - $window.ActualHeight - $textMarginBottom
 
     $window.Left = if ($isRightAligned) {
-        $WorkArea.Right - $window.ActualWidth - $textMarginRight
+        $workArea.Right - $window.ActualWidth - $textMarginRight
     }
     else {
-        $WorkArea.Left
+        $workArea.Left
     }
 }
 
@@ -194,7 +194,7 @@ $window.Add_MouseDown({
     else {
         # TODO maybe nice to switch font/outline colors too?
         $script:isRightAligned = -not $script:isRightAligned
-        & $UpdateWindowPosition
+        & $updateWindowPosition
     }
 })
 
@@ -202,19 +202,19 @@ $window.Add_MouseDown({
 # https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
 $window.Add_ContentRendered({
     & $updateBatteryLevel
-    & $UpdateWindowPosition
+    & $updateWindowPosition
 })
 
 
 # https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.sizechanged
 $window.Add_SizeChanged({
-    & $UpdateWindowPosition
+    & $updateWindowPosition
 })
 
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.dpichanged
 $window.Add_DpiChanged({
-    & $UpdateWindowPosition
+    & $updateWindowPosition
 })
 
 
