@@ -19,7 +19,6 @@ Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.Management
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
 # https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.dllimportattribute.setlasterror
