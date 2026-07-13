@@ -79,6 +79,7 @@ $textPaddingRight = 10
 $textPaddingBottom = 10
 
 # Eyeballed.
+$textMarginLeft = -7
 $textMarginRight = -7
 $textMarginBottom = -10
 
@@ -186,8 +187,7 @@ $updateWindowPosition = {
         $workArea.Right - $window.ActualWidth - $textMarginRight
     }
     else {
-        # FIXME not fully left aligned when switching positions
-        $workArea.Left
+        $workArea.Left + $textMarginLeft
     }
 }
 
