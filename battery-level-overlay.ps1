@@ -8,6 +8,7 @@
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
 #Requires -Version 5.1 # Windows 10 / Lenovo Yoga Book YB1-X91
 
+# TODO https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer#check-powershell-version-compatibility
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/set-strictmode
 Set-StrictMode -Version 3
 
@@ -41,6 +42,10 @@ Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool SetProcessDpiAwarenessContext(int dpiContext);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
 '@
 
 
@@ -94,8 +99,28 @@ $textOutline.ShadowDepth = 0
 $textOutline.BlurRadius = 10
 $textOutline.Opacity = 1
 
+# https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
+# https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
+$yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
+    [IntPtr]::Zero, "pifmgr.dll", 1)
+
+# https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
+$trayIcon = [System.Windows.Forms.NotifyIcon]::new()
+$trayIcon.Icon = [System.Drawing.Icon]::FromHandle($yellowUmbrellaIcon)
+$trayIcon.Text = $appName
+$trayIcon.Visible = $true
+
+# https://learn.microsoft.com/dotnet/api/system.windows.controls.menuitem
+$exitMenuItem = [System.Windows.Controls.MenuItem]::new()
+$exitMenuItem.Header = 'Exit'
+
+# https://learn.microsoft.com/dotnet/api/system.windows.controls.contextmenu
+$trayIconMenu = [System.Windows.Controls.ContextMenu]::new()
+$null = $trayIconMenu.Items.Add($exitMenuItem)
+
 # https://learn.microsoft.com/dotnet/api/system.windows.controls.textblock
 $textBlock = [System.Windows.Controls.TextBlock]::new()
+$textBlock.ContextMenu = $trayIconMenu
 $textBlock.Effect = $textOutline
 $textBlock.Text = "${unknownBatteryLevelPlaceholder}%"
 $textBlock.Foreground = [System.Windows.Media.Brushes]::$textColor
@@ -108,11 +133,6 @@ $textBlock.Margin = [System.Windows.Thickness]::new(
 # https://learn.microsoft.com/dotnet/api/system.windows.media.fontfamily
 $textBlock.FontFamily = [System.Windows.Media.FontFamily]::new($textFont)
 $textBlock.FontSize = $textFontSize
-
-# https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
-# https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
-$yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
-    [IntPtr]::Zero, "pifmgr.dll", 1)
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window
 $window = [System.Windows.Window]::new()
@@ -134,21 +154,6 @@ $window.Icon = [System.Windows.Interop.Imaging]::CreateBitmapSourceFromHIcon(
     $yellowUmbrellaIcon,
     [System.Windows.Int32Rect]::Empty,
     [System.Windows.Media.Imaging.BitmapSizeOptions]::FromEmptyOptions())
-
-# https://learn.microsoft.com/dotnet/api/system.windows.forms.toolstripmenuitem
-$exitMenuItem = [System.Windows.Forms.ToolStripMenuItem]::new('Exit')
-$exitMenuItem.Add_Click({ $window.Close() })
-
-# https://learn.microsoft.com/dotnet/api/system.windows.forms.contextmenustrip
-$trayIconMenu = [System.Windows.Forms.ContextMenuStrip]::new()
-$null = $trayIconMenu.Items.Add($exitMenuItem)
-
-# https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
-$trayIcon = [System.Windows.Forms.NotifyIcon]::new()
-$trayIcon.Icon = [System.Drawing.Icon]::FromHandle($yellowUmbrellaIcon)
-$trayIcon.Text = $appName
-$trayIcon.Visible = $true
-$trayIcon.ContextMenuStrip = $trayIconMenu
 
 
 $updateBatteryLevel = {
@@ -181,26 +186,49 @@ $updateWindowPosition = {
         $workArea.Right - $window.ActualWidth - $textMarginRight
     }
     else {
+        # FIXME not completely left aligned
         $workArea.Left
     }
 }
 
 
-# https://learn.microsoft.com/dotnet/api/system.windows.uielement.mousedown
-# https://learn.microsoft.com/dotnet/api/system.windows.input.mousebuttoneventargs.changedbutton
+# https://learn.microsoft.com/dotnet/api/system.windows.input.mousebuttoneventargs
+# https://learn.microsoft.com/dotnet/api/system.windows.uielement.mouseup
 $window.Add_MouseDown({
     param(
-        [object] $eSender,
+        [System.Windows.Window] $eSender,
         [System.Windows.Input.MouseButtonEventArgs] $eArgs)
 
-    if ($eArgs.ChangedButton -eq [System.Windows.Input.MouseButton]::Right) {
-        $trayIconMenu.Show([System.Windows.Forms.Cursor]::Position)
-    }
-    else {
+    if ($eArgs.ChangedButton -eq [System.Windows.Input.MouseButton]::Left) {
         # TODO maybe nice to switch font/outline colors too?
         $script:isRightAligned = -not $script:isRightAligned
         & $updateWindowPosition
     }
+    elseif ($eArgs.ChangedButton -eq [System.Windows.Input.MouseButton]::Right) {
+        $handle = ([System.Windows.Interop.WindowInteropHelper]::new($window)).Handle
+        $null = [WinApi.Call]::SetForegroundWindow($handle)
+    }
+})
+
+
+# https://learn.microsoft.com/dotnet/api/system.windows.forms.mouseeventargs
+# https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon.mouseup
+$trayIcon.Add_MouseUp({
+    param(
+        [System.Windows.Forms.NotifyIcon] $eSender,
+        [System.Windows.Forms.MouseEventArgs] $eArgs)
+
+    if ($eArgs.Button -eq [System.Windows.Forms.MouseButtons]::Right) {
+        $handle = ([System.Windows.Interop.WindowInteropHelper]::new($window)).Handle
+        $null = [WinApi.Call]::SetForegroundWindow($handle)
+        $trayIconMenu.IsOpen = $true
+    }
+})
+
+
+# https://learn.microsoft.com/dotnet/api/system.windows.controls.menuitem.onclick
+$exitMenuItem.Add_Click({
+    $window.Close()
 })
 
 
@@ -254,6 +282,7 @@ $window.Add_SourceInitialized({
 })
 
 
+# FIXME long delay between keypress and action
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
 [System.Console]::add_CancelKeyPress({
     $window.Dispatcher.Invoke([System.Action]{ $window.Close() })
