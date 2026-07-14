@@ -306,6 +306,7 @@ if (-not $isNewInstance) {
 
 # FIXME error handling (+ not leaving tray icon behind)
 # TODO option for alt text? ok, low, critical, reserve / or? "... ... ... ."
+#   https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
 # TODO use low/critical/reserve settings from system?
 try {
     Write-Information 'Press Ctrl+C to stop.'
