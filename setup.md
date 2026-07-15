@@ -4,7 +4,6 @@
 
 - [Ubuntu](https://ubuntu.com/download/desktop) OS / [Debian](http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/) OS
 - [KDE](https://kde.org) desktop environment
-- [Tilix](https://gnunn1.github.io/tilix-web/) tiling terminal
 - [Liferea](https://lzone.de/liferea/) feed reader
 - [VeraCrypt](https://www.veracrypt.fr) disk encryption
 - [KeePassXC](https://keepassxc.org) password manager
