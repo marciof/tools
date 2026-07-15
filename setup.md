@@ -90,9 +90,9 @@ To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma
 
 Disable setting `*_IM_MODULE` variables:
 
-    rm ~/.config/environment.d/fcitx5.conf
+    mv ~/.config/environment.d/fcitx5.conf{,.bak}
 
-And then log out / log in.
+And then log out and log in.
 
 ## Google Chrome
 
