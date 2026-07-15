@@ -17,6 +17,7 @@
 - [LosslessCut](https://github.com/mifi/lossless-cut) video splitting
 - [Shotcut](https://www.shotcut.org) video editing/joining
 - [Rygel](https://gnome.pages.gitlab.gnome.org/rygel/) home media sharing
+- [qimgv](https://github.com/easymodo/qimgv) fast image viewer
 - [Frog](https://tenderowl.com/work/frog/) OCR from images
 - [gscan2pdf](http://gscan2pdf.sourceforge.net) image/scanner with OCR to PDF
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
