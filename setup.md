@@ -17,7 +17,7 @@
 - [LosslessCut](https://github.com/mifi/lossless-cut) video splitting
 - [Shotcut](https://www.shotcut.org) video editing/joining
 - [Rygel](https://gnome.pages.gitlab.gnome.org/rygel/) home media sharing
-- [qimgv](https://github.com/easymodo/qimgv) fast image viewer
+- [feh](https://github.com/derf/feh) fast image viewer
 - [Frog](https://tenderowl.com/work/frog/) OCR from images
 - [gscan2pdf](http://gscan2pdf.sourceforge.net) image/scanner with OCR to PDF
 - [Poppler](https://poppler.freedesktop.org) PDF utilities
@@ -60,6 +60,21 @@ If [GRUB (as of v2.06)](https://savannah.gnu.org/bugs/index.php?61190) `gfxmode`
 And then update the configuration:
 
     update-grub
+
+## feh
+
+Mouse wheel + Ctrl for zoom in/out:
+
+`~/.config/feh/buttons`
+
+    zoom_in C-4
+    zoom_out C-5
+
+UI tweaks:
+
+`~/.config/feh/themes`
+
+    feh --image-bg black --scale-down --auto-zoom
 
 ## IntelliJ
 
