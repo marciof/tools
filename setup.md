@@ -64,7 +64,7 @@ And then update the configuration:
 
 ## feh
 
-Mouse wheel + Ctrl for zoom in/out:
+Mouse wheel + `Ctrl` for zoom in/out:
 
 `~/.config/feh/buttons`
 
@@ -85,15 +85,17 @@ UI tweaks:
 
 ## Schnelle Umlaute
 
-To enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) under KDE/Plasma and Wayland, disable `im-config`:
+Enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) under KDE/Plasma and Wayland:
 
+1. Disable `im-config`:
+    ```
     im-config -n none
-
-Disable setting `*_IM_MODULE` variables:
-
+    ```
+2. Disable setting `*_IM_MODULE` variables:
+    ```
     mv ~/.config/environment.d/fcitx5.conf{,.bak}
-
-And then log out and log in.
+    ```
+3. Log out and log in.
 
 ## Google Chrome
 
