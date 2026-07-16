@@ -35,8 +35,8 @@
 - [BatteryInfoView](https://www.nirsoft.net/utils/battery_information_view.html) battery information
 - [Battery Percentage Icon](https://github.com/soleon/Percentage) battery level tray icon
 - [Open Hardware Monitor](https://openhardwaremonitor.org) hardware monitor
-- [PowerToys](https://github.com/microsoft/PowerToys) Windows utilities
-- [AltDrag](https://stefansundin.github.io/altdrag/) window moving tools
+- [PowerToys](https://github.com/microsoft/PowerToys) utilities
+- [AltDrag](https://stefansundin.github.io/altdrag/) window dragging
 - [Ventoy](https://www.ventoy.net/) ISO bootable USB drive
 - [MSEdgeRedirect](https://github.com/rcmaehl/MSEdgeRedirect) redirect to default browser
 - [KeyzPal](https://github.com/limbo666/KeyzPal) tray Caps Lock indicator
