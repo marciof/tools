@@ -114,17 +114,9 @@ Alternatively, to double it from `96` to `192` DPI:
 
 ## Java
 
-For high DPI, double the [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html): `J2D_UISCALE=2`
+For high DPI, double [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html):
 
-Flatpak apps:
-
-- Either, use [Flatseal](https://github.com/tchx84/flatseal) to set the environment variable.
-- Or, use the CLI: `flatpak override --user --env=NAME=VALUE com.example.App`
-
-non-Flatpak apps:
-
-- Edit its `.desktop` file (eg. via its menu entry) and in `Exec` prepend with: `env NAME=VALUE ...`
-- Note that if `DBusActivatable=true` is set in its `.desktop` file, then [environment variables defined there won't be passed along](https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html#d-bus-activation). In that case [set the variable in `~/.config/environment.d/*.conf`](https://www.freedesktop.org/software/systemd/man/latest/environment.d.html).
+    J2D_UISCALE=2
 
 ## VLC
 
