@@ -37,6 +37,7 @@
 - [Open Hardware Monitor](https://openhardwaremonitor.org) hardware monitor
 - [PowerToys](https://github.com/microsoft/PowerToys) utilities
 - [AltDrag](https://stefansundin.github.io/altdrag/) window dragging
+- [Link Shell Extension](https://schinagl.priv.at/nt/hardlinkshellext/linkshellextension.html) link helper
 - [Ventoy](https://www.ventoy.net/) ISO bootable USB drive
 - [MSEdgeRedirect](https://github.com/rcmaehl/MSEdgeRedirect) redirect to default browser
 - [SharpKeys](https://github.com/randyrants/sharpkeys) key remapping
