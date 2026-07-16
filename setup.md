@@ -133,3 +133,9 @@ Show media time duration in [window title](https://wiki.videolan.org/Documentati
 2. Switch to `Show settings` `All`.
 3. Open `Input / Codecs`.
 4. Set `Change title according to current media` to: `$Z ($D)`
+
+Save screenshots with media name:
+
+1. Open `Preferences`.
+2. Switch to the `Video` tab.
+3. Under `Video snapshots` set `Prefix` to: `$Z-`
