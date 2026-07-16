@@ -108,9 +108,14 @@ To have Duolingo able to use `Ctrl+Space` for replaying audio, set Chrome to use
 
 For high DPI, in `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
 
-Alternatively, to double it from `96` to `192` DPI:
+Alternatively, to just double it:
 
-    wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /d 0xC0 /f
+    (set -x; wine reg query 'HKEY_CURRENT_USER\Control Panel\Desktop' \
+    | grep LogPixels \
+    | tee /dev/tty \
+    | awk '{printf "0x%x\n", strtonum($NF) * 2}' \
+    | tee /dev/tty \
+    | xargs wine reg add 'HKEY_CURRENT_USER\Control Panel\Desktop' /v LogPixels /t REG_DWORD /f /d)
 
 ## Java
 
@@ -120,14 +125,14 @@ For high DPI, double [Java 2D UI scaling](https://docs.oracle.com/en/java/javase
 
 ## VLC
 
-Show media time duration in [window title](https://wiki.videolan.org/Documentation:Format_String/):
+Show media time duration in the [window title](https://wiki.videolan.org/Documentation:Format_String/):
 
 1. Open `Preferences`.
 2. Switch to `Show settings` `All`.
 3. Open `Input / Codecs`.
 4. Set `Change title according to current media` to: `$Z ($D)`
 
-Save screenshots with media name:
+Save screenshots with the media name:
 
 1. Open `Preferences`.
 2. Switch to the `Video` tab.
