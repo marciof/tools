@@ -121,3 +121,12 @@ Flatpak apps:
 non-Flatpak:
 
 - Edit its `.desktop` file (eg. via its menu entry) and in `Exec` prepend with: `env J2D_UISCALE=2 ...`
+
+## VLC
+
+Show media time duration in [window title](https://wiki.videolan.org/Documentation:Format_String/):
+
+1. Open `Preferences`.
+2. Switch to `Show settings` `All`.
+3. Open `Input / Codecs`.
+4. Set `Change title according to current media` to: `$Z ($D)`
