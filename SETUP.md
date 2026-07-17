@@ -80,9 +80,11 @@ UI tweaks:
 
 ## IntelliJ
 
-[Switch to the X11 toolkit](https://youtrack.jetbrains.com/projects/PY/articles/SUPPORT-A-3748/Wayland-native-mode-poor-scrolling-and-rendering-performance) to reduce keyboard lag and general stuttering. Under `Help` and `Edit Custom VM Options`:
+(Last checked: v2026.2 build #IU-262.8665.258)
 
-    -Dawt.toolkit.name=XToolkit
+[Switch](https://youtrack.jetbrains.com/projects/PY/articles/SUPPORT-A-3748/Wayland-native-mode-poor-scrolling-and-rendering-performance) to [Vulkan rendering](https://wiki.openjdk.org/spaces/wakefield/pages/77693134/Pure+Wayland+toolkit+prototype) to reduce keyboard lag and general stuttering. Under `Help` and `Edit Custom VM Options`:
+
+    -Dsun.java2d.vulkan=true
 
 ## Schnelle Umlaute
 
