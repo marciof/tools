@@ -80,7 +80,7 @@ UI tweaks:
 
 ## IntelliJ
 
-(Last checked: v2026.2 build #IU-262.8665.258)
+_(Last checked: v2026.2 build #IU-262.8665.258)_
 
 [Switch](https://youtrack.jetbrains.com/projects/PY/articles/SUPPORT-A-3748/Wayland-native-mode-poor-scrolling-and-rendering-performance) to [Vulkan rendering](https://wiki.openjdk.org/spaces/wakefield/pages/77693134/Pure+Wayland+toolkit+prototype) to reduce keyboard lag and general stuttering. Under `Help` and `Edit Custom VM Options`:
 
@@ -101,6 +101,8 @@ Enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) u
 3. Log out and log in.
 
 ## Google Chrome
+
+_(Last checked: v150.0.7871.128)_
 
 To have Duolingo able to use `Ctrl+Space` for replaying audio, set Chrome to use X11:
 
