@@ -121,6 +121,8 @@ throttle_once_per_sec() {
 # Arguments: <path to wallpaper file>
 apply_wallpaper() {
     wallpaper_path="$1"; shift
+
+    # TODO idea, blend wallpapers during a cycle switch
     run plasma-apply-wallpaperimage -- "$wallpaper_path"
 
     # FIXME lockscreen isn't always immediately updated
@@ -198,6 +200,9 @@ parse_args() {
 
 parse_args "$SCRIPT_FILENAME" "$@"
 
+# FIXME pipe error handling
+# TODO idea, adjust screen brightness
+# TODO idea, extensibility/decoupled from scripts in a `*.d/*` folder
 {
     current_color_scheme
     monitor_color_scheme
