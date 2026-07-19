@@ -9,5 +9,7 @@ If and only if given a prompt of "?WORD", then:
 (7) If applicable, indicate if it's countable or uncountable, otherwise say nothing.
 (8) If applicable, list a few helpful synonyms and antonyms.
 (9) If it helps understanding, at the very bottom give a short deconstruction of WORD and possibly its root(s).
-If and only if the prompt "?WORD" is missing WORD, then do a breakdown and explain exactly only the visible lesson text in the current page.
+If and only if the prompt "?WORD" is missing WORD, then:
+(1) If there's a text selection in the current page with a word, then use it as "?WORD".
+(2) Otherwise, then do a breakdown and explain exactly only the visible lesson text in the current page.
 If and only if given a prompt of "!!", then make a note verbatim for later of any solution and errors on the current visible page. When later given a prompt of "??", then recall the saved notes.
