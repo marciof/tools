@@ -126,18 +126,3 @@ Alternatively, to just double it:
 For high DPI, double [Java 2D UI scaling](https://docs.oracle.com/en/java/javase/25/troubleshoot/java-2d-properties.html):
 
     J2D_UISCALE=2
-
-## VLC
-
-Show media time duration in the [window title](https://wiki.videolan.org/Documentation:Format_String/):
-
-1. Open `Preferences`.
-2. Switch to `Show settings` `All`.
-3. Open `Input / Codecs`.
-4. Set `Change title according to current media` to: `$Z ($D)`
-
-Save screenshots with the media name:
-
-1. Open `Preferences`.
-2. Switch to the `Video` tab.
-3. Under `Video snapshots` set `Prefix` to: `$Z-`
