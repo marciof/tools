@@ -45,7 +45,7 @@ DARK_WALLPAPER_PATH=
 # Stdout: pass-through
 log_cat() {
     # FIXME log stderr
-    while IFS= read -r line; do
+    while IFS= read -r line || [ -n "$line" ]; do
         logger --id=$$ --tag "$SCRIPT_FILENAME" -- \
             "$(printf "%s: %s\n" "$1" "$line")"
         echo "$line"
@@ -94,7 +94,7 @@ current_color_scheme() {
 monitor_color_scheme() {
     # FIXME error handling
     dbus-monitor "interface='org.freedesktop.portal.Settings',member='SettingChanged'" \
-    | while IFS= read -r line; do
+    | while IFS= read -r line || [ -n "$line" ]; do
         case "$line" in
             *color-scheme*)
                 current_color_scheme;;
@@ -108,7 +108,7 @@ monitor_color_scheme() {
 throttle_once_per_sec() {
     last_time_secs=0
 
-    while IFS= read -r line; do
+    while IFS= read -r line || [ -n "$line" ]; do
         current_time_secs="$(date +%s)"
 
         if [ "$current_time_secs" -ge "$((last_time_secs + 1))" ]; then
