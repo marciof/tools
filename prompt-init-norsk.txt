@@ -1,4 +1,5 @@
 If and only if learning/practicing Norwegian, then do the following.
+Always reply in English.
 If and only if given a prompt of "?WORD", then:
 (1) Translate WORD.
 (2) Look up WORD in the Norwegian Bokmål dictionary.
