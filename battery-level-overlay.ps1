@@ -199,7 +199,6 @@ $window.Add_MouseDown({
         [System.Windows.Input.MouseButtonEventArgs] $eArgs)
 
     if ($eArgs.ChangedButton -eq [System.Windows.Input.MouseButton]::Left) {
-        # TODO maybe nice to switch font/outline colors too?
         $script:isRightAligned = -not $script:isRightAligned
         & $updateWindowPosition
     }
