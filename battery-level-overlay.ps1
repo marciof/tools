@@ -288,7 +288,7 @@ $window.Add_SourceInitialized({
 })
 
 
-# FIXME improve startup performance
+# FIXME startup speed: use C++? PS1 uses C# & C# still verbose w/ hardcoding
 $isNewInstance = $false
 
 # https://learn.microsoft.com/dotnet/api/system.threading.mutex
@@ -305,9 +305,12 @@ if (-not $isNewInstance) {
 }
 
 # FIXME error handling (+ not leaving tray icon behind)
-# TODO option for alt text? ok, low, critical, reserve / or? "... ... ... ."
-#   https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
 # TODO use low/critical/reserve settings from system?
+# TODO https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
+# TODO option for alt text? ok, low, critical, reserve
+# TODO option for alt symbols?  "... ... ... ."
+# TODO option for rounding? up ≥15% -> ~20%, down <15% -> ~10%, then 9% 8% ... 1%
+# TODO option for prefixes? ~60% +60% >60% ≥60% ⚡60%
 try {
     Write-Information 'Press Ctrl+C to stop.'
     $updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
