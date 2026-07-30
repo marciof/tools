@@ -13,6 +13,7 @@ set -o errexit -o nounset
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
 
 # Arguments: [output file ...]
+# Stdout: pass-through `stdin`
 log_cat() {
     while IFS= read -r line || [ -n "$line" ]; do
         logger --id=$$ --tag "$SCRIPT_FILENAME" -- "$line"
@@ -24,6 +25,7 @@ log_cat() {
     done
 }
 
+# FIXME `/dev/tty` isn't available within a GUI (eg. KDE Dolphin file manager)
 for url_file; do
     log_cat <"$url_file" \
     | grep --extended-regexp --max-count=1 '^\s*URL\s*=' \

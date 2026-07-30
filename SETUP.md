@@ -111,6 +111,8 @@ To have Duolingo able to use `Ctrl+Space` for replaying audio, set Chrome to use
 
 ## Wine
 
+_(Last checked: v11.0)_
+
 For high DPI, in `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
 
 Alternatively, to just double it:
