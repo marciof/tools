@@ -66,6 +66,8 @@ And then update the configuration:
 
 ## feh
 
+_(Last checked: v3.11.2)_
+
 Mouse wheel + `Ctrl` for zoom in/out:
 
 `~/.config/feh/buttons`
