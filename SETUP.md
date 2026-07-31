@@ -89,20 +89,6 @@ _(Last checked: v2026.2 build #IU-262.8665.258)_
 
     -Dsun.java2d.vulkan=true
 
-## Schnelle Umlaute
-
-Enable [Fcitx5](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma) under KDE/Plasma and Wayland:
-
-1. Disable `im-config`:
-    ```
-    im-config -n none
-    ```
-2. Disable setting `*_IM_MODULE` variables:
-    ```
-    mv ~/.config/environment.d/fcitx5.conf{,.bak}
-    ```
-3. Log out and log in.
-
 ## Google Chrome
 
 _(Last checked: v150.0.7871.128)_
@@ -117,7 +103,7 @@ _(Last checked: v11.0)_
 
 For high DPI, in `Wine configuration` (`winecfg`) on the `Graphics` tab, adjust `Screen resolution`.
 
-Alternatively, to just double it:
+Or, to just double it:
 
     (set -x; wine reg query 'HKEY_CURRENT_USER\Control Panel\Desktop' \
     | grep LogPixels \
