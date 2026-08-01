@@ -43,7 +43,7 @@
 - [SharpKeys](https://github.com/randyrants/sharpkeys) key remapping
 - [KeyzPal](https://github.com/limbo666/KeyzPal) tray Caps Lock indicator
 - [Logi Options+](https://www.logitech.com/software/logi-options-plus) mouse utilities
-- [Notepad2](https://www.flos-freeware.ch/notepad2.html) simple text editor with syntax highlighting
+- [Notepad4](https://github.com/zufuliu/notepad4) simple text editor with syntax highlighting
 - [Notepad++](https://notepad-plus-plus.org) full-featured text editor
 - [Everything](https://www.voidtools.com) instant search
 
