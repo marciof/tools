@@ -7,7 +7,8 @@
 # 1. Copy an existing color scheme (`Edit Color Scheme` and `Save As`)
 #    that has active/inactive titlebar colors.
 # 2. Ensure there aren't any `[Colors:Header]` and `[Colors:Header][Inactive]`
-#    sections in the new color scheme file.
+#    sections in the new color scheme file. Probably stored here:
+#      $ locate ~/.local/share/color-schemes/
 # 3. Ensure there is a `[WM]` section in the new color scheme file, which
 #    will have the active/inactive titlebar colors.
 #
