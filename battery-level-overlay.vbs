@@ -26,7 +26,7 @@ End If
 Dim powerShellCmd: powerShellCmd = "powershell.exe " _
     & "-WindowStyle Hidden " _
     & "-ExecutionPolicy Bypass " _
-    & "-NoProfile " _
+    & "-NoProfile -NonInteractive " _
     & "-File """ & scriptPath & """"
 
 ' https://learn.microsoft.com/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/d5fk67ky(v=vs.84)
