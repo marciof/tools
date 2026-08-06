@@ -8,18 +8,16 @@
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
 #Requires -Version 5.1 # Windows 10 / Lenovo Yoga Book YB1-X91
 
+# https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_using#assembly-syntax
+using assembly PresentationFramework
+using assembly PresentationCore
+using assembly WindowsBase
+using assembly System.Windows.Forms
+using assembly System.Drawing
+
 # TODO https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer#check-powershell-version-compatibility
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/set-strictmode
 Set-StrictMode -Version 3
-
-
-# https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/add-type
-# TODO use `using assembly` for performance?
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName PresentationCore
-Add-Type -AssemblyName WindowsBase
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
 # https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.dllimportattribute.setlasterror
