@@ -3,6 +3,8 @@
 # Dependencies (test): PSScriptAnalyzer
 #   Invoke-ScriptAnalyzer -Settings @{Rules=@{PSUseCompatibleSyntax=@{Enable=$true;TargetVersions='5.1'}}} -Severity Error,Warning,Information
 
+# TODO slow startup: use C++? PS1 uses C#, and C# is still verbose w/ hardcoding
+
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
 # https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
 # https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
@@ -18,6 +20,22 @@ using assembly System.Drawing
 # TODO https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer#check-powershell-version-compatibility
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/set-strictmode
 Set-StrictMode -Version 3
+
+[string] $appName = 'Battery Level Overlay'
+$isNewInstance = $false
+
+# https://learn.microsoft.com/dotnet/api/system.threading.mutex
+$singleInstanceMutex = [System.Threading.Mutex]::new(
+    $true, 'Global\com.marciof.tools.batteryLevelOverlay', [ref] $isNewInstance)
+
+if (-not $isNewInstance) {
+    $null = [System.Windows.Forms.MessageBox]::Show(
+        'Already running.',
+        $appName,
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Warning)
+    Exit
+}
 
 # https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
 # https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.dllimportattribute.setlasterror
@@ -62,7 +80,6 @@ $DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3
 $null = [WinApi.Call]::SetProcessDpiAwarenessContext($DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE)
 
 
-[string] $appName = 'Battery Level Overlay'
 [bool] $showInTaskbar = $false
 
 [string] $textFont = 'Arial'
@@ -279,30 +296,14 @@ $window.Add_SourceInitialized({
 })
 
 
-# FIXME long delay between keypress and action (InvokeAsync didn't work)
+# TODO long delay between keypress and action (InvokeAsync didn't work)
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
 [System.Console]::add_CancelKeyPress({
     $window.Dispatcher.Invoke([System.Action]{ $window.Close() })
 })
 
 
-# FIXME startup speed: use C++? PS1 uses C# & C# still verbose w/ hardcoding
-$isNewInstance = $false
-
-# https://learn.microsoft.com/dotnet/api/system.threading.mutex
-$singleInstanceMutex = [System.Threading.Mutex]::new(
-    $true, 'Global\com.marciof.tools.batteryLevelOverlay', [ref] $isNewInstance)
-
-if (-not $isNewInstance) {
-    $null = [System.Windows.Forms.MessageBox]::Show(
-        'Already running.',
-        $appName,
-        [System.Windows.Forms.MessageBoxButtons]::OK,
-        [System.Windows.Forms.MessageBoxIcon]::Warning)
-    Exit
-}
-
-# FIXME error handling (+ not leaving tray icon behind)
+# TODO error handling (+ not leaving tray icon behind)
 # TODO use low/critical/reserve settings from system?
 # TODO https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
 # TODO option for alt text? ok, low, critical, reserve
