@@ -14,6 +14,7 @@ Set-StrictMode -Version 3
 
 
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/add-type
+# TODO use `using assembly` for performance?
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
@@ -63,28 +64,28 @@ $DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3
 $null = [WinApi.Call]::SetProcessDpiAwarenessContext($DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE)
 
 
-$appName = 'Battery Level Overlay'
-$showInTaskbar = $false
+[string] $appName = 'Battery Level Overlay'
+[bool] $showInTaskbar = $false
 
-$textFont = 'Arial'
-$textFontSize = 20
-$textColor = 'White'
-$textOutlineColor = 'Black'
+[string] $textFont = 'Arial'
+[int] $textFontSize = 20
+[string] $textColor = 'White'
+[string] $textOutlineColor = 'Black'
 
 # Reducing padding too much will crop outline effects.
-$textPaddingLeft = 10
-$textPaddingTop = 10
-$textPaddingRight = 10
-$textPaddingBottom = 10
+[int] $textPaddingLeft = 10
+[int] $textPaddingTop = 10
+[int] $textPaddingRight = 10
+[int] $textPaddingBottom = 10
 
 # Eyeballed.
-$textMarginLeft = -7
-$textMarginRight = -7
-$textMarginBottom = -10
+[int] $textMarginLeft = -7
+[int] $textMarginRight = -7
+[int] $textMarginBottom = -10
 
-$isRightAligned = $true
-$updateBatteryLevelFreqSecs = 60
-$unknownBatteryLevelPlaceholder = '--'
+[bool] $isRightAligned = $true
+[int] $updateBatteryLevelFreqSecs = 60
+[string] $unknownBatteryLevelPlaceholder = '--'
 
 
 # https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
