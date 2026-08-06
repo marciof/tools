@@ -9,6 +9,7 @@
 # TODO logging
 # TODO debug option? eg. does `set -x`
 
+# TODO option for doing `git show HASH:path/to/file`
 # TODO breaks on long output? eg, curl 'https://www.instagram.com/therapyjeff/'
 # TODO `lesspipe` no output on mistaken bin files, eg. `*.url`
 # TODO seems to break `ag`'s use of `$PAGER` when using pipes
