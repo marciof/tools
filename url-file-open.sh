@@ -25,7 +25,7 @@ log_cat() {
     done
 }
 
-# FIXME `/dev/tty` isn't available within a GUI (eg. KDE Dolphin file manager)
+# TODO `/dev/tty` isn't available within a GUI (eg. KDE Dolphin file manager)
 for url_file; do
     log_cat <"$url_file" \
     | grep --extended-regexp --max-count=1 '^\s*URL\s*=' \

@@ -32,6 +32,8 @@
 # Dependencies (runtime): dbus-bin plasma-workspace libkf6config-bin
 # Dependencies (test): shellcheck
 
+# TODO error handling (+ pipes)
+
 set -o errexit -o nounset
 
 SCRIPT_FILENAME="$(basename "$(realpath -e "$0")")"
@@ -45,7 +47,7 @@ DARK_WALLPAPER_PATH=
 # Stdin: input to `logger`
 # Stdout: pass-through
 log_cat() {
-    # FIXME log stderr
+    # TODO log stderr
     while IFS= read -r line || [ -n "$line" ]; do
         logger --id=$$ --tag "$SCRIPT_FILENAME" -- \
             "$(printf "%s: %s\n" "$1" "$line")"
@@ -66,7 +68,6 @@ run() {
 # Stdout: color scheme ID according to XDG Desktop Portal Appearance Settings
 # See: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html
 current_color_scheme_id() {
-    # FIXME error handling
     dbus-send \
         --print-reply=literal \
         --dest=org.freedesktop.portal.Desktop \
@@ -93,7 +94,6 @@ current_color_scheme() {
 # Arguments: -
 # Stdout: color scheme name anytime it changes, once per line
 monitor_color_scheme() {
-    # FIXME error handling
     dbus-monitor "interface='org.freedesktop.portal.Settings',member='SettingChanged'" \
     | while IFS= read -r line || [ -n "$line" ]; do
         case "$line" in
@@ -122,11 +122,9 @@ throttle_once_per_sec() {
 # Arguments: <path to wallpaper file>
 apply_wallpaper() {
     wallpaper_path="$1"; shift
-
-    # TODO idea, blend wallpapers during a cycle switch
     run plasma-apply-wallpaperimage -- "$wallpaper_path"
 
-    # FIXME lockscreen isn't always immediately updated
+    # TODO lockscreen isn't always immediately updated
     run kwriteconfig6 \
         --file kscreenlockerrc \
         --group Greeter \
@@ -201,9 +199,9 @@ parse_args() {
 
 parse_args "$SCRIPT_FILENAME" "$@"
 
-# FIXME pipe error handling
-# TODO idea, adjust screen brightness
-# TODO idea, extensibility/decoupled from scripts in a `*.d/*` folder
+# TODO change mouse cursor too?
+#   `plasma-apply-cursortheme --list-themes`
+#   `plasma-apply-cursortheme breeze_cursors`
 {
     current_color_scheme
     monitor_color_scheme

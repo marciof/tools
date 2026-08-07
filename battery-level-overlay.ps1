@@ -3,11 +3,14 @@
 # Dependencies (test): PSScriptAnalyzer
 #   Invoke-ScriptAnalyzer -Settings @{Rules=@{PSUseCompatibleSyntax=@{Enable=$true;TargetVersions='5.1'}}} -Severity Error,Warning,Information
 
-# TODO slow startup, use C++? this uses C#, and C#'s still verbose w/ hardcoding
 # TODO error handling
 # TODO tests
 # TODO document (+ dependencies + setup)
 # TODO logging
+
+# TODO slow startup, use C++? this uses C#, and C#'s still verbose w/ hardcoding
+# TODO does the percentage level go to 0% after resuming hibernation?
+
 # TODO add option to not always show a percentage? eg:
 #   - low/critical/reserve user settings from system control panel?
 #   - https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
