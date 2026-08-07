@@ -189,7 +189,7 @@ $window.WindowStyle = 'None'
 $window.SizeToContent = 'WidthAndHeight'
 $window.AllowsTransparency = $true
 $window.Background = [System.Windows.Media.Brushes]::Transparent
-$window.ResizeMode = 'NoResize' # Windows 10 Tablet Mode
+$window.ResizeMode = 'NoResize' # Windows 10 tablet mode.
 $window.WindowStartupLocation = 'Manual'
 $window.Content = $textBlock
 
@@ -254,20 +254,12 @@ $trayIcon.Add_MouseUp({
     }
 })
 
-$exitMenuItem.Add_Click({
-    $window.Close()
-})
+$exitMenuItem.Add_Click({ $window.Close() })
+$window.Add_SizeChanged({ & $updateWindowPosition })
+$window.Add_DpiChanged({ & $updateWindowPosition })
 
 $window.Add_ContentRendered({
     & $updateBatteryLevel
-    & $updateWindowPosition
-})
-
-$window.Add_SizeChanged({
-    & $updateWindowPosition
-})
-
-$window.Add_DpiChanged({
     & $updateWindowPosition
 })
 
@@ -306,8 +298,8 @@ $updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
 $updateBatteryLevelTimer.Start()
 $null = $window.ShowDialog()
 
-}
-finally {
+# (Mutex acquired at the start.)
+} finally {
     $singleInstanceMutex.ReleaseMutex()
     $singleInstanceMutex.Dispose()
 }
