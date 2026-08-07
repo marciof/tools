@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+# Setup:
+#   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 # Dependencies (test): PSScriptAnalyzer
 #   Invoke-ScriptAnalyzer -Settings @{Rules=@{PSUseCompatibleSyntax=@{Enable=$true;TargetVersions='5.1'}}} -Severity Error,Warning,Information
 
@@ -24,10 +26,11 @@ using assembly System.Drawing
 Set-StrictMode -Version 3
 
 [string] $appName = 'Battery Level Overlay'
+[string] $namespace = 'com.marciof.tools.batteryLevelOverlay'
 
 $isNewInstance = $false
 $singleInstanceMutex = [System.Threading.Mutex]::new(
-    $true, 'Global\com.marciof.tools.batteryLevelOverlay', [ref] $isNewInstance)
+    $true, "Global\$namespace", [ref] $isNewInstance)
 
 if (-not $isNewInstance) {
     $null = [System.Windows.Forms.MessageBox]::Show(
@@ -38,32 +41,65 @@ if (-not $isNewInstance) {
     Exit
 }
 
-# https://learn.microsoft.com/dotnet/standard/native-interop/pinvoke
-# https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.dllimportattribute.setlasterror
-# https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.unmanagedtype
-Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
-    [DllImport("user32.dll")]
-    public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+# Ensure single-instance mutex is released...
+try {
+# ...at the end.
 
-    [DllImport("user32.dll")]
-    public static extern IntPtr SetWindowLongPtr(
-        IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+# Avoid inline C# compilation via `Add-Type -MemberDefinition` for performance.
+$assemblyName = [System.Reflection.AssemblyName]::new($namespace)
+$assemblyBuilder = [AppDomain]::CurrentDomain.DefineDynamicAssembly(
+    $assemblyName, [System.Reflection.Emit.AssemblyBuilderAccess]::Run)
 
-    [DllImport("shell32.dll")]
-    public static extern IntPtr ExtractIcon(
-        IntPtr hInst, string lpszExeFileName, int nIconIndex);
+$moduleBuilder = $assemblyBuilder.DefineDynamicModule('WinApi')
+$typeBuilder = $moduleBuilder.DefineType('WinApi.Call',
+    [System.Reflection.TypeAttributes]::Public `
+    -bor [System.Reflection.TypeAttributes]::Class)
 
-    [DllImport("user32.dll", SetLastError=true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DestroyIcon(IntPtr hIcon);
+$winApiCall = [System.Runtime.InteropServices.CallingConvention]::Winapi
+$winApiCallCharset = [System.Runtime.InteropServices.CharSet]::Unicode
 
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern bool SetProcessDpiAwarenessContext(int dpiContext);
+$winApiMethodCallConv = [System.Reflection.CallingConventions]::Standard
+$winApiMethodAttrs = [System.Reflection.MethodAttributes]::Public `
+    -bor [System.Reflection.MethodAttributes]::Static `
+    -bor [System.Reflection.MethodAttributes]::PinvokeImpl
 
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool SetForegroundWindow(IntPtr hWnd);
-'@
+$typeBuilder.DefinePInvokeMethod('GetWindowLongPtr', 'user32.dll',
+    $winApiMethodAttrs, $winApiMethodCallConv,
+    [IntPtr], [Type[]]@([IntPtr], [int]),
+    $winApiCall, $winApiCallCharset
+).SetImplementationFlags('PreserveSig')
+
+$typeBuilder.DefinePInvokeMethod('SetWindowLongPtr', 'user32.dll',
+    $winApiMethodAttrs, $winApiMethodCallConv,
+    [IntPtr], [Type[]]@([IntPtr], [int], [IntPtr]),
+    $winApiCall, $winApiCallCharset
+).SetImplementationFlags('PreserveSig')
+
+$typeBuilder.DefinePInvokeMethod('ExtractIcon', 'shell32.dll',
+    $winApiMethodAttrs, $winApiMethodCallConv,
+    [IntPtr], [Type[]]@([IntPtr], [string], [int]),
+    $winApiCall, $winApiCallCharset
+).SetImplementationFlags('PreserveSig')
+
+$typeBuilder.DefinePInvokeMethod('DestroyIcon', 'user32.dll',
+    $winApiMethodAttrs, $winApiMethodCallConv,
+    [bool], [Type[]]@([IntPtr]),
+    $winApiCall, $winApiCallCharset
+).SetImplementationFlags('PreserveSig')
+
+$typeBuilder.DefinePInvokeMethod('SetProcessDpiAwarenessContext', 'user32.dll',
+    $winApiMethodAttrs, $winApiMethodCallConv,
+    [bool], [Type[]]@([int]),
+    $winApiCall, $winApiCallCharset
+).SetImplementationFlags('PreserveSig')
+
+$typeBuilder.DefinePInvokeMethod('SetForegroundWindow', 'user32.dll',
+    $winApiMethodAttrs, $winApiMethodCallConv,
+    [bool], [Type[]]@([IntPtr]),
+    $winApiCall, $winApiCallCharset
+).SetImplementationFlags('PreserveSig')
+
+$null = $typeBuilder.CreateType()
 
 # v2 was introduced in Windows 10 version 1703 (OS build 15063):
 # - https://learn.microsoft.com/windows/win32/hidpi/dpi-awareness-context
@@ -294,11 +330,11 @@ $window.Add_SourceInitialized({
 # TODO option for alt symbols?  "... ... ... ."
 # TODO option for rounding? up ≥15% -> ~20%, down <15% -> ~10%, then 9% 8% ... 1%
 # TODO option for prefixes? ~60% +60% >60% ≥60% ⚡60%
-try {
-    Write-Information 'Press Ctrl+C to stop.'
-    $updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
-    $updateBatteryLevelTimer.Start()
-    $null = $window.ShowDialog()
+Write-Information 'Press Ctrl+C to stop.'
+$updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
+$updateBatteryLevelTimer.Start()
+$null = $window.ShowDialog()
+
 }
 finally {
     $singleInstanceMutex.ReleaseMutex()
