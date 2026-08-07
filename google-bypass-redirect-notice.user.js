@@ -1,8 +1,5 @@
 // ==UserScript==
 // @name Bypass Google Redirect Notice
-// @namespace https://violentmonkey.github.io
-// @version 0.1
-// @author marciof
 // @match https://www.google.com/url?*
 // @icon https://www.google.com/s2/favicons?sz=64&domain=google.com
 // @grant unsafeWindow

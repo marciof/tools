@@ -3,13 +3,17 @@
 # Dependencies (test): PSScriptAnalyzer
 #   Invoke-ScriptAnalyzer -Settings @{Rules=@{PSUseCompatibleSyntax=@{Enable=$true;TargetVersions='5.1'}}} -Severity Error,Warning,Information
 
-# TODO slow startup: use C++? PS1 uses C#, and C# is still verbose w/ hardcoding
+# TODO slow startup, use C++? this uses C#, and C#'s still verbose w/ hardcoding
+# TODO error handling
+# TODO tests
+# TODO document (+ dependencies + setup)
+# TODO logging
 
-# https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_requires
+# Target Windows 10 / Lenovo Yoga Book YB1-X91.
 # https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
-# https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
-#Requires -Version 5.1 # Windows 10 / Lenovo Yoga Book YB1-X91
+#Requires -Version 5.1
 
+# Avoid `Add-Type -AssemblyName` for performance.
 # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_using#assembly-syntax
 using assembly PresentationFramework
 using assembly PresentationCore
@@ -17,14 +21,11 @@ using assembly WindowsBase
 using assembly System.Windows.Forms
 using assembly System.Drawing
 
-# TODO https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer#check-powershell-version-compatibility
-# https://learn.microsoft.com/powershell/module/microsoft.powershell.core/set-strictmode
 Set-StrictMode -Version 3
 
 [string] $appName = 'Battery Level Overlay'
-$isNewInstance = $false
 
-# https://learn.microsoft.com/dotnet/api/system.threading.mutex
+$isNewInstance = $false
 $singleInstanceMutex = [System.Threading.Mutex]::new(
     $true, 'Global\com.marciof.tools.batteryLevelOverlay', [ref] $isNewInstance)
 
@@ -64,7 +65,6 @@ Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 '@
 
-
 # v2 was introduced in Windows 10 version 1703 (OS build 15063):
 # - https://learn.microsoft.com/windows/win32/hidpi/dpi-awareness-context
 # - https://learn.microsoft.com/en-us/windows/uwp/whats-new/windows-10-build-15063
@@ -75,10 +75,7 @@ Add-Type -Namespace WinApi -Name Call -MemberDefinition @'
 # - https://web.archive.org/web/20161019000522/http://news.lenovo.com/news-releases/lenovo-reveals-yoga-book-2-in-1-tablet-for-productivity-and-creativity.htm
 # - https://pcsupport.lenovo.com/us/en/products/tablets/yoga-series/yoga-book/solutions/pd104400-overview-for-yoga-book
 $DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3
-
-# https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setprocessdpiawarenesscontext
 $null = [WinApi.Call]::SetProcessDpiAwarenessContext($DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE)
-
 
 [bool] $showInTaskbar = $false
 
@@ -101,7 +98,6 @@ $null = [WinApi.Call]::SetProcessDpiAwarenessContext($DPI_AWARENESS_CONTEXT_PER_
 [bool] $isRightAligned = $true
 [int] $updateBatteryLevelFreqSecs = 60
 [string] $unknownBatteryLevelPlaceholder = '--'
-
 
 # https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
 $updateBatteryLevelTimer = [System.Windows.Threading.DispatcherTimer]::new()
@@ -171,7 +167,6 @@ $window.Icon = [System.Windows.Interop.Imaging]::CreateBitmapSourceFromHIcon(
     [System.Windows.Int32Rect]::Empty,
     [System.Windows.Media.Imaging.BitmapSizeOptions]::FromEmptyOptions())
 
-
 $updateBatteryLevel = {
     # https://learn.microsoft.com/dotnet/api/system.windows.forms.systeminformation.powerstatus
     $power = [System.Windows.Forms.SystemInformation]::PowerStatus
@@ -189,7 +184,6 @@ $updateBatteryLevel = {
     }
 }
 
-
 $updateWindowPosition = {
     # https://learn.microsoft.com/dotnet/api/system.windows.uielement.updatelayout
     $window.UpdateLayout()
@@ -205,7 +199,6 @@ $updateWindowPosition = {
         $workArea.Left + $textMarginLeft
     }
 }
-
 
 # https://learn.microsoft.com/dotnet/api/system.windows.input.mousebuttoneventargs
 # https://learn.microsoft.com/dotnet/api/system.windows.uielement.mouseup
@@ -224,7 +217,6 @@ $window.Add_MouseDown({
     }
 })
 
-
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.mouseeventargs
 # https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon.mouseup
 $trayIcon.Add_MouseUp({
@@ -239,12 +231,10 @@ $trayIcon.Add_MouseUp({
     }
 })
 
-
 # https://learn.microsoft.com/dotnet/api/system.windows.controls.menuitem.onclick
 $exitMenuItem.Add_Click({
     $window.Close()
 })
-
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
 $window.Add_ContentRendered({
@@ -252,18 +242,15 @@ $window.Add_ContentRendered({
     & $updateWindowPosition
 })
 
-
 # https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.sizechanged
 $window.Add_SizeChanged({
     & $updateWindowPosition
 })
 
-
 # https://learn.microsoft.com/dotnet/api/system.windows.window.dpichanged
 $window.Add_DpiChanged({
     & $updateWindowPosition
 })
-
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.closed
 $window.Add_Closed({
@@ -272,7 +259,6 @@ $window.Add_Closed({
 	$trayIcon.Dispose()
     $null = [WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
 })
-
 
 # https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
 $window.Add_SourceInitialized({
@@ -295,13 +281,11 @@ $window.Add_SourceInitialized({
     $null = [WinApi.Call]::SetWindowLongPtr($handle, $GWL_EXSTYLE, $extStyle)
 })
 
-
 # TODO long delay between keypress and action (InvokeAsync didn't work)
 # https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
 [System.Console]::add_CancelKeyPress({
     $window.Dispatcher.Invoke([System.Action]{ $window.Close() })
 })
-
 
 # TODO error handling (+ not leaving tray icon behind)
 # TODO use low/critical/reserve settings from system?
