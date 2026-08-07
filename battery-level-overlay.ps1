@@ -1,5 +1,3 @@
-#!/usr/bin/env pwsh
-
 # Setup:
 #   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 # Dependencies (test): PSScriptAnalyzer
@@ -10,6 +8,13 @@
 # TODO tests
 # TODO document (+ dependencies + setup)
 # TODO logging
+# TODO add option to not always show a percentage? eg:
+#   - low/critical/reserve user settings from system control panel?
+#   - https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
+#   - alt text? ok, low, critical, reserve
+#   - symbols?  ".........."
+#   - rounding? up ≥15% -> ~20%, down <15% -> ~10%, then 9% 8% ... 1%
+#   - prefixes? ~60% +60% >60% ≥60% ⚡60%
 
 # Target Windows 10 / Lenovo Yoga Book YB1-X91.
 # https://learn.microsoft.com/powershell/scripting/install/powershell-support-lifecycle#windows-powershell-release-history
@@ -135,12 +140,10 @@ $null = [WinApi.Call]::SetProcessDpiAwarenessContext($DPI_AWARENESS_CONTEXT_PER_
 [int] $updateBatteryLevelFreqSecs = 60
 [string] $unknownBatteryLevelPlaceholder = '--'
 
-# https://learn.microsoft.com/dotnet/api/system.windows.threading.dispatchertimer
 $updateBatteryLevelTimer = [System.Windows.Threading.DispatcherTimer]::new()
 $updateBatteryLevelTimer.Interval = [TimeSpan]::FromSeconds(
     $updateBatteryLevelFreqSecs)
 
-# https://learn.microsoft.com/dotnet/api/system.windows.media.effects.dropshadoweffect
 $textOutline = [System.Windows.Media.Effects.DropShadowEffect]::new()
 $textOutline.Color = [System.Windows.Media.Colors]::$textOutlineColor
 $textOutline.ShadowDepth = 0
@@ -148,25 +151,20 @@ $textOutline.BlurRadius = 10
 $textOutline.Opacity = 1
 
 # https://devblogs.microsoft.com/oldnewthing/20251020-00/?p=111706
-# https://learn.microsoft.com/windows/win32/api/shellapi/nf-shellapi-extracticonw
 $yellowUmbrellaIcon = [WinApi.Call]::ExtractIcon(
     [IntPtr]::Zero, "pifmgr.dll", 1)
 
-# https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon
 $trayIcon = [System.Windows.Forms.NotifyIcon]::new()
 $trayIcon.Icon = [System.Drawing.Icon]::FromHandle($yellowUmbrellaIcon)
 $trayIcon.Text = $appName
 $trayIcon.Visible = $true
 
-# https://learn.microsoft.com/dotnet/api/system.windows.controls.menuitem
 $exitMenuItem = [System.Windows.Controls.MenuItem]::new()
 $exitMenuItem.Header = 'Exit'
 
-# https://learn.microsoft.com/dotnet/api/system.windows.controls.contextmenu
 $trayIconMenu = [System.Windows.Controls.ContextMenu]::new()
 $null = $trayIconMenu.Items.Add($exitMenuItem)
 
-# https://learn.microsoft.com/dotnet/api/system.windows.controls.textblock
 $textBlock = [System.Windows.Controls.TextBlock]::new()
 $textBlock.ContextMenu = $trayIconMenu
 $textBlock.Effect = $textOutline
@@ -178,11 +176,9 @@ $textBlock.HorizontalAlignment = 'Right'
 $textBlock.Margin = [System.Windows.Thickness]::new(
     $textPaddingLeft, $textPaddingTop, $textPaddingRight, $textPaddingBottom)
 
-# https://learn.microsoft.com/dotnet/api/system.windows.media.fontfamily
 $textBlock.FontFamily = [System.Windows.Media.FontFamily]::new($textFont)
 $textBlock.FontSize = $textFontSize
 
-# https://learn.microsoft.com/dotnet/api/system.windows.window
 $window = [System.Windows.Window]::new()
 $window.Title = $appName
 $window.Topmost = $true
@@ -197,17 +193,14 @@ $window.ResizeMode = 'NoResize' # Windows 10 Tablet Mode
 $window.WindowStartupLocation = 'Manual'
 $window.Content = $textBlock
 
-# https://learn.microsoft.com/dotnet/api/system.windows.interop.imaging.createbitmapsourcefromhicon
 $window.Icon = [System.Windows.Interop.Imaging]::CreateBitmapSourceFromHIcon(
     $yellowUmbrellaIcon,
     [System.Windows.Int32Rect]::Empty,
     [System.Windows.Media.Imaging.BitmapSizeOptions]::FromEmptyOptions())
 
 $updateBatteryLevel = {
-    # https://learn.microsoft.com/dotnet/api/system.windows.forms.systeminformation.powerstatus
     $power = [System.Windows.Forms.SystemInformation]::PowerStatus
 
-    # https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
     $isUnknown = $power.BatteryChargeStatus -in
         [System.Windows.Forms.BatteryChargeStatus]::Unknown,
         [System.Windows.Forms.BatteryChargeStatus]::NoSystemBattery
@@ -221,10 +214,8 @@ $updateBatteryLevel = {
 }
 
 $updateWindowPosition = {
-    # https://learn.microsoft.com/dotnet/api/system.windows.uielement.updatelayout
     $window.UpdateLayout()
 
-    # https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.workarea
     $workArea = [System.Windows.SystemParameters]::WorkArea
     $window.Top = $workArea.Bottom - $window.ActualHeight - $textMarginBottom
 
@@ -236,8 +227,6 @@ $updateWindowPosition = {
     }
 }
 
-# https://learn.microsoft.com/dotnet/api/system.windows.input.mousebuttoneventargs
-# https://learn.microsoft.com/dotnet/api/system.windows.uielement.mouseup
 $window.Add_MouseDown({
     param(
         [System.Windows.Window] $eSender,
@@ -253,8 +242,6 @@ $window.Add_MouseDown({
     }
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.forms.mouseeventargs
-# https://learn.microsoft.com/dotnet/api/system.windows.forms.notifyicon.mouseup
 $trayIcon.Add_MouseUp({
     param(
         [System.Windows.Forms.NotifyIcon] $eSender,
@@ -267,28 +254,23 @@ $trayIcon.Add_MouseUp({
     }
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.controls.menuitem.onclick
 $exitMenuItem.Add_Click({
     $window.Close()
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.window.contentrendered
 $window.Add_ContentRendered({
     & $updateBatteryLevel
     & $updateWindowPosition
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.sizechanged
 $window.Add_SizeChanged({
     & $updateWindowPosition
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.window.dpichanged
 $window.Add_DpiChanged({
     & $updateWindowPosition
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.window.closed
 $window.Add_Closed({
     $updateBatteryLevelTimer.Stop()
 	$trayIcon.Visible = $false
@@ -296,9 +278,7 @@ $window.Add_Closed({
     $null = [WinApi.Call]::DestroyIcon($yellowUmbrellaIcon)
 })
 
-# https://learn.microsoft.com/dotnet/api/system.windows.window.sourceinitialized
 $window.Add_SourceInitialized({
-    # https://learn.microsoft.com/dotnet/api/system.windows.interop.windowinterophelper
     $handle = ([System.Windows.Interop.WindowInteropHelper]::new(
         $window)).Handle
 
@@ -313,23 +293,14 @@ $window.Add_SourceInitialized({
         -bor $WS_EX_NOACTIVATE `
         -bor $(if ($showInTaskbar) { 0 } else { $WS_EX_TOOLWINDOW }))
 
-    # https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
     $null = [WinApi.Call]::SetWindowLongPtr($handle, $GWL_EXSTYLE, $extStyle)
 })
 
-# TODO long delay between keypress and action (InvokeAsync didn't work)
-# https://learn.microsoft.com/dotnet/api/system.console.cancelkeypress
+# TODO long delay between keypress and action
 [System.Console]::add_CancelKeyPress({
     $window.Dispatcher.Invoke([System.Action]{ $window.Close() })
 })
 
-# TODO error handling (+ not leaving tray icon behind)
-# TODO use low/critical/reserve settings from system?
-# TODO https://learn.microsoft.com/dotnet/api/system.windows.forms.batterychargestatus
-# TODO option for alt text? ok, low, critical, reserve
-# TODO option for alt symbols?  "... ... ... ."
-# TODO option for rounding? up ≥15% -> ~20%, down <15% -> ~10%, then 9% 8% ... 1%
-# TODO option for prefixes? ~60% +60% >60% ≥60% ⚡60%
 Write-Information 'Press Ctrl+C to stop.'
 $updateBatteryLevelTimer.Add_Tick($updateBatteryLevel)
 $updateBatteryLevelTimer.Start()
