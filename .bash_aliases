@@ -45,23 +45,27 @@ case "$-" in *i*) ;; *) return 0;; esac
 
 ################################################################################
 
-# Used to skip performance-costly configuration that only needs to be done once.
+# Skip performance-costly configuration that only needs to be done once.
 # https://specifications.freedesktop.org/basedir/latest/#variables
-cache_file="${XDG_CACHE_HOME:-"$HOME/.cache"}/${self_file_name#.}.cache"
+cache_file_template="${XDG_CACHE_HOME:-"$HOME/.cache"}/${self_file_name#.}"
 
-if [ -e "$cache_file" ]; then
-    echo "[load] ${cache_file##"$HOME/"}" >&2
+# Invalidate cache if OS changes (eg. Distrobox).
+os_hash="$(cat /etc/*-release | cksum | cut -d ' ' -f 1)"
+os_cache_file="$cache_file_template.$os_hash"
+
+if [ -e "$os_cache_file" ]; then
+    echo "[load] ${os_cache_file##"$HOME/"}" >&2
 
     # shellcheck disable=SC1090
-    . "$cache_file"
+    . "$os_cache_file"
 
     alias cache_=:
 else
-    echo "[build] ${cache_file##"$HOME/"}" >&2
+    echo "[build] ${os_cache_file##"$HOME/"}" >&2
 
     cache_() {
         echo "[cache] $*" >&2
-        eval "$("$@" | tee --append "$cache_file")"
+        eval "$("$@" | tee --append "$os_cache_file")"
     }
 fi
 
@@ -236,7 +240,7 @@ if DESC='<https://git-scm.com>' have_ git; then
         custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
     fi
 
-    git_commit_template_file="$cache_file.git.commit-template"
+    git_commit_template_file="$cache_file_template.git.commit-template"
 
     if [ ! -e "$git_commit_template_file" ]; then
         # Add a newline between the commit message and Git's comments.
