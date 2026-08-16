@@ -3,6 +3,11 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -o nounset
 
+no_color='\001\e[0m\002'
+blue_bold='\001\e[1;34m\002'
+yellow='\001\e[0;33m\002'
+red_bold='\001\e[1;31m\002'
+
 # Arguments: <command | path to source shell script> ...
 # Returns:
 #   0 if at least one argument was found
@@ -29,7 +34,7 @@ have_() {
         esac
     done
 
-    echo "[miss] $* ${DESC:-}" >&2
+    printf "${red_bold}[miss]$no_color %s %s\\n" "$*" "${DESC:-}" >&2
     return 1
 }
 
@@ -41,6 +46,7 @@ for sub_aliases in "$HOME/$self_file_name".*; do
     # Skip verbatim glob pattern when no files are found.
     # https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
     if [ -r "$sub_aliases" ]; then
+        # TODO would be nice to print `~` in the path
         echo "[load] ${sub_aliases##"$HOME/"}" >&2
 
         # shellcheck disable=SC1090
@@ -66,6 +72,7 @@ os_hash="$(cat /etc/*-release | cksum | cut -d ' ' -f 1)"
 env_cache_file="$cache_file_template.env.$os_hash"
 
 if [ -e "$env_cache_file" ]; then
+    # TODO would be nice to print `~` in the path
     echo "[load] ${env_cache_file##"$HOME/"}" >&2
 
     # shellcheck disable=SC1090
@@ -73,10 +80,11 @@ if [ -e "$env_cache_file" ]; then
 
     alias cache_=:
 else
-    echo "[build] ${env_cache_file##"$HOME/"}" >&2
+    printf "${blue_bold}[build]$no_color %s\\n" \
+        "${env_cache_file##"$HOME/"}" >&2
 
     cache_() {
-        echo "[cache] $*" >&2
+        printf "${blue_bold}[cache]$no_color %s\\n" "$*" >&2
         eval "$("$@" | tee --append "$env_cache_file")"
     }
 fi
@@ -103,7 +111,7 @@ have_ dircolors && cache_ "$HAVE_NAME" --sh
 # https://www.greenwoodsoftware.com/less/
 if have_ lesspipe lesspipe.sh; then
     # Clean up environment to remove stray variables (eg. Distrobox).
-    cache_ echo 'unset `env | cut -d = -f 1 | grep \^LESS.`'
+    cache_ echo "unset \`env | cut -d = -f 1 | grep \\^LESS.\`"
     cache_ "$HAVE_NAME"
     export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
 fi
@@ -134,10 +142,6 @@ bind '"\e[1;5D": backward-word'
 # Bind Ctrl-Delete as well.
 # https://www.gnu.org/software/bash/manual/html_node/Commands-For-Killing.html#index-kill_002dword-_0028M_002dd_0029
 bind '"\e[3;5~": kill-word'
-
-no_color='\001\e[0m\002'
-blue_bold='\001\e[1;34m\002'
-yellow='\001\e[0;33m\002'
 
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 custom_ps1="$blue_bold\w$no_color"
@@ -252,7 +256,7 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete u _git_pull
 
         # Some distros may not load Git's PS1 automatically through Bash
-        # (eg. Distrobox) so source the file as a fallback.
+        # (eg. Distrobox), so source the file as a fallback.
         if have_ __git_ps1 /usr/share/git-core/contrib/completion/git-prompt.sh; then
             # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
             green='\001\e[0;32m\002'
@@ -293,8 +297,7 @@ jobs_ps1_() {
     jobs_ps1_count_="$(jobs -p | wc -l)"
 
     if [ "$jobs_ps1_count_" -gt 0 ]; then
-        jobs_ps1_red_bold_='\001\e[1;31m\002'
-        printf "%b$1%b" "$jobs_ps1_red_bold_" "$jobs_ps1_count_" "$no_color"
+        printf "%b$1%b" "$red_bold" "$jobs_ps1_count_" "$no_color"
     fi
 }
 
