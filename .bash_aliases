@@ -46,8 +46,8 @@ for sub_aliases in "$HOME/$self_file_name".*; do
     # Skip verbatim glob pattern when no files are found.
     # https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
     if [ -r "$sub_aliases" ]; then
-        # TODO would be nice to print `~` in the path
-        echo "[load] ${sub_aliases##"$HOME/"}" >&2
+        # shellcheck disable=SC3060
+        echo "[load] ${sub_aliases/#$HOME/\~}" >&2
 
         # shellcheck disable=SC1090
         . "$sub_aliases"
@@ -72,16 +72,17 @@ os_hash="$(cat /etc/*-release | cksum | cut -d ' ' -f 1)"
 env_cache_file="$cache_file_template.env.$os_hash"
 
 if [ -e "$env_cache_file" ]; then
-    # TODO would be nice to print `~` in the path
-    echo "[load] ${env_cache_file##"$HOME/"}" >&2
+    # shellcheck disable=SC3060
+    printf '[load] %s\n' "${env_cache_file/#$HOME/\~}" >&2
 
     # shellcheck disable=SC1090
     . "$env_cache_file"
 
     alias cache_=:
 else
+    # shellcheck disable=SC3060
     printf "${blue_bold}[build]$no_color %s\\n" \
-        "${env_cache_file##"$HOME/"}" >&2
+        "${env_cache_file/#$HOME/\~}" >&2
 
     cache_() {
         printf "${blue_bold}[cache]$no_color %s\\n" "$*" >&2
