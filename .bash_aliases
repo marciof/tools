@@ -51,21 +51,21 @@ cache_file_template="${XDG_CACHE_HOME:-"$HOME/.cache"}/${self_file_name#.}"
 
 # Invalidate cache if OS changes (eg. Distrobox).
 os_hash="$(cat /etc/*-release | cksum | cut -d ' ' -f 1)"
-os_cache_file="$cache_file_template.$os_hash"
+env_cache_file="$cache_file_template.env.$os_hash"
 
-if [ -e "$os_cache_file" ]; then
-    echo "[load] ${os_cache_file##"$HOME/"}" >&2
+if [ -e "$env_cache_file" ]; then
+    echo "[load] ${env_cache_file##"$HOME/"}" >&2
 
     # shellcheck disable=SC1090
-    . "$os_cache_file"
+    . "$env_cache_file"
 
     alias cache_=:
 else
-    echo "[build] ${os_cache_file##"$HOME/"}" >&2
+    echo "[build] ${env_cache_file##"$HOME/"}" >&2
 
     cache_() {
         echo "[cache] $*" >&2
-        eval "$("$@" | tee --append "$os_cache_file")"
+        eval "$("$@" | tee --append "$env_cache_file")"
     }
 fi
 
@@ -89,8 +89,12 @@ export PROMPT_DIRTRIM=5
 have_ dircolors && cache_ "$HAVE_NAME" --sh
 
 # https://www.greenwoodsoftware.com/less/
-have_ lesspipe lesspipe.sh && cache_ "$HAVE_NAME"
-export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
+if have_ lesspipe lesspipe.sh; then
+    # Clean up environment to remove stray variables (eg. Distrobox).
+    cache_ echo 'unset `env | cut -d = -f 1 | grep \^LESS.`'
+    cache_ "$HAVE_NAME"
+    export LESS='--tabs=4 --clear-screen --LONG-PROMPT --RAW-CONTROL-CHARS --ignore-case'
+fi
 
 # Disable XON/XOFF flow control so that Ctrl+S can be used for
 # `bind -q forward-search-history`.
