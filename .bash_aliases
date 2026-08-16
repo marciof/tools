@@ -239,9 +239,11 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete v _git_status
         __git_complete u _git_pull
 
-        # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
-        green='\001\e[0;32m\002'
-        custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
+        if have_ __git_ps1; then
+            # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+            green='\001\e[0;32m\002'
+            custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
+        fi
     fi
 
     git_commit_template_file="$cache_file_template.git.commit-template"
