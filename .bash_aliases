@@ -3,18 +3,30 @@
 # https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
 set -o nounset
 
-# Arguments: <command> ...
+# Arguments: <command | path to source shell script> ...
 # Returns:
-#   0 if at least one command was found
-#   1 if no command was found
+#   0 if at least one argument was found
+#   1 if no argument was found
 # Env:
-#   get DESC = optional command description
-#   set HAVE_NAME = which command was found
+#   get DESC = optional description
+#   set HAVE_NAME = which argument was found
 have_() {
     for HAVE_NAME; do
-        if command -v "$HAVE_NAME" >/dev/null; then
-            return 0
-        fi
+        case "$HAVE_NAME" in
+            */*)
+                if [ -e "$HAVE_NAME" ]; then
+                    echo "[load] $HAVE_NAME" >&2
+                    # shellcheck disable=SC1090
+                    . "$HAVE_NAME"
+                    return 0
+                fi
+                ;;
+            *)
+                if command -v "$HAVE_NAME" >/dev/null; then
+                    return 0
+                fi
+                ;;
+        esac
     done
 
     echo "[miss] $* ${DESC:-}" >&2
@@ -239,7 +251,9 @@ if DESC='<https://git-scm.com>' have_ git; then
         __git_complete v _git_status
         __git_complete u _git_pull
 
-        if have_ __git_ps1; then
+        # Some distros may not load Git's PS1 automatically through Bash
+        # (eg. Distrobox) so source the file as a fallback.
+        if have_ __git_ps1 /usr/share/git-core/contrib/completion/git-prompt.sh; then
             # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
             green='\001\e[0;32m\002'
             custom_ps1="$custom_ps1$green\$(__git_ps1 ' %s')$no_color"
