@@ -5,8 +5,8 @@ set -o nounset
 
 no_color='\001\e[0m\002'
 blue_bold='\001\e[1;34m\002'
-yellow='\001\e[0;33m\002'
 red_bold='\001\e[1;31m\002'
+yellow='\001\e[0;33m\002'
 
 # Arguments: <command | path to source shell script> ...
 # Returns:
@@ -145,6 +145,12 @@ bind '"\e[3;5~": kill-word'
 # https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-forward_002dchar-_0028C_002df_0029
 bind '"\C-h": backward-char'
 bind '"\C-l": forward-char'
+
+# Re-bind Ctrl-W to match Alt-Backspace.
+# https://www.gnu.org/software/coreutils/manual/html_node/Characters.html#index-werase
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Killing.html#index-backward_002dkill_002dword-_0028M_002dDEL_0029
+stty werase undef
+bind '"\C-w": backward-kill-word'
 
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 custom_ps1="$blue_bold\w$no_color"
