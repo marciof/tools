@@ -132,17 +132,19 @@ bind 'set mark-symlinked-directories on'
 # https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html#index-visible_002dstats
 bind 'set visible-stats on'
 
-# Bind Ctrl-Right as well.
-# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-forward_002dword-_0028M_002df_0029
-bind '"\e[1;5C": forward-word'
-
-# Bind Ctrl-Left as well.
+# Bind Ctrl-Left, Ctrl-Right, and Ctrl-Delete as alternatives.
 # https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-backward_002dword-_0028M_002db_0029
-bind '"\e[1;5D": backward-word'
-
-# Bind Ctrl-Delete as well.
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-forward_002dword-_0028M_002df_0029
 # https://www.gnu.org/software/bash/manual/html_node/Commands-For-Killing.html#index-kill_002dword-_0028M_002dd_0029
+bind '"\e[1;5D": backward-word'
+bind '"\e[1;5C": forward-word'
 bind '"\e[3;5~": kill-word'
+
+# Re-bind Ctrl-H and Ctrl-L for horizontal cursor control.
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-backward_002dchar-_0028C_002db_0029
+# https://www.gnu.org/software/bash/manual/html_node/Commands-For-Moving.html#index-forward_002dchar-_0028C_002df_0029
+bind '"\C-h": backward-char'
+bind '"\C-l": forward-char'
 
 # https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
 custom_ps1="$blue_bold\w$no_color"
